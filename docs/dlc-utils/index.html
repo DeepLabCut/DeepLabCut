@@ -1,0 +1,896 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>DeepLabCut-Utils - Community contributions &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=9e359f71" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=b8b12719"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/dlc-utils/index';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="XROMM + DeepLabCut local integration" href="XROMM/usage.html" />
+    <link rel="prev" title="The pose_cfg.yaml Guideline Handbook" href="../recipes/pose_cfg_file_breakdown.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
+    <script>document.write(`<img src="../../_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../installation.html">Installing DeepLabCut</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../docker.html">DeepLabCut in Docker</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main workflows overview</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../main-workflows/user-guide.html">DeepLabCut User Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start/single_animal_quick_guide.html">Single-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start/tutorial_maDLC.html">Multi-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../main-workflows/multi-animal-tracking.html">Multi-animal tracking</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overviewof3D.html">3D DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">GUI workflow</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../gui/PROJECT_GUI.html">Project Manager GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/beginners-guide.html">Setting up a new project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/manage-project.html">Editing and working with the configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/Training-Evaluation.html">Neural network training and evaluation in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/video-analysis.html">Video analysis in the GUI</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../gui/napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../gui/napari/basic_usage.html">Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gui/napari/advanced_usage.html">Advanced features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gui/napari/tracking/basic_usage.html">Automated annotation with point tracking</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Notebooks &amp; Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks/your_data.html">Notebooks for your data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks/main_demos.html">Demo notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks/extra.html">Additional features notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut 3.0 - PyTorch guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pytorch/index.html">PyTorch backend guides</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/user_guide.html">What is new in DeepLabCut 3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/pytorch_config.html">Configuration file reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/architectures.html">Model architectures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/Benchmarking_shuffle_guide.html">Benchmarking user guide</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced, Performance &amp; Live</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../dlc-live/deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/index.html">DeepLabCut-live-GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/quickstart/install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/overview.html">GUI overview</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support.html">Camera support</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/opencv_backend.html">OpenCV backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/basler_backend.html">Basler backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend.html">Aravis backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../benchmark.html">DeepLabCut benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/TechHardware.html">Technical &amp; hardware considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Additional guides (Recipes)</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../recipes/index.html">The DeepLabCut Cookbook</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">DeepLabCut-Utils - Community contributions</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="XROMM/usage.html">XROMM + DeepLabCut local integration</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Project &amp; Community</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Governance.html">Governance Model of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING.html">Contributing to DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">How to Cite DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/dlc-utils/index.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/docs/dlc-utils/index.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>DeepLabCut-Utils - Community contributions</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-scripts-for-scaling-up-your-dlc-analysis-training">Example scripts for scaling up your DLC analysis &amp; training</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-dlc-xromm-dlctools-xmalab">Using DLC + XROMM_DLCTools + xmalab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-your-dlc-outputs-loading-simple-roi-analysis-visualization-examples">Using your DLC outputs, loading, simple ROI analysis, visualization examples</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#time-spent-of-a-body-part-in-a-particular-region-of-interest-roi">Time spent of a body part in a particular region of interest (ROI)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-display-gui">DeepLabCut-Display GUI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-gui-based-roi-tool-for-time-spent-of-a-body-part-in-a-defined-region-of-interest">A GUI-based ROI tool for time spent of a body part in a defined region of interest</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#linear-transformation-and-scaling-of-dlc-output-data-transform-and-scale">Linear transformation and scaling of DLC output data (<code class="docutils literal notranslate"><span class="pre">transform_and_scale</span></code>)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clustering-tools-using-the-output-of-dlc">Clustering tools (using the output of DLC)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#identifying-behavioral-structure-from-deep-variational-embeddings-of-animal-motion">Identifying Behavioral Structure from Deep Variational Embeddings of Animal Motion</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#behavior-clustering-with-motionmapper">Behavior clustering with MotionMapper</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#behavior-clustering-with-b-soid">Behavior clustering with B-SOiD</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#machine-learning-helper-packages-using-the-output-of-dlc">Machine-learning helper packages (using the output of DLC)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#behavior-analysis-with-machine-learning-in-r-eth-dlcanalyzer">Behavior analysis with machine learning in R (<code class="docutils literal notranslate"><span class="pre">ETH-DLCAnalyzer</span></code>)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#behavior-analysis-with-machine-learning-classifiers-simba">Behavior analysis with machine learning classifiers (SimBA)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#d-deeplabcut-helper-packages">3D DeepLabCut helper packages</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-wrapper-package-for-deeplabcut-2-0-for-3d-videos-anipose">A wrapper package for DeepLabCut 2.0 for 3D videos (<code class="docutils literal notranslate"><span class="pre">anipose</span></code>)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#d-reconstruction-with-easywand-argus-dlt-system-with-deeplabcut-data">3D reconstruction with EasyWand/Argus DLT system with DeepLabCut data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pupil-tracking">Pupil Tracking</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-deeplabcut-for-usb-cgpio-feedback">Using DeepLabCut for USB-CGPIO feedback</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legacy-utility-functions-no-longer-required-in-dlc-2">Legacy utility functions (no longer required in DLC 2+)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dlc-1-to-dlc-2-conversion-code">DLC 1 to DLC 2 conversion code</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-project-created-on-windows-on-colaboratory">Running project created on Windows on Colaboratory</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-utils-community-contributions">
+<h1>DeepLabCut-Utils - Community contributions<a class="headerlink" href="#deeplabcut-utils-community-contributions" title="Link to this heading">#</a></h1>
+<p><a class="reference external" href="https://forum.image.sc/tags/deeplabcut"><img alt="Image.sc forum" src="https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC" /></a></p>
+<a class="reference internal image-reference" href="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w"><img alt="DLC Utils" class="align-right" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" style="width: 350px;" />
+</a>
+<p>The DeepLabCut-Utils repository contains various scripts as well as links to other packages related to <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut">DeepLabCut</a>. Feel free to contribute your own analysis methods, and perhaps some short notebook of how to use it. Thanks!</p>
+<div class="tip admonition">
+<p class="admonition-title">DLC-Utils</p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DLCutils">Link to repository</a></p>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>Please direct inquiries to the <strong>contributors/code maintainers of that code</strong>. Note that the software(s) are provided “as is”, without warranty of any kind, express or implied.
+The DeepLabCut team is not responsible for the maintenance of these packages, and cannot guarantee that they will work with present &amp; future versions of DeepLabCut.</p>
+</div>
+<section id="example-scripts-for-scaling-up-your-dlc-analysis-training">
+<h2>Example scripts for scaling up your DLC analysis &amp; training<a class="headerlink" href="#example-scripts-for-scaling-up-your-dlc-analysis-training" title="Link to this heading">#</a></h2>
+<p>These two scripts illustrate how to train, test, and analyze videos for multiple projects automatically (<code class="docutils literal notranslate"><span class="pre">scale_training_and_evaluation.py</span></code>) and how to analyze videos that are organized in subfolders automatically (<code class="docutils literal notranslate"><span class="pre">scale_analysis_oversubfolders.py</span></code>). Feel free to adjust them for your needs!</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DLCutils/tree/master/SCALE_YOUR_ANALYSIS/scale_analysis_oversubfolders.py">Code: <code class="docutils literal notranslate"><span class="pre">scale_analysis_oversubfolders.py</span></code></a></p></li>
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DLCutils/blob/master/SCALE_YOUR_ANALYSIS/scale_training_and_evaluation.py">Code: <code class="docutils literal notranslate"><span class="pre">scale_training_and_evaluation.py</span></code></a></p></li>
+</ul>
+<p>Contributed by <a class="reference external" href="https://github.com/AlexEMG">Alexander Mathis</a></p>
+</section>
+<section id="using-dlc-xromm-dlctools-xmalab">
+<h2>Using DLC + XROMM_DLCTools + xmalab<a class="headerlink" href="#using-dlc-xromm-dlctools-xmalab" title="Link to this heading">#</a></h2>
+<blockquote>
+<div><p>Contributed by <a class="reference external" href="https://github.com/homfunc">&#64;homfunc</a></p>
+</div></blockquote>
+<p>The DeepLabCut repository can also be used as a sibling checkout together with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">../XROMM_DLCTools</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">../xmalab</span></code></p></li>
+</ul>
+<p>In that local layout, <code class="docutils literal notranslate"><span class="pre">XROMM_DLCTools</span></code> uses the optional <code class="docutils literal notranslate"><span class="pre">dlc</span></code> dependency group to import this checkout directly, and its baseline harness runs both a DeepLabCut smoke scenario and a broader end-to-end local workflow integration scenario.</p>
+<p>See <a class="reference internal" href="XROMM/usage.html#file-xamalab-dlc-integration"><span class="std std-ref">XROMM + DeepLabCut local integration</span></a> for the local integration notes and exact commands.</p>
+</section>
+<section id="using-your-dlc-outputs-loading-simple-roi-analysis-visualization-examples">
+<h2>Using your DLC outputs, loading, simple ROI analysis, visualization examples<a class="headerlink" href="#using-your-dlc-outputs-loading-simple-roi-analysis-visualization-examples" title="Link to this heading">#</a></h2>
+<section id="time-spent-of-a-body-part-in-a-particular-region-of-interest-roi">
+<h3>Time spent of a body part in a particular region of interest (ROI)<a class="headerlink" href="#time-spent-of-a-body-part-in-a-particular-region-of-interest-roi" title="Link to this heading">#</a></h3>
+<p>You can compute time spent in particular ROIs in frames. This demo Jupyter Notebook shows you how to load the outputs of DLC and perform the analysis (plus other plotting functions):</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DLCutils/blob/master/Demo_loadandanalyzeDLCdata.ipynb">Code: <code class="docutils literal notranslate"><span class="pre">Demo_loadandanalyzeDLCdata.ipynb</span></code></a></p></li>
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DLCutils/blob/master/time_in_each_roi.py">Code: <code class="docutils literal notranslate"><span class="pre">time_in_each_roi.py</span></code></a></p></li>
+</ul>
+<p>Contributed by <a class="reference external" href="https://github.com/FedeClaudi">Federico Claudi</a> and Jupyter Notebook from <a class="reference external" href="https://github.com/AlexEMG">Alexander Mathis</a></p>
+</section>
+<section id="deeplabcut-display-gui">
+<h3>DeepLabCut-Display GUI<a class="headerlink" href="#deeplabcut-display-gui" title="Link to this heading">#</a></h3>
+<p>Open and view data to understand pose estimation errors and trends. Filter data by likelihood threshold.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/jakeshirey/DeepLabCut-Display">Code: <code class="docutils literal notranslate"><span class="pre">DeepLabCut-Display</span></code></a></p></li>
+</ul>
+<p>Contributed by <a class="reference external" href="https://github.com/jakeshirey">Jacob Shirey</a></p>
+</section>
+<section id="a-gui-based-roi-tool-for-time-spent-of-a-body-part-in-a-defined-region-of-interest">
+<h3>A GUI-based ROI tool for time spent of a body part in a defined region of interest<a class="headerlink" href="#a-gui-based-roi-tool-for-time-spent-of-a-body-part-in-a-defined-region-of-interest" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/PolarBean/DLC_ROI_tool">Code: <code class="docutils literal notranslate"><span class="pre">DLC_ROI_tool</span></code></a></p></li>
+</ul>
+<p>Contributed by <a class="reference external" href="https://github.com/PolarBean">Harry Carey</a></p>
+</section>
+<section id="linear-transformation-and-scaling-of-dlc-output-data-transform-and-scale">
+<h3>Linear transformation and scaling of DLC output data (<code class="docutils literal notranslate"><span class="pre">transform_and_scale</span></code>)<a class="headerlink" href="#linear-transformation-and-scaling-of-dlc-output-data-transform-and-scale" title="Link to this heading">#</a></h3>
+<p>This package is designed for anyone who wants to know where a tracked marker is within a reference frame (i.e. behavioral context). DeepLabCut outputs coordinates in relation to the field of view of the recorded video. With this tool, these coordinates can be linearly transformed and scaled to the reference frame of the behavioral context, meaning that the output coordinates are distances [cm] to a corner of the behavioral context, instead of distances [px] to a corner of the video field of view.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DLCutils/tree/master/transform_and_scale/">Code: <code class="docutils literal notranslate"><span class="pre">transform_and_scale</span></code></a></p></li>
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DLCutils/tree/master/transform_and_scale/transform_and_scale_tutorial.ipynb">Tutorial: <code class="docutils literal notranslate"><span class="pre">transform_and_scale_tutorial.ipynb</span></code></a></p></li>
+</ul>
+<p>Contributed by <a class="reference external" href="https://github.com/MSchellenberger">Michael Schellenberger</a></p>
+</section>
+</section>
+<section id="clustering-tools-using-the-output-of-dlc">
+<h2>Clustering tools (using the output of DLC)<a class="headerlink" href="#clustering-tools-using-the-output-of-dlc" title="Link to this heading">#</a></h2>
+<section id="identifying-behavioral-structure-from-deep-variational-embeddings-of-animal-motion">
+<h3>Identifying Behavioral Structure from Deep Variational Embeddings of Animal Motion<a class="headerlink" href="#identifying-behavioral-structure-from-deep-variational-embeddings-of-animal-motion" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2020.05.14.095430">Paper</a></p></li>
+<li><p><a class="reference external" href="https://github.com/LINCellularNeuroscience/VAME">Code: <code class="docutils literal notranslate"><span class="pre">VAME</span></code></a></p></li>
+</ul>
+</section>
+<section id="behavior-clustering-with-motionmapper">
+<h3>Behavior clustering with MotionMapper<a class="headerlink" href="#behavior-clustering-with-motionmapper" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Adapted from <a class="reference external" href="https://github.com/gordonberman/MotionMapper">MotionMapper</a></p></li>
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DLCutils/tree/master/DLC_2_MotionMapper">Code: <code class="docutils literal notranslate"><span class="pre">DLC_2_MotionMapper</span></code></a></p></li>
+</ul>
+<p>Contributed by <a class="reference external" href="https://github.com/MMathisLab">Mackenzie Mathis</a></p>
+</section>
+<section id="behavior-clustering-with-b-soid">
+<h3>Behavior clustering with B-SOiD<a class="headerlink" href="#behavior-clustering-with-b-soid" title="Link to this heading">#</a></h3>
+<p>B-SOiD is an open source unsupervised algorithm for discovery of spontaneous behaviors, and you can use the outputs of DLC to feed directly into B-SOiD in MATLAB.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/770271v1.abstract">Paper</a></p></li>
+<li><p><a class="reference external" href="https://github.com/YttriLab/B-SOiD">Code: <code class="docutils literal notranslate"><span class="pre">B-SOiD</span></code></a></p></li>
+</ul>
+</section>
+</section>
+<section id="machine-learning-helper-packages-using-the-output-of-dlc">
+<h2>Machine-learning helper packages (using the output of DLC)<a class="headerlink" href="#machine-learning-helper-packages-using-the-output-of-dlc" title="Link to this heading">#</a></h2>
+<section id="behavior-analysis-with-machine-learning-in-r-eth-dlcanalyzer">
+<h3>Behavior analysis with machine learning in R (<code class="docutils literal notranslate"><span class="pre">ETH-DLCAnalyzer</span></code>)<a class="headerlink" href="#behavior-analysis-with-machine-learning-in-r-eth-dlcanalyzer" title="Link to this heading">#</a></h3>
+<p>Deep learning based behavioral analysis enables high precision rodent tracking and is capable of outperforming commercial solutions. Oliver Sturman, Lukas von Ziegler, Christa Schläppi, Furkan Akyol, Benjamin Grewe, Johannes Bohacek</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2020.01.21.913624v1">Paper</a></p></li>
+<li><p><a class="reference external" href="https://github.com/ETHZ-INS/DLCAnalyzer">Code: <code class="docutils literal notranslate"><span class="pre">DLCAnalyzer</span></code></a></p></li>
+</ul>
+</section>
+<section id="behavior-analysis-with-machine-learning-classifiers-simba">
+<h3>Behavior analysis with machine learning classifiers (SimBA)<a class="headerlink" href="#behavior-analysis-with-machine-learning-classifiers-simba" title="Link to this heading">#</a></h3>
+<p>A pipeline for using pose estimation (i.e. DeepLabCut) then behavioral annotation and generation of supervised machine-learning-based classifiers. &lt;– you can use the outputs of DLC to feed directly into SimBA (in Python).</p>
+<p>Code written by: <a class="reference external" href="https://github.com/sronilsson">Simon Nilsson</a> (please direct use questions to Simon).</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2020.04.19.049452v2">Paper</a></p></li>
+<li><p><a class="reference external" href="https://github.com/sgoldenlab/simba">Code: <code class="docutils literal notranslate"><span class="pre">simba</span></code></a></p></li>
+</ul>
+</section>
+</section>
+<section id="d-deeplabcut-helper-packages">
+<h2>3D DeepLabCut helper packages<a class="headerlink" href="#d-deeplabcut-helper-packages" title="Link to this heading">#</a></h2>
+<section id="a-wrapper-package-for-deeplabcut-2-0-for-3d-videos-anipose">
+<h3>A wrapper package for DeepLabCut 2.0 for 3D videos (<code class="docutils literal notranslate"><span class="pre">anipose</span></code>)<a class="headerlink" href="#a-wrapper-package-for-deeplabcut-2-0-for-3d-videos-anipose" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/lambdaloop/anipose">Code: <code class="docutils literal notranslate"><span class="pre">anipose</span></code></a></p></li>
+</ul>
+<p>Maintainer: <a class="reference external" href="https://github.com/lambdaloop">Pierre Karashchuk</a></p>
+</section>
+<section id="d-reconstruction-with-easywand-argus-dlt-system-with-deeplabcut-data">
+<h3>3D reconstruction with EasyWand/Argus DLT system with DeepLabCut data<a class="headerlink" href="#d-reconstruction-with-easywand-argus-dlt-system-with-deeplabcut-data" title="Link to this heading">#</a></h3>
+<p>Written by <a class="reference external" href="https://github.com/haliaetus13">Brandon Jackson</a>, post our DLC workshop in Jan 2020:</p>
+<p>A small set of utilities that allow conversion between the data storage formats of DeepLabCut (DLC) and one of the DLT-based 3D tracking systems: either Ty Hedrick’s DigitizingTools in MATLAB, or the Python-based Argus. These functions should allow you to use data previously digitized in a DLT system to create the files needed to train a DLC model, and to import DLC-tracked points back into a DLT 3D calibration to reconstruct 3D points.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/haliaetus13/DLCconverterDLT">Code: <code class="docutils literal notranslate"><span class="pre">DLCconverterDLT</span></code></a></p></li>
+</ul>
+</section>
+<section id="pupil-tracking">
+<h3>Pupil Tracking<a class="headerlink" href="#pupil-tracking" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>From Tom Vaissie - <a class="reference external" href="mailto:tvaissie&#37;&#52;&#48;scripps&#46;edu">tvaissie<span>&#64;</span>scripps<span>&#46;</span>edu</a></p></li>
+<li><p>Please see the <a class="reference external" href="https://github.com/DeepLabCut/DLCutils/tree/master/pupilTracking">README.txt file</a> for details; this code makes the video in case study 7 <a class="reference external" href="http://www.mousemotorlab.org/deeplabcut/">http://www.mousemotorlab.org/deeplabcut/</a>.</p></li>
+</ul>
+</section>
+<section id="using-deeplabcut-for-usb-cgpio-feedback">
+<h3>Using DeepLabCut for USB-CGPIO feedback<a class="headerlink" href="#using-deeplabcut-for-usb-cgpio-feedback" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.biorxiv.org/content/early/2018/11/28/482349">Paper</a></p></li>
+<li><p><a class="reference external" href="https://github.com/bf777/DeepCutRealTime">Code: <code class="docutils literal notranslate"><span class="pre">DeepCutRealTime</span></code></a></p></li>
+</ul>
+<p>Maintainer: <a class="reference external" href="https://github.com/bf777">Brandon Forys</a></p>
+</section>
+</section>
+<section id="legacy-utility-functions-no-longer-required-in-dlc-2">
+<h2>Legacy utility functions (no longer required in DLC 2+)<a class="headerlink" href="#legacy-utility-functions-no-longer-required-in-dlc-2" title="Link to this heading">#</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>These utilities are marked as legacy and are no longer required in DLC 2+.</p>
+</div>
+<section id="dlc-1-to-dlc-2-conversion-code">
+<h3>DLC 1 to DLC 2 conversion code<a class="headerlink" href="#dlc-1-to-dlc-2-conversion-code" title="Link to this heading">#</a></h3>
+<p>This code allows you to import the labeled data from DLC 1 to DLC 2 projects. Note, it is not streamlined and should be used with care.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DLCutils/tree/master/conversion_scripts_LEGACY">Conversion scripts (<code class="docutils literal notranslate"><span class="pre">conversion_scripts_LEGACY</span></code>)</a></p></li>
+</ul>
+<p>Contributed by <a class="reference external" href="https://github.com/AlexEMG">Alexander Mathis</a></p>
+</section>
+<section id="running-project-created-on-windows-on-colaboratory">
+<h3>Running project created on Windows on Colaboratory<a class="headerlink" href="#running-project-created-on-windows-on-colaboratory" title="Link to this heading">#</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>UPDATE:</strong> as of DeepLabCut 2.0.4 onwards you no longer need to use this code! You can simply create the training set on the cloud and it will automatically convert your project for you.</p>
+</div>
+<ul class="simple">
+<li><p>This solves a path problem when creating a project and annotating data on Windows (see <a class="reference external" href="https://github.com/AlexEMG/DeepLabCut/issues/172">issue #172</a>). This functionality will be included in a later version of DLC 2 (DONE!)</p></li>
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DLCutils/tree/master/conversion_scripts_LEGACY">Conversion scripts (<code class="docutils literal notranslate"><span class="pre">conversion_scripts_LEGACY</span></code>)</a></p></li>
+</ul>
+<p><em>Usage:</em> change in lines 70 and 71 of <a class="reference external" href="https://github.com/DeepLabCut/DLCutils/tree/master/conversion_scripts_LEGACY/convertWin2Unix.py"><code class="docutils literal notranslate"><span class="pre">convertWin2Unix.py</span></code></a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">basepath</span><span class="o">=</span><span class="s1">&#39;/content/drive/My Drive/DeepLabCut/examples/&#39;</span>
+<span class="n">projectname</span><span class="o">=</span><span class="s1">&#39;Reaching-Mackenzie-2018-08-30&#39;</span>
+</pre></div>
+</div>
+<p>then run this script on Colaboratory after uploading your labeled data to the drive. Thereby it will be converted to Unix format, then create a training set (with DeepLabCut) and proceed as usual…</p>
+<p>Contributed by <a class="reference external" href="https://github.com/AlexEMG">Alexander Mathis</a></p>
+</section>
+</section>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./docs/dlc-utils"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../recipes/pose_cfg_file_breakdown.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="XROMM/usage.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">XROMM + DeepLabCut local integration</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-scripts-for-scaling-up-your-dlc-analysis-training">Example scripts for scaling up your DLC analysis &amp; training</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-dlc-xromm-dlctools-xmalab">Using DLC + XROMM_DLCTools + xmalab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-your-dlc-outputs-loading-simple-roi-analysis-visualization-examples">Using your DLC outputs, loading, simple ROI analysis, visualization examples</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#time-spent-of-a-body-part-in-a-particular-region-of-interest-roi">Time spent of a body part in a particular region of interest (ROI)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-display-gui">DeepLabCut-Display GUI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-gui-based-roi-tool-for-time-spent-of-a-body-part-in-a-defined-region-of-interest">A GUI-based ROI tool for time spent of a body part in a defined region of interest</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#linear-transformation-and-scaling-of-dlc-output-data-transform-and-scale">Linear transformation and scaling of DLC output data (<code class="docutils literal notranslate"><span class="pre">transform_and_scale</span></code>)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clustering-tools-using-the-output-of-dlc">Clustering tools (using the output of DLC)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#identifying-behavioral-structure-from-deep-variational-embeddings-of-animal-motion">Identifying Behavioral Structure from Deep Variational Embeddings of Animal Motion</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#behavior-clustering-with-motionmapper">Behavior clustering with MotionMapper</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#behavior-clustering-with-b-soid">Behavior clustering with B-SOiD</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#machine-learning-helper-packages-using-the-output-of-dlc">Machine-learning helper packages (using the output of DLC)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#behavior-analysis-with-machine-learning-in-r-eth-dlcanalyzer">Behavior analysis with machine learning in R (<code class="docutils literal notranslate"><span class="pre">ETH-DLCAnalyzer</span></code>)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#behavior-analysis-with-machine-learning-classifiers-simba">Behavior analysis with machine learning classifiers (SimBA)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#d-deeplabcut-helper-packages">3D DeepLabCut helper packages</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-wrapper-package-for-deeplabcut-2-0-for-3d-videos-anipose">A wrapper package for DeepLabCut 2.0 for 3D videos (<code class="docutils literal notranslate"><span class="pre">anipose</span></code>)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#d-reconstruction-with-easywand-argus-dlt-system-with-deeplabcut-data">3D reconstruction with EasyWand/Argus DLT system with DeepLabCut data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pupil-tracking">Pupil Tracking</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-deeplabcut-for-usb-cgpio-feedback">Using DeepLabCut for USB-CGPIO feedback</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legacy-utility-functions-no-longer-required-in-dlc-2">Legacy utility functions (no longer required in DLC 2+)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dlc-1-to-dlc-2-conversion-code">DLC 1 to DLC 2 conversion code</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-project-created-on-windows-on-colaboratory">Running project created on Windows on Colaboratory</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

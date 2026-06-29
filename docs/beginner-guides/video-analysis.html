@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Video Analysis with DeepLabCut &#8212; DeepLabCut</title>
+    <title>Video analysis in the GUI &#8212; DeepLabCut</title>
   
   
   
@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=d0fcb2aa" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=9e359f71" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -61,8 +61,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/beginner-guides/video-analysis';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="DeepLabCut SuperAnimal models" href="../../examples/COLAB/COLAB_DEMO_SuperAnimal.html" />
-    <link rel="prev" title="Neural Network training and evaluation in the GUI" href="Training-Evaluation.html" />
+    <link rel="next" title="napari GUI" href="../gui/napari_GUI.html" />
+    <link rel="prev" title="Neural network training and evaluation in the GUI" href="Training-Evaluation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -180,103 +180,82 @@
                 </a>
             </li>
         </ul>
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
-
-
-<li class="toctree-l1"><a class="reference internal" href="../course.html">DeepLabCut Self-paced Course</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">How To Install DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/installTips.html">Installation Tips</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../docker.html">DeepLabCut Docker containers</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
-
-<li class="toctree-l1"><a class="reference internal" href="../Overviewof3D.html">3D DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../gui/PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../gui/napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../gui/napari/basic_usage.html">napari-DLC - Basic usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../gui/napari/advanced_usage.html">napari-DLC - Advanced features</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../installation.html">Installing DeepLabCut</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../docker.html">DeepLabCut in Docker</a></li>
 </ul>
 </details></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main workflows overview</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../main-workflows/user-guide.html">DeepLabCut User Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start/single_animal_quick_guide.html">Single-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start/tutorial_maDLC.html">Multi-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../main-workflows/multi-animal-tracking.html">Multi-animal tracking</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../quick-start/single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quick-start/tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overviewof3D.html">3D DeepLabCut</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Beginner's Guide to DeepLabCut</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">GUI workflow</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="beginners-guide.html">Using DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="manage-project.html">Setting up what keypoints to track</a></li>
-<li class="toctree-l1"><a class="reference internal" href="labeling.html">Labeling GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Training-Evaluation.html">Neural Network training and evaluation in the GUI</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Video Analysis with DeepLabCut</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../gui/PROJECT_GUI.html">Project Manager GUI</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="beginners-guide.html">Setting up a new project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage-project.html">Editing and working with the configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="labeling.html">Labeling GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Training-Evaluation.html">Neural network training and evaluation in the GUI</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Video analysis in the GUI</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Main Demo Notebooks</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../gui/napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../gui/napari/basic_usage.html">Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gui/napari/advanced_usage.html">Advanced features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gui/napari/tracking/basic_usage.html">Automated annotation with point tracking</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Notebooks For Your Data</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
-
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</details></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Special Feature Demos</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Notebooks &amp; Demos</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks/your_data.html">Notebooks for your data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
 
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/post.html">Some data processing recipes!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
-
-
-<li class="toctree-l1"><a class="reference internal" href="../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
-
-
-
-<li class="toctree-l1"><a class="reference internal" href="../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks/main_demos.html">Demo notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks/extra.html">Additional features notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut 3.0 - PyTorch guides</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pytorch/index.html">PyTorch backend guides</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/user_guide.html">What is new in DeepLabCut 3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/pytorch_config.html">Configuration file reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/architectures.html">Model architectures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/Benchmarking_shuffle_guide.html">Benchmarking user guide</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced, Performance &amp; Live</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1"><a class="reference internal" href="../dlc-live/deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/index.html">DeepLabCut-live-GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/quickstart/install.html">Installation</a></li>
@@ -295,26 +274,43 @@
 </details></li>
 </ul>
 </details></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🦄 DeepLabCut Model Zoo</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmarking</span></p>
-<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../benchmark.html">DeepLabCut benchmark</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/Benchmarking_shuffle_guide.html">DeepLabCut Benchmarking - User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/TechHardware.html">Technical &amp; hardware considerations</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Additional guides (Recipes)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../recipes/index.html">The DeepLabCut Cookbook</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../dlc-utils/index.html">DeepLabCut-Utils - Community contributions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-utils/XROMM/usage.html">XROMM + DeepLabCut local integration</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Project &amp; Community</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../roadmap.html">A development roadmap for DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Governance.html">Governance Model of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING.html">Contributing to DeepLabCut</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Citations for DeepLabCut</span></p>
-<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../citation.html">How to Cite DeepLabCut</a></li>
 </ul>
 
@@ -501,7 +497,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Video Analysis with DeepLabCut</h1>
+    <h1>Video analysis in the GUI</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -511,10 +507,17 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reviewing-analysis-results">Reviewing Analysis Results</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-a-labeled-video">Creating a Labeled Video</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#viewing-the-labeled-video">Viewing the Labeled Video</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#happy-deeplabcutting">Happy DeepLabCutting!</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analyzing-videos-with-your-trained-model">Analyzing videos with your trained model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-by-step">Step-by-step</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reviewing-analysis-results">Reviewing analysis results</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-labeled-videos">Generating labeled videos</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-labeled-video">Create a labeled video</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#view-the-labeled-video">View the labeled video</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next steps</a></li>
 </ul>
             </nav>
         </div>
@@ -526,24 +529,27 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="video-analysis-with-deeplabcut">
-<h1>Video Analysis with DeepLabCut<a class="headerlink" href="#video-analysis-with-deeplabcut" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="video-analysis-in-the-gui">
+<span id="file-video-analysis-gui"></span><h1>Video analysis in the GUI<a class="headerlink" href="#video-analysis-in-the-gui" title="Link to this heading">#</a></h1>
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC-live" alt="DLC LIVE!" align="right" vspace = "50">
 <p>After training and evaluating your model, the next step is to apply it to your videos.</p>
-<p><strong>How to Analyze Videos</strong></p>
+<section id="analyzing-videos-with-your-trained-model">
+<h2>Analyzing videos with your trained model<a class="headerlink" href="#analyzing-videos-with-your-trained-model" title="Link to this heading">#</a></h2>
+<section id="step-by-step">
+<h3>Step-by-step<a class="headerlink" href="#step-by-step" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><strong>Navigate to the ‘Analyze Videos’ Tab:</strong> Begin applying your trained model to video data here.</p></li>
-<li><p><strong>Select Your Video Format and Files:</strong></p></li>
-</ol>
+<li><p><strong>Select Your Video Format and Files:</strong></p>
 <ul class="simple">
 <li><p><strong>Choose Video Format:</strong> Pick the format of your video (<code class="docutils literal notranslate"><span class="pre">.mp4</span></code>, <code class="docutils literal notranslate"><span class="pre">.avi</span></code>, <code class="docutils literal notranslate"><span class="pre">.mkv</span></code>, or <code class="docutils literal notranslate"><span class="pre">.mov</span></code>).</p></li>
 <li><p><strong>Select Videos:</strong> Click <strong><code class="docutils literal notranslate"><span class="pre">Select</span> <span class="pre">Videos</span></code></strong> to find and open your video file.</p></li>
 </ul>
-<ol class="arabic simple" start="3">
+</li>
 <li><p><strong>Start Analysis:</strong> Click <strong><code class="docutils literal notranslate"><span class="pre">Analyze</span></code></strong>. The analysis time depends on video length and resolution. Track progress in the terminal or Anaconda prompt.</p></li>
 </ol>
+</section>
 <section id="reviewing-analysis-results">
-<h2>Reviewing Analysis Results<a class="headerlink" href="#reviewing-analysis-results" title="Link to this heading">#</a></h2>
+<h3>Reviewing analysis results<a class="headerlink" href="#reviewing-analysis-results" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><strong>Find Results in Your Project Folder:</strong> After analysis, go to your project’s video folder.</p></li>
 <li><p><strong>Analysis Files:</strong> Look also for a <code class="docutils literal notranslate"><span class="pre">.metapickle</span></code>, an <code class="docutils literal notranslate"><span class="pre">.h5</span></code>, and possibly a <code class="docutils literal notranslate"><span class="pre">.csv</span></code> file for detailed analysis data.</p></li>
@@ -551,26 +557,29 @@ document.write(`
 </ul>
 <p><img alt="Plot poses" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779600836-YOWM5T2MBY0JN1LB537B/plot-poses.png?format=500w" /></p>
 </section>
-<section id="creating-a-labeled-video">
-<h2>Creating a Labeled Video<a class="headerlink" href="#creating-a-labeled-video" title="Link to this heading">#</a></h2>
+</section>
+<section id="generating-labeled-videos">
+<h2>Generating labeled videos<a class="headerlink" href="#generating-labeled-videos" title="Link to this heading">#</a></h2>
+<section id="create-a-labeled-video">
+<h3>Create a labeled video<a class="headerlink" href="#create-a-labeled-video" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p><strong>Go to ‘Create Labeled Video’ Tab:</strong> The previously analyzed video should be selected.</p></li>
 <li><p>If not already selected, choose your video.</p></li>
 <li><p>Click <strong><code class="docutils literal notranslate"><span class="pre">Create</span> <span class="pre">Videos</span></code></strong>.</p></li>
 </ol>
 </section>
-<section id="viewing-the-labeled-video">
-<h2>Viewing the Labeled Video<a class="headerlink" href="#viewing-the-labeled-video" title="Link to this heading">#</a></h2>
+<section id="view-the-labeled-video">
+<h3>View the labeled video<a class="headerlink" href="#view-the-labeled-video" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Your labeled video will be in your video folder, named after the original video plus model details and ‘labeled’.</p></li>
-<li><p>Watch the video to assess the model’s labeling accuracy.</p></li>
+<li><p>Use it in your results, or perform downstream analyses with it!</p></li>
 </ul>
 </section>
-<section id="happy-deeplabcutting">
-<h2>Happy DeepLabCutting!<a class="headerlink" href="#happy-deeplabcutting" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p>Check out the more advanced user guides for even more options!</p></li>
-</ul>
+</section>
+<section id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Link to this heading">#</a></h2>
+<!-- TODO @C-Achard proper links -->
+<p>Check our more advanced guides, and consider reading more about models, augmentations and other parameters to further optimize your model and analysis!</p>
 </section>
 </section>
 
@@ -610,15 +619,15 @@ document.write(`
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Neural Network training and evaluation in the GUI</p>
+        <p class="prev-next-title">Neural network training and evaluation in the GUI</p>
       </div>
     </a>
     <a class="right-next"
-       href="../../examples/COLAB/COLAB_DEMO_SuperAnimal.html"
+       href="../gui/napari_GUI.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">DeepLabCut SuperAnimal models</p>
+        <p class="prev-next-title">napari GUI</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -638,10 +647,17 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reviewing-analysis-results">Reviewing Analysis Results</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-a-labeled-video">Creating a Labeled Video</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#viewing-the-labeled-video">Viewing the Labeled Video</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#happy-deeplabcutting">Happy DeepLabCutting!</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analyzing-videos-with-your-trained-model">Analyzing videos with your trained model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-by-step">Step-by-step</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reviewing-analysis-results">Reviewing analysis results</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-labeled-videos">Generating labeled videos</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-labeled-video">Create a labeled video</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#view-the-labeled-video">View the labeled video</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next steps</a></li>
 </ul>
   </nav></div>
 

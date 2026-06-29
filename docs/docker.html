@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>DeepLabCut Docker containers &#8212; DeepLabCut</title>
+    <title>DeepLabCut in Docker &#8212; DeepLabCut</title>
   
   
   
@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=d0fcb2aa" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=9e359f71" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -61,8 +61,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/docker';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="DeepLabCut User Guide (for single animal projects)" href="standardDeepLabCut_UserGuide.html" />
-    <link rel="prev" title="Installation Tips" href="recipes/installTips.html" />
+    <link rel="next" title="DeepLabCut User Guide" href="main-workflows/user-guide.html" />
+    <link rel="prev" title="Installing DeepLabCut" href="installation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -180,103 +180,82 @@
                 </a>
             </li>
         </ul>
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
-
-
-<li class="toctree-l1"><a class="reference internal" href="course.html">DeepLabCut Self-paced Course</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="installation.html">How To Install DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/installTips.html">Installation Tips</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">DeepLabCut Docker containers</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
-
-<li class="toctree-l1"><a class="reference internal" href="Overviewof3D.html">3D DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="gui/PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="gui/napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui/napari/basic_usage.html">napari-DLC - Basic usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui/napari/advanced_usage.html">napari-DLC - Advanced features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="installation.html">Installing DeepLabCut</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">DeepLabCut in Docker</a></li>
 </ul>
 </details></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main workflows overview</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="main-workflows/user-guide.html">DeepLabCut User Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="quick-start/single_animal_quick_guide.html">Single-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-start/tutorial_maDLC.html">Multi-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main-workflows/multi-animal-tracking.html">Multi-animal tracking</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="quick-start/single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick-start/tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="Overviewof3D.html">3D DeepLabCut</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Beginner's Guide to DeepLabCut</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">GUI workflow</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="beginner-guides/beginners-guide.html">Using DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-guides/manage-project.html">Setting up what keypoints to track</a></li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-guides/labeling.html">Labeling GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-guides/Training-Evaluation.html">Neural Network training and evaluation in the GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-guides/video-analysis.html">Video Analysis with DeepLabCut</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="gui/PROJECT_GUI.html">Project Manager GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="beginner-guides/beginners-guide.html">Setting up a new project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-guides/manage-project.html">Editing and working with the configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-guides/Training-Evaluation.html">Neural network training and evaluation in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-guides/video-analysis.html">Video analysis in the GUI</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Main Demo Notebooks</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="gui/napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/napari/basic_usage.html">Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui/napari/advanced_usage.html">Advanced features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui/napari/tracking/basic_usage.html">Automated annotation with point tracking</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Notebooks For Your Data</span></p>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Notebooks &amp; Demos</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="notebooks/your_data.html">Notebooks for your data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
 
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Special Feature Demos</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
-
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="notebooks/main_demos.html">Demo notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/post.html">Some data processing recipes!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="notebooks/extra.html">Additional features notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
 
-
-<li class="toctree-l1"><a class="reference internal" href="recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
-
-
-
-<li class="toctree-l1"><a class="reference internal" href="recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
+</details></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut 3.0 - PyTorch guides</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="pytorch/index.html">PyTorch backend guides</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pytorch/user_guide.html">What is new in DeepLabCut 3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pytorch/pytorch_config.html">Configuration file reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pytorch/architectures.html">Model architectures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pytorch/Benchmarking_shuffle_guide.html">Benchmarking user guide</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced, Performance &amp; Live</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="ModelZoo.html">The DeepLabCut Model Zoo!</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1"><a class="reference internal" href="dlc-live/deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="dlc-live/dlc-live-gui/index.html">DeepLabCut-live-GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="dlc-live/dlc-live-gui/quickstart/install.html">Installation</a></li>
@@ -295,26 +274,43 @@
 </details></li>
 </ul>
 </details></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🦄 DeepLabCut Model Zoo</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmarking</span></p>
-<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="benchmark.html">DeepLabCut benchmark</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pytorch/Benchmarking_shuffle_guide.html">DeepLabCut Benchmarking - User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/TechHardware.html">Technical &amp; hardware considerations</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Additional guides (Recipes)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="recipes/index.html">The DeepLabCut Cookbook</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="dlc-utils/index.html">DeepLabCut-Utils - Community contributions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="dlc-utils/XROMM/usage.html">XROMM + DeepLabCut local integration</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Project &amp; Community</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="roadmap.html">A development roadmap for DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Governance.html">Governance Model of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING.html">Contributing to DeepLabCut</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Citations for DeepLabCut</span></p>
-<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="citation.html">How to Cite DeepLabCut</a></li>
 </ul>
 
@@ -501,7 +497,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>DeepLabCut Docker containers</h1>
+    <h1>DeepLabCut in Docker</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -511,9 +507,13 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-images">Available images</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-modes">Usage modes</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#terminal-mode">Terminal mode</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jupyter-notebook-mode">Jupyter Notebook mode</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jupyter-notebook-mode">Jupyter Notebook mode</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jupyter-notebooks-on-remote-servers">Jupyter Notebooks on remote servers</a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-usage">Advanced usage</a></li>
 </ul>
 </li>
@@ -530,44 +530,88 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-docker-containers">
-<span id="docker-containers"></span><h1>DeepLabCut Docker containers<a class="headerlink" href="#deeplabcut-docker-containers" title="Link to this heading">#</a></h1>
-<p>For DeepLabCut 2.2.0.2 and onwards, we provide container containers on <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a>. Using Docker is an alternative approach
-to using DeepLabCut, which only requires the user to install <a class="reference external" href="https://www.docker.com/">Docker</a> on your machine, vs. following the step-by-step installation
-guide for a Anaconda setup. All dependencies needed to run DeepLabCut in the terminal or
-running Jupyter notebooks with DeepLabCut pre-installed are shipped with the provided
-Docker images.</p>
-<p>The <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/gui/napari_GUI.html"><code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code> labelling GUI</a> can be used to label
-your data, but it cannot be run in a Docker container: it should be installed as
-documented in the link above: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">napari-deeplabcut</span></code> (checkout the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/gui/napari_GUI.html#workflow">workflow</a> as well!).</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-in-docker">
+<span id="docker-containers"></span><h1>DeepLabCut in Docker<a class="headerlink" href="#deeplabcut-in-docker" title="Link to this heading">#</a></h1>
+<p>From DeepLabCut 2.2.0.2 onward, we provide container images on <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a>.
+Using Docker is an alternative approach to installing DeepLabCut in a local conda or pip environment: the images bundle all dependencies needed to run DeepLabCut in a reproducible, self-contained environment.
+In a Docker container, DeepLabCut can be used from the terminal, or with Jupyter notebooks; the DeepLabCut GUI is not supported.
+The approach requires a local installation of <a class="reference external" href="https://www.docker.com/">Docker / Docker Desktop</a>, and is meant for users who need strict reproducibility, an isolated environment, or server-based automation.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The napari-deeplabcut plugin <strong>cannot be run in a Docker container</strong>.
+To label your data, please <a class="reference internal" href="gui/napari_GUI.html#file-napari-gui-landing"><span class="std std-ref">install napari-deeplabcut</span></a> in a local, non-dockerized environment, e.g. using pip: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">napari-deeplabcut</span></code> .</p>
+</div>
 <p>Advanced users can directly head to <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a> and use the provided images there. To get started with using the images, we however also provide a helper tool, <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code>, which makes the transition to docker images particularly convenient; to install the tool, run</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>deeplabcut-docker
 </pre></div>
 </div>
-<p>on your machine (potentially in a virtual environment, or an existing Anaconda environment).
-Note that this will <em>not</em> disprupt or install Tensorflow, or any other DeepLabCut dependencies on your computer—the Docker containers are completely isolated from your existing software installation!</p>
+<p>on your machine (in any environment). <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code> is just a lightweight package for setting up the Docker environment and it will <em>not</em> disrupt your existing software installation. The Docker container itself is completely isolated from your local environment!</p>
+<section id="available-images">
+<h2>Available images<a class="headerlink" href="#available-images" title="Link to this heading">#</a></h2>
+<p>The following images are published to <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a>. All images come with Python 3.11 and CUDA pre-installed.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tag</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">deeplabcut/deeplabcut:latest</span></code></p></td>
+<td><p>Default runtime image for terminal use</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">deeplabcut/deeplabcut:latest-jupyter</span></code></p></td>
+<td><p>Jupyter Notebook server</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">deeplabcut/deeplabcut:&lt;VERSION&gt;-core-cuda&lt;CUDA&gt;</span></code></p></td>
+<td><p>Versioned runtime image</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">deeplabcut/deeplabcut:&lt;VERSION&gt;-jupyter-cuda&lt;CUDA&gt;</span></code></p></td>
+<td><p>Versioned Jupyter image</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>By default <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code> pulls the <code class="docutils literal notranslate"><span class="pre">latest</span></code> / <code class="docutils literal notranslate"><span class="pre">latest-jupyter</span></code> tag. To select a specific DeepLabCut or CUDA version, set the <code class="docutils literal notranslate"><span class="pre">DLC_VERSION</span></code> and <code class="docutils literal notranslate"><span class="pre">CUDA_VERSION</span></code> environment variables:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DLC_VERSION</span><span class="o">=</span><span class="m">3</span>.0.0<span class="w"> </span><span class="nv">CUDA_VERSION</span><span class="o">=</span><span class="m">12</span>.4<span class="w"> </span>deeplabcut-docker<span class="w"> </span>bash<span class="w"> </span>--gpus<span class="w"> </span>all
+</pre></div>
+</div>
+<p>To use a completely custom image instead of the default tags, pass <code class="docutils literal notranslate"><span class="pre">--image</span> <span class="pre">repo:tag</span></code>. Make sure the image supports Jupyter notebooks when using <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span> <span class="pre">notebook</span></code>.</p>
+</section>
 <section id="usage-modes">
 <h2>Usage modes<a class="headerlink" href="#usage-modes" title="Link to this heading">#</a></h2>
-<p>With <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code>, you can use the images in two modes.</p>
-<ul class="simple">
-<li><p><em>Note 1: When running any of the following commands first, it can take some time to complete (a few minutes, depending on your internet connection), since it downloads the Docker image in the background. If you do not see any errors in your terminal, assume that everything is working fine! Subsequent runs of the command will be faster.</em></p></li>
-<li><p><em>Note 2: The labelling GUI cannot be used through the Docker images. However, you can install <a class="reference external" href="https://github.com/DeepLabCut/napari-deeplabcut/tree/main?tab=readme-ov-file#napari-deeplabcut-keypoint-annotation-for-pose-estimation"><code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code></a> in a conda environment to do the labelling!</em></p></li>
-<li><p><em>Note 3: For any mode below, you might want to set which directory is the base, namely, so you can have read/write (or read-only access). Here is how to do so:
-If you want to mount the whole directory could e.g., pass</em></p></li>
-</ul>
-<p><code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span> <span class="pre">bash</span> <span class="pre">-v</span> <span class="pre">/home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT</span></code></p>
-<p>(which will mount the full directory into the container in read/write mode)</p>
-<p>If read-only access is enough, <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span> <span class="pre">bash</span> <span class="pre">-v</span> <span class="pre">/home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT:ro</span></code></p>
+<p>With <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code>, you can use the images in two modes: terminal mode and Jupyter Notebook mode.</p>
+<!-- - *Note 2: The labelling GUI cannot be used through the Docker images. However, you can install [`napari-deeplabcut`](https://github.com/DeepLabCut/napari-deeplabcut/tree/main?tab=readme-ov-file#napari-deeplabcut-keypoint-annotation-for-pose-estimation) in a conda environment to do the labelling!* -->
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When running any of the following commands first, it can take some time to complete (a few minutes, depending on your internet connection), since it downloads the Docker image in the background. If you do not see any errors in your terminal, assume that everything is working fine! Subsequent runs of the command will be faster.</p>
+</div>
+<div class="tip dropdown admonition">
+<p class="admonition-title">Choosing which directory to mount in the container</p>
+<p>For any mode below, you might want to set which directory is the base, so you can
+have read/write or read-only access.</p>
+<p>If you want to mount the whole directory, you could e.g. pass:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>deeplabcut-docker<span class="w"> </span>bash<span class="w"> </span>-v<span class="w"> </span>/home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT
+</pre></div>
+</div>
+<p>This will mount the full directory into the container in read/write mode.</p>
+<p>If read-only access is enough:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>deeplabcut-docker<span class="w"> </span>bash<span class="w"> </span>-v<span class="w"> </span>/home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT:ro
+</pre></div>
+</div>
+</div>
 <section id="terminal-mode">
 <h3>Terminal mode<a class="headerlink" href="#terminal-mode" title="Link to this heading">#</a></h3>
 <p>You can run the light version of DeepLabCut and open a terminal by running</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>deeplabcut-docker<span class="w"> </span>bash
 </pre></div>
 </div>
-<p><strong>Important:</strong> if have GPUs on your machine and want to use them to train models, you
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>If you have GPUs on your machine and want to use them to train models, you
 need to pass the <code class="docutils literal notranslate"><span class="pre">--gpus</span> <span class="pre">all</span></code> argument to <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>deeplabcut-docker<span class="w"> </span>bash<span class="w"> </span>--gpus<span class="w"> </span>all
 </pre></div>
+</div>
 </div>
 <p>Inside the terminal, you can confirm that DeepLabCut is correctly installed by running and noting which version installs.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>ipython
@@ -582,34 +626,64 @@ need to pass the <code class="docutils literal notranslate"><span class="pre">--
 </pre></div>
 </div>
 <p>which will start a Jupyter notebook server. Follow the terminal instructions to open the notebook, by entering <code class="docutils literal notranslate"><span class="pre">http://127.0.0.1:8888</span></code> in your favorite browser. When prompted for a password, use <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code>, which is the pre-set option in the container.</p>
-<p>The DeepLabCut version in this container is equivalent to the one you install with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">deeplabcut[gui]</span></code>. This means that you can start the DeepLabCut GUI with the appropriate commands in your notebook!</p>
+<p>The container comes with <code class="docutils literal notranslate"><span class="pre">deeplabcut[modelzoo,wandb]</span></code> pre-installed. Note that the DeepLabCut GUI is not available inside the container.</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>The Jupyter image uses a fixed default access token (<code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code>) that is publicly known.</p>
+<p><strong>Anyone who can reach port 8888 on your machine can execute arbitrary code in the container.</strong></p>
+<p>Do not expose port 8888 to the internet (e.g. via a cloud VM’s firewall or a public <code class="docutils literal notranslate"><span class="pre">0.0.0.0</span></code>
+binding without a reverse proxy).
+For local use, bind the port to localhost only (e.g. <code class="docutils literal notranslate"><span class="pre">-p</span> <span class="pre">127.0.0.1:8888:8888</span></code>) and use SSH
+port forwarding to access the server remotely (see below).
+To use a custom token, pass <code class="docutils literal notranslate"><span class="pre">-e</span> <span class="pre">NOTEBOOK_TOKEN=&lt;your-token&gt;</span></code> to <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span></code>. You can pass an empty string to disable token-authentication: <code class="docutils literal notranslate"><span class="pre">-e</span> <span class="pre">NOTEBOOK_TOKEN=</span></code>.</p>
+</div>
+<section id="jupyter-notebooks-on-remote-servers">
+<h4>Jupyter Notebooks on remote servers<a class="headerlink" href="#jupyter-notebooks-on-remote-servers" title="Link to this heading">#</a></h4>
+<p>Sometimes you want to run Jupyter Notebooks on a remote server and connect from your local
+browser. This requires SSH port forwarding. For general guidance see
+<a class="reference external" href="https://stackoverflow.com/a/69244262">this StackOverflow post</a> or the
+<a class="reference external" href="https://jupyter-notebook.readthedocs.io/en/4.x/public_server.html">Jupyter Notebook docs</a>.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code> and <code class="docutils literal notranslate"><span class="pre">DLC_NOTEBOOK_PORT</span></code>, this is straightforward:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example: remote port XXXX=8889, local port YYYY=8890</span>
+
+<span class="c1"># 1. Connect to your server with port forwarding</span>
+ssh<span class="w"> </span>-L<span class="w"> </span>localhost:8890:localhost:8889<span class="w"> </span>you@your-server
+
+<span class="c1"># 2. On the remote server, launch the container</span>
+<span class="nv">DLC_NOTEBOOK_PORT</span><span class="o">=</span><span class="m">8889</span><span class="w"> </span>deeplabcut-docker<span class="w"> </span>notebook<span class="w"> </span>--gpus<span class="w"> </span>all
+
+<span class="c1"># 3. Open http://127.0.0.1:8890 in your local browser</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="advanced-usage">
 <h3>Advanced usage<a class="headerlink" href="#advanced-usage" title="Link to this heading">#</a></h3>
-<p>Advanced users and developers can visit the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/main/docker"><code class="docutils literal notranslate"><span class="pre">/docker</span></code> subdirectory</a> in the DeepLabCut codebase on Github. We provide Dockerfiles for all images, along with build instructions there.</p>
+<p>Advanced users and developers can visit the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/main/docker"><code class="docutils literal notranslate"><span class="pre">/docker</span></code> subdirectory</a> in the DeepLabCut codebase on GitHub.
+It contains a single multi-stage Dockerfile covering all images, along with build instructions.</p>
 </section>
 </section>
 <section id="prerequisites-if-you-don-t-have-docker-installed-already">
 <h2>Prerequisites (if you don’t have Docker installed already)<a class="headerlink" href="#prerequisites-if-you-don-t-have-docker-installed-already" title="Link to this heading">#</a></h2>
 <p><strong>(1)</strong> Install Docker. See <a class="reference external" href="https://docs.docker.com/install/">https://docs.docker.com/install/</a> &amp; for Ubuntu: <a class="reference external" href="https://docs.docker.com/install/linux/docker-ce/ubuntu/">https://docs.docker.com/install/linux/docker-ce/ubuntu/</a>
 Test docker:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ sudo docker run hello-world
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo docker run hello-world
 </pre></div>
 </div>
 <p>The output should be: <code class="docutils literal notranslate"><span class="pre">Hello</span> <span class="pre">from</span> <span class="pre">Docker!</span> <span class="pre">This</span> <span class="pre">message</span> <span class="pre">shows</span> <span class="pre">that</span> <span class="pre">your</span> <span class="pre">installation</span> <span class="pre">appears</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">working</span> <span class="pre">correctly.</span></code></p>
 <p>*if you get the error <code class="docutils literal notranslate"><span class="pre">docker:</span> <span class="pre">Error</span> <span class="pre">response</span> <span class="pre">from</span> <span class="pre">daemon:</span> <span class="pre">Unknown</span> <span class="pre">runtime</span> <span class="pre">specified</span> <span class="pre">nvidia.</span></code> just simply restart docker:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>   $ sudo systemctl daemon-reload
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>   $ sudo systemctl daemon-reload
    $ sudo systemctl restart docker
 </pre></div>
 </div>
 <p><strong>(2)</strong> Add your user to the docker group (<a class="reference external" href="https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user">https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user</a>)
-Quick guide  to create the docker group and add your user:
+Quick guide to create the docker group and add your user:
 Create the docker group.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ sudo groupadd docker
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo groupadd docker
 </pre></div>
 </div>
 <p>Add your user to the docker group.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ sudo usermod -aG docker $USER
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo usermod -aG docker $USER
 </pre></div>
 </div>
 <p>(perhaps restart your computer (best) or (at min) open a new terminal to make sure that you are added from now on)</p>
@@ -618,7 +692,7 @@ Create the docker group.</p>
 <h2>Notes and troubleshooting<a class="headerlink" href="#notes-and-troubleshooting" title="Link to this heading">#</a></h2>
 <p>We dropped GUI support in 2.3.5+ due to too many numerous issues supporting them. Also please note these are tested on unix systems.</p>
 <p>When running containers on Linux, in some systems it might be necessary to run <code class="docutils literal notranslate"><span class="pre">host</span> <span class="pre">+local:docker</span></code> before starting the image via <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code>.</p>
-<p>If you encounter errors while using the images, please open an issue in the DeepLabCut repo—especially the <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code> is still in its alpha version, and we appreciate user feedback to make the tool robust to use across many operating systems!</p>
+<p>If you encounter errors while using the images, please open an issue in the DeepLabCut repo. We appreciate user feedback to make the tool robust across many operating systems!</p>
 </section>
 </section>
 
@@ -653,20 +727,20 @@ Create the docker group.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="recipes/installTips.html"
+       href="installation.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Installation Tips</p>
+        <p class="prev-next-title">Installing DeepLabCut</p>
       </div>
     </a>
     <a class="right-next"
-       href="standardDeepLabCut_UserGuide.html"
+       href="main-workflows/user-guide.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">DeepLabCut User Guide (for single animal projects)</p>
+        <p class="prev-next-title">DeepLabCut User Guide</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -686,9 +760,13 @@ Create the docker group.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-images">Available images</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-modes">Usage modes</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#terminal-mode">Terminal mode</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jupyter-notebook-mode">Jupyter Notebook mode</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jupyter-notebook-mode">Jupyter Notebook mode</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#jupyter-notebooks-on-remote-servers">Jupyter Notebooks on remote servers</a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-usage">Advanced usage</a></li>
 </ul>
 </li>

@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=d0fcb2aa" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=9e359f71" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -61,7 +61,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/UseOverviewGuide';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="DeepLabCut Self-paced Course" href="course.html" />
+    <link rel="next" title="Installing DeepLabCut" href="installation.html" />
     <link rel="prev" title="Welcome! 👋" href="../README.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -180,103 +180,82 @@
                 </a>
             </li>
         </ul>
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">🥳 Get started with DeepLabCut: our key recommendations</a></li>
-
-
-<li class="toctree-l1"><a class="reference internal" href="course.html">DeepLabCut Self-paced Course</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="installation.html">How To Install DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/installTips.html">Installation Tips</a></li>
-<li class="toctree-l1"><a class="reference internal" href="docker.html">DeepLabCut Docker containers</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
-
-<li class="toctree-l1"><a class="reference internal" href="Overviewof3D.html">3D DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="gui/PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="gui/napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui/napari/basic_usage.html">napari-DLC - Basic usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gui/napari/advanced_usage.html">napari-DLC - Advanced features</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="installation.html">Installing DeepLabCut</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="docker.html">DeepLabCut in Docker</a></li>
 </ul>
 </details></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main workflows overview</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="main-workflows/user-guide.html">DeepLabCut User Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="quick-start/single_animal_quick_guide.html">Single-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-start/tutorial_maDLC.html">Multi-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main-workflows/multi-animal-tracking.html">Multi-animal tracking</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="quick-start/single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quick-start/tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="Overviewof3D.html">3D DeepLabCut</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Beginner's Guide to DeepLabCut</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">GUI workflow</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="beginner-guides/beginners-guide.html">Using DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-guides/manage-project.html">Setting up what keypoints to track</a></li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-guides/labeling.html">Labeling GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-guides/Training-Evaluation.html">Neural Network training and evaluation in the GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="beginner-guides/video-analysis.html">Video Analysis with DeepLabCut</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="gui/PROJECT_GUI.html">Project Manager GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="beginner-guides/beginners-guide.html">Setting up a new project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-guides/manage-project.html">Editing and working with the configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-guides/Training-Evaluation.html">Neural network training and evaluation in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beginner-guides/video-analysis.html">Video analysis in the GUI</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Main Demo Notebooks</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="gui/napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/napari/basic_usage.html">Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui/napari/advanced_usage.html">Advanced features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui/napari/tracking/basic_usage.html">Automated annotation with point tracking</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Notebooks For Your Data</span></p>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Notebooks &amp; Demos</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="notebooks/your_data.html">Notebooks for your data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
 
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Special Feature Demos</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
-
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="notebooks/main_demos.html">Demo notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/post.html">Some data processing recipes!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="notebooks/extra.html">Additional features notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
 
-
-<li class="toctree-l1"><a class="reference internal" href="recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
-
-
-
-<li class="toctree-l1"><a class="reference internal" href="recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
+</details></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut 3.0 - PyTorch guides</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="pytorch/index.html">PyTorch backend guides</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pytorch/user_guide.html">What is new in DeepLabCut 3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pytorch/pytorch_config.html">Configuration file reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pytorch/architectures.html">Model architectures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pytorch/Benchmarking_shuffle_guide.html">Benchmarking user guide</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced, Performance &amp; Live</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="ModelZoo.html">The DeepLabCut Model Zoo!</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1"><a class="reference internal" href="dlc-live/deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="dlc-live/dlc-live-gui/index.html">DeepLabCut-live-GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="dlc-live/dlc-live-gui/quickstart/install.html">Installation</a></li>
@@ -295,26 +274,43 @@
 </details></li>
 </ul>
 </details></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🦄 DeepLabCut Model Zoo</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmarking</span></p>
-<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="benchmark.html">DeepLabCut benchmark</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pytorch/Benchmarking_shuffle_guide.html">DeepLabCut Benchmarking - User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/TechHardware.html">Technical &amp; hardware considerations</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Additional guides (Recipes)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="recipes/index.html">The DeepLabCut Cookbook</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="dlc-utils/index.html">DeepLabCut-Utils - Community contributions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="dlc-utils/XROMM/usage.html">XROMM + DeepLabCut local integration</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Project &amp; Community</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="roadmap.html">A development roadmap for DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Governance.html">Governance Model of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING.html">Contributing to DeepLabCut</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Citations for DeepLabCut</span></p>
-<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="citation.html">How to Cite DeepLabCut</a></li>
 </ul>
 
@@ -511,33 +507,29 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">🥳 Get started with DeepLabCut: our key recommendations</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-install-deeplabcut"><span class="xref myst">How to install DeepLabCut</span></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-we-support">What we support:</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-need-to-get-started">What you need to get started:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-don-t-need-to-get-started">What you DON’T need to get started:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Overview:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overview-of-the-workflow">Overview of the workflow:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-deeplabcut"><span class="xref std std-ref">Installing DeepLabCut</span></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-we-support">What we support</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#main-modes-of-deeplabcut">Main modes of DeepLabCut</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-learning-resources">Additional learning resources</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-need-to-get-started">What you need to get started</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-don-t-need-to-get-started">What you DON’T need to get started</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow-overview">Workflow overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-advice-project-types">Usage advice &amp; project types</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#first-project-single-or-multi-animal">First project: single or multi-animal?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-started-with-multi-animal-ma-deeplabcut">Getting started with multi-animal (ma) DeepLabCut</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#specific-advice-for-using-deeplabcut">Specific Advice for Using DeepLabCut:</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#important-information-on-using-deeplabcut">Important information on using DeepLabCut:</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-information-for-getting-started-with-madeeplabcut">Additional information for getting started with maDeepLabCut:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-scenario-do-you-have"><em>What scenario do you have?</em></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-run-deeplabcut">How to run DeepLabCut</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#option-1-demo-jupyter-notebooks">Option 1: Demo Jupyter notebooks</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#option-2-using-the-project-manager-gui">Option 2: using the Project Manager GUI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#option-3-using-the-terminal">Option 3: using the terminal</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#useful-links">Useful links</a></li>
 </ul>
-</li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#the-options-for-using-deeplabcut">The options for using DeepLabCut:</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-1-demo-notebooks">Option 1: Demo Notebooks:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-2-using-the-project-manager-gui">Option 2: using the Project Manager GUI:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-3-using-the-program-terminal-start-ipython">Option 3: using the program terminal, Start iPython*:</a></li>
-</ul>
-</li>
-</ul>
-
             </nav>
         </div>
     </div>
@@ -553,73 +545,90 @@ document.write(`
 <p>Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our <a class="reference external" href="https://www.nature.com/articles/s41596-019-0176-0">Nature Protocols paper</a>, which is (still) fully relevant to standard DeepLabCut.</p>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
-<p>💡📚 If you are new to Python and DeepLabCut, you might consider checking our <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html">beginner guide</a> once you are ready to jump into using the DeepLabCut App!</p>
+<p>💡📚 If you are new to Python and DeepLabCut, you might consider checking our <a class="reference internal" href="beginner-guides/beginners-guide.html#file-beginners-guide"><span class="std std-ref">beginner guide</span></a> once you are ready to jump into using the DeepLabCut App!</p>
 </div>
-<section id="how-to-install-deeplabcut">
-<h2><a class="reference internal" href="installation.html#how-to-install"><span class="std std-ref">How to install DeepLabCut</span></a><a class="headerlink" href="#how-to-install-deeplabcut" title="Link to this heading">#</a></h2>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
+<p><strong>DeepLabCut</strong> is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> (a text document) file containing various (project) parameters as well as links the data of the project.</p>
+<p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w" width="80%">
+ </p>
+<p align="center">
+ <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560124235138-A9VEZB45SQPD5Z0BDEXA/ke17ZwdGBToddI8pDm48kKsvCFNoOAts8bgs5LXY20UUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZaDohTswVrVk6oKw3G03bTl18OXeDyNJsBjNlGiyPYGo9Ewyd5AI5wx6CleNeBtf/dlc_steps.jpg?format=1000w" width="80%">
+</p>
+</section>
+<section id="installing-deeplabcut">
+<h2><a class="reference internal" href="installation.html#file-how-to-install"><span class="std std-ref">Installing DeepLabCut</span></a><a class="headerlink" href="#installing-deeplabcut" title="Link to this heading">#</a></h2>
 <p>We don’t cover installation in depth on this page, so click on the link above if that is what you are looking for. See below for details on getting started with DeepLabCut!</p>
 </section>
 <section id="what-we-support">
-<h2>What we support:<a class="headerlink" href="#what-we-support" title="Link to this heading">#</a></h2>
+<h2>What we support<a class="headerlink" href="#what-we-support" title="Link to this heading">#</a></h2>
 <p>We are primarily a package that enables deep learning-based pose estimation. We have a lot of models and options, but don’t get overwhelmed – the developer team has tried our best to “set the best defaults we possibly can”!</p>
+<section id="main-modes-of-deeplabcut">
+<h3>Main modes of DeepLabCut<a class="headerlink" href="#main-modes-of-deeplabcut" title="Link to this heading">#</a></h3>
 <ul class="simple">
-<li><p>Decide on your needs: there are <strong>two main modes, standard DeepLabCut or multi-animal DeepLabCut</strong>. We highly recommend carefully considering which one is best for your needs. For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. <strong><a class="reference internal" href="#important-info-regd-usage"><span class="std std-ref">Important Information on how to use DLC in different scenarios (single vs multi animal)</span></a></strong> Then pick a user guide:</p>
+<li><p>Decide on your needs: there are <strong>two main modes, standard DeepLabCut or multi-animal DeepLabCut</strong>.</p>
 <ul>
-<li><p>(1) <a class="reference internal" href="standardDeepLabCut_UserGuide.html#single-animal-userguide"><span class="std std-ref">How to use standard DeepLabCut</span></a></p></li>
-<li><p>(2) <a class="reference internal" href="maDLC_UserGuide.html#multi-animal-userguide"><span class="std std-ref">How to use multi-animal DeepLabCut</span></a></p></li>
+<li><p>We highly recommend carefully considering which one is best for your needs.</p></li>
+<li><p>For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. See <span class="xref std std-ref">important-info-regd-usage</span>.</p></li>
+<li><p>Then pick a user guide:</p>
+<ol class="arabic simple">
+<li><p><span class="xref std std-ref">How to use standard DeepLabCut</span></p></li>
+<li><p><span class="xref std std-ref">How to use multi-animal DeepLabCut</span></p></li>
+</ol>
+</li>
 </ul>
 </li>
-<li><p>To note, as of DLC3+ the single and multi-animal code bases are more integrated and we support <strong>top-down</strong>,  <strong>bottom-up</strong>, and a new “hybrid” approach that is state-of-the-art, called <strong>BUCTD</strong> (bottom-up conditional top down), models.</p>
+<li><p>To note, as of DLC3+ the single and multi-animal code bases are more integrated and we support <strong>top-down</strong>, <strong>bottom-up</strong>, and a new “hybrid” approach that is state-of-the-art, called <strong>BUCTD</strong> (bottom-up conditional top down)</p>
 <ul>
 <li><p>If these terms are new to you, check out our <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0896627320307170">Primer on Motion Capture with Deep Learning!</a>. In brief, both work for single or multiple animals and each method can be better or worse on your data.</p></li>
 </ul>
 </li>
 </ul>
 <p align="center">
-<img src= https://ars.els-cdn.com/content/image/1-s2.0-S0896627320307170-gr5_lrg.jpg?format=1000w width="50%">
+<img src="https://ars.els-cdn.com/content/image/1-s2.0-S0896627320307170-gr5_lrg.jpg?format=1000w" width="50%">
  </p>
 <ul class="simple">
 <li><p>Here is more information on BUCTD:</p></li>
 </ul>
 <p align="center">
-<img src= https://github.com/amathislab/BUCTD/raw/main/media/BUCTD_fig1.png?format=1000w width="50%">
+<img src="https://github.com/amathislab/BUCTD/raw/main/media/BUCTD_fig1.png?format=1000w" width="50%">
  </p>
-<p><strong>Additional Learning Resources:</strong></p>
+</section>
+<section id="additional-learning-resources">
+<h3>Additional learning resources<a class="headerlink" href="#additional-learning-resources" title="Link to this heading">#</a></h3>
 <ul class="simple">
-<li><p><a class="reference external" href="https://www.youtube.com/channel/UC2HEbWpC_1v6i9RnDMy-dfA?view_as=subscriber">TUTORIALS:</a> video tutorials that demonstrate various aspects of using the code base.</p></li>
-<li><p><a class="reference internal" href="#overview"><span class="std std-ref">HOW-TO-GUIDES:</span></a> step-by-step user guidelines for using DeepLabCut on your own datasets (see below)</p></li>
-<li><p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials">EXPLANATIONS:</a> resources on understanding how DeepLabCut works</p></li>
-<li><p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut#references">REFERENCES:</a> read the science behind DeepLabCut</p></li>
-<li><p><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html">BEGINNER GUIDE TO THE GUI</a></p></li>
+<li><p><a class="reference external" href="https://www.youtube.com/channel/UC2HEbWpC_1v6i9RnDMy-dfA?view_as=subscriber">Video tutorials:</a> video tutorials that demonstrate various aspects of using the code base.</p></li>
 </ul>
-<p>Getting Started: <a class="reference external" href="https://www.youtube.com/watch?v=A9qZidI7tL8">a video tutorial on navigating the documentation!</a></p>
-<section id="what-you-need-to-get-started">
-<h3>What you need to get started:<a class="headerlink" href="#what-you-need-to-get-started" title="Link to this heading">#</a></h3>
+<!-- Broken link? Just links to top of this page -->
+<!-- - [HOW-TO-GUIDES:](overview) step-by-step user guidelines for using DeepLabCut on your own datasets (see below) -->
 <ul class="simple">
-<li><p><strong>a set of videos that span the types of behaviors you want to track.</strong> Having 10 videos that include different backgrounds, different individuals, and different postures is MUCH better than 1 or 2 videos of 1 or 2 different individuals (i.e. 10-20 frames from each of 10 videos is <strong>much better</strong> than 50-100 frames from 2 videos).</p></li>
-<li><p><strong>minimally, a computer w/a CPU.</strong> If you want to use DeepLabCut on your own computer for many experiments, then you should get an NVIDIA GPU. See technical specs <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/FAQ">here</a>. You can also use cloud computing resources, including COLAB (<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/README.md">see how</a>).</p></li>
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials">Explanations:</a> resources on understanding how DeepLabCut works</p></li>
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut#references">References:</a> read the science behind DeepLabCut</p></li>
+<li><p><a class="reference internal" href="beginner-guides/beginners-guide.html#file-beginners-guide"><span class="std std-ref">Beginner’s guide to the GUI</span></a>: a step-by-step walkthrough of the GUI for new users.</p></li>
+</ul>
+<!-- Outdated video: uses previous MD files / GitHub Wiki instead of Jupyter Book -->
+<!-- Getting Started: [a video tutorial on navigating the documentation!](https://www.youtube.com/watch?v=A9qZidI7tL8) -->
+</section>
+<section id="what-you-need-to-get-started">
+<h3>What you need to get started<a class="headerlink" href="#what-you-need-to-get-started" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>A set of videos that span the types of behaviors you want to track.</strong> Having 10 videos that include different backgrounds, different individuals, and different postures is MUCH better than 1 or 2 videos of 1 or 2 different individuals (i.e. 10-20 frames from each of 10 videos is <strong>much better</strong> than 50-100 frames from 2 videos).</p></li>
+<li><p><strong>Ideally, a computer with a GPU.</strong> If you want to use DeepLabCut on your own computer for training and/or for many experiments, then you should get an NVIDIA GPU.</p></li>
+<li><p>You can also use cloud computing resources, including COLAB (<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/README.md">see how</a>).</p></li>
 </ul>
 </section>
 <section id="what-you-don-t-need-to-get-started">
-<h3>What you DON’T need to get started:<a class="headerlink" href="#what-you-don-t-need-to-get-started" title="Link to this heading">#</a></h3>
+<h3>What you DON’T need to get started<a class="headerlink" href="#what-you-don-t-need-to-get-started" title="Link to this heading">#</a></h3>
 <ul class="simple">
-<li><p>no specific cameras/videos are required; color, monochrome, etc., is all fine. If you can see what you want to measure, then this will work for you (given enough labeled data).</p></li>
-<li><p>no specific computer is required (but see recommendations above), our software works on Linux, Windows, and MacOS.</p></li>
+<li><p>No specific cameras/videos are required; color, monochrome, etc., is all fine. If you can see what you want to measure, then this will work for you (given enough labeled data).</p></li>
+<li><p>No specific computer is required (but see recommendations above), our software works on Linux, Windows, and MacOS.</p></li>
 </ul>
 </section>
-<section id="id1">
-<h3>Overview:<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
-<p><strong>DeepLabCut</strong> is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> (a text document) file containing various (project) parameters as well as links the data of the project.</p>
-<p align="center">
-<img src=   https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w width="80%">
- </p>
- <p align="center">
- <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560124235138-A9VEZB45SQPD5Z0BDEXA/ke17ZwdGBToddI8pDm48kKsvCFNoOAts8bgs5LXY20UUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZaDohTswVrVk6oKw3G03bTl18OXeDyNJsBjNlGiyPYGo9Ewyd5AI5wx6CleNeBtf/dlc_steps.jpg?format=1000w" width="80%">
-</p>
 </section>
-<section id="overview-of-the-workflow">
-<h3>Overview of the workflow:<a class="headerlink" href="#overview-of-the-workflow" title="Link to this heading">#</a></h3>
-<p>This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function. For detailed function documentation, please refer to the main user guides or API documentation. For additional assistance, you can use the <a class="reference internal" href="#help"><span class="std std-ref">help</span></a> function to better understand what each function does.</p>
+<section id="workflow-overview">
+<h2>Workflow overview<a class="headerlink" href="#workflow-overview" title="Link to this heading">#</a></h2>
+<p>This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function. For detailed function documentation, please refer to the main user guides or API documentation. For additional assistance, you can use the <code class="docutils literal notranslate"><span class="pre">help</span></code> function to better understand what each function does.</p>
 <p align="center">
   <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca272524a69435c3251c40/1556752170424/flowfig.jpg?format=1000w" width=95%>
   <br>
@@ -627,94 +636,143 @@ document.write(`
    <a href="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca272524a69435c3251c40/1556752170424/flowfig.jpg?format=1000w">View in full screen</a>
   </em>
 </p>
-<p>You can have as many projects on your computer as you wish. You can have DeepLabCut installed in an <span class="xref myst">environment</span> and always exit and return to this environment to run the code. You just need to point to the correct <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file to <a class="reference internal" href="#tips-for-daily-use"><span class="std std-ref">jump back in</span></a>! The documentation below will take you through the individual steps.</p>
+<p>You can have as many projects on your computer as you wish.
+You can have DeepLabCut installed in a <a class="reference internal" href="installation.html#sec-conda-build-env"><span class="std std-ref">conda environment</span></a>; once you are finished, exit your terminal, and later re-activate your environment.</p>
+<p>When working on a given project, you just need to point to the correct <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file to resume work; the documentation below will take you through the individual steps.</p>
 <p align="center">
-<img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w" width="60%">
  </p>
 </section>
-</section>
-</section>
-<section class="tex2jax_ignore mathjax_ignore" id="specific-advice-for-using-deeplabcut">
-<span id="important-info-regd-usage"></span><h1>Specific Advice for Using DeepLabCut:<a class="headerlink" href="#specific-advice-for-using-deeplabcut" title="Link to this heading">#</a></h1>
-<section id="important-information-on-using-deeplabcut">
-<h2>Important information on using DeepLabCut:<a class="headerlink" href="#important-information-on-using-deeplabcut" title="Link to this heading">#</a></h2>
-<p>We recommend first using <strong>DeepLabCut for a single animal scenario</strong> to understand the workflow - even if it’s just our demo data. Multi-animal tracking is more complex - i.e. it has several decisions the user needs to make. Then, when you are ready you can jump into multi-animals…</p>
-<section id="additional-information-for-getting-started-with-madeeplabcut">
-<h3>Additional information for getting started with maDeepLabCut:<a class="headerlink" href="#additional-information-for-getting-started-with-madeeplabcut" title="Link to this heading">#</a></h3>
-<p>We highly recommend using it first in the Project Manager GUI (<a class="reference internal" href="#docs/functionDetails.md#deeplabcut-project-manager-gui"><span class="xref myst">Option 3</span></a>). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notebooks, etc.</p>
-</section>
-<section id="what-scenario-do-you-have">
-<h3><em>What scenario do you have?</em><a class="headerlink" href="#what-scenario-do-you-have" title="Link to this heading">#</a></h3>
+<section id="usage-advice-project-types">
+<span id="sec-important-info-regd-usage"></span><h2>Usage advice &amp; project types<a class="headerlink" href="#usage-advice-project-types" title="Link to this heading">#</a></h2>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>We recommend first using <strong>DeepLabCut for a single animal scenario</strong> to understand the workflow - even if it’s just our demo data. Multi-animal tracking is more complex - i.e. it has several decisions the user needs to make. Then, when you are ready you can jump into multi-animal mode.</p>
+</div>
+<section id="first-project-single-or-multi-animal">
+<h3>First project: single or multi-animal?<a class="headerlink" href="#first-project-single-or-multi-animal" title="Link to this heading">#</a></h3>
+<p><em>Which scenario do you have?</em></p>
 <ul class="simple">
 <li><p><strong>I have single animal videos:</strong></p>
 <ul>
-<li><p>quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> (and leave the default flag to False in <code class="docutils literal notranslate"><span class="pre">multianimal=False</span></code>). This is the typical work path for many of you.</p></li>
+<li><p>Quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> (and leave the default flag to False in <code class="docutils literal notranslate"><span class="pre">multianimal=False</span></code>). This is the typical work path for a single animal project.</p></li>
 </ul>
 </li>
 <li><p><strong>I have single animal videos, but I want to use the updated network capabilities introduced for multi-animal projects:</strong></p>
 <ul>
-<li><p>quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> just set the flag <code class="docutils literal notranslate"><span class="pre">multianimal=True</span></code>. This enables you to use maDLC features even though you have only one animal. To note, this is rarely required for single animal projects, and not the recommended path. Some tips for when you might want to use this: this is good for say, a hand or a mouse if you feel the “skeleton” during training would increase performance. DON’T do this for things that could be identified an individual objects. i.e., don’t do whisker 1, whisker 2, whisker 3 as 3 individuals. Each whisker always has a specific spatial location, and by calling them individuals you will do WORSE than in single animal mode.</p></li>
+<li><p>Quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> just set the flag <code class="docutils literal notranslate"><span class="pre">multianimal=True</span></code>.</p>
+<ul>
+<li><p>This enables you to use maDLC features even though you have only one animal. To note, this is rarely required for single animal projects, and not the recommended path.</p></li>
+<li><p>Some tips for when you might want to use this:</p>
+<ul>
+<li><p>This is good for e.g. a hand or a mouse if you feel the “skeleton” during training would increase performance.</p></li>
+<li><p>Do not do this for things that could be identified as an individual objects. i.e., don’t do whisker 1, whisker 2, whisker 3 as 3 individuals.
+Each whisker always has a specific spatial location, and by calling them individuals the network will perform worse than in single animal mode.</p></li>
 </ul>
 </li>
 </ul>
-<p><a class="reference external" href="https://youtu.be/JDsa8R5J0nQ">VIDEO TUTORIAL AVAILABLE!</a></p>
-<ul class="simple">
+</li>
+<li><p><a class="reference external" href="https://youtu.be/JDsa8R5J0nQ">VIDEO TUTORIAL AVAILABLE!</a></p></li>
+</ul>
+</li>
 <li><p><strong>I have multiple <em>identical-looking animals</em> in my videos:</strong></p>
 <ul>
-<li><p>quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> set the flag <code class="docutils literal notranslate"><span class="pre">multianimal=True</span></code>. If you can’t tell them apart, you can assign the “individual” ID to any animal in each frame. See this <a class="reference external" href="https://www.youtube.com/watch?v=_qbEqNKApsI">labeling w/2.2 demo video</a></p></li>
+<li><p>Quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> set the flag <code class="docutils literal notranslate"><span class="pre">multianimal=True</span></code>.</p></li>
+<li><p>If you can’t tell them apart, you can assign the “individual” ID to any animal in each frame. See this <a class="reference external" href="https://www.youtube.com/watch?v=_qbEqNKApsI">labeling w/2.2 demo video</a></p></li>
+<li><p><a class="reference external" href="https://youtu.be/Kp-stcTm77g">VIDEO TUTORIAL AVAILABLE!</a></p></li>
 </ul>
 </li>
-</ul>
-<p><a class="reference external" href="https://youtu.be/Kp-stcTm77g">VIDEO TUTORIAL AVAILABLE!</a></p>
-<ul class="simple">
 <li><p><strong>I have multiple animals, <em>but I can tell them apart,</em> in my videos and want to use DLC2.2:</strong></p>
 <ul>
-<li><p>quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> set the flag <code class="docutils literal notranslate"><span class="pre">multianimal=True</span></code>. And always label the “individual” ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this <a class="reference external" href="https://www.youtube.com/watch?v=_qbEqNKApsI">labeling w/2.2 demo video</a>. Then, you MUST put the following in the config.yaml file: <code class="docutils literal notranslate"><span class="pre">identity:</span> <span class="pre">true</span></code></p></li>
+<li><p>Quick start: when you <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> set the flag <code class="docutils literal notranslate"><span class="pre">multianimal=True</span></code>.</p>
+<ul>
+<li><p>Always label the “individual” ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this <a class="reference external" href="https://www.youtube.com/watch?v=_qbEqNKApsI">labeling w/2.2 demo video</a>.</p></li>
+<li><p>Then, you MUST put the following in the config.yaml file: <code class="docutils literal notranslate"><span class="pre">identity:</span> <span class="pre">true</span></code></p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://youtu.be/Kp-stcTm77g">VIDEO TUTORIAL AVAILABLE!</a></p></li>
 </ul>
 </li>
 </ul>
-<p><a class="reference external" href="https://youtu.be/Kp-stcTm77g">VIDEO TUTORIAL AVAILABLE!</a> - ALSO, if you can tell them apart, label animals them consistently!</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>If you can tell them apart, label your animals consistently!</p>
+</div>
 <ul class="simple">
-<li><p><strong>I have a pre-2.2 single animal project, but I want to use 2.2:</strong></p></li>
+<li><p><strong>I have a pre-2.2 single animal project, but I want to use 2.2:</strong></p>
+<ul>
+<li><p>Please read <a class="reference internal" href="convert_maDLC.html#convert-madlc"><span class="std std-ref">the conversion to maDLC guide</span></a></p></li>
 </ul>
-<p>Please read <a class="reference internal" href="convert_maDLC.html#convert-madlc"><span class="std std-ref">this convert 2 maDLC guide</span></a></p>
+</li>
+</ul>
+</section>
+<section id="getting-started-with-multi-animal-ma-deeplabcut">
+<h3>Getting started with multi-animal (ma) DeepLabCut<a class="headerlink" href="#getting-started-with-multi-animal-ma-deeplabcut" title="Link to this heading">#</a></h3>
+<p>We highly recommend using it first in the <a class="reference internal" href="gui/PROJECT_GUI.html#project-manager-gui"><span class="std std-ref">Project Manager GUI</span></a>.
+This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notebooks, etc.</p>
 </section>
 </section>
-</section>
-<section class="tex2jax_ignore mathjax_ignore" id="the-options-for-using-deeplabcut">
-<h1>The options for using DeepLabCut:<a class="headerlink" href="#the-options-for-using-deeplabcut" title="Link to this heading">#</a></h1>
-<p>Great - now that you get the overall workflow let’s jump in! Here, you have several options.</p>
-<p><a class="reference internal" href="#using-demo-notebooks"><span class="std std-ref"><strong>Option 1</strong></span></a> DEMOs: for a quick introduction to DLC on our data.</p>
-<p><a class="reference internal" href="#using-project-manager-gui"><span class="std std-ref"><strong>Option 2</strong></span></a> Standalone GUI: is the perfect place for
-beginners who want to start using DeepLabCut on your own data.</p>
-<p><a class="reference internal" href="#using-the-terminal"><span class="std std-ref"><strong>Option 3</strong></span></a> In the terminal: is best for more advanced users, as
-with the terminal interface you get the most versatility and options.</p>
-<section id="option-1-demo-notebooks">
-<span id="using-demo-notebooks"></span><h2>Option 1: Demo Notebooks:<a class="headerlink" href="#option-1-demo-notebooks" title="Link to this heading">#</a></h2>
+<section id="how-to-run-deeplabcut">
+<h2>How to run DeepLabCut<a class="headerlink" href="#how-to-run-deeplabcut" title="Link to this heading">#</a></h2>
+<p>There are several options to use DeepLabCut, and we recommend you pick the one that best suits your needs and experience level. You can always switch between them, so don’t worry about picking the “wrong” one.</p>
+<ul class="simple">
+<li><p><strong>Option 1</strong>: <a class="reference internal" href="#using-demo-notebooks"><span class="std std-ref">Demo notebooks</span></a>: for a quick introduction to DLC on our data.</p></li>
+<li><p><strong>Option 2</strong>: <a class="reference internal" href="#using-project-manager-gui"><span class="std std-ref">Standalone GUI</span></a>: is the perfect place for
+beginners who want to start using DeepLabCut on your own data.</p></li>
+<li><p><strong>Option 3</strong>: <a class="reference internal" href="#using-the-terminal"><span class="std std-ref">In the terminal</span></a>: is best for more advanced users, as
+with the terminal interface you get the most versatility and options.</p></li>
+</ul>
+<section id="option-1-demo-jupyter-notebooks">
+<span id="using-demo-notebooks"></span><h3>Option 1: Demo Jupyter notebooks<a class="headerlink" href="#option-1-demo-jupyter-notebooks" title="Link to this heading">#</a></h3>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=DRT-Cq2vdWs">VIDEO TUTORIAL AVAILABLE!</a></p>
 <p>We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
-own dataset. See all the demo’s <span class="xref myst">here!</span> Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it’s possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.</p>
+own dataset. See all the demo’s <span class="xref myst">here!</span>
+Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it’s possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.</p>
 </section>
 <section id="option-2-using-the-project-manager-gui">
-<span id="using-project-manager-gui"></span><h2>Option 2: using the Project Manager GUI:<a class="headerlink" href="#option-2-using-the-project-manager-gui" title="Link to this heading">#</a></h2>
+<span id="using-project-manager-gui"></span><h3>Option 2: using the Project Manager GUI<a class="headerlink" href="#option-2-using-the-project-manager-gui" title="Link to this heading">#</a></h3>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=KcXogR-p5Ak">VIDEO TUTORIAL!</a></p>
 <p><a class="reference external" href="https://youtu.be/Kp-stcTm77g">VIDEO TUTORIAL#2!</a></p>
-<p>Start Python by typing <code class="docutils literal notranslate"><span class="pre">ipython</span></code> or <code class="docutils literal notranslate"><span class="pre">python</span></code> in the terminal (note: using pythonw for Mac users was depreciated in 2022).
-If you are using DeepLabCut on the cloud, you cannot use the GUIs. If you use Windows, please always open the terminal with administrator privileges. Please read more in our Nature Protocols paper <a class="reference external" href="https://www.nature.com/articles/s41596-019-0176-0">here</a>. And, see our <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips">troubleshooting wiki</a>.</p>
+<!-- Start Python by typing ``ipython`` or ``python`` in the terminal  -->
+<!-- (note: using pythonw for Mac users was depreciated in 2022). -->
+<p>If you are using DeepLabCut on the cloud, you cannot use the GUIs.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>On <strong>Windows</strong>: Open the terminal/cmd/anaconda prompt as <strong>Administrator</strong> (right click and select “Run as administrator”) to avoid permission issues during usage when downloading models, and for symlink support when videos are not copied into the project folder.
+Admin mode is not required for installation.</p>
+</div>
 <p>Simply open the terminal and type:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">deeplabcut</span>
 </pre></div>
 </div>
 <p>That’s it! Follow the GUI for details</p>
 </section>
-<section id="option-3-using-the-program-terminal-start-ipython">
-<span id="using-the-terminal"></span><h2>Option 3: using the program terminal, Start iPython*:<a class="headerlink" href="#option-3-using-the-program-terminal-start-ipython" title="Link to this heading">#</a></h2>
+<section id="option-3-using-the-terminal">
+<span id="using-the-terminal"></span><h3>Option 3: using the terminal<a class="headerlink" href="#option-3-using-the-terminal" title="Link to this heading">#</a></h3>
+<ol class="arabic">
+<li><p>Start iPython:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ipython
+</pre></div>
+</div>
+</li>
+<li><p>Import DeepLabCut:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
+</pre></div>
+</div>
+</li>
+<li><p>Follow the instructions in the user guides for either standard or multi-animal DeepLabCut (see below).</p></li>
+</ol>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=7xwOhUcIGio">VIDEO TUTORIAL AVAILABLE!</a></p>
-<p>Please decide with mode you want to use DeepLabCut, and follow one of the following:</p>
+<p>Please decide which mode you want to use DeepLabCut with, and follow one of:</p>
 <ul class="simple">
-<li><p>(1) <a class="reference internal" href="standardDeepLabCut_UserGuide.html#single-animal-userguide"><span class="std std-ref">How to use standard DeepLabCut</span></a></p></li>
-<li><p>(2) <a class="reference internal" href="maDLC_UserGuide.html#multi-animal-userguide"><span class="std std-ref">How to use multi-animal DeepLabCut</span></a></p></li>
+<li><p>(1) <span class="xref std std-ref">How to use standard DeepLabCut</span></p></li>
+<li><p>(2) <span class="xref std std-ref">How to use multi-animal DeepLabCut</span></p></li>
 </ul>
+</section>
+</section>
+<section id="useful-links">
+<h2>Useful links<a class="headerlink" href="#useful-links" title="Link to this heading">#</a></h2>
+<p>Please read more in our Nature Protocols paper <a class="reference external" href="https://www.nature.com/articles/s41596-019-0176-0">here</a>.</p>
 </section>
 </section>
 
@@ -758,11 +816,11 @@ If you are using DeepLabCut on the cloud, you cannot use the GUIs. If you use Wi
       </div>
     </a>
     <a class="right-next"
-       href="course.html"
+       href="installation.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">DeepLabCut Self-paced Course</p>
+        <p class="prev-next-title">Installing DeepLabCut</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -782,33 +840,29 @@ If you are using DeepLabCut on the cloud, you cannot use the GUIs. If you use Wi
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">🥳 Get started with DeepLabCut: our key recommendations</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-install-deeplabcut"><span class="xref myst">How to install DeepLabCut</span></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-we-support">What we support:</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-need-to-get-started">What you need to get started:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-don-t-need-to-get-started">What you DON’T need to get started:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Overview:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overview-of-the-workflow">Overview of the workflow:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-deeplabcut"><span class="xref std std-ref">Installing DeepLabCut</span></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-we-support">What we support</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#main-modes-of-deeplabcut">Main modes of DeepLabCut</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-learning-resources">Additional learning resources</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-need-to-get-started">What you need to get started</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-don-t-need-to-get-started">What you DON’T need to get started</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow-overview">Workflow overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-advice-project-types">Usage advice &amp; project types</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#first-project-single-or-multi-animal">First project: single or multi-animal?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-started-with-multi-animal-ma-deeplabcut">Getting started with multi-animal (ma) DeepLabCut</a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#specific-advice-for-using-deeplabcut">Specific Advice for Using DeepLabCut:</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#important-information-on-using-deeplabcut">Important information on using DeepLabCut:</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-information-for-getting-started-with-madeeplabcut">Additional information for getting started with maDeepLabCut:</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-scenario-do-you-have"><em>What scenario do you have?</em></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-run-deeplabcut">How to run DeepLabCut</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#option-1-demo-jupyter-notebooks">Option 1: Demo Jupyter notebooks</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#option-2-using-the-project-manager-gui">Option 2: using the Project Manager GUI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#option-3-using-the-terminal">Option 3: using the terminal</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#useful-links">Useful links</a></li>
 </ul>
-</li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#the-options-for-using-deeplabcut">The options for using DeepLabCut:</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-1-demo-notebooks">Option 1: Demo Notebooks:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-2-using-the-project-manager-gui">Option 2: using the Project Manager GUI:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-3-using-the-program-terminal-start-ipython">Option 3: using the program terminal, Start iPython*:</a></li>
-</ul>
-</li>
-</ul>
-
   </nav></div>
 
 </div></div>

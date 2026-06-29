@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Interactive Project Manager GUI &#8212; DeepLabCut</title>
+    <title>Project Manager GUI &#8212; DeepLabCut</title>
   
   
   
@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=d0fcb2aa" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=9e359f71" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -61,8 +61,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/gui/PROJECT_GUI';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="napari GUI" href="napari_GUI.html" />
-    <link rel="prev" title="Helper &amp; Advanced Optional Function Documentation" href="../HelperFunctions.html" />
+    <link rel="next" title="Setting up a new project" href="../beginner-guides/beginners-guide.html" />
+    <link rel="prev" title="3D DeepLabCut" href="../Overviewof3D.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -180,103 +180,82 @@
                 </a>
             </li>
         </ul>
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
-
-
-<li class="toctree-l1"><a class="reference internal" href="../course.html">DeepLabCut Self-paced Course</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">How To Install DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/installTips.html">Installation Tips</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../docker.html">DeepLabCut Docker containers</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
-
-<li class="toctree-l1"><a class="reference internal" href="../Overviewof3D.html">3D DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
-<ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Interactive Project Manager GUI</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="napari/basic_usage.html">napari-DLC - Basic usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="napari/advanced_usage.html">napari-DLC - Advanced features</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../installation.html">Installing DeepLabCut</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../docker.html">DeepLabCut in Docker</a></li>
 </ul>
 </details></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main workflows overview</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../main-workflows/user-guide.html">DeepLabCut User Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start/single_animal_quick_guide.html">Single-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start/tutorial_maDLC.html">Multi-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../main-workflows/multi-animal-tracking.html">Multi-animal tracking</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../quick-start/single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quick-start/tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overviewof3D.html">3D DeepLabCut</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Beginner's Guide to DeepLabCut</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../beginner-guides/beginners-guide.html">Using DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner-guides/manage-project.html">Setting up what keypoints to track</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner-guides/labeling.html">Labeling GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner-guides/Training-Evaluation.html">Neural Network training and evaluation in the GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner-guides/video-analysis.html">Video Analysis with DeepLabCut</a></li>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">GUI workflow</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Project Manager GUI</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/beginners-guide.html">Setting up a new project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/manage-project.html">Editing and working with the configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/Training-Evaluation.html">Neural network training and evaluation in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/video-analysis.html">Video analysis in the GUI</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Main Demo Notebooks</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="napari/basic_usage.html">Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="napari/advanced_usage.html">Advanced features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="napari/tracking/basic_usage.html">Automated annotation with point tracking</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Notebooks For Your Data</span></p>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Notebooks &amp; Demos</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks/your_data.html">Notebooks for your data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
 
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Special Feature Demos</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
-
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks/main_demos.html">Demo notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/post.html">Some data processing recipes!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks/extra.html">Additional features notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
 
-
-<li class="toctree-l1"><a class="reference internal" href="../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
-
-
-
-<li class="toctree-l1"><a class="reference internal" href="../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
+</details></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut 3.0 - PyTorch guides</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pytorch/index.html">PyTorch backend guides</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/user_guide.html">What is new in DeepLabCut 3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/pytorch_config.html">Configuration file reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/architectures.html">Model architectures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/Benchmarking_shuffle_guide.html">Benchmarking user guide</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced, Performance &amp; Live</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1"><a class="reference internal" href="../dlc-live/deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/index.html">DeepLabCut-live-GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/quickstart/install.html">Installation</a></li>
@@ -295,26 +274,43 @@
 </details></li>
 </ul>
 </details></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">🦄 DeepLabCut Model Zoo</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmarking</span></p>
-<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../benchmark.html">DeepLabCut benchmark</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch/Benchmarking_shuffle_guide.html">DeepLabCut Benchmarking - User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/TechHardware.html">Technical &amp; hardware considerations</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Additional guides (Recipes)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../recipes/index.html">The DeepLabCut Cookbook</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../dlc-utils/index.html">DeepLabCut-Utils - Community contributions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-utils/XROMM/usage.html">XROMM + DeepLabCut local integration</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Project &amp; Community</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../roadmap.html">A development roadmap for DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Governance.html">Governance Model of DeepLabCut</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING.html">Contributing to DeepLabCut</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Citations for DeepLabCut</span></p>
-<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../citation.html">How to Cite DeepLabCut</a></li>
 </ul>
 
@@ -501,7 +497,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Interactive Project Manager GUI</h1>
+    <h1>Project Manager GUI</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -511,13 +507,15 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#get-started">Get Started:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#video-demos-how-to-launch-and-run-the-project-manager-gui">Video Demos: How to launch and run the Project Manager GUI:</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects">Using the Project Manager GUI with the latest DLC code (single animals, plus objects): ⬇️</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects">Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects):</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-started">Getting started</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#user-guide">User guide</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#video-demos">Video demos</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-launch-and-run-the-project-manager-gui">How to launch and run the Project Manager GUI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects">Using the Project Manager GUI with the latest DLC code (single animals, plus objects)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects">Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines">How to benchmark your data with the new networks and data augmentation pipelines</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#video-demo-how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines">VIDEO DEMO: How to benchmark your data with the new networks and data augmentation pipelines:</a></li>
 </ul>
             </nav>
         </div>
@@ -529,50 +527,68 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="interactive-project-manager-gui">
-<span id="project-manager-gui"></span><h1>Interactive Project Manager GUI<a class="headerlink" href="#interactive-project-manager-gui" title="Link to this heading">#</a></h1>
-<p>As some users may be more comfortable working with an interactive interface, we wanted to provide an easy-entry point to the software. All the main functionality is available in an  easy-to-deploy GUI interface. Thus, while the many advanced features are not fully available in this Project GUI, we hope this gets more users up-and-running quickly.</p>
-<p><strong>Release notes:</strong> As of DeepLabCut 2.1+ now provide a full front-end user experience for DeepLabCut, and as of 2.3+ we changed the GUI from wxPython to PySide6 with napari support.</p>
-<section id="get-started">
-<h2>Get Started:<a class="headerlink" href="#get-started" title="Link to this heading">#</a></h2>
-<p>(1) Install DeepLabCut using the simple-install with Anaconda found <a class="reference internal" href="../installation.html#how-to-install"><span class="std std-ref">here!</span></a>*.
-Now you have DeepLabCut installed, but if you want to update it, either follow the prompt in the GUI which will ask you to upgrade when a new version is available, or just go into your env (activate DEEPLABCUT) then run:</p>
-<p><code class="docutils literal notranslate"> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'deeplabcut[gui,modelzoo]'</span></code> *but please see <a class="reference internal" href="../installation.html#how-to-install"><span class="std std-ref">full install guide</span></a>!</p>
-<p>(2) Open the terminal and run: <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code></p>
+  <section class="tex2jax_ignore mathjax_ignore" id="project-manager-gui">
+<span id="id1"></span><h1>Project Manager GUI<a class="headerlink" href="#project-manager-gui" title="Link to this heading">#</a></h1>
+<p>As some users may be more comfortable working with an interactive interface, we wanted to provide an easy entry point to the software. All the main functionality is available in an easy-to-use GUI interface.
+While several advanced features are not fully available in this Project GUI, we hope this gets more users up-and-running quickly.</p>
+<section id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>Install DeepLabCut following the instructions in the <a class="reference internal" href="../installation.html#file-how-to-install"><span class="std std-ref">installation page</span></a>.</p></li>
+<li><p>Open the terminal and run: <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code></p></li>
+</ol>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>If you use Windows, please always open the terminal with administrator privileges! Right click, and “run as administrator”.</p>
+</div>
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/07ae2633-dc3e-4b6d-beec-27c08d9f8531/ezgif.com-gif-maker+%284%29.gif?format=2500w" width="80%">
 </p>
-<p>Start at the Project Management Tab and work your way through the tabs to built your customized model and deploy it on new data.
+<p>Start at the Project Management Tab and work your way through the tabs to build your customized model and deploy it on new data.
 We recommend to keep the terminal visible (as well as the GUI) so you can see the ongoing processes as you step through your project, or any errors that might arise.</p>
 <ul class="simple">
-<li><p>For specific napari-based labeling features, see the [“napari gui” docs](file:napari-gui-landing).</p></li>
+<li><p>For specific napari-based labeling features, see the <a class="reference internal" href="napari_GUI.html#file-napari-gui-landing"><span class="std std-ref">napari gui</span></a> section.</p></li>
 <li><p>To change from dark to light mode, set appearance at the top:</p></li>
 </ul>
 <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/5e41b01d-3101-40b2-9c53-129d8988370f/Screen+Shot+2022-10-09+at+3.45.46+PM.png?format=2500w
-" width="30%">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/5e41b01d-3101-40b2-9c53-129d8988370f/Screen+Shot+2022-10-09+at+3.45.46+PM.png?format=2500w" width="30%">
 </p>
 </section>
-<section id="video-demos-how-to-launch-and-run-the-project-manager-gui">
-<h2>Video Demos: How to launch and run the Project Manager GUI:<a class="headerlink" href="#video-demos-how-to-launch-and-run-the-project-manager-gui" title="Link to this heading">#</a></h2>
+<section id="user-guide">
+<h2>User guide<a class="headerlink" href="#user-guide" title="Link to this heading">#</a></h2>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>See the dedicated <a class="reference internal" href="../beginner-guides/beginners-guide.html#file-beginners-guide"><span class="std std-ref">Setting up a new project</span></a> section for a step-by-step walkthrough of the GUI.</p>
+</div>
+</section>
+<section id="video-demos">
+<h2>Video demos<a class="headerlink" href="#video-demos" title="Link to this heading">#</a></h2>
+<section id="how-to-launch-and-run-the-project-manager-gui">
+<h3>How to launch and run the Project Manager GUI<a class="headerlink" href="#how-to-launch-and-run-the-project-manager-gui" title="Link to this heading">#</a></h3>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
 <p><strong>Click on the images!</strong></p>
+</div>
 <p>Note that currently the video demo is the wxPython version, but the logic is the same!</p>
 <p><a class="reference external" href="https://youtu.be/KcXogR-p5Ak"><img alt="Watch the video" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" /></a></p>
+</section>
 <section id="using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects">
-<h3>Using the Project Manager GUI with the latest DLC code (single animals, plus objects): ⬇️<a class="headerlink" href="#using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects" title="Link to this heading">#</a></h3>
+<h3>Using the Project Manager GUI with the latest DLC code (single animals, plus objects)<a class="headerlink" href="#using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects" title="Link to this heading">#</a></h3>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=JDsa8R5J0nQ"><img alt="Watch the video" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589046800303-OV1CCNZINWDMF1PZWCWE/ke17ZwdGBToddI8pDm48kB4PVlRPKDmSlQNbUD3wvXgUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcaja1QZ1SznGf7WzFOi-J6zLusnaF2VdeZcKivwxvFiDfGDqVYuwbAlftad9hfoui/dlc_gui_22.png?format=1000w" /></a></p>
-<p><a class="reference internal" href="../UseOverviewGuide.html#important-info-regd-usage"><span class="std std-ref">Read more here</span></a></p>
+<p><a class="reference internal" href="../UseOverviewGuide.html#sec-important-info-regd-usage"><span class="std std-ref">Read more here</span></a></p>
 </section>
 <section id="using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects">
-<h3>Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects):<a class="headerlink" href="#using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects" title="Link to this heading">#</a></h3>
+<h3>Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects)<a class="headerlink" href="#using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects" title="Link to this heading">#</a></h3>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=Kp-stcTm77g"><img alt="Watch the video" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589047147498-G1KTFA5BXR4PVHOOR7OG/ke17ZwdGBToddI8pDm48kJDij24pM2COisBTLIGjR1pZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIel60EThn7SDFlTiSprUhmjQQHn9bhdY9dnQSKs8bCCo/Untitled.png?format=1000w" /></a></p>
-<p><a class="reference internal" href="../UseOverviewGuide.html#important-info-regd-usage"><span class="std std-ref">Read more here</span></a></p>
+<p><a class="reference internal" href="../UseOverviewGuide.html#sec-important-info-regd-usage"><span class="std std-ref">Read more here</span></a></p>
 </section>
-</section>
-<section id="video-demo-how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines">
-<h2>VIDEO DEMO: How to benchmark your data with the new networks and data augmentation pipelines:<a class="headerlink" href="#video-demo-how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines" title="Link to this heading">#</a></h2>
+<section id="how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines">
+<h3>How to benchmark your data with the new networks and data augmentation pipelines<a class="headerlink" href="#how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines" title="Link to this heading">#</a></h3>
 <p><a class="reference external" href="https://youtu.be/WXCVr6xAcCA">Watch the video</a></p>
 </section>
+</section>
+<div class="toctree-wrapper compound">
+</div>
 </section>
 
     <script type="text/x-thebe-config">
@@ -606,20 +622,20 @@ We recommend to keep the terminal visible (as well as the GUI) so you can see th
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../HelperFunctions.html"
+       href="../Overviewof3D.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Helper &amp; Advanced Optional Function Documentation</p>
+        <p class="prev-next-title">3D DeepLabCut</p>
       </div>
     </a>
     <a class="right-next"
-       href="napari_GUI.html"
+       href="../beginner-guides/beginners-guide.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">napari GUI</p>
+        <p class="prev-next-title">Setting up a new project</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -639,13 +655,15 @@ We recommend to keep the terminal visible (as well as the GUI) so you can see th
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#get-started">Get Started:</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#video-demos-how-to-launch-and-run-the-project-manager-gui">Video Demos: How to launch and run the Project Manager GUI:</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects">Using the Project Manager GUI with the latest DLC code (single animals, plus objects): ⬇️</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects">Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects):</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-started">Getting started</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#user-guide">User guide</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#video-demos">Video demos</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-launch-and-run-the-project-manager-gui">How to launch and run the Project Manager GUI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-project-manager-gui-with-the-latest-dlc-code-single-animals-plus-objects">Using the Project Manager GUI with the latest DLC code (single animals, plus objects)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-project-manager-gui-with-the-latest-dlc-code-multiple-identical-looking-animals-plus-objects">Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines">How to benchmark your data with the new networks and data augmentation pipelines</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#video-demo-how-to-benchmark-your-data-with-the-new-networks-and-data-augmentation-pipelines">VIDEO DEMO: How to benchmark your data with the new networks and data augmentation pipelines:</a></li>
 </ul>
   </nav></div>
 

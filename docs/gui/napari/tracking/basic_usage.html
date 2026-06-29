@@ -1,0 +1,1205 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Automated annotation with point tracking &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=9e359f71" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../../_static/togglebutton.js?v=b8b12719"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/gui/napari/tracking/basic_usage';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="Notebooks for your data" href="../../../notebooks/your_data.html" />
+    <link rel="prev" title="Advanced features" href="../advanced_usage.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
+    <script>document.write(`<img src="../../../../_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../installation.html">Installing DeepLabCut</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../docker.html">DeepLabCut in Docker</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main workflows overview</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../main-workflows/user-guide.html">DeepLabCut User Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../quick-start/single_animal_quick_guide.html">Single-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../quick-start/tutorial_maDLC.html">Multi-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../main-workflows/multi-animal-tracking.html">Multi-animal tracking</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Overviewof3D.html">3D DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">GUI workflow</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../PROJECT_GUI.html">Project Manager GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../beginner-guides/beginners-guide.html">Setting up a new project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../beginner-guides/manage-project.html">Editing and working with the configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../beginner-guides/Training-Evaluation.html">Neural network training and evaluation in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../beginner-guides/video-analysis.html">Video analysis in the GUI</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../napari_GUI.html">napari GUI</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../basic_usage.html">Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../advanced_usage.html">Advanced features</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Automated annotation with point tracking</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Notebooks &amp; Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../notebooks/your_data.html">Notebooks for your data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../notebooks/main_demos.html">Demo notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../notebooks/extra.html">Additional features notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut 3.0 - PyTorch guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pytorch/index.html">PyTorch backend guides</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../pytorch/user_guide.html">What is new in DeepLabCut 3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pytorch/pytorch_config.html">Configuration file reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pytorch/architectures.html">Model architectures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pytorch/Benchmarking_shuffle_guide.html">Benchmarking user guide</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced, Performance &amp; Live</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../ModelZoo.html">The DeepLabCut Model Zoo!</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dlc-live/deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../dlc-live/dlc-live-gui/index.html">DeepLabCut-live-GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../dlc-live/dlc-live-gui/quickstart/install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../dlc-live/dlc-live-gui/user_guide/overview.html">GUI overview</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support.html">Camera support</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../dlc-live/dlc-live-gui/user_guide/cameras_backends/opencv_backend.html">OpenCV backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../dlc-live/dlc-live-gui/user_guide/cameras_backends/basler_backend.html">Basler backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend.html">Aravis backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../benchmark.html">DeepLabCut benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../recipes/TechHardware.html">Technical &amp; hardware considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Additional guides (Recipes)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../recipes/index.html">The DeepLabCut Cookbook</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../dlc-utils/index.html">DeepLabCut-Utils - Community contributions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../dlc-utils/XROMM/usage.html">XROMM + DeepLabCut local integration</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Project &amp; Community</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Governance.html">Governance Model of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../CONTRIBUTING.html">Contributing to DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../citation.html">How to Cite DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/gui/napari/tracking/basic_usage.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../../_sources/docs/gui/napari/tracking/basic_usage.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Automated annotation with point tracking</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#requirements">Requirements</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#in-napari">In napari</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#in-your-python-environment">In your Python environment</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#user-interface">User interface</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#showing-the-widget">Showing the widget</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#model-selection">1. Model selection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#layer-selection">2. Layer selection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reference-frame-selection">3. Reference frame selection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#frame-range-controls">4. Frame range controls</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#backward-left">Backward (left)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#forward-right">Forward (right)</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-actions">5. Tracking actions</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard-shortcuts">Keyboard shortcuts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-results">Tracking results</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#refinement-and-saving-tools">Refinement and saving tools</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deleting-tracked-points-in-future-frames">Deleting tracked points in future frames</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#merging-tracked-points">Merging tracked points</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow-example">Workflow example</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-annotating-from-scratch">Loading and annotating from scratch</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-annotating-from-existing-dlc-annotations">Loading and annotating from existing DLC annotations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking">Tracking</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#no-keypoints-found-on-reference-frame">No keypoints found on reference frame</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-buttons-do-nothing">Tracking buttons do nothing</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#models-information-and-citation-info">Models information and citation info</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cotracker3">CoTracker3</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#limitations-and-future-directions">Limitations and future directions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#important-considerations">Important considerations</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#future-features">Future features</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-help-and-providing-feedback">Getting help and providing feedback</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="automated-annotation-with-point-tracking">
+<h1>Automated annotation with point tracking<a class="headerlink" href="#automated-annotation-with-point-tracking" title="Link to this heading">#</a></h1>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>For basic usage of the annotation plugin, see <a class="reference internal" href="../basic_usage.html#file-napari-dlc-basic-usage"><span class="std std-ref">Basic usage</span></a> for the recommended workflow.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The plugin relies on third-party open-source tracking models.
+Please see <a class="reference internal" href="#sec-napari-tracking-models-attribution"><span class="std std-ref">Models information and citation info</span></a> at the end of this page for information about the tracking models used in the plugin and their citation information.</p>
+</div>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>The <strong>Tracking Controls</strong> widget is designed to help automate DeepLabCut annotation workflows:</p>
+<ol class="arabic simple">
+<li><p>Manually annotate a small set of keypoints on a <em>reference frame</em>.</p></li>
+<li><p>Use a point tracking model to propagate those keypoints forward and/or backward in time.</p></li>
+<li><p>Inspect, refine, delete, and merge tracked results before exporting them back to DeepLabCut.</p></li>
+</ol>
+<blockquote>
+<div><p><strong>Tracking is intended to accelerate annotation, and cannot replace manual review.</strong></p>
+</div></blockquote>
+</section>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">#</a></h2>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>We recommend <strong>having a GPU available for tracking</strong>, as it can be computationally intensive and slow on CPU.
+Expect longer processing times on CPU, especially for longer videos or larger tracking ranges.</p>
+</div>
+<section id="in-napari">
+<h3>In napari<a class="headerlink" href="#in-napari" title="Link to this heading">#</a></h3>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Before using tracking, you must:</p>
+<ul class="simple">
+<li><p>Load a <strong>video</strong> or <strong>extracted frames</strong> as an <code class="docutils literal notranslate"><span class="pre">Image</span></code> layer with time as the first dimension.</p>
+<ul>
+<li><p>For DLC-integrated workflows, the <strong>easiest starting point is often to drag-and-drop one of the <code class="docutils literal notranslate"><span class="pre">labeled-data</span></code> folders from your DLC project</strong>.</p></li>
+<li><p>See <a class="reference internal" href="../basic_usage.html#sec-napari-dlc-basic-workflow"><span class="std std-ref">Recommended basic labeling workflow</span></a> for more details on how to prepare your data and annotations before tracking.</p></li>
+</ul>
+</li>
+<li><p>Ensure you have a <strong>Points</strong> layer containing DeepLabCut-style keypoints.</p>
+<ul>
+<li><p>If annotating from scratch, drag-and-drop the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file from your DLC project to create a new Points layer with the correct metadata.</p></li>
+<li><p>If loading a folder which already contains a <code class="docutils literal notranslate"><span class="pre">CollectedData_*.h5</span></code> file, the plugin will automatically create a Points layer with the existing annotations.</p></li>
+</ul>
+</li>
+<li><p>Annotate at least one frame with valid keypoints.</p></li>
+<li><p>Tracking is most useful on temporally continuous image sequences or videos.</p></li>
+</ul>
+<p>See the workflow guides below for more details of the tracking process.</p>
+</div>
+</section>
+<section id="in-your-python-environment">
+<h3>In your Python environment<a class="headerlink" href="#in-your-python-environment" title="Link to this heading">#</a></h3>
+<p><strong>Skip this if you have already installed PyTorch or DeepLabCut</strong></p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p><strong>By default, installing the <code class="docutils literal notranslate"><span class="pre">[tracking]</span></code> extra alone will not enable GPU support.</strong>
+Check the <a class="reference external" href="https://pytorch.org/get-started/locally/">official PyTorch installation guide</a> for GPU support and installation instructions for your system.</p>
+</div>
+<p>If you do not have PyTorch installed, or if you are using the plugin without the DeepLabCut package installed, install with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>napari-deeplabcut<span class="o">[</span>tracking<span class="o">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="user-interface">
+<h2>User interface<a class="headerlink" href="#user-interface" title="Link to this heading">#</a></h2>
+<!-- Do we want an image that highlights which parts is which section below? -->
+<figure class="align-default" id="tracking-controls">
+<img alt="../../../../_images/controls.png" src="../../../../_images/controls.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 13 </span><span class="caption-text">Tracking Controls widget with annotated keypoints and tracking results.</span><a class="headerlink" href="#tracking-controls" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<section id="showing-the-widget">
+<h3>Showing the widget<a class="headerlink" href="#showing-the-widget" title="Link to this heading">#</a></h3>
+<p>Use:</p>
+<blockquote>
+<div><p>Plugins -&gt; napari-deeplabcut -&gt; Tracking controls</p>
+</div></blockquote>
+</section>
+<section id="model-selection">
+<h3>1. Model selection<a class="headerlink" href="#model-selection" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Control</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Tracker</strong></p></td>
+<td><p>Selects the tracking backend from <code class="docutils literal notranslate"><span class="pre">AVAILABLE_TRACKERS</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Info button</strong></p></td>
+<td><p>Hover to see tracker-specific details.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- More of a placeholder for future models, can be commented if preferred -->
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Available models may depend on your installation and optional dependencies.</p>
+</div>
+</section>
+<section id="layer-selection">
+<h3>2. Layer selection<a class="headerlink" href="#layer-selection" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Control</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Keypoints</strong></p></td>
+<td><p>Points layer containing manually annotated DLC keypoints</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Video</strong></p></td>
+<td><p>Image layer containing the video to track</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The widget automatically updates based on layer changes.</p>
+</section>
+<section id="reference-frame-selection">
+<h3>3. Reference frame selection<a class="headerlink" href="#reference-frame-selection" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>The <strong>Current</strong> spinbox always reflects the viewer’s current time index.</p></li>
+<li><p>This frame is used as the <strong>query frame</strong> for tracking.</p>
+<ul>
+<li><p>The model generates tracking predictions from the keypoints present on this frame and uses them as seeds to track forward and/or backward in time.</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only keypoints present on the selected reference frame are used to initialize a tracking run.
+Neighboring frames or frames later in the video are never considered for initialization, even if they contain keypoints.</p>
+</div>
+</section>
+<section id="frame-range-controls">
+<h3>4. Frame range controls<a class="headerlink" href="#frame-range-controls" title="Link to this heading">#</a></h3>
+<p>Tracking range can be specified <strong>relative</strong> or <strong>absolute</strong> to the reference frame.</p>
+<section id="backward-left">
+<h4>Backward (left)<a class="headerlink" href="#backward-left" title="Link to this heading">#</a></h4>
+<ul class="simple">
+<li><p>Slider: relative negative offset</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;&lt;</span> <span class="pre">Abs</span></code>: absolute frame index</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;&lt;</span> <span class="pre">Rel</span></code>: relative frame offset</p></li>
+</ul>
+</section>
+<section id="forward-right">
+<h4>Forward (right)<a class="headerlink" href="#forward-right" title="Link to this heading">#</a></h4>
+<ul class="simple">
+<li><p>Slider: relative positive offset</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Abs</span> <span class="pre">&gt;&gt;</span></code>: absolute frame index</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Rel</span> <span class="pre">&gt;&gt;</span></code>: relative frame offset</p></li>
+</ul>
+<p>Changing the current frame updates the valid forward/backward range automatically.</p>
+</section>
+</section>
+<section id="tracking-actions">
+<h3>5. Tracking actions<a class="headerlink" href="#tracking-actions" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Button</p></th>
+<th class="head"><p>Action</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>◀</p></td>
+<td><p>Track backward</p></td>
+</tr>
+<tr class="row-odd"><td><p>◀◀</p></td>
+<td><p>Track backward to first frame</p></td>
+</tr>
+<tr class="row-even"><td><p>▶</p></td>
+<td><p>Track forward</p></td>
+</tr>
+<tr class="row-odd"><td><p>▶▶</p></td>
+<td><p>Track forward to last frame</p></td>
+</tr>
+<tr class="row-even"><td><p>⟳</p></td>
+<td><p>Track both directions</p></td>
+</tr>
+<tr class="row-odd"><td><p>■</p></td>
+<td><p>Stop tracking</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Tracking runs in the background. You can continue navigating the viewer and editing layers while it runs; results will appear as a new layer once tracking is complete.</p>
+</div>
+</section>
+</section>
+<section id="keyboard-shortcuts">
+<h2>Keyboard shortcuts<a class="headerlink" href="#keyboard-shortcuts" title="Link to this heading">#</a></h2>
+<p>Most tracking functions have keyboard shortcuts for easier usage.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can see shortcuts and their status using:</p>
+<blockquote>
+<div><p>Help -&gt; Show napari-dlc shortcuts</p>
+</div></blockquote>
+<p>This is only available if the Keypoint controls widget has been opened at least once.</p>
+</div>
+</section>
+<section id="tracking-results">
+<h2>Tracking results<a class="headerlink" href="#tracking-results" title="Link to this heading">#</a></h2>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p><strong>Being able to tell which results originate from which layer is very important for effectively using the plugin.</strong></p>
+<ul class="simple">
+<li><p>Layers can be toggled (visible/invisible) with <code class="docutils literal notranslate"><span class="pre">V</span></code> by default or by clicking the eye icon next to the layer name in the layer list.</p></li>
+<li><p>Grid mode (toggled with <code class="docutils literal notranslate"><span class="pre">Ctrl+G</span></code> by default) can also help visually separate different layers and their results.</p></li>
+</ul>
+</div>
+<p>Each tracking run creates a <strong>new Points layer</strong>:</p>
+<ul class="simple">
+<li><p>Named automatically (<code class="docutils literal notranslate"><span class="pre">[Tracking</span> <span class="pre">v&lt;XX&gt;]</span> <span class="pre">Ref.</span> <span class="pre">layer</span> <span class="pre">name</span> <span class="pre">-</span> <span class="pre">t&lt;T&gt;</span> <span class="pre">-</span> <span class="pre">Tracker</span> <span class="pre">name</span></code>)</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">XX</span></code> refers to the iteration number (if multiple tracking runs are performed from the same reference layer and model)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">T</span></code> refers to the reference frame index used to generate the tracking result</p></li>
+</ul>
+</li>
+<li><p><strong>Visually distinct from manual annotations</strong>:</p>
+<ul>
+<li><p>Cross symbol</p></li>
+<li><p>Slight transparency</p></li>
+<li><p>Green border</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The original annotation layer is never modified by tracking.
+To incorporate tracking results into your annotation data, use the merge workflow described below.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>If you run into accessibility issues with the default visualization style, please <a class="reference external" href="https://github.com/DeepLabCut/napari-deeplabcut/issues">open an issue</a>.
+We would be happy to expand settings and provide more customization options if requested.</p>
+</div>
+</section>
+<section id="refinement-and-saving-tools">
+<h2>Refinement and saving tools<a class="headerlink" href="#refinement-and-saving-tools" title="Link to this heading">#</a></h2>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>There is <strong>currently no undo option</strong>. Any <strong>deletion or merging action you perform on layers is irreversible</strong>, so we recommend keeping track of your layers and using visibility toggles to compare before and after merge results.</p>
+<p>Overwrite warnings will be shown where relevant.</p>
+</div>
+<section id="deleting-tracked-points-in-future-frames">
+<h3>Deleting tracked points in future frames<a class="headerlink" href="#deleting-tracked-points-in-future-frames" title="Link to this heading">#</a></h3>
+<p><strong>Tracking results are often satisfactory for a certain number of frames, then start to drift or produce errors.</strong>
+For example, a tracked point may start following the background instead of the intended body part, or jump to a different body part or individual.
+Because of this sometimes unavoidable drift, we provide a way to delete future tracked points while keeping the current frame intact.</p>
+<ol class="arabic simple">
+<li><p>Select a tracking result Points layer.</p>
+<ul class="simple">
+<li><p>This action is always disabled for the original annotation layer.</p></li>
+</ul>
+</li>
+<li><p>Select one or more points on the <strong>current frame</strong>.</p></li>
+<li><p>Click <strong>Delete selected points in future frames</strong>.</p></li>
+</ol>
+<p>Only <em>exact identity matches</em> in future frames are removed.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Points on the current frame are preserved so you can correct them and re-run tracking.</p>
+</div>
+<p>This allows you to run tracking, and iteratively progress through the frames, correcting keypoints as you go, and merging the final results back into the original annotation layer when you are satisfied, see below for more details on merging.</p>
+</section>
+<section id="merging-tracked-points">
+<h3>Merging tracked points<a class="headerlink" href="#merging-tracked-points" title="Link to this heading">#</a></h3>
+<p>The <strong>Merge tracked points</strong> workflow allows you to:</p>
+<ul class="simple">
+<li><p>Combine multiple tracking passes</p></li>
+<li><p>Decide how to handle overlaps or conflicts</p></li>
+<li><p>Produce a clean final annotation layer</p></li>
+</ul>
+<p>This is especially useful when tracking was run from multiple reference frames.
+There are several merge options available to help you achieve the desired result:</p>
+<ul class="simple">
+<li><p><strong>Fill missing only</strong>: Existing keypoints are always preserved. Missing keypoints in frames are filled with tracked results.</p>
+<ul>
+<li><p>Intended for merging final tracking results into the original annotation layer.</p></li>
+</ul>
+</li>
+<li><p><strong>Overwrite existing target points</strong>: Tracked keypoints overwrite existing ones in the target layer.</p>
+<ul>
+<li><p>Intended for replacing poor tracking results with a new, updated tracking pass.</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Tracking result layers are intermediate working layers.
+To save results back into the DeepLabCut project, first merge tracked points into a standard DLC annotation layer, then save that final annotation layer.
+Tracking layers will be saved as CSVs, which are not compatible with DLC project annotations and will not be written back to the <code class="docutils literal notranslate"><span class="pre">CollectedData_*.h5</span></code> workflow.</p>
+</div>
+</section>
+</section>
+<section id="workflow-example">
+<h2>Workflow example<a class="headerlink" href="#workflow-example" title="Link to this heading">#</a></h2>
+<section id="loading-and-annotating-from-scratch">
+<h3>Loading and annotating from scratch<a class="headerlink" href="#loading-and-annotating-from-scratch" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>Create a DeepLabCut project and add the videos to label.</p></li>
+<li><p>Extract frames from the videos.</p>
+<ul class="simple">
+<li><p>Currently implemented trackers prefer continuous video frames. We recommend avoiding large gaps in frames (“jumpy” video), which can make tracking more difficult.</p></li>
+<li><p>For this reason, you may want to run tracking on the original video, then extract frames with tracking/refined annotations directly.</p></li>
+</ul>
+</li>
+<li><p>Go to the <code class="docutils literal notranslate"><span class="pre">labeled-data</span></code> folder, then drag-and-drop a folder with extracted frames into napari.</p>
+<ul class="simple">
+<li><p>This creates an Image layer with the frames.</p></li>
+</ul>
+</li>
+<li><p>Drag-and-drop the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file from your DLC project into napari.</p>
+<ul class="simple">
+<li><p>This creates an empty Points layer with the correct DLC metadata, ready for annotation.</p></li>
+</ul>
+</li>
+<li><p>Annotate keypoints on a reference frame.</p></li>
+</ol>
+<blockquote>
+<div><p>Go to <a class="reference internal" href="#sec-tracking-workflow-guides"><span class="std std-ref">Tracking</span></a>.</p>
+</div></blockquote>
+</section>
+<section id="loading-and-annotating-from-existing-dlc-annotations">
+<h3>Loading and annotating from existing DLC annotations<a class="headerlink" href="#loading-and-annotating-from-existing-dlc-annotations" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>Go to the <code class="docutils literal notranslate"><span class="pre">labeled-data</span></code> folder, then drag-and-drop a subfolder with extracted frames into napari.</p>
+<ul class="simple">
+<li><p>This creates an Image layer with the frames.</p></li>
+<li><p>Existing annotations from the <code class="docutils literal notranslate"><span class="pre">CollectedData_*.h5</span></code> file are loaded as a Points layer.</p></li>
+</ul>
+</li>
+<li><p>Inspect existing annotations, select a reference frame, and refine keypoints if needed.</p></li>
+</ol>
+<blockquote>
+<div><p>Go to <a class="reference internal" href="#sec-tracking-workflow-guides"><span class="std std-ref">Tracking</span></a>.</p>
+</div></blockquote>
+</section>
+<section id="tracking">
+<span id="sec-tracking-workflow-guides"></span><h3>Tracking<a class="headerlink" href="#tracking" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>Open the Tracking Controls widget (<code class="docutils literal notranslate"><span class="pre">Plugins</span> <span class="pre">-&gt;</span> <span class="pre">napari-deeplabcut</span> <span class="pre">-&gt;</span> <span class="pre">Tracking</span> <span class="pre">controls</span></code>).</p></li>
+<li><p>Go to the desired reference frame, with annotated keypoints visible.</p></li>
+<li><p>Select the forward/backward tracking range using the sliders and track forward/backward, or track to the beginning/end of the video using the seek buttons.</p></li>
+<li><p>Inspect the tracking results.</p>
+<ul class="simple">
+<li><p>You can use <strong>Show trajectories</strong> in the Keypoint Controls dock widget to visualize the trajectories of tracked points across frames, which can help identify where tracking starts to drift.</p></li>
+<li><p>The plot is filtered by selected keypoints, so you can select a subset of points to inspect their trajectories more closely.</p></li>
+</ul>
+</li>
+<li><p>If there are problematic points:</p>
+<ol class="arabic simple">
+<li><p>On the frame where tracking starts to drift, select the problematic point(s) and click <strong>Delete selected points in future frames</strong> to remove incorrect tracking results while preserving the tracked point(s) on the current frame.</p></li>
+<li><p>Refine the keypoint(s) on the current frame by correcting their position.</p></li>
+<li><p>Re-run tracking from that frame to propagate the correction forward or backward in time.</p></li>
+</ol>
+</li>
+<li><p>Merge the new tracking result back into the previous tracking layer when appropriate (for example, using <strong>Overwrite existing target points</strong>).</p></li>
+<li><p>Repeat until satisfied with the tracking result, then merge into the original annotation layer using <strong>Fill missing only</strong> to preserve your original annotations and only add tracked keypoints in frames where you do not yet have manual annotations.</p></li>
+<li><p><strong>Save the final DLC annotation layer</strong> (usually the original annotation layer after merging).</p>
+<ul class="simple">
+<li><p>Tracking result layers are intermediate working layers and are not written back directly as DLC project annotations.</p></li>
+<li><p><strong>Saving the final merged annotation layer is the step that writes back to the DLC project folder and updates the <code class="docutils literal notranslate"><span class="pre">CollectedData_*.h5</span></code> workflow.</strong></p></li>
+</ul>
+</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <strong>Show trails</strong> feature is currently not available for tracking result layers. Please <a class="reference external" href="https://github.com/DeepLabCut/napari-deeplabcut/issues">open an issue</a> if this is something you would like to see in the future.</p>
+</div>
+</section>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
+<section id="no-keypoints-found-on-reference-frame">
+<h3>No keypoints found on reference frame<a class="headerlink" href="#no-keypoints-found-on-reference-frame" title="Link to this heading">#</a></h3>
+<p>Ensure that:</p>
+<ul class="simple">
+<li><p><strong>The correct Points layer is selected in the tracking controls dropdown menu.</strong></p></li>
+<li><p>You are on the intended frame.</p></li>
+<li><p>Points exist exactly on that frame index.</p></li>
+</ul>
+</section>
+<section id="tracking-buttons-do-nothing">
+<h3>Tracking buttons do nothing<a class="headerlink" href="#tracking-buttons-do-nothing" title="Link to this heading">#</a></h3>
+<p>Check that:</p>
+<ul class="simple">
+<li><p>A video layer is selected.</p></li>
+<li><p>A keypoint layer is selected.</p></li>
+<li><p>Tracking is not already running.</p></li>
+</ul>
+</section>
+</section>
+<section id="models-information-and-citation-info">
+<span id="sec-napari-tracking-models-attribution"></span><h2>Models information and citation info<a class="headerlink" href="#models-information-and-citation-info" title="Link to this heading">#</a></h2>
+<section id="cotracker3">
+<h3>CoTracker3<a class="headerlink" href="#cotracker3" title="Link to this heading">#</a></h3>
+<blockquote>
+<div><p>CoTracker is a fast transformer-based model that can track any point in a video. It brings to tracking some of the benefits of OpticalFlow.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/facebookresearch/co-tracker">Link to GitHub repository</a></p></li>
+<li><p><a class="reference external" href="https://github.com/facebookresearch/co-tracker#citing-cotracker">Citation information</a></p></li>
+</ul>
+<div class="tip admonition">
+<p class="admonition-title">Empirical observations</p>
+<p>This information is based on our own testing and experience with the model.
+Please share any feedback or insights you have with us!</p>
+<ul class="simple">
+<li><p><strong>Strengths:</strong> fast on GPU, can output 10-100 frames of satisfactory tracking results, depending on difficulty.</p></li>
+<li><p><strong>Limitations:</strong> strong preference for continuous video frames; struggles with large gaps in frame indices (for example, automated DLC frame extraction via clustering, or uniform extraction with a large step size).
+Consider running tracking on the original video, then extracting frames with tracking/refined annotations directly.</p></li>
+</ul>
+</div>
+</section>
+</section>
+<section id="limitations-and-future-directions">
+<h2>Limitations and future directions<a class="headerlink" href="#limitations-and-future-directions" title="Link to this heading">#</a></h2>
+<section id="important-considerations">
+<h3>Important considerations<a class="headerlink" href="#important-considerations" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>As correcting labels can be time-consuming, annotating by hand may sometimes be faster than running tracking and heavily correcting its results.</p>
+<ul>
+<li><p>The benefits are mostly for long, continuous videos with many frames to annotate, where tracking can save time by propagating annotations across many frames at once.</p></li>
+<li><p>In very high-variability or very challenging videos, annotating by hand may still be more efficient than running tracking and correcting its results, especially if you only have a few frames to annotate.</p></li>
+</ul>
+</li>
+<li><p>Manual curation is still essential for good tracking results, and the tracking models do not fully replace the need for manual annotation.</p></li>
+<li><p>In practice, a mix of hand-labeled hard frames and tracked easy frames should often works best.</p></li>
+<li><p>Be mindful of training set imbalance: if you flood your training set with easy frames that are well tracked, and only have a few hand-picked frames with rare or difficult poses, your model may not learn to generalize well to those challenging poses.</p></li>
+</ul>
+<section id="future-features">
+<h4>Future features<a class="headerlink" href="#future-features" title="Link to this heading">#</a></h4>
+<ul class="simple">
+<li><p>We currently only provide CoTracker3 as a model. It is, however, relatively easy to add new models to the plugin via the registry; feel free to ask if you would like to contribute a model or see a specific model added.</p></li>
+<li><p>Generic napari saves or exports of tracking result layers are not part of the recommended DeepLabCut workflow. Tracking result layers are intermediate working layers; to preserve results in a DLC project-compatible way, merge them into a standard annotation layer and save that layer.</p></li>
+<li><p>If there is demand, we may add support for saving and loading tracking layers as separate files in the DLC project folder.</p></li>
+<li><p>If you have ideas for specific refinement tools, shortcuts, or other features that would be useful to add to the plugin, please share them with us.</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="getting-help-and-providing-feedback">
+<h2>Getting help and providing feedback<a class="headerlink" href="#getting-help-and-providing-feedback" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/napari-deeplabcut/issues">GitHub issues</a>: for bug reports, feature requests, or general questions. We welcome your feedback and contributions.</p></li>
+<li><p><a class="reference external" href="https://forum.image.sc/tag/deeplabcut">Discussion forum</a>: for general discussion, questions, and sharing your work with the community. We also provide troubleshooting help and guidance here, but may open an issue for actual bugs or feature requests directly on GitHub, as well as request more information there.</p></li>
+</ul>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./docs/gui/napari/tracking"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../advanced_usage.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Advanced features</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../../../notebooks/your_data.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Notebooks for your data</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#requirements">Requirements</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#in-napari">In napari</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#in-your-python-environment">In your Python environment</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#user-interface">User interface</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#showing-the-widget">Showing the widget</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#model-selection">1. Model selection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#layer-selection">2. Layer selection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reference-frame-selection">3. Reference frame selection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#frame-range-controls">4. Frame range controls</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#backward-left">Backward (left)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#forward-right">Forward (right)</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-actions">5. Tracking actions</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard-shortcuts">Keyboard shortcuts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-results">Tracking results</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#refinement-and-saving-tools">Refinement and saving tools</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deleting-tracked-points-in-future-frames">Deleting tracked points in future frames</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#merging-tracked-points">Merging tracked points</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow-example">Workflow example</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-annotating-from-scratch">Loading and annotating from scratch</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-and-annotating-from-existing-dlc-annotations">Loading and annotating from existing DLC annotations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking">Tracking</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#no-keypoints-found-on-reference-frame">No keypoints found on reference frame</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-buttons-do-nothing">Tracking buttons do nothing</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#models-information-and-citation-info">Models information and citation info</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cotracker3">CoTracker3</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#limitations-and-future-directions">Limitations and future directions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#important-considerations">Important considerations</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#future-features">Future features</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-help-and-providing-feedback">Getting help and providing feedback</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,2434 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>DeepLabCut User Guide &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=9e359f71" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=b8b12719"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/main-workflows/user-guide';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Single-animal at a glance" href="../quick-start/single_animal_quick_guide.html" />
+    <link rel="prev" title="DeepLabCut in Docker" href="../docker.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
+    <script>document.write(`<img src="../../_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../installation.html">Installing DeepLabCut</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../docker.html">DeepLabCut in Docker</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main workflows overview</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">DeepLabCut User Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start/single_animal_quick_guide.html">Single-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start/tutorial_maDLC.html">Multi-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="multi-animal-tracking.html">Multi-animal tracking</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../Overviewof3D.html">3D DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">GUI workflow</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../gui/PROJECT_GUI.html">Project Manager GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/beginners-guide.html">Setting up a new project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/manage-project.html">Editing and working with the configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/Training-Evaluation.html">Neural network training and evaluation in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner-guides/video-analysis.html">Video analysis in the GUI</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../gui/napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../gui/napari/basic_usage.html">Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gui/napari/advanced_usage.html">Advanced features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gui/napari/tracking/basic_usage.html">Automated annotation with point tracking</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Notebooks &amp; Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks/your_data.html">Notebooks for your data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks/main_demos.html">Demo notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../notebooks/extra.html">Additional features notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut 3.0 - PyTorch guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pytorch/index.html">PyTorch backend guides</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/user_guide.html">What is new in DeepLabCut 3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/pytorch_config.html">Configuration file reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/architectures.html">Model architectures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch/Benchmarking_shuffle_guide.html">Benchmarking user guide</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced, Performance &amp; Live</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../dlc-live/deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/index.html">DeepLabCut-live-GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/quickstart/install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/overview.html">GUI overview</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support.html">Camera support</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/opencv_backend.html">OpenCV backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/basler_backend.html">Basler backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend.html">Aravis backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../benchmark.html">DeepLabCut benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/TechHardware.html">Technical &amp; hardware considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Additional guides (Recipes)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../recipes/index.html">The DeepLabCut Cookbook</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../dlc-utils/index.html">DeepLabCut-Utils - Community contributions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-utils/XROMM/usage.html">XROMM + DeepLabCut local integration</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Project &amp; Community</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Governance.html">Governance Model of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING.html">Contributing to DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">How to Cite DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/main-workflows/user-guide.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/docs/main-workflows/user-guide.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>DeepLabCut User Guide</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-started">Getting started</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gui-recommended-for-beginners">GUI (recommended for beginners)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-api">Python API</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow">Workflow</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-1-project-setup">Phase 1 — Project setup</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#a-create-a-new-project">(A) Create a New Project</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#code-example">Code example</a><ul class="nav section-nav flex-column">
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#output-directory-structure">Output &amp; directory structure</a></li>
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#subdirectory-layout">Subdirectory layout</a></li>
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#main-configuration-file-config-yaml">Main configuration file (<em>config.yaml</em>)</a></li>
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#api-docs">API Docs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#b-configure-the-project">(B) Configure the Project</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-2-data-preparation">Phase 2 — Data preparation</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#c-select-frames-to-label">(C) Select Frames to Label</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#frame-selection-methods">Frame selection methods</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#manual-frame-selection">Manual frame selection</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#d-label-frames">(D) Label Frames</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#demo">Demo</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-adding-new-bodypart-labels">Optional: Adding new bodypart labels</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#e-check-annotated-frames">(E) Check Annotated Frames</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#what-it-creates">What it creates</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">API Docs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-3-training-evaluation">Phase 3 — Training &amp; evaluation</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#f-create-training-dataset">(F) Create Training Dataset</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#output-structure-and-configuration-files">Output structure and configuration files</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#network-and-augmentation-selection">Network and augmentation selection</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#model-comparison">Model comparison</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#g-train-the-network">(G) Train the Network</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#h-evaluate-the-trained-network">(H) Evaluate the Trained Network</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-parameters">Optional parameters</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#output-and-interpretation">Output and interpretation</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-maps">Optional maps</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">API Docs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-4-analysis">Phase 4 — Analysis</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#i-analyze-new-videos">(I) Analyze New Videos</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#output-and-storage">Output and storage</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamic-cropping-of-videos">Dynamic-cropping of videos</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#j-filter-pose-data">(J) Filter Pose Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id20">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#code-examples">Code examples</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#example-output">Example output</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id21">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#k-plot-trajectories">(K) Plot Trajectories</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id22">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id23">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#output">Output</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id24">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#l-create-labeled-videos">(L) Create Labeled Videos</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id25">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id26">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#skeleton-configuration">Skeleton configuration</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id27">API Docs</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#extract-skeleton-features">Extract “Skeleton” Features</a><ul class="nav section-nav flex-column">
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#id28">Overview</a></li>
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#id29">Code example</a></li>
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#id30">API Docs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-5-refinement-optional">Phase 5 — Refinement (optional)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#m-optional-active-learning-network-refinement-extract-outlier-frames">(M) Optional Active Learning - Network Refinement: Extract Outlier Frames</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id31">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id32">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id33">Frame-selection methods</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#selection-after-detection">Selection after detection</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id34">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#n-refine-labels-augmentation-of-the-training-dataset">(N) Refine Labels: Augmentation of the Training Dataset</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id35">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id36">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#merge-datasets">Merge datasets</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#api-docs-for-deeplabcut-refine-labels">API Docs for deeplabcut.refine_labels</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#api-docs-for-deeplabcut-merge-datasets">API Docs for deeplabcut.merge_datasets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resources-and-further-reading">Resources and further reading</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jupyter-notebooks-demo">Jupyter notebooks demo</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#d-tracking">3D tracking</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-helper-functions">Additional helper functions</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-user-guide">
+<span id="file-dlc-userguide"></span><h1>DeepLabCut User Guide<a class="headerlink" href="#deeplabcut-user-guide" title="Link to this heading">#</a></h1>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#getting-started" id="id37">Getting started</a></p>
+<ul>
+<li><p><a class="reference internal" href="#gui-recommended-for-beginners" id="id38">GUI (recommended for beginners)</a></p></li>
+<li><p><a class="reference internal" href="#python-api" id="id39">Python API</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#workflow" id="id40">Workflow</a></p>
+<ul>
+<li><p><a class="reference internal" href="#phase-1-project-setup" id="id41">Phase 1 — Project setup</a></p>
+<ul>
+<li><p><a class="reference internal" href="#a-create-a-new-project" id="id42">(A) Create a New Project</a></p></li>
+<li><p><a class="reference internal" href="#b-configure-the-project" id="id43">(B) Configure the Project</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#phase-2-data-preparation" id="id44">Phase 2 — Data preparation</a></p>
+<ul>
+<li><p><a class="reference internal" href="#c-select-frames-to-label" id="id45">(C) Select Frames to Label</a></p></li>
+<li><p><a class="reference internal" href="#d-label-frames" id="id46">(D) Label Frames</a></p></li>
+<li><p><a class="reference internal" href="#e-check-annotated-frames" id="id47">(E) Check Annotated Frames</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#phase-3-training-evaluation" id="id48">Phase 3 — Training &amp; evaluation</a></p>
+<ul>
+<li><p><a class="reference internal" href="#f-create-training-dataset" id="id49">(F) Create Training Dataset</a></p></li>
+<li><p><a class="reference internal" href="#g-train-the-network" id="id50">(G) Train the Network</a></p></li>
+<li><p><a class="reference internal" href="#h-evaluate-the-trained-network" id="id51">(H) Evaluate the Trained Network</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#phase-4-analysis" id="id52">Phase 4 — Analysis</a></p>
+<ul>
+<li><p><a class="reference internal" href="#i-analyze-new-videos" id="id53">(I) Analyze New Videos</a></p></li>
+<li><p><a class="reference internal" href="#j-filter-pose-data" id="id54">(J) Filter Pose Data</a></p></li>
+<li><p><a class="reference internal" href="#k-plot-trajectories" id="id55">(K) Plot Trajectories</a></p></li>
+<li><p><a class="reference internal" href="#l-create-labeled-videos" id="id56">(L) Create Labeled Videos</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#phase-5-refinement-optional" id="id57">Phase 5 — Refinement (optional)</a></p>
+<ul>
+<li><p><a class="reference internal" href="#m-optional-active-learning-network-refinement-extract-outlier-frames" id="id58">(M) Optional Active Learning - Network Refinement: Extract Outlier Frames</a></p></li>
+<li><p><a class="reference internal" href="#n-refine-labels-augmentation-of-the-training-dataset" id="id59">(N) Refine Labels: Augmentation of the Training Dataset</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#resources-and-further-reading" id="id60">Resources and further reading</a></p>
+<ul>
+<li><p><a class="reference internal" href="#jupyter-notebooks-demo" id="id61">Jupyter notebooks demo</a></p></li>
+<li><p><a class="reference internal" href="#d-tracking" id="id62">3D tracking</a></p></li>
+<li><p><a class="reference internal" href="#additional-helper-functions" id="id63">Additional helper functions</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<p>This guide covers the standard single-animal and multi-animal 2D pose estimation projects.</p>
+<section id="getting-started">
+<h2><a class="toc-backref" href="#id37" role="doc-backlink">Getting started</a><a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h2>
+<p>DeepLabCut offers two equivalent interfaces: a <strong>GUI</strong> for those who prefer a visual
+workflow (no Python knowledge required), and a <strong>Python API</strong> for users who want
+scripting flexibility or to integrate DeepLabCut into a larger pipeline. All workflow
+steps are available in both.</p>
+<p>We assume you have DeepLabCut installed (if not, see <a class="reference internal" href="../installation.html#file-how-to-install"><span class="std std-ref">Installing DeepLabCut</span></a>).
+Open a terminal and activate your conda environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>DEEPLABCUT
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>On Windows, always open the terminal with administrator privileges: right-click and
+select “Run as administrator”.</p>
+</div>
+<p>Choose your interface below to launch DeepLabCut:</p>
+<section id="gui-recommended-for-beginners">
+<h3><a class="toc-backref" href="#id38" role="doc-backlink">GUI (recommended for beginners)</a><a class="headerlink" href="#gui-recommended-for-beginners" title="Link to this heading">#</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>deeplabcut
+</pre></div>
+</div>
+<figure class="align-center" id="fig-gui-launch">
+<a class="reference internal image-reference" href="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w"><img alt="The DeepLabCut Project Manager GUI after launch" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" style="width: 60%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">The DeepLabCut Project Manager GUI.</span><a class="headerlink" href="#fig-gui-launch" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="python-api">
+<h3><a class="toc-backref" href="#id39" role="doc-backlink">Python API</a><a class="headerlink" href="#python-api" title="Link to this heading">#</a></h3>
+<p>In an interactive Python session (e.g. <code class="docutils literal notranslate"><span class="pre">ipython</span></code>), import DeepLabCut:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
+</pre></div>
+</div>
+<p>As a reminder, the core functions are described in our
+<a class="reference external" href="https://www.nature.com/articles/s41596-019-0176-0">Nature Protocols paper</a> (published
+at the time of DeepLabCut version 2.0.6). Additional functions and features are
+continually added to the package; we recommend reading the protocol alongside this
+documentation.</p>
+</section>
+</section>
+<section id="workflow">
+<h2><a class="toc-backref" href="#id40" role="doc-backlink">Workflow</a><a class="headerlink" href="#workflow" title="Link to this heading">#</a></h2>
+<p>DeepLabCut’s full workflow is described in steps (A)–(N) below. Code examples throughout this page use the Python API; if you are
+using the GUI, the same steps are available in the corresponding panels of the
+Project Manager.</p>
+<p>You should think of the workflow as 5 phases</p>
+<figure class="align-center" id="dlc-workflow-figure">
+<img alt="The 5 phases of the DeepLabCut workflow." src="../../_images/dlc-workflow.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 2 </span><span class="caption-text">The 5 phases of the DeepLabCut workflow. The expected outputs are indicated in the grey boxes.</span><a class="headerlink" href="#dlc-workflow-figure" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<ol class="arabic simple">
+<li><p>Project setup: create and configure your new project.</p></li>
+<li><p>Data preparation: select frames and annotate your training data.</p></li>
+<li><p>Training and evaluation: configure, train and evaluate your neural network model.</p></li>
+<li><p>Analysis: run inference with your trained model to create predictions and labeled videos.</p></li>
+<li><p>Refinement (optional): improve your data quality for a next training iteration.</p></li>
+</ol>
+<div class="admonition-automated-multi-animal-tracking admonition">
+<p class="admonition-title">Automated multi-animal tracking</p>
+<p>For multi-animal projects, the video-analysis step contains an automated tracking step. More information is available in the <a class="reference internal" href="multi-animal-tracking.html#file-multi-animal-tracking"><span class="std std-ref">multi-animal tracking guide</span></a>.</p>
+</div>
+<section id="phase-1-project-setup">
+<h3><a class="toc-backref" href="#id41" role="doc-backlink">Phase 1 — Project setup</a><a class="headerlink" href="#phase-1-project-setup" title="Link to this heading">#</a></h3>
+<section id="a-create-a-new-project">
+<h4><a class="toc-backref" href="#id42" role="doc-backlink">(A) Create a New Project</a><a class="headerlink" href="#a-create-a-new-project" title="Link to this heading">#</a></h4>
+<section id="overview">
+<h5>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h5>
+<p>The function <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code> creates a new project directory, required subdirectories, and a basic project
+configuration file. Each project is identified by the name of the project (e.g. Reaching), name of the experimenter
+(e.g. YourName), as well as the date at creation.</p>
+<p>Thus, this function requires the user to input:</p>
+<ul class="simple">
+<li><p>The name of the project</p></li>
+<li><p>The name of the experimenter</p></li>
+<li><p>The full path of the videos that are (initially) used to create the training dataset.</p></li>
+<li><p>Optional arguments specify:</p>
+<ul>
+<li><p>The working directory</p></li>
+<li><p>Where the project directory will be created</p></li>
+<li><p><strong>Recommended</strong>: Whether to copy the videos to the project directory</p></li>
+<li><p>Whether to create a single- or multi-animal project</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the optional argument <code class="docutils literal notranslate"><span class="pre">working_directory</span></code> is unspecified, the
+project directory is created in the current working directory.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">copy_videos</span></code> is unspecified symbolic links
+for the videos are created in the videos directory.
+Each symbolic link creates a reference to a video and thus
+eliminates the need to copy the entire video to the video directory (if the videos remain at the original location).
+This is why administrator privileges are required for Windows users, as creating symbolic links requires them.</p>
+</div>
+</section>
+<section id="code-example">
+<h5>Code example<a class="headerlink" href="#code-example" title="Link to this heading">#</a></h5>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 single-animal" open="open">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-kebab-horizontal no-title" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14a2 2 0 1 1-.001-3.999A2 2 0 0 1 20 14ZM6 12a2 2 0 1 1-3.999.001A2 2 0 0 1 6 12Zm8 0a2 2 0 1 1-3.999.001A2 2 0 0 1 14 12Z"></path></svg></span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
+    <span class="s2">&quot;Name of the project&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Name of the experimenter&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;Full path of video 1&quot;</span><span class="p">,</span> <span class="s2">&quot;Full path of video 2&quot;</span><span class="p">,</span> <span class="s2">&quot;Full path of video 3&quot;</span><span class="p">],</span>
+    <span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;Full path of the working directory&quot;</span><span class="p">,</span>
+    <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">multianimal</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details><details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 multi-animal" open="open">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-kebab-horizontal no-title" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14a2 2 0 1 1-.001-3.999A2 2 0 0 1 20 14ZM6 12a2 2 0 1 1-3.999.001A2 2 0 0 1 6 12Zm8 0a2 2 0 1 1-3.999.001A2 2 0 0 1 14 12Z"></path></svg></span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
+    <span class="s2">&quot;Name of the project&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Name of the experimenter&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;Full path of video 1&quot;</span><span class="p">,</span> <span class="s2">&quot;Full path of video 2&quot;</span><span class="p">,</span> <span class="s2">&quot;Full path of video 3&quot;</span><span class="p">],</span>
+    <span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;Full path of the working directory&quot;</span><span class="p">,</span>
+    <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">multianimal</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details><section id="output-directory-structure">
+<h6>Output &amp; directory structure<a class="headerlink" href="#output-directory-structure" title="Link to this heading">#</a></h6>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>On Windows, input paths as:
+<code class="docutils literal notranslate"><span class="pre">r'C:\Users\computername\Videos\reachingvideo1.avi'</span></code> or
+<code class="docutils literal notranslate"><span class="pre">'C:\\Users\\computername\\Videos\\reachingvideo1.avi'</span></code></p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can also place <code class="docutils literal notranslate"><span class="pre">config_path</span></code> in front of <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_new_project</span></code> to create a variable that holds
+the path to the config.yaml file, i.e. <code class="docutils literal notranslate"><span class="pre">config_path=deeplabcut.create_new_project(...)</span></code></p>
+</div>
+<p>This set of arguments creates a project directory with the name:</p>
+<p><strong><code class="docutils literal notranslate"><span class="pre">&lt;Name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">project&gt;+&lt;name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">experimenter&gt;+&lt;date</span> <span class="pre">of</span> <span class="pre">creation</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">project&gt;</span></code></strong></p>
+<p>in the <strong>working directory</strong> and creates the video copies in the videos directory.</p>
+<p>The project directory will have subdirectories:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;Name of the project&gt;+&lt;name of the experimenter&gt;+&lt;date of creation of the project&gt;/
+├── dlc-models/
+│   ├── iteration-0/
+│   ├── iteration-1/
+│   └── ...
+├── dlc-models-pytorch/
+│   ├── iteration-0/
+│   │   └── &lt;shuffle directories&gt;/
+│   │       ├── train/
+│   │       └── test/
+│   ├── iteration-1/
+│   └── ...
+├── labeled-data/
+│   └── &lt;video subdirectories&gt;/
+├── training-datasets/
+├── videos/
+└── config.yaml
+</pre></div>
+</div>
+<p>All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be managed independently of other projects.</p>
+</section>
+<section id="subdirectory-layout">
+<h6>Subdirectory layout<a class="headerlink" href="#subdirectory-layout" title="Link to this heading">#</a></h6>
+<ol class="arabic">
+<li><p><code class="docutils literal notranslate"><span class="pre">dlc-models</span></code> and <code class="docutils literal notranslate"><span class="pre">dlc-models-pytorch</span></code>:
+These directories have the same structure but store model files for different engines:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">dlc-models</span></code> for TensorFlow</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dlc-models-pytorch</span></code> for PyTorch</p></li>
+<li><p>At the top level, both contain <strong>iteration folders</strong> such as:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">iteration-0</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">iteration-1</span></code>, etc.
+which correspond to successive rounds of label refinement.</p></li>
+<li><p>Each iteration folder in turn contains <strong>shuffle directories</strong>, each representing a specific experiment defined by a particular train/test split and model architecture.</p></li>
+<li><p>Within each shuffle directory:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">train/</span></code> and <code class="docutils literal notranslate"><span class="pre">test/</span></code> store metadata and configuration files for the feature detectors.</p></li>
+</ul>
+<!-- - These configuration files are written in YAML, a human-readable format that can be edited with any standard text editor. -->
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">train/</span></code> folder also stores training checkpoints (snapshots), which let users reload a trained model or resume training from an intermediate checkpoint if training was interrupted.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">labeled-data/</span></code>:
+Contains the extracted frames used to build the training dataset. Frames from different videos are stored in separate subdirectories, and each frame filename encodes its temporal position in the source video, making it easy to trace each frame back to its origin.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">training-datasets/</span></code>:
+Stores the generated training datasets along with metadata describing how each dataset was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">videos/</span></code>:
+Stores either the project videos themselves or symbolic links to them:
+If <code class="docutils literal notranslate"><span class="pre">copy_videos=False</span></code> (default), it contains symbolic links.
+If <code class="docutils literal notranslate"><span class="pre">copy_videos=True</span></code>, the videos are copied into the directory.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">add_new_videos</span><span class="p">(</span>
+    <span class="s2">&quot;Full path of the project configuration file&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;full path of video 4&quot;</span><span class="p">,</span> <span class="s2">&quot;full path of video 5&quot;</span><span class="p">],</span>
+    <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>The <em>Full path of the project configuration file</em> will be referenced as <code class="docutils literal notranslate"><span class="pre">config_path</span></code> throughout this guide.</p>
+</div>
+</section>
+<section id="main-configuration-file-config-yaml">
+<h6>Main configuration file (<em>config.yaml</em>)<a class="headerlink" href="#main-configuration-file-config-yaml" title="Link to this heading">#</a></h6>
+<p>The project directory also contains the main configuration file called <em>config.yaml</em>. The <em>config.yaml</em> file contains many important parameters of the project. This includes:</p>
+<ul class="simple">
+<li><p><em>Task</em></p></li>
+<li><p><em>Scorer</em></p></li>
+<li><p><em>Date</em></p></li>
+<li><p><em>Project_path</em></p></li>
+<li><p>A list of videos <em>video_sets</em>.</p></li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>After creating the project and initial configuration, the <code class="docutils literal notranslate"><span class="pre">task</span></code>, the <code class="docutils literal notranslate"><span class="pre">scorer</span></code> and <code class="docutils literal notranslate"><span class="pre">date</span></code> should <strong>not be changed</strong>. Many other parameters can still be changed or even <strong>need to be changed</strong>, such as the list of <code class="docutils literal notranslate"><span class="pre">bodyparts</span></code>. This is covered in the next section.</p>
+</div>
+</section>
+<section id="api-docs">
+<h6>API Docs<a class="headerlink" href="#api-docs" title="Link to this heading">#</a></h6>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+</div>
+</section>
+</section>
+</section>
+<section id="b-configure-the-project">
+<h4><a class="toc-backref" href="#id43" role="doc-backlink">(B) Configure the Project</a><a class="headerlink" href="#b-configure-the-project" title="Link to this heading">#</a></h4>
+<p>Open the <strong>config.yaml</strong> file, which was created with <code class="docutils literal notranslate"><span class="pre">create_new_project</span></code>. You can edit this file in any
+text editor.</p>
+<p>Familiarize yourself with the meaning of the parameters. For instance <strong>it is important to configure the <code class="docutils literal notranslate"><span class="pre">bodyparts</span></code></strong>, but you can also configure default visualization settings, such as the
+<code class="docutils literal notranslate"><span class="pre">colormap</span></code> (see <a class="reference external" href="https://matplotlib.org/tutorials/colors/colormaps.html">matplotlib colormaps</a>) in downstream steps, like labeling GUIs, videos, etc.</p>
+<p>The project configuration <strong>differs between single-animal and multi-animal projects</strong>, a complete overview is presented below.</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>Please <strong>do not include spaces</strong> in the names of <code class="docutils literal notranslate"><span class="pre">bodyparts</span></code>, <code class="docutils literal notranslate"><span class="pre">multianimalbodyparts</span></code> or <code class="docutils literal notranslate"><span class="pre">Uniquebodyparts</span></code>.</p>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 single-animal" open="open">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">: Configuration</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">A complete list of parameters including their description can be found in
+<a class="reference internal" href="#config-box1-single"><span class="std std-ref">Box 1</span></a>.</p>
+<p class="sd-card-text">You <strong>must add</strong> the list of <em>bodyparts</em> (or points of interest) that you want to track.</p>
+<figure class="align-center" id="config-box1-single">
+<img alt="Box 1 - Single Animal Project Configuration File Glossary" src="../../_images/box1-single.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 3 </span><span class="caption-text">Single Animal project configuration file glossary</span><a class="headerlink" href="#config-box1-single" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</div>
+</details><details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 multi-animal" open="open">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">: Configuration</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">A complete list of parameters including their description can be found in
+<a class="reference internal" href="#config-box1-multi"><span class="std std-ref">Box 1</span></a>.</p>
+<p class="sd-card-text">You <strong>must modify</strong> <code class="docutils literal notranslate"><span class="pre">individuals</span></code>, <code class="docutils literal notranslate"><span class="pre">identity</span></code>, <code class="docutils literal notranslate"><span class="pre">multianimalbodyparts</span></code>,<code class="docutils literal notranslate"><span class="pre">Uniquebodyparts</span></code> (explanation below) Note, we also highly recommend that you use <strong>more bodyparts</strong> that you might be interested in for your experiment, i.e., labeling along the spine/tail for 8 bodyparts would be better than four. This will help the performance.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">individuals</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">m1</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">m2</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">m3</span>
+<span class="nt">uniquebodyparts</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">topleftcornerofBox</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">toprightcornerofBox</span>
+<span class="nt">multianimalbodyparts</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snout</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">leftear</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rightear</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tailbase</span>
+<span class="nt">identity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True/False</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p class="sd-card-text"><strong>Individuals:</strong> are names of “individuals” in the annotation dataset. These should/can be generic (e.g. mouse1, mouse2, etc.). These individuals are comprised of the same bodyparts defined by <code class="docutils literal notranslate"><span class="pre">multianimalbodyparts</span></code>.</p>
+<ul>
+<li><p class="sd-card-text">For annotation in the GUI and training, it is important that all individuals in each frame are labeled. Thus, keep in mind that you need to set individuals to the maximum number in your labeled-data set, .i.e., if there is (even just one frame) with 17 animals then the list should be <code class="docutils literal notranslate"><span class="pre">-</span> <span class="pre">indv1</span></code> to <code class="docutils literal notranslate"><span class="pre">-</span> <span class="pre">indv17</span></code>.</p></li>
+<li><p class="sd-card-text">Note, once trained if you have a video with more or less animals, that is fine - you can have more or less animals during video analysis!</p></li>
+</ul>
+</li>
+<li><p class="sd-card-text"><strong>Identity:</strong> If you can tell the animals apart, i.e., one might have a collar, or a black marker on the tail of a mouse, then you should label these individuals consistently (i.e., always label the mouse with the black marker as “indv1”, etc).</p>
+<ul>
+<li><p class="sd-card-text">If you have this scenario, please set <code class="docutils literal notranslate"><span class="pre">identity:</span> <span class="pre">True</span></code> in your <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file.</p></li>
+<li><p class="sd-card-text">If you have 4 black mice, and you truly cannot tell them apart, then leave this as <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+</ul>
+</li>
+<li><p class="sd-card-text"><strong>Multianimalbodyparts:</strong> are the bodyparts of each individual (in the above list).</p></li>
+<li><p class="sd-card-text"><strong>Uniquebodyparts:</strong> are points that you want to track, but that appear only once within each frame, i.e. they are “unique”.</p>
+<ul>
+<li><p class="sd-card-text">Typically these are things like unique objects, landmarks, tools, etc.</p></li>
+<li><p class="sd-card-text">They can also be animals, e.g. in the case where one German shepherd is attending to many sheep, the sheep bodyparts would be multianimalbodyparts, the shepherd parts would be uniquebodyparts and the individuals would be the list of sheep (e.g. Polly, Molly, Dolly, …).</p></li>
+</ul>
+</li>
+</ul>
+<figure class="align-center" id="config-box1-multi">
+<img alt="Box 1 - Multi Animal Project Configuration File Glossary" src="../../_images/box1-multi-rec.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 4 </span><span class="caption-text">Multi Animal project configuration file glossary</span><a class="headerlink" href="#config-box1-multi" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</div>
+</details></section>
+</section>
+<hr class="docutils" />
+<section id="phase-2-data-preparation">
+<h3><a class="toc-backref" href="#id44" role="doc-backlink">Phase 2 — Data preparation</a><a class="headerlink" href="#phase-2-data-preparation" title="Link to this heading">#</a></h3>
+<section id="c-select-frames-to-label">
+<h4><a class="toc-backref" href="#id45" role="doc-backlink">(C) Select Frames to Label</a><a class="headerlink" href="#c-select-frames-to-label" title="Link to this heading">#</a></h4>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 multi-animal" open="open">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">: Converting single-animal data to multi-animal data</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">You can use annotated data from single-animal projects, by converting those files.</p>
+<p class="sd-card-text">See the <a class="reference internal" href="../convert_maDLC.html#convert-madlc"><span class="std std-ref">conversion guide</span></a> for more information.</p>
+</div>
+</details><section id="id1">
+<h5>Overview<a class="headerlink" href="#id1" title="Link to this heading">#</a></h5>
+<p>The function <code class="docutils literal notranslate"><span class="pre">extract_frames</span></code> <strong>extracts frames from all the videos in the project configuration file in order to create
+a training dataset</strong>. The extracted frames from all the videos are stored in a <strong>separate subdirectory</strong> named after the video
+file’s name under the ‘labeled-data’ subfolder.</p>
+<p>This function also has various parameters that might be useful based on the user’s
+need.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>A good training dataset should consist of a <strong>sufficient number of frames</strong> that <strong>capture the breadth of the
+behavior</strong>. This ideally implies to select the frames from different (behavioral) sessions, different lighting and
+different animals, if those vary substantially (to train an invariant, robust feature detector).</p>
+<p>Thus for creating a robust network that you can reuse in the laboratory, a <strong>good training dataset should reflect the diversity of the
+behavior with respect to postures, luminance conditions, background conditions, animal identities, etc</strong>. of the data that
+will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200
+frames gave good results <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">Mathis et al, 2018</a>.
+However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, <strong>more
+or less frames might be necessary to create a good network</strong>.</p>
+<p>Ultimately, in order to scale up the analysis to large
+collections of videos with perhaps unexpected conditions, one can also <strong>refine the dataset in an adaptive way</strong> (see
+refinement below).</p>
+</div>
+</section>
+<section id="id2">
+<h5>Code example<a class="headerlink" href="#id2" title="Link to this heading">#</a></h5>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;automatic/manual&quot;</span><span class="p">,</span>
+    <span class="n">algo</span><span class="o">=</span><span class="s2">&quot;uniform/kmeans&quot;</span><span class="p">,</span>
+    <span class="n">crop</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>It is advisable to keep the frame size small, as large frames increase the training and
+inference time. The cropping parameters for each video can be provided in the config.yaml file (and see below).</p>
+<p>When running the function <code class="docutils literal notranslate"><span class="pre">extract_frames</span></code>, if the parameter <code class="docutils literal notranslate"><span class="pre">crop=True</span></code>, then you will be asked to draw a box within the
+GUI (and this is written to the config.yaml file).</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p><code class="docutils literal notranslate"><span class="pre">userfeedback</span></code> allows the user to specify which videos they wish to extract frames from. When set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, a dialog
+will appear, where the user is asked for each video if (additional/any) frames from this video should be
+extracted. Use this, e.g. if you have already labeled some folders and want to extract data for new videos.</p>
+</div>
+</section>
+<section id="frame-selection-methods">
+<h5>Frame selection methods<a class="headerlink" href="#frame-selection-methods" title="Link to this heading">#</a></h5>
+<p>Select representative frames from videos for labeling.</p>
+<p>Frame selection can be performed in three ways:</p>
+<ol class="arabic simple">
+<li><p>Uniform random sampling
+Use when relevant postures and behaviors are distributed throughout the video.</p></li>
+<li><p>K-means-based selection
+Use when important behaviors are sparse, brief, or when most frames look similar.
+The video is downsampled, frames are clustered by visual appearance, and frames
+are selected from different clusters to improve diversity. This can be slower
+for large or long videos.</p></li>
+<li><p>Manual selection
+Use when you already know which frames are informative and want precise control
+over the training set.</p></li>
+</ol>
+<p>In brief:</p>
+<ul class="simple">
+<li><p>Behavior varies throughout the video -&gt; use uniform sampling.</p></li>
+<li><p>Behavior is sparse or brief -&gt; use k-means selection.</p></li>
+<li><p>Specific useful frames are known -&gt; use manual selection.</p></li>
+</ul>
+<p>For best results, restrict frame extraction to video intervals containing the
+behaviors of interest using the <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">stop</span></code> parameters in <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.
+Aim to label a diverse, representative set of frames rather than simply increasing
+the total number of labeled frames.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>It is advisable to extract frames from a period of the video that contains interesting
+behaviors, and not extract the frames across the whole video. This can be achieved by using the start and stop
+parameters in the config.yaml file.
+Also, the user can change the number of frames to extract from each video using the numframes2pick in the config.yaml file.</p>
+</div>
+</section>
+<section id="manual-frame-selection">
+<h5>Manual frame selection<a class="headerlink" href="#manual-frame-selection" title="Link to this heading">#</a></h5>
+<p>However, picking frames is highly dependent on the data and the behavior being studied.
+Therefore, it is hard to provide one-size-fits-all code that extracts frames to create a good training dataset for every behavior and animal.
+If the user feels specific frames are lacking, they can extract hand selected frames of interest using the interactive GUI
+provided along with the toolbox.</p>
+<p>This can be launched by using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s2">&quot;manual&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The user can use the <em>Load Video</em> button to load one of the videos in the project configuration file, use the scroll
+bar to navigate across the video and grab a frame to extract.</p>
+<!-- (see {numref}`fig-manual-frame-selection`). -->
+<p>The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before
+reloading the set and then manually annotating them.</p>
+</section>
+<section id="id3">
+<h5>API Docs<a class="headerlink" href="#id3" title="Link to this heading">#</a></h5>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="d-label-frames">
+<h4><a class="toc-backref" href="#id46" role="doc-backlink">(D) Label Frames</a><a class="headerlink" href="#d-label-frames" title="Link to this heading">#</a></h4>
+<section id="id4">
+<h5>Overview<a class="headerlink" href="#id4" title="Link to this heading">#</a></h5>
+<p>The toolbox provides a function <strong>label_frames</strong> which helps the user to easily label
+all the extracted frames using an interactive graphical user interface (GUI).</p>
+<p>The user should have already named the bodyparts to label (points of interest) in the
+project’s configuration file by providing a list.
+The following command invokes the napari-deeplabcut labelling GUI.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Check out the <a class="reference internal" href="../gui/napari_GUI.html#file-napari-gui-landing"><span class="std std-ref">napari-deeplabcut docs</span></a> for
+more information about the labelling workflow.</p>
+</div>
+</section>
+<section id="id5">
+<h5>Code example<a class="headerlink" href="#id5" title="Link to this heading">#</a></h5>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>It is advisable to <strong>consistently label similar spots</strong> (e.g., on a wrist that is very large, try
+to label the same location). In general, invisible or occluded points should not be labeled by the user. They can
+simply be skipped by not applying the label anywhere on the frame.</p>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 multi-animal" open="open">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">: Annotation tips for multi-animal projects</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<ul class="simple">
+<li><p class="sd-card-text"><strong>Interacting Animals</strong>:<br>
+For multi-animal projects with interacting animals, make sure that interaction-frames are well-represented in your training dataset: i.e. make sure that you have labeled frames with closely interacting animals!
+If interactions do not not frequently occur in the video, it is advised to selecting some interaction-frames <em>manually</em>.</p></li>
+<li><p class="sd-card-text"><strong>Labeling and Identity</strong>:<br>
+Unless you can visually distinguish the animals,
+you do not need to maintain a consistent ID across frames. For example, with a white and
+a black mouse, always label white as animal 1 and black as animal 2. With two
+indistinguishable black mice, the ID assignment may switch between frames —
+just be consistent <em>within</em> each frame. If one animal always has a distinguishing
+feature (e.g., an optical fiber), then label them consistently across all frames</p></li>
+</ul>
+</div>
+</details></section>
+<section id="demo">
+<h5>Demo<a class="headerlink" href="#demo" title="Link to this heading">#</a></h5>
+<p><a class="reference external" href="https://youtu.be/hsA9IB5r73E">🎥 DEMO</a></p>
+<!-- Should remain in napari guide: -->
+<!-- #### HOT KEYS IN THE Labeling GUI (also see "help" in GUI) -->
+</section>
+<section id="optional-adding-new-bodypart-labels">
+<h5>Optional: Adding new bodypart labels<a class="headerlink" href="#optional-adding-new-bodypart-labels" title="Link to this heading">#</a></h5>
+<p>To add more labels to the existing labeled dataset, the user needs to append the new labels to the bodyparts in the config.yaml file.
+Thereafter, the user can call the function <strong>label_frames</strong>.
+A box will pop up and ask the user if they wish to display all parts, or only add in the new labels.
+Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.</p>
+<p>For more information about the labelling workflow, check out the <a class="reference internal" href="../gui/napari_GUI.html#file-napari-gui-landing"><span class="std std-ref">napari-deeplabcut docs</span></a>.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="e-check-annotated-frames">
+<h4><a class="toc-backref" href="#id47" role="doc-backlink">(E) Check Annotated Frames</a><a class="headerlink" href="#e-check-annotated-frames" title="Link to this heading">#</a></h4>
+<section id="id6">
+<h5>Overview<a class="headerlink" href="#id6" title="Link to this heading">#</a></h5>
+<p>Checking if the labels were created and stored correctly is beneficial for training, since labeling
+is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
+<code class="docutils literal notranslate"><span class="pre">check_labels</span></code> to do so. It is used as follows:</p>
+</section>
+<section id="id7">
+<h5>Code example<a class="headerlink" href="#id7" title="Link to this heading">#</a></h5>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_labels</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">visualizeindividuals</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="what-it-creates">
+<h5>What it creates<a class="headerlink" href="#what-it-creates" title="Link to this heading">#</a></h5>
+<p>For each video directory in labeled-data this function creates a subdirectory with <strong>labeled</strong> as a suffix. Those
+directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are
+labeled correctly.</p>
+<p>If they are not correct, the user can reload the frames (i.e. <code class="docutils literal notranslate"><span class="pre">deeplabcut.label_frames</span></code>), move them around, and click save again.</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 multi-animal" open="open">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">: Colors set per individual or body part</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">You may check and plot colors per individual or per body part, just set the flag <code class="docutils literal notranslate"><span class="pre">visualizeindividuals=True/False</span></code>.
+Note, you can run this twice in both states to see both images.</p>
+<figure class="align-center" id="fig-check-labels-individuals">
+<a class="reference internal image-reference" href="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1586203062876-D9ZL5Q7NZ464FUQN95NA/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx7krGdD6VO1HGZR3BdeCbrijc_yIxzfnirMo-szZRSL5-VIQGAVcQr6HuuQP1evvE/img1068_individuals.png?format=750w"><img alt="Example check_labels output showing annotated individuals per frame" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1586203062876-D9ZL5Q7NZ464FUQN95NA/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx7krGdD6VO1HGZR3BdeCbrijc_yIxzfnirMo-szZRSL5-VIQGAVcQr6HuuQP1evvE/img1068_individuals.png?format=750w" style="width: 50%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 5 </span><span class="caption-text">Example <code class="docutils literal notranslate"><span class="pre">check_labels</span></code> output with annotations shown per individual.</span><a class="headerlink" href="#fig-check-labels-individuals" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</div>
+</details></section>
+<section id="id8">
+<h5>API Docs<a class="headerlink" href="#id8" title="Link to this heading">#</a></h5>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+</div>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="phase-3-training-evaluation">
+<h3><a class="toc-backref" href="#id48" role="doc-backlink">Phase 3 — Training &amp; evaluation</a><a class="headerlink" href="#phase-3-training-evaluation" title="Link to this heading">#</a></h3>
+<section id="f-create-training-dataset">
+<span id="create-training-dataset"></span><h4><a class="toc-backref" href="#id49" role="doc-backlink">(F) Create Training Dataset</a><a class="headerlink" href="#f-create-training-dataset" title="Link to this heading">#</a></h4>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Only run this step <strong>where</strong> you are going to train the network. If you label on your laptop but
+move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you
+labeled on a Windows machine but train on Linux, this is handled automatically (it
+saves file sets as both Linux and Windows for you).</p>
+<ul class="simple">
+<li><p>If you move your project folder, you must only change the <code class="docutils literal notranslate"><span class="pre">project_path</span></code> (which is done automatically) in the main
+config.yaml file - that’s it - no need to change the video paths, etc! Your project is fully portable.</p></li>
+<li><p>Be aware you select your neural network backbone at this stage. As of DLC3+ we support PyTorch (and TensorFlow, but
+this will be phased out).</p></li>
+</ul>
+</div>
+<section id="id9">
+<h5>Overview<a class="headerlink" href="#id9" title="Link to this heading">#</a></h5>
+<p>This function combines the labeled datasets from all the videos and splits them to create train and test
+datasets. The training data will be used to train the network, while the test dataset will be used for evaluating the
+network.</p>
+</section>
+<section id="id10">
+<h5>Code example<a class="headerlink" href="#id10" title="Link to this heading">#</a></h5>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Optional: If the user wishes to benchmark the performance of different training settings, they can create multiple training
+datasets by specifying an integer value for <code class="docutils literal notranslate"><span class="pre">num_shuffles</span></code>; see the docstring for more details.</p></li>
+</ul>
+</section>
+<section id="output-structure-and-configuration-files">
+<h5>Output structure and configuration files<a class="headerlink" href="#output-structure-and-configuration-files" title="Link to this heading">#</a></h5>
+<p>The function creates a new shuffle(s) directory in the <strong>dlc-models-pytorch</strong> directory
+(<strong>dlc-models</strong> if using TensorFlow), in the current “iteration” directory.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">train</span></code> and <code class="docutils literal notranslate"><span class="pre">test</span></code> directories each have a configuration file:</p>
+<ul class="simple">
+<li><p><strong>pytorch_config.yaml</strong> in <strong>train</strong> and <strong>pose_cfg.yaml</strong> in <strong>test</strong> for PyTorch models</p></li>
+<li><p><strong>pose_cfg.yaml</strong> in <strong>train</strong> and <strong>test</strong> for TensorFlow models</p></li>
+</ul>
+<p>Specifically, the user can edit the <strong>pytorch_config.yaml</strong> (or <strong>pose_cfg.yaml</strong>) within the <strong>train</strong> subdirectory
+before starting the training.
+These configuration files contain meta information with regard to the parameters of the feature detectors.</p>
+<p>For more information about the <strong>pytorch_config.yaml</strong> file, see <a class="reference internal" href="../pytorch/pytorch_config.html#dlc3-pytorch-config"><span class="std std-ref">here</span></a>
+For TensorFlow-based models, see key parameters <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/main/deeplabcut/pose_cfg.yaml">here</a>.</p>
+<p>A schematic view of the structure described above is:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>&lt;iteration directory&gt;/
+└── &lt;shuffle(s) directory&gt;/
+    ├── train/
+    │   └── pytorch_config.yaml or pose_cfg.yaml
+    └── test/
+        └── pose_cfg.yaml
+</pre></div>
+</div>
+</section>
+<section id="network-and-augmentation-selection">
+<h5>Network and augmentation selection<a class="headerlink" href="#network-and-augmentation-selection" title="Link to this heading">#</a></h5>
+<p>At this step, for <code class="docutils literal notranslate"><span class="pre">create_training_dataset</span></code> you select the network you want to use, and any
+additional data augmentation (beyond our defaults). You can set <code class="docutils literal notranslate"><span class="pre">net_type</span></code>, <code class="docutils literal notranslate"><span class="pre">detector_type</span></code> (if using a detector)
+and <code class="docutils literal notranslate"><span class="pre">augmenter_type</span></code> when you call the function.</p>
+<ul class="simple">
+<li><p>Networks: ImageNet pre-trained networks OR SuperAnimal pre-trained network weights will be downloaded, as you
+select. You can decide to do transfer-learning (recommended) or “fine-tune” both the backbone and the decoder head. We
+suggest seeing our <a class="reference internal" href="../pytorch/architectures.html#dlc3-architectures"><span class="std std-ref">dedicated documentation on models</span></a> for more information (
+or the <a class="reference internal" href="../recipes/nn.html#what-neural-network-should-i-use"><span class="std std-ref">this page on selecting models</span></a> for the TensorFlow engine).</p></li>
+</ul>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>🚨 If they do not download (you will see this downloading in the terminal), then you may not have permission to do
+so - be sure to open your terminal “as an admin” (This is only something we have seen with some Windows users - see
+the <strong><a class="reference internal" href="../recipes/nn.html#tf-training-tips-and-tricks"><span class="std std-ref">docs for more help!</span></a></strong>).</p>
+</div>
+<p><strong>Data augmentation:</strong> At this stage you can also decide what type of augmentation to
+use. Once you’ve called <code class="docutils literal notranslate"><span class="pre">create_training_dataset</span></code>, you can edit the
+<a class="reference internal" href="../pytorch/pytorch_config.html#dlc3-pytorch-config"><span class="std std-ref"><strong>pytorch_config.yaml</strong></span></a> file that was created (or for the
+TensorFlow engine, the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/main/deeplabcut/pose_cfg.yaml"><strong>pose_cfg.yaml</strong></a> file).</p>
+<ul class="simple">
+<li><p>PyTorch Engine: <a class="reference external" href="https://albumentations.ai/docs/">Albumentations</a> is used for data
+augmentation.</p>
+<ul>
+<li><p>See the <a class="reference internal" href="../pytorch/pytorch_config.html#dlc3-pytorch-config"><span class="std std-ref"><strong>pytorch_config.yaml</strong></span></a> for more
+information about image augmentation options.</p></li>
+</ul>
+</li>
+<li><p>TensorFlow Engine: The default augmentation works well for most tasks, but there are many options, more data augmentation, intermediate
+supervision, etc. Here are the available loaders:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">imgaug</span></code>: a lot of augmentation possibilities, efficient code for target map creation &amp; batch sizes &gt;1 supported.
+You can set the parameters such as the <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> in the <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> file for the model you are training. This
+is the recommended default!</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">crop_scale</span></code>: our standard DLC 2.0 introduced in Nature Protocols variant (scaling, auto-crop augmentation)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tensorpack</span></code>: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created
+less efficiently than in imgaug, does not allow batch size&gt;1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">deterministic</span></code>: only useful for testing, freezes numpy seed; otherwise like default.</p></li>
+</ul>
+</li>
+</ul>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 multi-animal" open="open">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">: Augmentation details (TensorFlow)</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">Only <code class="docutils literal notranslate"><span class="pre">imgaug</span></code> augmentation is available for multi-animal projects with the TensorFlow
+engine.</p>
+<p class="sd-card-text">Image cropping is part of the augmentation pipeline — crops are <strong>no longer</strong> stored
+in <code class="docutils literal notranslate"><span class="pre">labeled-data/..._cropped</span></code> folders as in older versions. The crop size defaults to
+<code class="docutils literal notranslate"><span class="pre">(400,</span> <span class="pre">400)</span></code>. If your images are very large (e.g. 2K or 4K pixels), consider
+increasing the crop size, but be aware that unless you have a GPU with ≥24 GB memory
+you may hit out-of-memory errors. Lowering the batch size can help, but may affect
+performance.</p>
+<p class="sd-card-text">You can also specify a <strong>crop sampling strategy</strong> (editable in the <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code>
+before training):</p>
+<ul class="simple">
+<li><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">uniform</span></code> — crop centers are drawn at random over the image.</p></li>
+<li><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">keypoints</span></code> — crop centers are drawn at annotated keypoint locations.</p></li>
+<li><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">density</span></code> — crops focus on regions with high body-part density.</p></li>
+<li><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">hybrid</span></code> — combines <code class="docutils literal notranslate"><span class="pre">uniform</span></code> and <code class="docutils literal notranslate"><span class="pre">density</span></code> for a balanced strategy (<strong>default</strong>).</p></li>
+</ul>
+<p class="sd-card-text">See <a class="reference external" href="https://www.cell.com/neuron/pdf/S0896-6273(20)30717-0.pdf">Mathis et al., 2020 — A Primer on Motion Capture with Deep Learning</a>
+(Fig. 8) for a worked example of the benefit of data augmentation with <code class="docutils literal notranslate"><span class="pre">imgaug</span></code> and
+exploiting the symmetries of your data.</p>
+</div>
+</details></section>
+<section id="model-comparison">
+<h5>Model comparison<a class="headerlink" href="#model-comparison" title="Link to this heading">#</a></h5>
+<p>You can also test several models by creating the same train/test
+split for different networks.
+You can easily do this in the Project Manager GUI (by selecting the “Use an existing
+data split” option), which also lets you compare PyTorch and TensorFlow models.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 3.0.0: </span>You can now create new shuffles using the same train/test split as
+existing shuffles with <code class="docutils literal notranslate"><span class="pre">create_training_dataset_from_existing_split</span></code>.</p>
+<p>This allows you to compare model performance (between different architectures or when using different
+training hyper-parameters) as the shuffles were trained on the same data, and evaluated
+on the same test data!</p>
+<p>Example usage - creating 3 new shuffles (with indices 10, 11 and 12) for a ResNet 50
+pose estimation model, using the same data split as was used for shuffle 0:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset_from_existing_split</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="n">from_shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">shuffles</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;resnet_50&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="id11">
+<h5>API Docs<a class="headerlink" href="#id11" title="Link to this heading">#</a></h5>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs for deeplabcut.create_training_dataset</p>
+</div>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs for deeplabcut.create_training_model_comparison</p>
+</div>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs for deeplabcut.create_training_dataset_from_existing_split</p>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="g-train-the-network">
+<h4><a class="toc-backref" href="#id50" role="doc-backlink">(G) Train the Network</a><a class="headerlink" href="#g-train-the-network" title="Link to this heading">#</a></h4>
+<section id="id12">
+<h5>Overview<a class="headerlink" href="#id12" title="Link to this heading">#</a></h5>
+<p>The function <code class="docutils literal notranslate"><span class="pre">train_network</span></code> helps the user in training the network. It is used as follows:</p>
+</section>
+<section id="id13">
+<h5>Code example<a class="headerlink" href="#id13" title="Link to this heading">#</a></h5>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The set of arguments in the function starts training the network for the dataset created
+for one specific shuffle. Note that you can change training parameters in the
+<a class="reference internal" href="../pytorch/pytorch_config.html#dlc3-pytorch-config"><span class="std std-ref"><strong>pytorch_config.yaml</strong></span></a> file (or <strong>pose_cfg.yaml</strong> for TensorFlow
+models) of the model that you want to train (before you start training).</p>
+<p>At user-specified iterations during training checkpoints are stored in the subdirectory
+<em>train</em> under the respective iteration &amp; shuffle directory.</p>
+<div class="dropdown admonition">
+<p class="admonition-title">Tips on training models with the PyTorch Engine</p>
+<p>Example parameters that one can call:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">,</span>
+    <span class="n">max_snapshots_to_keep</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">displayiters</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">save_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>PyTorch models in DeepLabCut 3.0 are trained for a set number of epochs, instead of a
+maximum number of iterations (which is what was used for TensorFlow models). An epoch
+is a single pass through the training dataset, which means your model has seen each
+training image exactly once. So if you have 64 training images for your network, an
+epoch is 64 iterations with batch size 1 (or 32 iterations with batch size 2, 16 with
+batch size 4, etc.).</p>
+<p>By default, the pretrained networks are not in the DeepLabCut toolbox (as they can be
+more than 100MB), but they get downloaded automatically before you train.</p>
+<p>If the user wishes to restart the training at a specific checkpoint they can specify the
+full path of the checkpoint to the variable <code class="docutils literal notranslate"><span class="pre">resume_training_from</span></code> in the <a class="reference internal" href="../pytorch/pytorch_config.html#dlc3-pytorch-config"><span class="std std-ref">
+<strong>pytorch_config.yaml</strong></span></a> file (checkout the “Restarting Training at a Specific Checkpoint”
+section of the docs) under the <em>train</em> subdirectory.</p>
+<p><strong>Tip</strong>: It is recommended to train the networks <strong>until the loss plateaus</strong>
+(depending on the dataset, model architecture and training hyper-parameters this happens
+after 100 to 250 epochs of training).</p>
+<p>The variables <code class="docutils literal notranslate"><span class="pre">display_iters</span></code> and <code class="docutils literal notranslate"><span class="pre">save_epochs</span></code> in the <a class="reference internal" href="../pytorch/pytorch_config.html#dlc3-pytorch-config"><span class="std std-ref"><strong>pytorch_config.yaml</strong></span></a> file allow the user to alter how often the loss is displayed
+and how often the weights are stored. We suggest saving every 5 to 25 epochs.</p>
+</div>
+<div class="dropdown admonition">
+<p class="admonition-title">Tips on training models with the TensorFlow Engine</p>
+<p>Example parameters that one can call:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">gputouse</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_snapshots_to_keep</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">autotune</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">displayiters</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">saveiters</span><span class="o">=</span><span class="mi">25000</span><span class="p">,</span>
+    <span class="n">maxiters</span><span class="o">=</span><span class="mi">300000</span><span class="p">,</span>
+    <span class="n">allow_growth</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, the pretrained networks are not in the DeepLabCut toolbox (as they are
+around 100MB each), but they get downloaded before you train. However, if not previously
+downloaded from the TensorFlow model weights, it will be downloaded and stored in a
+subdirectory <em>pre-trained</em> under the subdirectory <em>models</em> in
+<em>Pose_Estimation_Tensorflow</em>. At user specified iterations during training checkpoints
+are stored in the subdirectory <em>train</em> under the respective iteration directory.</p>
+<p>If the user wishes to restart the training at a specific checkpoint they can specify the
+full path of the checkpoint to the variable <code class="docutils literal notranslate"><span class="pre">init_weights</span></code> in the <strong>pose_cfg.yaml</strong>
+file under the <em>train</em> subdirectory (see <a class="reference internal" href="#pose-cfg-box2"><span class="std std-ref">Box 2</span></a>).</p>
+<p><strong>Tip</strong>: It is recommended to train the networks for thousands of iterations
+until the loss plateaus (typically around <strong>500,000</strong>) if you use batch size 1. If you
+want to batch train, we recommend using Adam,
+<a class="reference internal" href="../recipes/nn.html#tf-custom-image-augmentation"><span class="std std-ref">see more here</span></a>.</p>
+<p>The variables <code class="docutils literal notranslate"><span class="pre">display_iters</span></code> and <code class="docutils literal notranslate"><span class="pre">save_iters</span></code> in the <strong>pose_cfg.yaml</strong> file allows
+the user to alter how often the loss is displayed and how often the weights are stored.</p>
+<p><strong>maDeepLabCut recommendation:</strong> For multi-animal projects we are using not only
+different and new output layers, but also new data augmentation, optimization, learning
+rates, and batch training defaults. Thus, please use a lower <code class="docutils literal notranslate"><span class="pre">save_iters</span></code> and
+<code class="docutils literal notranslate"><span class="pre">maxiters</span></code>. I.e. we suggest saving every 10K-15K iterations, and only training until
+50K-100K iterations. We recommend you look closely at the loss to not overfit on your
+data. This will reduce your training time.</p>
+<figure class="align-center" id="pose-cfg-box2">
+<img alt="Box 2 - Single Animal TensorFlow Configuration File Glossary" src="../../_images/box2-single.png" />
+<figcaption>
+<p><span class="caption-number">Fig. 6 </span><span class="caption-text">Single-animal TensorFlow configuration file glossary</span><a class="headerlink" href="#pose-cfg-box2" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="id14">
+<h5>API Docs<a class="headerlink" href="#id14" title="Link to this heading">#</a></h5>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs for train_network</p>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="h-evaluate-the-trained-network">
+<h4><a class="toc-backref" href="#id51" role="doc-backlink">(H) Evaluate the Trained Network</a><a class="headerlink" href="#h-evaluate-the-trained-network" title="Link to this heading">#</a></h4>
+<section id="id15">
+<h5>Overview<a class="headerlink" href="#id15" title="Link to this heading">#</a></h5>
+<p>It is important to evaluate the performance of the trained network. This performance is measured by computing
+the average root mean square error (RMSE) between the manual labels and the ones predicted by DeepLabCut.
+The RMSE is saved as a comma-separated file and displayed for all pairs and only likely pairs (<span class="math notranslate nohighlight">\(&gt;p_{\text{cutoff}}\)</span>).</p>
+<p>This helps to exclude, for example, occluded body parts. One of the strengths of DeepLabCut is that due to the
+probabilistic output of the scoremap, it can, if sufficiently trained, also reliably report if a body part is visible
+in a given frame. (see discussions of finger tips in reaching and the Drosophila legs during 3D behavior in
+<a class="reference external" href="https://doi.org/10.1038/s41593-018-0209-y">Mathis et al, 2018</a>).</p>
+<p>For multi-animal projects, two additional metrics are reported alongside RMSE: <strong>Mean Average Precision (mAP)</strong>
+and <strong>Mean Average Recall (mAR)</strong>. These describe how precisely and completely the model detects individuals
+across frames, and are more informative than RMSE alone when multiple animals are present.</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 multi-animal" open="open">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">: mAP and mAR explained</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">For multi-animal pose estimation the model can produce multiple detections per image.
+<strong>mAP</strong> and <strong>mAR</strong> estimate precision and recall by sweeping over different thresholds
+of “correctness” and averaging the results. Correctness is evaluated
+through <a class="reference external" href="https://cocodataset.org/#keypoints-eval">object-keypoint similarity (OKS)</a>.</p>
+<p class="sd-card-text">A good resource is the <a class="reference external" href="https://cs230.stanford.edu/section/8/#object-detection-iou-ap-and-map">Stanford CS230 course notes on mAP</a>
+(written for object detection with bounding boxes, but the same concept applies here
+with OKS instead of IoU).</p>
+<p class="sd-card-text">Unlike RMSE — which is computed per body part over all frames — mAP/mAR capture whether
+the correct number of individuals was detected and whether each individual’s keypoints
+were assigned correctly, making them the primary metrics for judging multi-animal
+tracking readiness.</p>
+</div>
+</details></section>
+<section id="id16">
+<h5>Code example<a class="headerlink" href="#id16" title="Link to this heading">#</a></h5>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">evaluate_network</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">plotting</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">plotting</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> plots all the testing and training frames with the manual and predicted labels
+(colored by body part by default). For multi-animal projects you can also pass <code class="docutils literal notranslate"><span class="pre">plotting=&quot;individual&quot;</span></code> to color
+predictions by individual instead. The user should visually check the labeled test (and training) images that are
+created in the ‘evaluation-results’ directory.</p>
+<p>Ideally, DeepLabCut labeled unseen (test images) according to the user’s required accuracy, and the average train
+and test errors are comparable (good generalization). What (numerically) comprises an acceptable RMSE depends on
+many factors (including the size of the tracked body parts, the labeling variability, etc.). Note that the test error
+can also be larger than the training error due to human variability (in labeling, see Figure 2 in Mathis et al, Nature
+Neuroscience 2018).</p>
+</section>
+<section id="optional-parameters">
+<h5>Optional parameters<a class="headerlink" href="#optional-parameters" title="Link to this heading">#</a></h5>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Shuffles:</span> <span class="pre">list,</span> <span class="pre">optional</span></code> - List of integers specifying the shuffle indices of the training dataset.
+The default is [1]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plotting:</span> <span class="pre">bool</span> <span class="pre">|</span> <span class="pre">str,</span> <span class="pre">optional</span></code> - Plots the predictions on the train and test images. The default is <code class="docutils literal notranslate"><span class="pre">False</span></code>;
+if provided it must be either <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">False</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;bodypart&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;individual&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">show_errors:</span> <span class="pre">bool,</span> <span class="pre">optional</span></code> - Display train and test errors. The default is <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">comparisonbodyparts:</span> <span class="pre">list</span> <span class="pre">of</span> <span class="pre">bodyparts,</span> <span class="pre">Default</span> <span class="pre">is</span> <span class="pre">all</span></code> - The average error will be computed for those body parts
+only (Has to be a subset of the body parts).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gputouse:</span> <span class="pre">int,</span> <span class="pre">optional</span></code> - Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not
+have a GPU, put None. See: <a class="reference external" href="https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries">https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pcutoff:</span> <span class="pre">float</span> <span class="pre">|</span> <span class="pre">list[float]</span> <span class="pre">|</span> <span class="pre">dict[str,</span> <span class="pre">float],</span> <span class="pre">optional</span></code>
+(Only applicable when using the PyTorch engine. For TensorFlow, set <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file.)
+Specifies the cutoff value(s) used to compute evaluation metrics.</p>
+<ul>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), the cutoff will be loaded from the project configuration.</p></li>
+<li><p>To apply a single cutoff value to all bodyparts, provide a <code class="docutils literal notranslate"><span class="pre">float</span></code>.</p></li>
+<li><p>To specify different cutoffs per bodypart, provide either:</p>
+<ul>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">list[float]</span></code>: one value per bodypart, with an additional value for each unique bodypart if applicable.</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">float]</span></code>: where keys are bodypart names and values are the corresponding cutoff values.
+If a bodypart is not included in the provided dictionary, a default <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> of <code class="docutils literal notranslate"><span class="pre">0.6</span></code> will be used for that bodypart.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>The plots can be customized by editing the <strong>config.yaml</strong> file (i.e., the colormap, scale, marker size (dotsize), and
+transparency of labels (alphavalue) can be modified). By default each body part is plotted in a different color
+(governed by the colormap) and the plot labels indicate their source.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Note that by default:</p>
+<ul class="simple">
+<li><p><strong>Human labels</strong> are plotted as plus (<span class="math notranslate nohighlight">\(+\)</span>)</p></li>
+<li><p><strong>DeepLabCut’s predictions</strong> either as:</p>
+<ul>
+<li><p>dot (<span class="math notranslate nohighlight">\(\cdot\)</span>) for confident predictions with likelihood <span class="math notranslate nohighlight">\(&gt; p_{\text{cutoff}}\)</span></p></li>
+<li><p>cross (<span class="math notranslate nohighlight">\(\times\)</span>) for (likelihood <span class="math notranslate nohighlight">\(\leq p_{\text{cutoff}}\)</span>).</p></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="output-and-interpretation">
+<h5>Output and interpretation<a class="headerlink" href="#output-and-interpretation" title="Link to this heading">#</a></h5>
+<p>The evaluation results for each shuffle of the training dataset are stored in a unique subdirectory in a newly created
+directory ‘evaluation-results-pytorch’ (‘evaluation-results’ for TensorFlow models) in the project directory.</p>
+<p>The user can visually inspect if the distance between the labeled and the predicted body parts are acceptable.
+In the event of benchmarking with different shuffles of same training dataset, the user can provide multiple shuffle
+indices to evaluate the corresponding network.</p>
+<p>Note that with multi-animal projects additional distance statistics aggregated over animals or bodyparts are also stored
+in that directory.
+This aims at providing a finer quantitative evaluation of multi-animal prediction performance
+before animal tracking.</p>
+<p><strong>If the generalization is not sufficient</strong>, the user might want to:</p>
+<ul class="simple">
+<li><p>Check if the labels were imported correctly; i.e., invisible points are not labeled and the points of interest are labeled accurately</p></li>
+<li><p>Make sure that the loss has already converged</p></li>
+<li><p>Consider labeling additional images and make another iteration of the training dataset</p></li>
+</ul>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 multi-animal">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">: Skeleton selection and map inspection</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">In multi-animal projects, model evaluation is crucial because this is when the
+data-driven selection of the <strong>optimal skeleton</strong> is carried out. Skipping this step
+causes video analysis to use the redundant skeleton by default, which is slower and
+does not guarantee best performance.</p>
+<p class="sd-card-text">You should also plot the scoremaps, locref layers, and PAFs (for relevant models) to assess detection quality
+before proceeding to video analysis.</p>
+</div>
+</details></section>
+<section id="optional-maps">
+<h5>Optional maps<a class="headerlink" href="#optional-maps" title="Link to this heading">#</a></h5>
+<p><strong>Optional:</strong> You can also plot the scoremaps, locref layers, and PAFs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_save_all_maps</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">,</span> <span class="n">Indices</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>you can drop <code class="docutils literal notranslate"><span class="pre">Indices</span></code> to run this on all training/testing images (this is slow!)</p>
+</section>
+<section id="id17">
+<h5>API Docs<a class="headerlink" href="#id17" title="Link to this heading">#</a></h5>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Before moving on, make a deliberate decision about whether the pose estimation quality is sufficient.
+<strong>If you do not have good pose estimation evaluation metrics at this point, please revisit the original labels, add more training data and
+refine the model rather than proceeding with the current results.</strong></p>
+</div>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="phase-4-analysis">
+<h3><a class="toc-backref" href="#id52" role="doc-backlink">Phase 4 — Analysis</a><a class="headerlink" href="#phase-4-analysis" title="Link to this heading">#</a></h3>
+<section id="i-analyze-new-videos">
+<h4><a class="toc-backref" href="#id53" role="doc-backlink">(I) Analyze New Videos</a><a class="headerlink" href="#i-analyze-new-videos" title="Link to this heading">#</a></h4>
+<section id="id18">
+<h5>Overview<a class="headerlink" href="#id18" title="Link to this heading">#</a></h5>
+<p>The trained network can be used to analyze new videos. These videos <strong>do not</strong> need to be in the config file!
+You can analyze new videos with the following line of code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;fullpath/analysis/project/videos/reachingvideo1.avi&quot;</span><span class="p">],</span>
+    <span class="n">save_as_csv</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>There are several other optional inputs to control the device, the output format, dynamic cropping parameters, etc:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="n">videos</span><span class="p">,</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;avi&quot;</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">save_as_csv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">destfolder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">dynamic</span><span class="o">=</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="mf">.5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3 multi-animal">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">: Automated tracking</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">For multi-animal projects, the video analysis is slightly more complex compared to single-animal projects: besides
+bare keypoint estimation, the keypoints need to be assigned to one of the different individuals and coherently tracked
+across frames. This tracking procedure is <strong>automated by default</strong>, but it is worthwhile to understand the details,
+which are discussed in the <a class="reference internal" href="multi-animal-tracking.html#file-multi-animal-tracking"><span class="std std-ref">multi-animal tracking guide</span></a>.</p>
+<p class="sd-card-text"><strong>Disabling automated tracking</strong><br>
+After bare pose estimation, multi-animal tracking is applied by default (<code class="docutils literal notranslate"><span class="pre">auto_track=True</span></code>). This produces an <em>.h5</em> file
+that is ready for downstream use. To disable the automated tracking step and inspect raw detections before tracking,
+pass <code class="docutils literal notranslate"><span class="pre">auto_track=False</span></code> explicitly to <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code>. No <em>.h5</em> file will be produced - only a <em>.pickle</em>.
+The results can be visualized by running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_video_with_all_detections</span><span class="p">(</span>
+  <span class="n">config_path</span><span class="p">,</span>
+  <span class="n">videos_to_analyze</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p class="sd-card-text"><strong>Conditional top-down tracking</strong><br>
+For conditional top-down (CTD) models, tracking can be performed inside the model, using temporal context from
+previous frames to condition predictions on the current frame. This is a distinct mechanism from <code class="docutils literal notranslate"><span class="pre">auto_track</span></code>.
+Pass <code class="docutils literal notranslate"><span class="pre">ctd_tracking=True</span></code> to <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code> when using any model whose name starts with <code class="docutils literal notranslate"><span class="pre">ctd_</span></code>.
+When <code class="docutils literal notranslate"><span class="pre">ctd_tracking=True</span></code>, post-processing tracking (<code class="docutils literal notranslate"><span class="pre">auto_track</span></code>) is skipped automatically.</p>
+</div>
+</details></section>
+<section id="output-and-storage">
+<h5>Output and storage<a class="headerlink" href="#output-and-storage" title="Link to this heading">#</a></h5>
+<p>The user can choose which checkpoint to use for video analysis by setting the corresponding checkpoint index in the
+<code class="docutils literal notranslate"><span class="pre">snapshotindex</span></code> variable of the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file. By default, the most recent checkpoint (i.e., last) is used for
+video analysis.</p>
+<p>The labels are stored in a MultiIndex <a class="reference external" href="http://pandas.pydata.org">Pandas</a> DataFrame, containing the network name, body part name, (x, y) label positions in pixels, and the likelihood for each body part in each frame. These arrays are
+stored in an efficient Hierarchical Data Format (HDF) in the same directory, where the video is stored.</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">save_as_csv</span></code> flag is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the data can also be exported in comma-separated values (.csv) format, which can be imported into many programs such as MATLAB, R, and Prism. By default, this flag is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>You can also specify a destination folder (<code class="docutils literal notranslate"><span class="pre">destfolder</span></code>) for the output files by providing the path to the folder where you would like the results to be written.</p>
+</section>
+<section id="dynamic-cropping-of-videos">
+<h5>Dynamic-cropping of videos<a class="headerlink" href="#dynamic-cropping-of-videos" title="Link to this heading">#</a></h5>
+<p>If you have large frames and the animal/object occupies a smaller fraction, you can crop around your animal/object to make processing speeds faster. For example, if you have a large open
+field experiment but only track the mouse, this will speed up your analysis (also helpful for real-time applications).
+To use this simply add <code class="docutils literal notranslate"><span class="pre">dynamic=(True,.5,10)</span></code> when you call <code class="docutils literal notranslate"><span class="pre">analyze_videos</span></code>.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>dynamic: tuple containing (state, detectionthreshold, margin)
+</pre></div>
+</div>
+<p>If <code class="docutils literal notranslate"><span class="pre">state</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, then dynamic cropping will be performed.
+That means that if an object is detected (i.e., any body part likelihood &gt; <code class="docutils literal notranslate"><span class="pre">detectionthreshold</span></code>),
+then object boundaries are computed according to the smallest/largest x position and
+smallest/largest y position of all body parts.
+This window is expanded by <code class="docutils literal notranslate"><span class="pre">margin</span></code> and from then on only the posture within this crop is analyzed (until the object is lost;
+i.e., &lt; <code class="docutils literal notranslate"><span class="pre">detectionthreshold</span></code>).
+The current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large enough given the movement of the animal).</p>
+</section>
+<section id="id19">
+<h5>API Docs<a class="headerlink" href="#id19" title="Link to this heading">#</a></h5>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="j-filter-pose-data">
+<h4><a class="toc-backref" href="#id54" role="doc-backlink">(J) Filter Pose Data</a><a class="headerlink" href="#j-filter-pose-data" title="Link to this heading">#</a></h4>
+<section id="id20">
+<h5>Overview<a class="headerlink" href="#id20" title="Link to this heading">#</a></h5>
+<p>You can also filter the predictions with a median filter (default) or with a <a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html">SARIMAX model</a>, if you wish.
+This creates a new .h5 file with the ending <code class="docutils literal notranslate"><span class="pre">*_filtered</span></code> that you can use in <code class="docutils literal notranslate"><span class="pre">create_labeled_video</span></code> and/or <code class="docutils literal notranslate"><span class="pre">plot_trajectories</span></code>.</p>
+</section>
+<section id="code-examples">
+<h5>Code examples<a class="headerlink" href="#code-examples" title="Link to this heading">#</a></h5>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;fullpath/analysis/project/videos/reachingvideo1.avi&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>An example call:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;fullpath/analysis/project/videos&quot;</span><span class="p">],</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span>
+    <span class="n">filtertype</span><span class="o">=</span><span class="s2">&quot;arima&quot;</span><span class="p">,</span>
+    <span class="n">ARdegree</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">MAdegree</span><span class="o">=</span><span class="mi">2</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Here are parameters you can modify and pass:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;fullpath/analysis/project/videos/reachingvideo1.avi&quot;</span><span class="p">],</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">filtertype</span><span class="o">=</span><span class="s2">&quot;arima&quot;</span><span class="p">,</span>
+    <span class="n">p_bound</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">ARdegree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">MAdegree</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="example-output">
+<h5>Example output<a class="headerlink" href="#example-output" title="Link to this heading">#</a></h5>
+<p>Here is an example of how this can be applied to a video:</p>
+<figure class="align-center" id="fig-filter-example">
+<a class="reference internal image-reference" href="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w"><img alt="Example output of filterpredictions applied to a video" src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w" style="width: 70%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 7 </span><span class="caption-text">Example output of <code class="docutils literal notranslate"><span class="pre">filterpredictions</span></code> applied to a video.</span><a class="headerlink" href="#fig-filter-example" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="id21">
+<h5>API Docs<a class="headerlink" href="#id21" title="Link to this heading">#</a></h5>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="k-plot-trajectories">
+<h4><a class="toc-backref" href="#id55" role="doc-backlink">(K) Plot Trajectories</a><a class="headerlink" href="#k-plot-trajectories" title="Link to this heading">#</a></h4>
+<section id="id22">
+<h5>Overview<a class="headerlink" href="#id22" title="Link to this heading">#</a></h5>
+<p>The plotting components of this toolbox utilize matplotlib. Therefore, these plots can easily be customized by
+the end user.
+We also provide a function to plot the trajectory of the extracted poses across the analyzed video
+(see <a class="reference internal" href="#fig-trajectory-frame"><span class="std std-numref">Fig. 8</span></a> and <a class="reference internal" href="#fig-trajectory-plots"><span class="std std-numref">Fig. 9</span></a>).</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Before creating labeled videos, set the <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> threshold in <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>. For a
+well-trained network this should be high, e.g. <code class="docutils literal notranslate"><span class="pre">0.8</span></code> or higher. If you filled in gaps,
+set it to <code class="docutils literal notranslate"><span class="pre">0</span></code> to make those interpolated points visible.</p>
+<p>You can determine a good <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> value by inspecting the likelihood plot produced by
+<code class="docutils literal notranslate"><span class="pre">plot_trajectories</span></code>:</p>
+</div>
+</section>
+<section id="id23">
+<h5>Code example<a class="headerlink" href="#id23" title="Link to this heading">#</a></h5>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">plot_trajectories</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fullpath/analysis/project/videos/reachingvideo1.avi&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="output">
+<h5>Output<a class="headerlink" href="#output" title="Link to this heading">#</a></h5>
+<p>It creates a folder called <code class="docutils literal notranslate"><span class="pre">plot-poses</span></code> (in the directory of the video). The plots display the coordinates of body parts
+vs. time, likelihoods vs time, the x- vs. y- coordinate of the body parts, as well as histograms of consecutive
+coordinate differences. These plots help the user to quickly assess the tracking performance for a video. Ideally, the
+likelihood stays high and the histogram of consecutive coordinate differences has values close to zero (i.e. no jumps in
+body part detections across frames). Example outputs are shown below.</p>
+<figure class="align-center" id="fig-trajectory-frame">
+<a class="reference internal image-reference" href="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559946148685-WHDO5IG9MMCHU0T7RC62/ke17ZwdGBToddI8pDm48kEOb1vFO6oRDmR8SXh4iL21Zw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVG1gXK66ltnjKh4U2immgm7AVAdfOWODmXNLQLqbLRZ2DqWIIaSPh2v08GbKqpiV54/file0289.png?format=500w"><img alt="Example video frame with tracked body parts overlaid" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559946148685-WHDO5IG9MMCHU0T7RC62/ke17ZwdGBToddI8pDm48kEOb1vFO6oRDmR8SXh4iL21Zw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVG1gXK66ltnjKh4U2immgm7AVAdfOWODmXNLQLqbLRZ2DqWIIaSPh2v08GbKqpiV54/file0289.png?format=500w" style="height: 240px;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 8 </span><span class="caption-text">Example video frame with tracked body parts overlaid.</span><a class="headerlink" href="#fig-trajectory-frame" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="fig-trajectory-plots">
+<a class="reference internal image-reference" href="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559939762886-CCB0R107I2HXAHZLHECP/ke17ZwdGBToddI8pDm48kNeA8e5AnyMqj80u4_mB0hV7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UcpboONgOQYHLzaUWEI1Ir9fXt7Ehyn7DSgU3GCReAA-ZDqXZYzu2fuaodM4POSZ4w/plot_poses-01.png?format=1000w"><img alt="Example plot_trajectories output" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559939762886-CCB0R107I2HXAHZLHECP/ke17ZwdGBToddI8pDm48kNeA8e5AnyMqj80u4_mB0hV7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UcpboONgOQYHLzaUWEI1Ir9fXt7Ehyn7DSgU3GCReAA-ZDqXZYzu2fuaodM4POSZ4w/plot_poses-01.png?format=1000w" style="height: 250px;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 9 </span><span class="caption-text">Example <code class="docutils literal notranslate"><span class="pre">plot_trajectories</span></code> output: body part coordinates, likelihoods, and consecutive displacement histograms.</span><a class="headerlink" href="#fig-trajectory-plots" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="id24">
+<h5>API Docs<a class="headerlink" href="#id24" title="Link to this heading">#</a></h5>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="l-create-labeled-videos">
+<h4><a class="toc-backref" href="#id56" role="doc-backlink">(L) Create Labeled Videos</a><a class="headerlink" href="#l-create-labeled-videos" title="Link to this heading">#</a></h4>
+<section id="id25">
+<h5>Overview<a class="headerlink" href="#id25" title="Link to this heading">#</a></h5>
+<p>Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
+labels on top of the frame and creating a video. There are two modes to create videos: ‘fast’ and ‘slow’ (but higher
+quality). One can use the command as follows to create multiple labeled videos:</p>
+</section>
+<section id="id26">
+<h5>Code example<a class="headerlink" href="#id26" title="Link to this heading">#</a></h5>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;fullpath/analysis/project/videos/reachingvideo1.avi&quot;</span><span class="p">,</span>
+     <span class="s2">&quot;fullpath/analysis/project/videos/reachingvideo2.avi&quot;</span><span class="p">],</span>
+    <span class="n">save_frames</span> <span class="o">=</span> <span class="kc">True</span><span class="o">/</span><span class="kc">False</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Optionally, if you want to use the filtered data for a video or directory of filtered videos pass <code class="docutils literal notranslate"><span class="pre">filtered=True</span></code>,
+i.e.:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;fullpath/afolderofvideos&quot;</span><span class="p">],</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span>
+    <span class="n">filtered</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also optionally add a skeleton to connect points and/or add a history of points for visualization
+(see <a class="reference internal" href="#fig-skeleton-trail"><span class="std std-numref">Fig. 10</span></a>). To set the “trailing points” you need to pass <code class="docutils literal notranslate"><span class="pre">trailpoints</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;fullpath/afolderofvideos&quot;</span><span class="p">],</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span>
+    <span class="n">trailpoints</span><span class="o">=</span><span class="mi">10</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">create_labeled_video</span></code> function contains a lot of other parameters that can be configured to tailor your output
+video. (Note that <code class="docutils literal notranslate"><span class="pre">displayedindividuals</span></code>, <code class="docutils literal notranslate"><span class="pre">color_by</span></code>, <code class="docutils literal notranslate"><span class="pre">track_method</span></code>, and <code class="docutils literal notranslate"><span class="pre">displaycropped</span></code> are <em>multi-animal-specific</em>).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="p">[</span><span class="n">videos</span><span class="p">],</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s1">&#39;avi&#39;</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">filtered</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">fastmode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">save_frames</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">Frames2plot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">displayedbodyparts</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+    <span class="n">displayedindividuals</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+    <span class="n">codec</span><span class="o">=</span><span class="s1">&#39;mp4v&#39;</span><span class="p">,</span>
+    <span class="n">outputframerate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">destfolder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">trailpoints</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">displaycropped</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">color_by</span><span class="o">=</span><span class="s1">&#39;bodypart&#39;</span><span class="p">,</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="skeleton-configuration">
+<h5>Skeleton configuration<a class="headerlink" href="#skeleton-configuration" title="Link to this heading">#</a></h5>
+<p>To draw a skeleton, you need to first define the pairs of connected nodes (in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file) and set the
+skeleton color (in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file).
+There is also a GUI to help you do this, used by calling <code class="docutils literal notranslate"><span class="pre">deeplabcut.SkeletonBuilder(config_path)</span></code>, where <code class="docutils literal notranslate"><span class="pre">config_path</span></code> is the path to your project’s <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file on disk.</p>
+<p>Here is how the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> additions/edits should look (for example, on the Openfield demo data we provide):</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plotting configuration</span>
+<span class="nt">skeleton</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;snout&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;leftear&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;snout&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;rightear&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;leftear&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;tailbase&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;leftear&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;rightear&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;rightear&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;tailbase&quot;</span><span class="p p-Indicator">]</span>
+<span class="nt">skeleton_color</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">white</span>
+<span class="nt">pcutoff</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span>
+<span class="nt">dotsize</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+<span class="nt">alphavalue</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span>
+<span class="nt">colormap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">jet</span>
+</pre></div>
+</div>
+<p>Then pass <code class="docutils literal notranslate"><span class="pre">draw_skeleton=True</span></code> with the command:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;fullpath/afolderofvideos&quot;</span><span class="p">],</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span>
+    <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>You can create a video with only the “dots” plotted, i.e., in the
+<a class="reference external" href="https://link.springer.com/article/10.1007/BF00309043">style of Johansson</a>, by passing <code class="docutils literal notranslate"><span class="pre">keypoints_only=True</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,[</span><span class="s2">&quot;fullpath/afolderofvideos&quot;</span><span class="p">],</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span>
+    <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The best quality videos are created when <code class="docutils literal notranslate"><span class="pre">fastmode=False</span></code> is passed. Therefore, when
+<code class="docutils literal notranslate"><span class="pre">trailpoints</span></code> and <code class="docutils literal notranslate"><span class="pre">draw_skeleton</span></code> are used, we <strong>highly</strong> recommend you also pass <code class="docutils literal notranslate"><span class="pre">fastmode=False</span></code>!</p>
+</div>
+<figure class="align-center" id="fig-skeleton-trail">
+<a class="reference internal image-reference" href="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559935526258-KFYZC8BDHK01ZIDPNVIX/ke17ZwdGBToddI8pDm48kJbosy0LGK_KqcAZRQ_Qph1Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzkC6kmM1CbNgeHQVxASNv0wiXikHv274BIFe4LR7nd1rKmAka4uxYMJ9FupazBoaU/mouse_skel_trail.gif?format=750w"><img alt="Labeled video with skeleton overlay and trailing points" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559935526258-KFYZC8BDHK01ZIDPNVIX/ke17ZwdGBToddI8pDm48kJbosy0LGK_KqcAZRQ_Qph1Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzkC6kmM1CbNgeHQVxASNv0wiXikHv274BIFe4LR7nd1rKmAka4uxYMJ9FupazBoaU/mouse_skel_trail.gif?format=750w" style="width: 40%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 10 </span><span class="caption-text">Labeled video with skeleton overlay and trailing points (<code class="docutils literal notranslate"><span class="pre">draw_skeleton=True</span></code>, <code class="docutils literal notranslate"><span class="pre">trailpoints=10</span></code>).</span><a class="headerlink" href="#fig-skeleton-trail" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>This function has various other parameters, in particular the user can set the <code class="docutils literal notranslate"><span class="pre">colormap</span></code>, the <code class="docutils literal notranslate"><span class="pre">dotsize</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">alphavalue</span></code> of the labels in <strong>config.yaml</strong> file.</p>
+</section>
+<section id="id27">
+<h5>API Docs<a class="headerlink" href="#id27" title="Link to this heading">#</a></h5>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+</div>
+</section>
+<section id="extract-skeleton-features">
+<h5>Extract “Skeleton” Features<a class="headerlink" href="#extract-skeleton-features" title="Link to this heading">#</a></h5>
+<section id="id28">
+<h6>Overview<a class="headerlink" href="#id28" title="Link to this heading">#</a></h6>
+<p>You can save the “skeleton” that was applied in <code class="docutils literal notranslate"><span class="pre">create_labeled_videos</span></code> for more computations.
+Namely, it extracts length and orientation of each “bone” of the skeleton as defined in the <strong>config.yaml</strong> file. You
+can use the function by:</p>
+</section>
+<section id="id29">
+<h6>Code example<a class="headerlink" href="#id29" title="Link to this heading">#</a></h6>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyzeskeleton</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">,</span>
+    <span class="n">video</span><span class="p">,</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;avi&quot;</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">save_as_csv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">destfolder</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id30">
+<h6>API Docs<a class="headerlink" href="#id30" title="Link to this heading">#</a></h6>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+</div>
+</section>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="phase-5-refinement-optional">
+<h3><a class="toc-backref" href="#id57" role="doc-backlink">Phase 5 — Refinement (optional)</a><a class="headerlink" href="#phase-5-refinement-optional" title="Link to this heading">#</a></h3>
+<section id="m-optional-active-learning-network-refinement-extract-outlier-frames">
+<span id="active-learning"></span><h4><a class="toc-backref" href="#id58" role="doc-backlink">(M) Optional Active Learning - Network Refinement: Extract Outlier Frames</a><a class="headerlink" href="#m-optional-active-learning-network-refinement-extract-outlier-frames" title="Link to this heading">#</a></h4>
+<section id="id31">
+<h5>Overview<a class="headerlink" href="#id31" title="Link to this heading">#</a></h5>
+<p>While DeepLabCut typically generalizes well across datasets, one might want to optimize its performance in various,
+perhaps unexpected, situations. For generalization to large datasets, images with insufficient labeling performance
+can be extracted, manually corrected by adjusting the labels to increase the training set and iteratively improve the
+feature detectors. Such an active learning framework can be used to achieve a predefined level of confidence for all
+images with minimal labeling cost (discussed in Mathis et al 2018). Then, due to the large capacity of the neural network that underlies the feature detectors, one can continue training the network with these additional examples. One does not
+necessarily need to correct all errors as common errors could be eliminated by relabeling a few examples and then
+re-training. A priori, given that there is no ground truth data for analyzed videos, it is challenging to find putative
+“outlier frames”. However, one can use heuristics such as the continuity of body part trajectories, to identify images
+where the decoder might make large errors.</p>
+<p>All this can be done for a specific video by typing (see other optional inputs below):</p>
+</section>
+<section id="id32">
+<h5>Code example<a class="headerlink" href="#id32" title="Link to this heading">#</a></h5>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_outlier_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;videofile_path&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="id33">
+<h5>Frame-selection methods<a class="headerlink" href="#id33" title="Link to this heading">#</a></h5>
+<p>We provide various frame-selection methods for this purpose. In particular
+the user can set:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>outlieralgorithm: &quot;fitting&quot;, &quot;jump&quot;, or &quot;uncertain&quot;
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">outlieralgorithm=&quot;uncertain&quot;</span></code>: select frames if the likelihood of a particular or all body parts lies below <code class="docutils literal notranslate"><span class="pre">p_bound</span></code>
+(note this could also be due to occlusions rather than errors).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outlieralgorithm=&quot;jump&quot;</span></code>: select frames where a particular body part or all body parts jumped more than <code class="docutils literal notranslate"><span class="pre">epsilon</span></code>
+pixels from the last frame.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outlieralgorithm=&quot;fitting&quot;</span></code>: select frames if the predicted body part location deviates from a state-space model fit
+to the time series of individual body parts. Specifically, this method fits an Auto Regressive Integrated Moving Average
+(ARIMA) model to the time series for each body part. Thereby each body part detection with a likelihood smaller than
+<code class="docutils literal notranslate"><span class="pre">p_bound</span></code> is treated as missing data. Putative outlier frames are then identified as time points, where the average
+body part estimates are at least <code class="docutils literal notranslate"><span class="pre">epsilon</span></code> pixels away from the fits. The parameters of this method are <code class="docutils literal notranslate"><span class="pre">epsilon</span></code>,
+<code class="docutils literal notranslate"><span class="pre">p_bound</span></code>, the ARIMA parameters as well as the list of body parts to average over (can also be <code class="docutils literal notranslate"><span class="pre">all</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outlieralgorithm=&quot;manual&quot;</span></code>: manually select outlier frames based on visual inspection from the user.</p></li>
+</ul>
+<p>As an example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_outlier_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;videofile_path&quot;</span><span class="p">],</span> <span class="n">outlieralgorithm</span><span class="o">=</span><span class="s2">&quot;manual&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="selection-after-detection">
+<h5>Selection after detection<a class="headerlink" href="#selection-after-detection" title="Link to this heading">#</a></h5>
+<p>In general, depending on the parameters, these methods might return many more frames than the user wants to
+extract (<code class="docutils literal notranslate"><span class="pre">numframes2pick</span></code>). Thus, this list is then used to select outlier frames either by randomly sampling from
+this list (<code class="docutils literal notranslate"><span class="pre">extractionalgorithm=&quot;uniform&quot;</span></code>), by performing <code class="docutils literal notranslate"><span class="pre">extractionalgorithm=&quot;kmeans&quot;</span></code> clustering on the
+corresponding frames.</p>
+<p>In the automatic configuration, before the frame selection happens, the user is informed about the amount of frames
+satisfying the criteria and asked if the selection should proceed. This step allows the user to perhaps change the
+parameters of the frame-selection heuristics first (i.e. to make sure that not too many frames are qualified). The user
+can run the <code class="docutils literal notranslate"><span class="pre">extract_outlier_frames</span></code> method iteratively, and (even) extract additional frames from the same video.
+Once enough outlier frames are extracted the refinement GUI can be used to adjust the labels based on user feedback
+(see below).</p>
+</section>
+<section id="id34">
+<h5>API Docs<a class="headerlink" href="#id34" title="Link to this heading">#</a></h5>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="n-refine-labels-augmentation-of-the-training-dataset">
+<h4><a class="toc-backref" href="#id59" role="doc-backlink">(N) Refine Labels: Augmentation of the Training Dataset</a><a class="headerlink" href="#n-refine-labels-augmentation-of-the-training-dataset" title="Link to this heading">#</a></h4>
+<section id="id35">
+<h5>Overview<a class="headerlink" href="#id35" title="Link to this heading">#</a></h5>
+<p>Based on the performance of DeepLabCut, four scenarios are possible:</p>
+<ol class="arabic simple">
+<li><p>Visible body part with accurate DeepLabCut prediction. These labels do not need any modifications.</p></li>
+<li><p>Visible body part but wrong DeepLabCut prediction. Move the label’s location to the actual position of the
+body part.</p></li>
+<li><p>Invisible, occluded body part. Remove the predicted label by DeepLabCut with a middle click. Every predicted
+label is shown, even when DeepLabCut is uncertain. This is necessary, so that the user can potentially move
+the predicted label. However, to help the user to remove all invisible body parts the low-likelihood predictions
+are shown as open circles (rather than disks).</p></li>
+<li><p>Invalid images: In the unlikely event that there are any invalid images, the user should remove such an image
+and their corresponding predictions, if any. Here, the GUI will prompt the user to remove an image identified
+as invalid.</p></li>
+</ol>
+<p>The labels for extracted putative outlier frames can be refined by opening the GUI:</p>
+</section>
+<section id="id36">
+<h5>Code example<a class="headerlink" href="#id36" title="Link to this heading">#</a></h5>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">refine_labels</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will launch a GUI where the user can refine the labels.</p>
+<p>Please refer to the <a class="reference internal" href="../gui/napari_GUI.html#file-napari-gui-landing"><span class="std std-ref">napari-deeplabcut docs</span></a> for more information about the labelling workflow.</p>
+</section>
+<section id="merge-datasets">
+<h5>Merge datasets<a class="headerlink" href="#merge-datasets" title="Link to this heading">#</a></h5>
+<p>After correcting the labels for all the frames in each of the subdirectories, the users should merge the dataset to
+create a new dataset. In this step the iteration parameter in the config.yaml file is automatically updated.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">merge_datasets</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once the dataset is merged, the user can test if the merging process was successful by plotting all the labels (Step E).
+Next, with this expanded training set the user can now create a new training set and train the network as described
+in Steps F and G. The training dataset will be stored in the same place as before but under a different <code class="docutils literal notranslate"><span class="pre">iteration-#</span></code>
+subdirectory, where the <code class="docutils literal notranslate"><span class="pre">#</span></code> is the new value of <code class="docutils literal notranslate"><span class="pre">iteration</span></code> variable stored in the project’s configuration file
+(this is automatically done).</p>
+<p>Now you can run <code class="docutils literal notranslate"><span class="pre">create_training_dataset</span></code>, then <code class="docutils literal notranslate"><span class="pre">train_network</span></code>, etc. If your original labels were adjusted at all,
+start from fresh weights (which is generally recommended), otherwise consider using your already trained network
+weights (see <a class="reference internal" href="#pose-cfg-box2"><span class="std std-ref">Box 2</span></a>).</p>
+<p>If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling
+more data.</p>
+</section>
+<section id="api-docs-for-deeplabcut-refine-labels">
+<h5>API Docs for deeplabcut.refine_labels<a class="headerlink" href="#api-docs-for-deeplabcut-refine-labels" title="Link to this heading">#</a></h5>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+</div>
+</section>
+<section id="api-docs-for-deeplabcut-merge-datasets">
+<h5>API Docs for deeplabcut.merge_datasets<a class="headerlink" href="#api-docs-for-deeplabcut-merge-datasets" title="Link to this heading">#</a></h5>
+<div class="dropdown admonition">
+<p class="admonition-title">Click the button to see API Docs</p>
+</div>
+</section>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="resources-and-further-reading">
+<h2><a class="toc-backref" href="#id60" role="doc-backlink">Resources and further reading</a><a class="headerlink" href="#resources-and-further-reading" title="Link to this heading">#</a></h2>
+<section id="jupyter-notebooks-demo">
+<h3><a class="toc-backref" href="#id61" role="doc-backlink">Jupyter notebooks demo</a><a class="headerlink" href="#jupyter-notebooks-demo" title="Link to this heading">#</a></h3>
+<p>We also provide two Jupyter notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
+own dataset.</p>
+<ul class="simple">
+<li><p>Firstly, we prepared an interactive Jupyter notebook called
+<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/JUPYTER/Demo_yourowndata.ipynb">Demo_yourowndata.ipynb</a>
+that can serve as a template for the user to develop a project.</p></li>
+<li><p>Furthermore, we provide a notebook for an already started project with labeled data. The example project, named as
+<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/main/examples/Reaching-Mackenzie-2018-08-30">Reaching-Mackenzie-2018-08-30</a>
+consists of a project configuration file with default parameters and 20 images, which are cropped around the region of
+interest as an example dataset. These images are extracted from a video, which was recorded in a study of skilled motor
+control in mice. Some example labels for these images are also provided. See more details
+<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/main/examples">here</a>.</p></li>
+</ul>
+</section>
+<section id="d-tracking">
+<h3><a class="toc-backref" href="#id62" role="doc-backlink">3D tracking</a><a class="headerlink" href="#d-tracking" title="Link to this heading">#</a></h3>
+<p>For stereo or multi-camera setups, see the <a class="reference internal" href="../Overviewof3D.html#d-overview"><span class="std std-ref">3D overview</span></a>.</p>
+</section>
+<section id="additional-helper-functions">
+<h3><a class="toc-backref" href="#id63" role="doc-backlink">Additional helper functions</a><a class="headerlink" href="#additional-helper-functions" title="Link to this heading">#</a></h3>
+<p>A collection of optional utility functions is available in the
+<a class="reference internal" href="../HelperFunctions.html#helper-functions"><span class="std std-ref">helper functions reference</span></a>.</p>
+</section>
+</section>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./docs/main-workflows"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../docker.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">DeepLabCut in Docker</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../quick-start/single_animal_quick_guide.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Single-animal at a glance</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-started">Getting started</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gui-recommended-for-beginners">GUI (recommended for beginners)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-api">Python API</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow">Workflow</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-1-project-setup">Phase 1 — Project setup</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#a-create-a-new-project">(A) Create a New Project</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#code-example">Code example</a><ul class="nav section-nav flex-column">
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#output-directory-structure">Output &amp; directory structure</a></li>
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#subdirectory-layout">Subdirectory layout</a></li>
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#main-configuration-file-config-yaml">Main configuration file (<em>config.yaml</em>)</a></li>
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#api-docs">API Docs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#b-configure-the-project">(B) Configure the Project</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-2-data-preparation">Phase 2 — Data preparation</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#c-select-frames-to-label">(C) Select Frames to Label</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#frame-selection-methods">Frame selection methods</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#manual-frame-selection">Manual frame selection</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#d-label-frames">(D) Label Frames</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#demo">Demo</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-adding-new-bodypart-labels">Optional: Adding new bodypart labels</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#e-check-annotated-frames">(E) Check Annotated Frames</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#what-it-creates">What it creates</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">API Docs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-3-training-evaluation">Phase 3 — Training &amp; evaluation</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#f-create-training-dataset">(F) Create Training Dataset</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#output-structure-and-configuration-files">Output structure and configuration files</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#network-and-augmentation-selection">Network and augmentation selection</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#model-comparison">Model comparison</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#g-train-the-network">(G) Train the Network</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#h-evaluate-the-trained-network">(H) Evaluate the Trained Network</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-parameters">Optional parameters</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#output-and-interpretation">Output and interpretation</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-maps">Optional maps</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">API Docs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-4-analysis">Phase 4 — Analysis</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#i-analyze-new-videos">(I) Analyze New Videos</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#output-and-storage">Output and storage</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamic-cropping-of-videos">Dynamic-cropping of videos</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#j-filter-pose-data">(J) Filter Pose Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id20">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#code-examples">Code examples</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#example-output">Example output</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id21">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#k-plot-trajectories">(K) Plot Trajectories</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id22">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id23">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#output">Output</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id24">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#l-create-labeled-videos">(L) Create Labeled Videos</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id25">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id26">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#skeleton-configuration">Skeleton configuration</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id27">API Docs</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#extract-skeleton-features">Extract “Skeleton” Features</a><ul class="nav section-nav flex-column">
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#id28">Overview</a></li>
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#id29">Code example</a></li>
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#id30">API Docs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-5-refinement-optional">Phase 5 — Refinement (optional)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#m-optional-active-learning-network-refinement-extract-outlier-frames">(M) Optional Active Learning - Network Refinement: Extract Outlier Frames</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id31">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id32">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id33">Frame-selection methods</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#selection-after-detection">Selection after detection</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id34">API Docs</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#n-refine-labels-augmentation-of-the-training-dataset">(N) Refine Labels: Augmentation of the Training Dataset</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id35">Overview</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id36">Code example</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#merge-datasets">Merge datasets</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#api-docs-for-deeplabcut-refine-labels">API Docs for deeplabcut.refine_labels</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#api-docs-for-deeplabcut-merge-datasets">API Docs for deeplabcut.merge_datasets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resources-and-further-reading">Resources and further reading</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jupyter-notebooks-demo">Jupyter notebooks demo</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#d-tracking">3D tracking</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-helper-functions">Additional helper functions</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
