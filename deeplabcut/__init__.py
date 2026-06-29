@@ -26,12 +26,19 @@ from .version import VERSION, __version__
 if DEBUG:
     logger.debug("Loading DLC %s", VERSION)
 
+# DeepLabCut deprecation warnings are shown only once per message instance.
+import warnings
+
+from deeplabcut.core.deprecation import DLCDeprecationWarning
+
+warnings.filterwarnings("once", category=DLCDeprecationWarning)
+
 # -----------------------------------------------------------------------------
 # Always-available public API
 # -----------------------------------------------------------------------------
 
-# Train / evaluate / predict functions (compat layer)
-from .compat import (
+# Train / evaluate / predict functions
+from .api.pose_estimation import (
     analyze_images,
     analyze_time_lapse_frames,
     analyze_videos,

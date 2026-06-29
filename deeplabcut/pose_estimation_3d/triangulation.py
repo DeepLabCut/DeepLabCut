@@ -93,7 +93,7 @@ def triangulate(
     ... ['C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi',
     ... 'C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi']])
     """
-    from deeplabcut.compat import analyze_videos
+    from deeplabcut.api.pose_estimation import analyze_videos
     from deeplabcut.post_processing import filtering
 
     cfg_3d = auxiliaryfunctions.read_config(config)
