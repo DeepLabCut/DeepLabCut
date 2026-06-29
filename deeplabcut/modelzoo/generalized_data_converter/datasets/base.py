@@ -28,7 +28,6 @@ def raw_2_imagename_with_id(image):
     we modify the imagename such that itis composed of both original imagename and image
     id
     """
-
     file_name = image["file_name"]
     image_name = file_name.split(os.sep)[-1]
     pre, suffix = image_name.split(".")
@@ -38,7 +37,6 @@ def raw_2_imagename_with_id(image):
 
 def raw_2_imagename(image):
     """Only getting the imagename part from the image object."""
-
     file_name = image["file_name"]
     image_name = file_name.split(os.sep)[-1]
     return image_name
@@ -176,8 +174,8 @@ class BasePoseDataset:
     def whether_anno_image_match(self, images, annotations):
         """Every image id should be annotated at least once There should not be any
         image that is not being annotated There should not be any annotation for beyond
-        the set of given images."""
-
+        the set of given images.
+        """
         image_ids = set([image["id"] for image in images])
 
         annotation_image_ids = set([anno["image_id"] for anno in annotations])
@@ -279,7 +277,8 @@ class BasePoseDataset:
 
     def project_with_conversion_table(self, table_path="", table_dict=None):
         """Replace the generic annotations with those that are in superset keypoint
-        space."""
+        space.
+        """
         print(f"Converting {self.meta['dataset_name']}")
 
         keypoints = self.get_keypoints()

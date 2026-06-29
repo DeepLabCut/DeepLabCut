@@ -35,63 +35,63 @@ def triangulate(
     save_as_csv=False,
     track_method="",
 ):
-    """This function triangulates the detected DLC-keypoints from the two camera views
-    using the camera matrices (derived from calibration) to calculate 3D predictions.
+    """Triangulate DLC keypoints from two camera views into 3D predictions.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Uses camera matrices from calibration.
 
-    video_path : string/list of list
-        Full path of the directory where videos are saved. If the user wants to analyze
-        only a pair of videos, the user needs to pass them as a list of list of videos,
-        i.e. [['video1-camera-1.avi','video1-camera-2.avi']]
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        video_path (string/list of list): Directory where videos are saved, or a list of video pairs,
+            e.g. [['video1-camera-1.avi', 'video1-camera-2.avi']].
+        videotype (string, optional): When ``video_path`` is a directory, only videos with this extension
+            are analyzed. If unspecified, common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+        filterpredictions (bool, optional): Filter predictions with ``filtertype``.
+            Defaults to True.
+        filtertype (string): Filter to use: 'arima' or 'median' (currently supported).
+        gputouse (int, optional): GPU index (see nvidia-smi). Use None if no GPU.
+            See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+        destfolder (string, optional): Destination folder for analysis data.
+            Defaults to the video path.
+        save_as_csv (bool, optional): Save predictions as .csv. Defaults to False.
+        track_method (str, optional): Tracking method suffix for multi-animal projects.
+            Defaults to "".
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n
-        Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    Examples:
+        Linux/MacOS — analyze all videos in the directory:
+            deeplabcut.triangulate(config, "/data/project1/videos/")
 
+        To analyze only a few pairs of videos:
+            deeplabcut.triangulate(
+                config,
+                [
+                    [
+                        "/data/project1/videos/video1-camera-1.avi",
+                        "/data/project1/videos/video1-camera-2.avi",
+                    ],
+                    [
+                        "/data/project1/videos/video2-camera-1.avi",
+                        "/data/project1/videos/video2-camera-2.avi",
+                    ],
+                ],
+            )
 
-    filterpredictions: Bool, optional
-        Filter the predictions with filter specified by "filtertype". If specified it
-        should be either ``True`` or ``False``.
+        Windows — analyze all videos in the directory:
+            deeplabcut.triangulate(config, "C:\\yourusername\\rig-95\\Videos")
 
-    filtertype: string
-        Select which filter, 'arima' or 'median' filter (currently supported).
-
-    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi).
-        If you do not have a GPU put None.
-        See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
-
-    destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video)
-
-    save_as_csv: bool, optional
-        Saves the predictions in a .csv file. The default is ``False``
-
-    Example
-    -------
-    Linux/MacOS
-    To analyze all the videos in the directory:
-    >>> deeplabcut.triangulate(config,'/data/project1/videos/')
-
-    To analyze only a few pairs of videos:
-    >>> deeplabcut.triangulate(config,[['/data/project1/videos/video1-camera-1.avi',
-    ... '/data/project1/videos/video1-camera-2.avi'],['/data/project1/videos/video2-camera-1.avi',
-    ... '/data/project1/videos/video2-camera-2.avi']])
-
-
-    Windows
-    To analyze all the videos in the directory:
-    >>> deeplabcut.triangulate(config,'C:\\yourusername\\rig-95\\Videos')
-
-    To analyze only a few pair of videos:
-    >>> deeplabcut.triangulate(config,[['C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi',
-    ... 'C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi'],
-    ... ['C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi',
-    ... 'C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi']])
+        To analyze only a few pairs of videos:
+            deeplabcut.triangulate(
+                config,
+                [
+                    [
+                        "C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi",
+                        "C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi",
+                    ],
+                    [
+                        "C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi",
+                        "C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi",
+                    ],
+                ],
+            )
     """
     from deeplabcut.compat import analyze_videos
     from deeplabcut.post_processing import filtering

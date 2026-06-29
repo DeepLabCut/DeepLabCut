@@ -24,33 +24,28 @@ SUPPORTED_FILETYPES = "csv", "nwb"
 
 
 def convertcsv2h5(config, userfeedback=True, scorer=None):
-    """
-    Convert (image) annotation files in folder labeled-data from csv to h5.
-    This function allows the user to manually edit the csv
+    """Convert annotation files in labeled-data from csv to h5.
+
+    Allows the user to manually edit the csv
     (e.g. to correct the scorer name and then convert it into hdf format).
     WARNING: conversion might corrupt the data.
 
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        userfeedback (bool, optional): If true the user will be asked specifically
+            for each folder in labeled-data if the containing csv shall be converted to hdf format.
+        scorer (string, optional): If a string is given, then the scorer/annotator
+            in all csv and hdf files that are changed, will be overwritten with this name.
 
-    userfeedback: bool, optional
-        If true the user will be asked specifically
-        for each folder in labeled-data if the containing csv shall be converted to hdf format.
+    Examples:
+        Convert csv annotation files for reaching-task project into hdf:
 
-    scorer: string, optional
-        If a string is given, then the scorer/annotator
-        in all csv and hdf files that are changed, will be overwritten with this name.
+            deeplabcut.convertcsv2h5("/analysis/project/reaching-task/config.yaml")
 
-    Examples
-    --------
-    Convert csv annotation files for reaching-task project into hdf.
-    >>> deeplabcut.convertcsv2h5('/analysis/project/reaching-task/config.yaml')
+        Convert csv annotation files for reaching-task project into hdf while changing
+        the scorer/annotator in all annotation files to Albert:
 
-    --------
-    Convert csv annotation files for reaching-task project into hdf
-    while changing the scorer/annotator in all annotation files to Albert!
-    >>> deeplabcut.convertcsv2h5('/analysis/project/reaching-task/config.yaml',scorer='Albert')
-    --------
+            deeplabcut.convertcsv2h5("/analysis/project/reaching-task/config.yaml", scorer="Albert")
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
@@ -96,20 +91,15 @@ def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts=False, o
     under the labeled-data folder and with the same configuration as all deeplabcut
     projects.
 
-    Parameters
-    ----------
-    config_path : str
-        The path to the config.yaml file.
-    remove_old_bodyparts : bool (default = False)
-        If True, the old bodyparts that are not in the new project will be removed from the dataframe.
-    other_scorer : bool (default = False)
-        If True, the labels will be converted to the new scorer.
-    userfeedback : bool (default = True)
-        If true the user will be asked specifically
-        for each folder in labeled-data if the containing csv
-        shall be converted to hdf format.
+    Args:
+        config_path (str): The path to the config.yaml file.
+        remove_old_bodyparts (bool): If True, old bodyparts not in the new project are
+            removed from the dataframe. Defaults to False.
+        other_scorer (bool): If True, the labels will be converted to the new scorer. Defaults to False.
+        userfeedback (bool): If true the user will be asked specifically
+            for each folder in labeled-data if the containing csv
+            shall be converted to hdf format. Defaults to True.
     """
-
     # Load the config file
     cfg = dlc.auxiliaryfunctions.read_config(config_path)
 
@@ -218,29 +208,25 @@ def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts=False, o
 def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos=False):
     """By default the output poses (when running analyze_videos) are stored as
     MultiIndex Pandas Array, which contains the name of the network, body part name, (x,
-    y) label position \n in pixels, and the likelihood for each frame per body part.
-    These arrays are stored in an efficient Hierarchical Data Format (HDF) \n in the
+    y) label position in pixels, and the likelihood for each frame per body part.
+    These arrays are stored in an efficient Hierarchical Data Format (HDF) in the
     same directory, where the video is stored. This functions converts hdf (h5) files to
     the comma-separated values format (.csv), which in turn can be imported in many
     programs, such as MATLAB, R, Prism, etc.
 
-    Parameters
-    ----------
+    Args:
+        video_folder (string): Absolute path of a folder containing videos and the corresponding h5 data files.
+        videotype (string, optional): Only videos with this extension are screened. Defaults to .mp4.
 
-    video_folder : string
-        Absolute path of a folder containing videos and the corresponding h5 data files.
+    Examples:
+        Converts all pose-output files belonging to mp4 videos in the folder
+        '/media/alex/experimentaldata/cheetahvideos' to csv files:
 
-    videotype: string, optional (default=.mp4)
-        Only videos with this extension are screened.
-
-    Examples
-    --------
-
-    Converts all pose-output files belonging to mp4 videos
-    in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files.
-    deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
+            deeplabcut.analyze_videos_converth5_to_csv(
+                "/media/alex/experimentaldata/cheetahvideos",
+                ".mp4",
+            )
     """
-
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
@@ -264,23 +250,20 @@ def analyze_videos_converth5_to_nwb(
 ):
     """Convert all h5 output data files in `video_folder` to NWB format.
 
-    Parameters
-    ----------
-    config : string
-        Absolute path to the project YAML config file.
+    Args:
+        config (string): Absolute path to the project YAML config file.
+        video_folder (string): Absolute path of a folder containing videos and the corresponding h5 data files.
+        videotype (string, optional): Only videos with this extension are screened. Defaults to .mp4.
 
-    video_folder : string
-        Absolute path of a folder containing videos and the corresponding h5 data files.
+    Examples:
+        Converts all pose-output files belonging to mp4 videos in the folder
+        '/media/alex/experimentaldata/cheetahvideos' to NWB files:
 
-    videotype: string, optional (default=.mp4)
-        Only videos with this extension are screened.
-
-    Examples
-    --------
-
-    Converts all pose-output files belonging to mp4 videos in the folder
-    '/media/alex/experimentaldata/cheetahvideos' to csv files.
-    deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
+            deeplabcut.analyze_videos_converth5_to_nwb(
+                config,
+                "/media/alex/experimentaldata/cheetahvideos",
+                ".mp4",
+            )
     """
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
@@ -334,7 +317,6 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
 
     This function gets them directly by looping over all folders in labeled-data
     """
-
     AnnotationData = []
     data_path = Path(cfg["project_path"], "labeled-data")
     annotationfolders = []

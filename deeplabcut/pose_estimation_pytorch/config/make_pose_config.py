@@ -359,7 +359,8 @@ def _update_config(config: dict, updates: dict, copy_original: bool = True) -> d
 
 
 def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]):
-    """
+    """Add ctd conditions.
+
     Args:
         model_cfg: dict, contents of pytorch_config.yaml
         ctd_conditions: Only for using conditional-top-down (CTD) models. It defines
@@ -425,7 +426,7 @@ def _create_backbone_with_heatmap_model(
         the backbone + heatmap model configuration
 
     Raises:
-        ValueError: if the model is being created for a multi-animal project but the
+        ValueError: If the model is being created for a multi-animal project but the
             head won't be associated with a detector (heatmaps can only predict
             bodyparts for a single individual).
     """

@@ -230,7 +230,6 @@ def _generic2madlc(
     Args:
     proj_root where to materialize the data
     """
-
     assert full_image_path, "DLC wants full image path"
 
     os.makedirs(os.path.join(proj_root, "labeled-data"), exist_ok=True)
@@ -671,7 +670,6 @@ def _generic2coco(
         no_image_copy: Instead of copying images to the COCO dataset, the full paths to
             the images in the original dataset are used in the annotations.
     """
-
     os.makedirs(os.path.join(proj_root, "images"), exist_ok=True)
     os.makedirs(os.path.join(proj_root, "annotations"), exist_ok=True)
 

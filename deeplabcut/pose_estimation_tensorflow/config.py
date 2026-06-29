@@ -20,7 +20,8 @@ import yaml
 
 def _merge_a_into_b(a, b):
     """Merge config dictionary a into config dictionary b, clobbering the options in b
-    whenever they are also specified in a."""
+    whenever they are also specified in a.
+    """
     for k, v in a.items():
         # a must specify keys that are in b
         # if k not in b:

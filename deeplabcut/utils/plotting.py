@@ -62,7 +62,8 @@ def PlottingResults(
     linewidth=1.0,
 ):
     """Plots poses vs time; pose x vs pose y; histogram of differences and
-    likelihoods."""
+    likelihoods.
+    """
     pcutoff = cfg["pcutoff"]
     colors = visualization.get_cmap(len(bodyparts2plot), name=cfg["colormap"])
     alphavalue = cfg["alphavalue"]
@@ -192,91 +193,59 @@ def plot_trajectories(
 ):
     """Plots the trajectories of various bodyparts across the video.
 
-    Parameters
-    ----------
-    config: str
-        Full path of the config.yaml file.
+    Args:
+        config (str): Full path of the config.yaml file.
+        videos (list[str]): Full paths to videos for analysis or a path to the directory, where all the
+            videos with same extension are stored.
+        video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s). Defaults to None.
+        shuffle (int, optional): Integer specifying the shuffle index of the training dataset. Defaults to 1.
+        trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use.
+            Note that TrainingFraction is a list in config.yaml. Defaults to 0.
+        filtered (bool, optional): Boolean variable indicating if filtered output should be plotted rather than
+            frame-by-frame predictions. Filtered version can be calculated with
+            ``deeplabcut.filterpredictions``. Defaults to False.
+        displayedbodyparts (list[str] or str, optional): This select the body parts that are plotted in the video.
+            Either ``all``, then all body parts from config.yaml are used,
+            or a list of strings that are a subset of the full list.
+            E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml
+            to select only these two body parts. Defaults to "all".
+        showfigures (bool, optional): If ``True`` then plots are also displayed. Defaults to False.
+        destfolder (string or None, optional): Destination folder for analysis data. If
+            ``None``, the path of the video is used. Defaults to None.
+        modelprefix (str, optional): Directory containing the deeplabcut models to use when evaluating the network.
+            By default, the models are assumed to exist in the project folder. Defaults to "".
+        imagetype (string, optional): Output image format: '.tif', '.jpg', '.svg',
+            ".png". Defaults to ".png".
+        resolution (int, optional): Specifies the resolution (in dpi) of saved figures.
+            Note higher resolution figures take longer to generate. Defaults to 100.
+        linewidth (float, optional): Specifies width of line for line and histogram plots. Defaults to 1.0.
+        track_method (string, optional): Specifies the tracker used to generate the data.
+            Empty by default (corresponding to a single animal project).
+            For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
+            be taken from the config.yaml file if none is given. Defaults to "".
+        pcutoff (float | None, optional): Overrides project pcutoff for plotting trajectories. Defaults to None.
+        kwargs (dict, optional): Additional arguments.
+            For torch-based shuffles, can be used to specify:
+                - snapshot_index
+                - detector_snapshot_index
 
-    videos: list[str]
-        Full paths to videos for analysis or a path to the directory, where all the
-        videos with same extension are stored.
+    Returns:
+        None
 
-    video_extensions : str | Sequence[str] | None, optional, default=None
-        Controls how ``videos`` are filtered, based on file extension.
-        File paths and directory contents are treated differently:
-        - ``None`` (default): file paths are accepted as-is; directories are
-          scanned for files with a recognized video extension.
-        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
-          both file paths and directory contents are filtered by the given
-          extension(s).
+    Examples:
+        To label the frames
 
-    shuffle: int, optional, default=1
-        Integer specifying the shuffle index of the training dataset.
-
-    trainingsetindex: int, optional, default=0
-        Integer specifying which TrainingsetFraction to use.
-        Note that TrainingFraction is a list in config.yaml.
-
-    filtered: bool, optional, default=False
-        Boolean variable indicating if filtered output should be plotted rather than
-        frame-by-frame predictions. Filtered version can be calculated with
-        ``deeplabcut.filterpredictions``.
-
-    displayedbodyparts: list[str] or str, optional, default="all"
-        This select the body parts that are plotted in the video.
-        Either ``all``, then all body parts from config.yaml are used,
-        or a list of strings that are a subset of the full list.
-        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml
-        to select only these two body parts.
-
-    showfigures: bool, optional, default=False
-        If ``True`` then plots are also displayed.
-
-    destfolder: string or None, optional, default=None
-        Specifies the destination folder that was used for storing analysis data. If
-        ``None``, the path of the video is used.
-
-    modelprefix: str, optional, default=""
-        Directory containing the deeplabcut models to use when evaluating the network.
-        By default, the models are assumed to exist in the project folder.
-
-    imagetype: string, optional, default=".png"
-        Specifies the output image format - '.tif', '.jpg', '.svg' and ".png".
-
-    resolution: int, optional, default=100
-        Specifies the resolution (in dpi) of saved figures.
-        Note higher resolution figures take longer to generate.
-
-    linewidth: float, optional, default=1.0
-        Specifies width of line for line and histogram plots.
-
-    track_method: string, optional, default=""
-         Specifies the tracker used to generate the data.
-         Empty by default (corresponding to a single animal project).
-         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
-         be taken from the config.yaml file if none is given.
-
-    pcutoff: string, optional, default=None
-        Overrides the pcutoff set in the project configuration to plot the trajectories.
-
-    kwargs: additional arguments.
-        For torch-based shuffles, can be used to specify:
-            - snapshot_index
-            - detector_snapshot_index
-
-    Returns
-    -------
-    None
-
-    Examples
-    --------
-
-    To label the frames
-
-    >>> deeplabcut.plot_trajectories(
-            'home/alex/analysis/project/reaching-task/config.yaml',
-            ['/home/alex/analysis/project/videos/reachingvideo1.avi'],
-        )
+            deeplabcut.plot_trajectories(
+                'home/alex/analysis/project/reaching-task/config.yaml',
+                ['/home/alex/analysis/project/videos/reachingvideo1.avi'],
+            )
     """
     cfg = auxiliaryfunctions.read_config(config)
 
@@ -442,23 +411,14 @@ def plot_edge_affinity_distributions(
 ):
     """Display the distribution of affinity costs of within- and between-animal edges.
 
-    Parameters
-    ----------
-    eval_pickle_file : string
-        Path to a *_full.pickle from the evaluation-results folder.
-
-    include_bodyparts : list of strings, optional
-        A list of body part names whose edges are to be shown.
-        By default, all body parts and their corresponding edges are analyzed.
-        We recommend only passing a subset of body parts for projects with large graphs.
-
-    output_name: string, optional
-        Path where the plot is saved. By default, it is stored as costdist.png.
-
-    figsize: tuple
-        Figure size in inches.
+    Args:
+        eval_pickle_file (string): Path to a *_full.pickle from the evaluation-results folder.
+        include_bodyparts (list of strings, optional): A list of body part names whose edges are to be shown.
+            By default, all body parts and their corresponding edges are analyzed.
+            We recommend only passing a subset of body parts for projects with large graphs. Defaults to "all".
+        output_name (string, optional): Path where the plot is saved. By default, it is stored as costdist.png.
+        figsize (tuple): Figure size in inches.
     """
-
     with open(eval_pickle_file, "rb") as file:
         data = pickle.load(file)
     meta_pickle_file = eval_pickle_file.replace("_full.", "_meta.")

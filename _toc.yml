@@ -90,6 +90,11 @@ parts:
       - file: docs/benchmark
       - file: docs/recipes/TechHardware
 
+  - caption: Development
+    chapters:
+      - file: docs/dev
+        title: Developer Documentation
+
   - caption: Additional guides (Recipes)
     chapters:
       - file: docs/recipes/index

@@ -314,14 +314,12 @@ class CondFromFile(CondProvider):
                     [  # condition 0 pose
                         [x, y, score],  # keypoint 0
                         [x, y, score],  # keypoint 1
-                        ...
-                        [x, y, score],  # keypoint N
+                        ...[x, y, score],  # keypoint N
                     ],
-                    [ ... ], # condition 1
-                    ...
-                    [ ... ] # condition M
+                    [...],  # condition 1
+                    ...[...],  # condition M
                 ],
-                "img001.png": [...]  # conditions for image 1
+                "img001.png": [...],  # conditions for image 1
             }
             ```
 
@@ -335,16 +333,13 @@ class CondFromFile(CondProvider):
                     [  # condition 0 pose
                         [x, y, score],  # keypoint 0
                         [x, y, score],  # keypoint 1
-                        ...
-                        [x, y, score],  # keypoint N
+                        ...[x, y, score],  # keypoint N
                     ],
-                    [ ... ], # condition 1
-                    ...
-                    [ ... ] # condition M
+                    [...],  # condition 1
+                    ...[...],  # condition M
                 ],
-                [ ... ],   # conditions for frame 1
-                ...
-                [ ... ] # conditions for frame N
+                [...],  # conditions for frame 1
+                ...[...],  # conditions for frame N
             ]
             ```
 

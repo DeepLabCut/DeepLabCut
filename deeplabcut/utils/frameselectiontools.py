@@ -132,7 +132,6 @@ def KmeansbasedFrameselection(
 
     Note: this method can return fewer images than numframes2pick.
     """
-
     print(
         "Kmeans-quantization based extracting of frames from",
         round(start * clip.duration, 2),

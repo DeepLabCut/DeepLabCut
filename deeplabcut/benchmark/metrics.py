@@ -100,8 +100,8 @@ def calc_prediction_errors(preds, gt):
 
 def _map(strings, substrings):
     """Map image paths from predicted data to GT as the first are typically absolute
-    whereas the latter are relative to the project path."""
-
+    whereas the latter are relative to the project path.
+    """
     lookup = dict()
     strings_ = strings.copy()
     substrings_ = substrings.copy()
@@ -241,7 +241,8 @@ def calc_rmse_from_obj(
 
 def load_test_images(h5file: str, metadata: str) -> list[str]:
     """Returns the names of the test images for the benchmark, in the order
-    corresponding to the test indices."""
+    corresponding to the test indices.
+    """
     df = pd.read_hdf(h5file)
     test_indices = _load_test_indices(metadata)
     df_test = df.iloc[test_indices]
