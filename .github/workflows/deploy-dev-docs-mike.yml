@@ -87,6 +87,7 @@ jobs:
         uses: ./.github/actions/setup-dev-docs
         with:
           python-version: ${{ inputs.python-version }}
+          install-system-deps: ${{ inputs.action != 'delete' }}
 
       - name: Configure git for Mike
         shell: bash
