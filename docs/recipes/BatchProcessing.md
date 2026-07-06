@@ -4,6 +4,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
+
 # Automate training and video analysis: Batch Processing
 
 ## Tips for working with DLC networks:
@@ -78,7 +79,8 @@ for subfolder in subfolders: #this would be January, February etc. in the upper 
 ## Now, what about training over multiple Projects
 
 Make your labmates happy by helping run everyone's projects! We use this for workshops, but can easily be adapted for your needs. Here is an example script. You can copy/paste into a file and end with ".py" to make it a python script.
-```
+
+````
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -138,3 +140,4 @@ for project in Projects[model]:
     cfg["project_path"] = previous_path
     deeplabcut.auxiliaryfunctions.write_config(config, cfg)
     ```
+````
