@@ -21,8 +21,8 @@ on:
         required: false
         type: string
 
-      make_latest:
-        description: "Also alias this version as latest and set /dev/ default to latest."
+      mark_latest_release:
+        description: "Alias this version as latest-release and set /dev/ default to latest-release."
         required: false
         type: boolean
         default: false
@@ -42,8 +42,8 @@ jobs:
       action: deploy
       version_label: ${{ inputs.version_label }}
       git_tag: ${{ inputs.git_tag }}
-      aliases: ${{ inputs.make_latest && 'latest' || '' }}
-      default_label: ${{ inputs.make_latest && 'latest' || '' }}
+      aliases: ${{ inputs.mark_latest_release && 'latest-release' || '' }}
+      default_label: ${{ inputs.mark_latest_release && 'latest-release' || '' }}
       python-version: "3.10"
       config-file: dev-docs/mkdocs.yml
       deploy-prefix: dev
