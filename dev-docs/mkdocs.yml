@@ -116,7 +116,8 @@ extra:
   main_docs_url: "https://deeplabcut.github.io/DeepLabCut/"
   version:
     provider: mike
-    default: main
+    default: latest-release
+    alias: true
 
 copyright: "Copyright © 2026 The DeepLabCut Team"
 
