@@ -125,6 +125,7 @@ class DARTDetectorModel(BaseExternalDetector):
                 skip_blocks=self.config.skip_blocks,
                 mask_blocks=self.config.mask_blocks,
             )
+        model = model.to(self.device)
 
         # Precompute position encodings if using a non-default resolution.
         if self.config.imgsz != 1008:
