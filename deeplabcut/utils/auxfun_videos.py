@@ -742,7 +742,7 @@ def collect_video_paths(
                     videos.append(path)
 
     # Resolve video paths and remove duplicates
-    unique_videos = list(dict.fromkeys(v.resolve() for v in videos))
+    unique_videos = list(dict.fromkeys(v.absolute() for v in videos))
     if shuffle:
         random.shuffle(unique_videos)
     else:

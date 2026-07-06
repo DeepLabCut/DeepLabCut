@@ -339,7 +339,7 @@ def extract_maps(
         if len(image_paths) > 0 and isinstance(image_paths[0], tuple):
             image_paths = [Path(*img_path) for img_path in image_paths]
 
-        image_paths = [(loader.project_path / img_path).resolve() for img_path in image_paths]
+        image_paths = [(loader.project_path / img_path).absolute() for img_path in image_paths]
 
         context = _get_context(image_paths, loader, detector_snapshot_index, device)
         train_idx = set(loader.split["train"])

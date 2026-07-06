@@ -41,7 +41,7 @@ def load_demo_data(
       >>> deeplabcut.load_demo_data('config.yaml')
       --------
     """
-    config = Path(config).resolve()
+    config = Path(config).absolute()
     config = str(config)
 
     transform_data(config)

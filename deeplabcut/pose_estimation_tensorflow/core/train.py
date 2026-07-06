@@ -294,4 +294,4 @@ if __name__ == "__main__":
     parser.add_argument("config", help="Path to yaml configuration file.")
     cli_args = parser.parse_args()
 
-    train(Path(cli_args.config).resolve())
+    train(Path(cli_args.config).absolute())

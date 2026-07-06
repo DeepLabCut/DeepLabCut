@@ -174,7 +174,7 @@ def create_new_project(
     for dir, count in files_per_dir.items():
         print(f"Found {count} videos in {dir}")
     for p in (Path(v) for v in videos if Path(v).is_dir()):
-        if p.resolve() not in {d.resolve() for d in files_per_dir}:
+        if p.absolute() not in {d.absolute() for d in files_per_dir}:
             print(f"No videos found in {p}")
             print(f"Perhaps change the video_extensions, which is currently set to: {video_extensions}")
 

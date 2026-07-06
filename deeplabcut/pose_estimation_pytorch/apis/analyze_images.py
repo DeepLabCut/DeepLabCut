@@ -353,7 +353,7 @@ def analyze_images(
 
     if output_dir is None:
         images = list(predictions.keys())
-        output_dir = Path(images[0]).parent.resolve()
+        output_dir = Path(images[0]).parent.absolute()
         print(f"Setting output directory to {output_dir}")
 
     output_dir = Path(output_dir)
