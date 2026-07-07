@@ -15,6 +15,7 @@ import shutil
 import warnings
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Literal
 
 from deeplabcut import DEBUG
 from deeplabcut.core.deprecation import renamed_parameter
@@ -32,7 +33,7 @@ def create_new_project(
     video_extensions: str | Sequence[str] | None = None,
     multianimal: bool = False,
     individuals: list[str] | None = None,
-):
+) -> Path | Literal["nothingcreated"]:
     r"""Create the necessary folders and files for a new project.
 
     Creating a new project involves creating the project directory, sub-directories and
@@ -79,8 +80,9 @@ def create_new_project(
 
     Returns
     -------
-    str
-        Path to the new project configuration file.
+    Path | Literal["nothingcreated"]
+        Path to the new project configuration file, or ``"nothingcreated"`` if no
+        valid videos were found.
 
     Raises
     ------
@@ -154,7 +156,7 @@ def create_new_project(
     # Create project and sub-directories
     if not DEBUG and project_path.exists():
         print(f'Project "{project_path}" already exists!')
-        return str(project_path / "config.yaml")
+        return (project_path / "config.yaml").absolute()
     video_path = project_path / "videos"
     data_path = project_path / "labeled-data"
     shuffles_path = project_path / "training-datasets"
@@ -196,15 +198,13 @@ def create_new_project(
             if dst.exists() and not DEBUG:
                 raise FileExistsError(f"Video {dst} exists already!")
             try:
-                src = str(src)
-                dst = str(dst)
-                Path(dst).symlink_to(src)
+                dst.symlink_to(src)
                 print(f"Created the symlink of {src} to {dst}")
             except OSError:
                 try:
                     import subprocess
 
-                    subprocess.check_call(f"mklink {dst} {src}", shell=True)
+                    subprocess.check_call(f"mklink {os.fspath(dst)} {os.fspath(src)}", shell=True)
                 except (OSError, subprocess.CalledProcessError):
                     print("Symlink creation impossible (exFat architecture?): copying the video instead.")
                     shutil.copy(os.fspath(src), os.fspath(dst))
@@ -218,16 +218,11 @@ def create_new_project(
     video_sets = {}
     for video in videos:
         print(video)
-        try:
-            # For windows os.path.realpath does not work and does not link to the real
-            # video. [old: rel_video_path = os.path.realpath(video)]
-            rel_video_path = str(Path(video).absolute())
-        except Exception:
-            rel_video_path = str(Path(str(video)).readlink())
+        video_key = Path(video).absolute()
 
         try:
-            vid = VideoReader(rel_video_path)
-            video_sets[rel_video_path] = {"crop": ", ".join(map(str, vid.get_bbox()))}
+            vid = VideoReader(os.fspath(video_key))
+            video_sets[os.fspath(video_key)] = {"crop": ", ".join(map(str, vid.get_bbox()))}
         except OSError:
             warnings.warn("Cannot open the video file! Skipping to the next one...", stacklevel=2)
             Path(video).unlink()  # Removing the video or link from the project
@@ -278,7 +273,7 @@ def create_new_project(
     cfg_file["Task"] = project
     cfg_file["scorer"] = experimenter
     cfg_file["video_sets"] = video_sets
-    cfg_file["project_path"] = str(project_path)
+    cfg_file["project_path"] = project_path
     cfg_file["date"] = d
     cfg_file["cropping"] = False
     cfg_file["start"] = 0
@@ -304,7 +299,7 @@ def create_new_project(
     cfg_file["alphavalue"] = 0.7  # for plots transparency of markers
     cfg_file["colormap"] = "rainbow"  # for plots type of colormap
 
-    projconfigfile = project_path / "config.yaml"
+    projconfigfile = (project_path / "config.yaml").absolute()
     # Write dictionary to yaml  config file
     auxiliaryfunctions.write_config(projconfigfile, cfg_file)
 

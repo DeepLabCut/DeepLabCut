@@ -67,6 +67,8 @@ def add_new_videos(
     from ..utils import auxiliaryfunctions
     from ..utils.auxfun_videos import VideoReader
 
+    config = Path(config).absolute()
+
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
 
@@ -74,11 +76,11 @@ def add_new_videos(
     if isinstance(videos, str):
         videos = [videos]
 
-    video_path = Path(config).parents[0] / "videos"
-    data_path = Path(config).parents[0] / "labeled-data"
-    videos = [Path(vp) for vp in videos]
+    video_path = config.parent / "videos"
+    data_path = config.parent / "labeled-data"
+    videos = [Path(vp).absolute() for vp in videos]
 
-    dirs = [data_path / Path(i.stem) for i in videos]
+    dirs = [data_path / i.stem for i in videos]
 
     for p in dirs:
         """Creates directory under data & perhaps copies videos (to /video)"""
@@ -101,15 +103,13 @@ def add_new_videos(
                 print(f"Video {dst} already exists. Skipping...")
                 continue
             try:
-                src = str(src)
-                dst = str(dst)
-                Path(dst).symlink_to(src)
+                dst.symlink_to(src)
                 print(f"Created the symlink of {src} to {dst}")
             except OSError:
                 try:
                     import subprocess
 
-                    subprocess.check_call(f"mklink {dst} {src}", shell=True)
+                    subprocess.check_call(f"mklink {os.fspath(dst)} {os.fspath(src)}", shell=True)
                 except (OSError, subprocess.CalledProcessError):
                     print("Symlink creation impossible (exFat architecture?): copying the video instead.")
                     shutil.copy(os.fspath(src), os.fspath(dst))
@@ -120,27 +120,24 @@ def add_new_videos(
         videos = destinations  # in this case the *new* location should be added to the config file
     # adds the video list to the config.yaml file
     for idx, video in enumerate(videos):
-        try:
-            # For windows os.path.realpath does not work and does not link to the real video.
-            video_path = str(Path(video).absolute())
-        #           video_path = os.path.realpath(video)
-        except Exception:
-            video_path = str(Path(video).readlink())
-
-        vid = VideoReader(video_path)
+        video_key = Path(video).absolute()
+        vid = VideoReader(os.fspath(video_key))
         if coords is not None:
             c = coords[idx]
         else:
             c = vid.get_bbox()
-        params = {video_path: {"crop": ", ".join(map(str, c))}}
+        params = {os.fspath(video_key): {"crop": ", ".join(map(str, c))}}
         if "video_sets_original" not in cfg:
             cfg["video_sets"].update(params)
         else:
             cfg["video_sets_original"].update(params)
-    videos_str = [str(video) for video in videos]
     auxiliaryfunctions.write_config(config, cfg)
     if extract_frames:
-        frame_extraction.extract_frames(config, userfeedback=False, videos_list=videos_str)
+        frame_extraction.extract_frames(
+            config,
+            userfeedback=False,
+            videos_list=[os.fspath(video) for video in videos],
+        )
         print("New videos were added to the project and frames have been extracted for labeling!")
     else:
         print("New videos were added to the project! Use the function 'extract_frames' to select frames for labeling.")
