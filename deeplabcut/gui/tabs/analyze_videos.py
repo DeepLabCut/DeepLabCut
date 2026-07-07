@@ -33,7 +33,7 @@ from deeplabcut.gui.widgets import ConfigEditor
 
 @dataclass(frozen=True)
 class AnalyzeVideosOptions:
-    config: str
+    config_path: str | Path
     shuffle: int
     save_as_csv: bool
     filter_data: bool
@@ -263,13 +263,13 @@ class AnalyzeVideos(DefaultTab):
             self.root.logger.info("Plot trajectories DISABLED.")
 
     def edit_config_file(self):
-        if not self.root.config:
+        if not self.root.config_path:
             return
-        editor = ConfigEditor(self.root.config)
+        editor = ConfigEditor(self.root.config_path)
         editor.show()
 
     def _collect_options(self) -> AnalyzeVideosOptions:
-        config = self.root.config
+        config_path = self.root.config_path
         shuffle = self.root.shuffle_value
         save_as_csv = self.save_as_csv.isChecked()
         filter_data = self.filter_predictions.isChecked()
@@ -305,7 +305,7 @@ class AnalyzeVideos(DefaultTab):
             dynamic_cropping_params = (True, 0.5, 10)
 
         return AnalyzeVideosOptions(
-            config=config,
+            config_path=config_path,
             shuffle=shuffle,
             save_as_csv=save_as_csv,
             filter_data=filter_data,
@@ -350,7 +350,7 @@ class AnalyzeVideos(DefaultTab):
                 self.root.logger.info(f"Analyzing {len(videos)} video(s) with extension {videotype}")
 
                 deeplabcut.analyze_videos(
-                    options.config,
+                    options.config_path,
                     videos=videos,
                     video_extensions=videotype,
                     shuffle=options.shuffle,
@@ -381,7 +381,7 @@ class AnalyzeVideos(DefaultTab):
     ):
         if options.create_video_all_detections:
             deeplabcut.create_video_with_all_detections(
-                options.config,
+                options.config_path,
                 videos=videos,
                 video_extensions=videotype,
                 shuffle=options.shuffle,
@@ -389,7 +389,7 @@ class AnalyzeVideos(DefaultTab):
 
         if options.filter_data:
             deeplabcut.filterpredictions(
-                options.config,
+                options.config_path,
                 video=videos,
                 video_extensions=videotype,
                 shuffle=options.shuffle,
@@ -401,7 +401,7 @@ class AnalyzeVideos(DefaultTab):
 
         if options.plot_trajectories:
             deeplabcut.plot_trajectories(
-                options.config,
+                options.config_path,
                 videos=videos,
                 displayedbodyparts=options.displayed_bodyparts,
                 video_extensions=videotype,
@@ -432,12 +432,11 @@ class AnalyzeVideos(DefaultTab):
         # Keep config in sync with GUI choice before launching worker
         if self.root.is_multianimal and options.track_method is not None:
             # NOTE @deruyter92 2026-06-23: Most of GUI is not migrated to typed configs yet, so we normalize here.
-            cfg = ProjectConfig.from_any(self.root.config, repair_path=True)
-            cfg_path = self.root.config if isinstance(self.root.config, (str, Path)) else cfg.config_yaml_path
+            cfg = ProjectConfig.from_any(self.root.config_path, repair_path=True)
 
             # Update track method and write to disk
             cfg.default_track_method = options.track_method
-            cfg.to_yaml(cfg_path, overwrite=True, log_changes=True, mark_clean=True)
+            cfg.to_yaml(self.root.config_path, overwrite=True, log_changes=True, mark_clean=True)
 
         func = partial(self._run_pipeline, options, batches)
 

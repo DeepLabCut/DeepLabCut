@@ -38,7 +38,7 @@ class ManageProject(DefaultTab):
         cfg_text = QLabel("Active config file:")
 
         self.cfg_line = QLineEdit()
-        self.cfg_line.setText(os.fspath(self.root.config) if self.root.config else "")
+        self.cfg_line.setText(os.fspath(self.root.config_path) if self.root.config_path else "")
         self.cfg_line.textChanged[str].connect(self.root.update_cfg)
 
         browse_button = QPushButton("Browse")
@@ -62,7 +62,7 @@ class ManageProject(DefaultTab):
         self.main_layout.addWidget(self.add_videos_btn, alignment=Qt.AlignRight)
 
     def open_config_editor(self):
-        editor = ConfigEditor(self.root.config)
+        editor = ConfigEditor(self.root.config_path)
         editor.show()
 
     def add_new_videos(self):
@@ -76,4 +76,4 @@ class ManageProject(DefaultTab):
         if not files:
             return
 
-        add_new_videos(self.root.config, files)
+        add_new_videos(self.root.config_path, [Path(video).absolute() for video in files])

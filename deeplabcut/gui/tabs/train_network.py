@@ -221,7 +221,7 @@ class TrainNetwork(DefaultTab):
         editor.show()
 
     def train_network(self):
-        config = self.root.config
+        config_path = self.root.config_path
         shuffle = int(self._shuffle.value())
 
         kwargs = dict(gputouse=None, autotune=False)
@@ -235,7 +235,7 @@ class TrainNetwork(DefaultTab):
             if detector_to_start_training_from is not None:
                 kwargs["detector_path"] = detector_to_start_training_from
 
-        compat.train_network(config, shuffle, **kwargs)
+        compat.train_network(config_path, shuffle, **kwargs)
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText("The network is now trained and ready to evaluate.")

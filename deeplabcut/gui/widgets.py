@@ -428,22 +428,23 @@ class DictViewer(QtWidgets.QWidget):
 
 
 class ConfigEditor(QtWidgets.QDialog):
-    def __init__(self, config, parent=None):
+    def __init__(self, config_path: str | Path, parent=None):
         super().__init__(parent)
-        self.config = config
-        if config.endswith("config.yaml") and not config.endswith("pytorch_config.yaml"):
+        self.config_path = Path(config_path).absolute()
+        config_name = self.config_path.name
+        if config_name == "config.yaml":
             self.read_func = auxiliaryfunctions.read_config
             self.write_func = auxiliaryfunctions.write_config
         else:
             self.read_func = auxiliaryfunctions.read_plainconfig
             self.write_func = auxiliaryfunctions.write_plainconfig
-        self.cfg = self.read_func(config)
+        self.cfg = self.read_func(self.config_path)
         self.parent = parent
         self.setWindowTitle("Configuration Editor")
         if parent is not None:
             self.setMinimumWidth(parent.screen_width // 2)
             self.setMinimumHeight(parent.screen_height // 2)
-        self.viewer = DictViewer(self.cfg, config, self)
+        self.viewer = DictViewer(self.cfg, self.config_path, self)
 
         self.save_button = QtWidgets.QPushButton("Save", self)
         self.save_button.setDefault(True)
@@ -463,7 +464,7 @@ class ConfigEditor(QtWidgets.QDialog):
             self.close()
 
     def accept(self):
-        self.write_func(self.config, self.cfg)
+        self.write_func(self.config_path, self.cfg)
         super().accept()
 
 

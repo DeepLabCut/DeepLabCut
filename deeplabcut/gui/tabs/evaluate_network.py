@@ -125,8 +125,8 @@ class EvaluateNetwork(DefaultTab):
 
     def plot_maps(self):
         shuffle = self.root.shuffle_value
-        config = self.root.config
-        deeplabcut.extract_save_all_maps(config, shuffle=shuffle, Indices=[0, 1, 2])
+        config_path = self.root.config_path
+        deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 1, 2])
 
         # Display all images
         dest_folder = (
@@ -181,7 +181,7 @@ class EvaluateNetwork(DefaultTab):
             self.root.logger.info(f"Use selected bodyparts only: {self.bodyparts_list_widget.selected_bodyparts}")
 
     def evaluate_network(self):
-        config = self.root.config
+        config_path = self.root.config_path
         shuffle = self.root.shuffle_value
         plotting = self.plot_predictions.isChecked()
 
@@ -192,7 +192,7 @@ class EvaluateNetwork(DefaultTab):
             bodyparts_to_use = self.bodyparts_list_widget.selected_bodyparts
 
         deeplabcut.evaluate_network(
-            config,
+            config_path,
             Shuffles=[shuffle],
             plotting=plotting,
             show_errors=True,

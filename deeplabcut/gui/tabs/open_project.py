@@ -22,7 +22,7 @@ class OpenProject(QtWidgets.QDialog):
 
         self.setWindowTitle("Load Existing Project")
 
-        self.config: Path | None = None
+        self.config_path: Path | None = None
         self.loaded = False
 
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -66,16 +66,16 @@ class OpenProject(QtWidgets.QDialog):
         )
         if not config[0]:
             return
-        self.config = Path(config[0]).absolute()
-        self.open_line.setText(os.fspath(self.config))
+        self.config_path = Path(config[0]).absolute()
+        self.open_line.setText(os.fspath(self.config_path))
         self.ok_button.setFocus()
 
     def open_project(self):
         config_text = self.open_line.text().strip()
         if config_text:
-            self.config = Path(config_text).absolute()
+            self.config_path = Path(config_text).absolute()
 
-        if not self.config:
+        if not self.config_path:
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Critical)
             msg.setText("Please choose the config.yaml file to load the project")

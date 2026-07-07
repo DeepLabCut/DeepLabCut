@@ -86,7 +86,7 @@ class MainWindow(QMainWindow):
         self.logger = logging.getLogger("deeplabcut.gui")
         self.console_logger = logging.getLogger("deeplabcut.gui.console")
 
-        self.config: Path | None = None
+        self.config_path: Path | None = None
         self.loaded = False
 
         self.shuffle_value = 1
@@ -186,7 +186,7 @@ class MainWindow(QMainWindow):
     @property
     def cfg(self):
         try:
-            cfg = auxiliaryfunctions.read_config(self.config)
+            cfg = auxiliaryfunctions.read_config(self.config_path)
         except TypeError:
             cfg = {}
         return cfg
@@ -256,7 +256,7 @@ class MainWindow(QMainWindow):
         try:
             return Path(
                 compat.return_train_network_path(
-                    self.config,
+                    self.config_path,
                     shuffle=int(self.shuffle_value),
                     trainingsetindex=int(self.trainingset_index),
                     modelprefix="",
@@ -270,7 +270,7 @@ class MainWindow(QMainWindow):
         try:
             return Path(
                 compat.return_train_network_path(
-                    self.config,
+                    self.config_path,
                     shuffle=int(self.shuffle_value),
                     trainingsetindex=int(self.trainingset_index),
                     modelprefix="",
@@ -293,7 +293,7 @@ class MainWindow(QMainWindow):
         ).absolute()
 
     def update_cfg(self, text):
-        self.config = Path(text).absolute() if text else None
+        self.config_path = Path(text).absolute() if text else None
         self.unsupervised_id_tracking.setEnabled(self.is_transreid_available())
 
     def update_shuffle(self, value):
@@ -830,11 +830,11 @@ class MainWindow(QMainWindow):
         self.toolbar.removeAction(self.openAction)
         self.toolbar.removeAction(self.helpAction)
 
-    def _update_project_state(self, config, loaded):
-        self.config = Path(config).absolute() if config else None
+    def _update_project_state(self, config_path, loaded):
+        self.config_path = Path(config_path).absolute() if config_path else None
         self.loaded = loaded
         if loaded:
-            self.add_recent_filename(os.fspath(self.config))
+            self.add_recent_filename(os.fspath(self.config_path))
             self.add_tabs()
 
     def _ask_for_help(self):
@@ -860,12 +860,12 @@ class MainWindow(QMainWindow):
     def _open_project(self):
         open_project = OpenProject(self)
         open_project.load_config()
-        if not open_project.config:
+        if not open_project.config_path:
             return
 
         open_project.loaded = True
         self._update_project_state(
-            open_project.config,
+            open_project.config_path,
             open_project.loaded,
         )
 
@@ -876,8 +876,8 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.modelzoo, "Model Zoo")
         self.setCentralWidget(self.tab_widget)
 
-    def load_config(self, config):
-        self.config = Path(config).absolute() if config else None
+    def load_config(self, config_path):
+        self.config_path = Path(config_path).absolute() if config_path else None
         self.config_loaded.emit()
         print(f'Project "{self.cfg["Task"]}" successfully loaded.')
 
@@ -986,7 +986,7 @@ class MainWindow(QMainWindow):
                 pass
 
         _attempt_attribute_update("shuffle", self.shuffle_value)
-        _attempt_attribute_update("cfg_line", os.fspath(self.config) if self.config else "")
+        _attempt_attribute_update("cfg_line", os.fspath(self.config_path) if self.config_path else "")
 
     def is_transreid_available(self):
         if not self.is_multianimal:

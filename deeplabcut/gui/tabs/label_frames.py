@@ -121,7 +121,7 @@ class LabelFrames(DefaultTab):
         dialog = QtWidgets.QFileDialog(self)
         dialog.setFileMode(QtWidgets.QFileDialog.Directory)
         dialog.setViewMode(QtWidgets.QFileDialog.Detail)
-        dialog.setDirectory(str(Path(self.root.config).parent / "labeled-data"))
+        dialog.setDirectory(str(Path(self.root.config_path).parent / "labeled-data"))
         if dialog.exec_():
             folder = dialog.selectedFiles()[0]
             has_h5 = False
@@ -130,12 +130,12 @@ class LabelFrames(DefaultTab):
                     has_h5 = True
                     break
             if not has_h5:
-                folder = [folder, self.root.config]
+                folder = [folder, self.root.config_path]
             _ = launch_napari(folder)
 
     def check_labels(self):
-        check_labels(self.root.config, visualizeindividuals=self.root.is_multianimal)
-        labeled_images = (Path(self.root.config).parent / "labeled-data").rglob("*_labeled/*.png")
+        check_labels(self.root.config_path, visualizeindividuals=self.root.is_multianimal)
+        labeled_images = (Path(self.root.config_path).parent / "labeled-data").rglob("*_labeled/*.png")
         _ = launch_napari(labeled_images, plugin="napari", stack=True)
 
     def _on_skeleton_builder_destroyed(self):
@@ -144,7 +144,7 @@ class LabelFrames(DefaultTab):
     def build_skeleton(self, *args):
         if self.skeleton_builder is None:
             self.skeleton_builder = SkeletonBuilder(
-                config_path=self.root.config,
+                config_path=self.root.config_path,
                 parent=self.root,
             )
             self.skeleton_builder.show()
