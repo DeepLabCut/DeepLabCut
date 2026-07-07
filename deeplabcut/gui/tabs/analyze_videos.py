@@ -331,20 +331,20 @@ class AnalyzeVideos(DefaultTab):
         batches = [(suffix, videos) for suffix, videos in sorted(groups.items()) if suffix]
         return batches
 
-    def _get_unique_video_parent_folders(self, batches: list[tuple[str, list[str]]]) -> list[str]:
+    def _get_unique_video_parent_folders(self, batches: list[tuple[str, list[Path]]]) -> list[Path]:
         folders = []
         seen = set()
 
         for _, videos in batches:
             for video in videos:
-                parent = str(Path(video).parent.absolute())
+                parent = video.parent.absolute()
                 if parent not in seen:
                     seen.add(parent)
                     folders.append(parent)
 
         return folders
 
-    def _run_pipeline(self, options: AnalyzeVideosOptions, batches: list[tuple[str, list[str]]]):
+    def _run_pipeline(self, options: AnalyzeVideosOptions, batches: list[tuple[str, list[Path]]]):
         for videotype, videos in batches:
             try:
                 self.root.logger.info(f"Analyzing {len(videos)} video(s) with extension {videotype}")
@@ -411,7 +411,7 @@ class AnalyzeVideos(DefaultTab):
                 track_method=options.track_method,
             )
 
-    def _convert_outputs_to_csv_once_per_folder(self, batches: list[tuple[str, list[str]]]):
+    def _convert_outputs_to_csv_once_per_folder(self, batches: list[tuple[str, list[Path]]]):
         folders = self._get_unique_video_parent_folders(batches)
 
         for folder in folders:

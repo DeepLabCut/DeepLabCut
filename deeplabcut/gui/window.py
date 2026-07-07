@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import logging
+import os
 import sys
 import warnings
 from functools import cached_property
@@ -85,13 +86,13 @@ class MainWindow(QMainWindow):
         self.logger = logging.getLogger("deeplabcut.gui")
         self.console_logger = logging.getLogger("deeplabcut.gui.console")
 
-        self.config = None
+        self.config: Path | None = None
         self.loaded = False
 
         self.shuffle_value = 1
         self.trainingset_index = 0
         self.videotype = "mp4"
-        self.files = set()
+        self.files: set[Path] = set()
 
         self._engine = Engine.PYTORCH
 
@@ -226,8 +227,11 @@ class MainWindow(QMainWindow):
         self.engine_change.emit(e)
 
     @property
-    def project_folder(self) -> str:
-        return self.cfg.get("project_path", str(Path("~/Desktop").expanduser()))
+    def project_folder(self) -> Path:
+        path = self.cfg.get("project_path")
+        if path is not None:
+            return Path(path).absolute()
+        return Path("~/Desktop").expanduser().absolute()
 
     @property
     def is_multianimal(self) -> bool:
@@ -248,36 +252,36 @@ class MainWindow(QMainWindow):
             return [""]
 
     @property
-    def pose_cfg_path(self) -> str:
+    def pose_cfg_path(self) -> Path:
         try:
-            return str(
+            return Path(
                 compat.return_train_network_path(
                     self.config,
                     shuffle=int(self.shuffle_value),
                     trainingsetindex=int(self.trainingset_index),
                     modelprefix="",
                 )[0]
-            )
+            ).absolute()
         except FileNotFoundError:
-            return str(Path(deeplabcut.__file__).parent / "pose_cfg.yaml")
+            return (Path(deeplabcut.__file__).parent / "pose_cfg.yaml").absolute()
 
     @property
-    def models_folder(self) -> str:
+    def models_folder(self) -> Path:
         try:
-            return str(
+            return Path(
                 compat.return_train_network_path(
                     self.config,
                     shuffle=int(self.shuffle_value),
                     trainingsetindex=int(self.trainingset_index),
                     modelprefix="",
                 )[2]
-            )
+            ).absolute()
         except FileNotFoundError:
-            return self.project_folder()
+            return self.project_folder
 
     @property
-    def inference_cfg_path(self) -> str:
-        return str(
+    def inference_cfg_path(self) -> Path:
+        return (
             Path(self.cfg["project_path"])
             / auxiliaryfunctions.get_model_folder(
                 self.cfg["TrainingFraction"][int(self.trainingset_index)],
@@ -286,10 +290,10 @@ class MainWindow(QMainWindow):
             )
             / "test"
             / "inference_cfg.yaml"
-        )
+        ).absolute()
 
     def update_cfg(self, text):
-        self.root.config = text
+        self.config = Path(text).absolute() if text else None
         self.unsupervised_id_tracking.setEnabled(self.is_transreid_available())
 
     def update_shuffle(self, value):
@@ -585,7 +589,7 @@ class MainWindow(QMainWindow):
         Add new video files to the existing set of files. This method ensures no duplicates are added.
         Emits a signal to notify about the updated set of files.
         """
-        new_video_files = set(new_video_files)
+        new_video_files = {Path(video).absolute() for video in new_video_files}
         self.files.update(new_video_files)  # Add new items to the existing set
         self.video_files_.emit(self.files)  # Emit the updated set of files
         self.logger.info(f"Videos added to analyze:\n{new_video_files}\nCurrent video files:\n{self.files}")
@@ -691,7 +695,7 @@ class MainWindow(QMainWindow):
         self.name_default = ""
         self.proj_default = ""
         self.exp_default = ""
-        self.loc_default = str(Path.home())
+        self.loc_default = Path.home()
 
     def create_actions(self, names):
         # Creating action using the first constructor
@@ -827,10 +831,10 @@ class MainWindow(QMainWindow):
         self.toolbar.removeAction(self.helpAction)
 
     def _update_project_state(self, config, loaded):
-        self.config = config
+        self.config = Path(config).absolute() if config else None
         self.loaded = loaded
         if loaded:
-            self.add_recent_filename(self.config)
+            self.add_recent_filename(os.fspath(self.config))
             self.add_tabs()
 
     def _ask_for_help(self):
@@ -873,7 +877,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tab_widget)
 
     def load_config(self, config):
-        self.config = config
+        self.config = Path(config).absolute() if config else None
         self.config_loaded.emit()
         print(f'Project "{self.cfg["Task"]}" successfully loaded.')
 
@@ -982,7 +986,7 @@ class MainWindow(QMainWindow):
                 pass
 
         _attempt_attribute_update("shuffle", self.shuffle_value)
-        _attempt_attribute_update("cfg_line", self.config)
+        _attempt_attribute_update("cfg_line", os.fspath(self.config) if self.config else "")
 
     def is_transreid_available(self):
         if not self.is_multianimal:

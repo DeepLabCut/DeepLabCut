@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import os
 import webbrowser
 from functools import partial
 from pathlib import Path
@@ -386,7 +387,9 @@ class ModelZoo(DefaultTab):
                 self._update_adaptation_detector_visibility(self.model_combo.currentText())
 
     def select_folder(self):
-        dirname = QtWidgets.QFileDialog.getExistingDirectory(self, "Please select a folder", self.root.project_folder)
+        dirname = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Please select a folder", os.fspath(self.root.project_folder)
+        )
         if not dirname:
             return
 

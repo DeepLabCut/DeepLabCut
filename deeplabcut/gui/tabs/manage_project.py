@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import os
 from pathlib import Path
 
 from PySide6.QtCore import Qt
@@ -37,7 +38,7 @@ class ManageProject(DefaultTab):
         cfg_text = QLabel("Active config file:")
 
         self.cfg_line = QLineEdit()
-        self.cfg_line.setText(self.root.config)
+        self.cfg_line.setText(os.fspath(self.root.config) if self.root.config else "")
         self.cfg_line.textChanged[str].connect(self.root.update_cfg)
 
         browse_button = QPushButton("Browse")

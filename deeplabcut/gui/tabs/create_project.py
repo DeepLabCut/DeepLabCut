@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -232,7 +233,7 @@ class ProjectCreator(QtWidgets.QDialog):
 
         loc_label = ClickableLabel("Location:", parent=user_frame)
         loc_label.signal.connect(self.on_click)
-        self.loc_line = QtWidgets.QLineEdit(self.loc_default, user_frame)
+        self.loc_line = QtWidgets.QLineEdit(os.fspath(self.loc_default), user_frame)
         self.loc_line.setReadOnly(True)
         action = self.loc_line.addAction(
             icon_from_resource("icons", "open2.png"),
@@ -414,7 +415,7 @@ class ProjectCreator(QtWidgets.QDialog):
             files, _ = QtWidgets.QFileDialog.getOpenFileNames(
                 self,
                 "Select video files",
-                self.loc_default,
+                os.fspath(self.loc_default),
                 video_filter,
                 options=options,
             )
@@ -427,7 +428,7 @@ class ProjectCreator(QtWidgets.QDialog):
             folder = QtWidgets.QFileDialog.getExistingDirectory(
                 self,
                 "Please select a folder",
-                self.loc_default,
+                os.fspath(self.loc_default),
                 options,
             )
             if not folder:
@@ -519,10 +520,12 @@ class ProjectCreator(QtWidgets.QDialog):
         self.close()
 
     def on_click(self):
-        dirname = QtWidgets.QFileDialog.getExistingDirectory(self, "Please select a folder", self.loc_default)
+        dirname = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Please select a folder", os.fspath(self.loc_default)
+        )
         if not dirname:
             return
-        self.loc_default = dirname
+        self.loc_default = Path(dirname).absolute()
         self.update_project_location()
 
     def update_project_name(self, text):
@@ -535,5 +538,5 @@ class ProjectCreator(QtWidgets.QDialog):
 
     def update_project_location(self):
         full_name = self.name_default.format(self.proj_default, self.exp_default)
-        full_path = str(Path(self.loc_default) / full_name)
-        self.loc_line.setText(full_path)
+        full_path = self.loc_default / full_name
+        self.loc_line.setText(os.fspath(full_path))
