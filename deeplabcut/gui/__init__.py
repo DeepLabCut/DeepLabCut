@@ -15,8 +15,7 @@ from importlib.resources import files
 os.environ["QT_API"] = "pyside6"
 import qtpy  # Necessary unused import to properly store the env variable
 
-BASE_DIR = os.path.dirname(__file__)
-
+STYLE_PATH = files("deeplabcut.gui") / "style.qss"
 ASSETS = files("deeplabcut.gui.assets")
 LOGO_PATH = ASSETS / "logo.png"
 LOGO_TRANSPARENT_PATH = ASSETS / "logo_transparent.png"

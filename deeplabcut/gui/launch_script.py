@@ -19,7 +19,6 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
-import os
 import sys
 
 import PySide6.QtWidgets as QtWidgets
@@ -27,7 +26,7 @@ import qdarkstyle
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap
 
-from deeplabcut.gui import BASE_DIR, LOGO_PATH, WELCOME_PATH
+from deeplabcut.gui import LOGO_PATH, STYLE_PATH, WELCOME_PATH
 
 
 def launch_dlc():
@@ -38,9 +37,7 @@ def launch_dlc():
     splash = QtWidgets.QSplashScreen(pixmap)
     splash.show()
 
-    stylefile = os.path.join(BASE_DIR, "style.qss")
-    with open(stylefile) as f:
-        app.setStyleSheet(f.read())
+    app.setStyleSheet(STYLE_PATH.read_text(encoding="utf-8"))
 
     dark_stylesheet = qdarkstyle.load_stylesheet_pyside2()
     app.setStyleSheet(dark_stylesheet)
