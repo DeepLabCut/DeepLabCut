@@ -17,6 +17,7 @@ import qtpy  # Necessary unused import to properly store the env variable
 
 STYLE_PATH = files("deeplabcut.gui") / "style.qss"
 ASSETS = files("deeplabcut.gui.assets")
+MEDIA = files("deeplabcut.gui.media")
 LOGO_PATH = ASSETS / "logo.png"
 LOGO_TRANSPARENT_PATH = ASSETS / "logo_transparent.png"
 WELCOME_PATH = ASSETS / "welcome.png"

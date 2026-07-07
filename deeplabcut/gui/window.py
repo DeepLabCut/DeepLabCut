@@ -13,7 +13,6 @@ import os
 import sys
 import warnings
 from functools import cached_property
-from importlib.resources import files
 from importlib.util import find_spec
 from pathlib import Path
 
@@ -37,7 +36,7 @@ from deeplabcut import __version__ as DLC_VERSION
 from deeplabcut import auxiliaryfunctions, compat
 from deeplabcut.core.debug import install_debug_recorder
 from deeplabcut.core.engine import Engine
-from deeplabcut.gui import ASSETS, LOGO_PATH, LOGO_TRANSPARENT_PATH, components
+from deeplabcut.gui import ASSETS, LOGO_PATH, LOGO_TRANSPARENT_PATH, MEDIA, components
 from deeplabcut.gui.dialogs import create_generate_debug_log_action
 from deeplabcut.gui.tabs import (
     AnalyzeVideos,
@@ -794,7 +793,7 @@ class MainWindow(QMainWindow):
         engine_icon.setStyleSheet("background: transparent;")
 
         def _update_icon(engine: str):
-            file = files("deeplabcut.gui.media") / f"dlc-{engine}.png"
+            file = MEDIA / f"dlc-{engine}.png"
             pixmap = QPixmap(str(file))
             if not pixmap.isNull():
                 engine_icon.setPixmap(pixmap.scaled(56, 56, Qt.AspectRatioMode.KeepAspectRatio))
