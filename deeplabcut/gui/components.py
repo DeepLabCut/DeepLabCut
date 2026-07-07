@@ -214,7 +214,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         """Return normalized suffixes (without leading dot) of currently selected files."""
         suffixes = set()
         for f in self.files:
-            suffix = Path(f).suffix.lower().lstrip(".")
+            suffix = f.suffix.lower().lstrip(".")
             if suffix:
                 suffixes.add(suffix)
         return suffixes
@@ -388,7 +388,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
         super().__init__(parent)
         self.root = root
         self.parent = parent
-        self.selected_snapshot = None
+        self.selected_snapshot: Path | None = None
         self._init_layout(margins, select_button_text)
 
     def _init_layout(self, margins, select_button_text):
@@ -454,7 +454,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
         super().__init__(parent=parent)
         self.root = root
         self.parent = parent
-        self.selected_conditions = None
+        self.selected_conditions: Path | None = None
         self._init_layout()
 
     def _init_layout(self):

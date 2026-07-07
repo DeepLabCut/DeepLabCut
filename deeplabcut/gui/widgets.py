@@ -90,8 +90,8 @@ class DragDropListView(QtWidgets.QListView):
             state = QtCore.Qt.Unchecked
         return state, n_checked
 
-    def add_item(self, path):
-        item = QStandardItem(path)
+    def add_item(self, path: str | Path):
+        item = QStandardItem(os.fspath(Path(path).absolute()))
         item.setCheckable(True)
         item.setCheckState(QtCore.Qt.Checked)
         self.model.appendRow(item)
@@ -107,14 +107,13 @@ class DragDropListView(QtWidgets.QListView):
 
     def dropEvent(self, event):
         for url in event.mimeData().urls():
-            path = url.toLocalFile()
-            if Path(path).is_file():
+            path = Path(url.toLocalFile())
+            if path.is_file():
                 self.add_item(path)
-            elif Path(path).is_dir():
-                for root, _, files in os.walk(path):
-                    for file in files:
-                        if not file.startswith("."):
-                            self.add_item(str(Path(root) / file))
+            elif path.is_dir():
+                for child in path.rglob("*"):
+                    if child.is_file() and not child.name.startswith("."):
+                        self.add_item(child)
 
 
 class ItemSelectionFrame(QtWidgets.QFrame):
@@ -276,7 +275,7 @@ class ContextMenu(QtWidgets.QMenu):
         creator.created.connect(self.parent.insert)
 
     def fix_path(self):
-        self.current_item.setText(1, str(Path(self.parent.filename).parent))
+        self.current_item.setText(1, os.fspath(Path(self.parent.filename).parent))
 
 
 class DictViewer(QtWidgets.QWidget):

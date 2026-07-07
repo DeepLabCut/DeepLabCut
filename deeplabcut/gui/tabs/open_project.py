@@ -60,7 +60,7 @@ class OpenProject(QtWidgets.QDialog):
         self.open_line.text()
 
     def load_config(self):
-        cwd = str(Path.cwd())
+        cwd = os.fspath(Path.cwd())
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )

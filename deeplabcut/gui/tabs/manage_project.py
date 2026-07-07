@@ -66,7 +66,7 @@ class ManageProject(DefaultTab):
         editor.show()
 
     def add_new_videos(self):
-        cwd = str(Path.cwd())
+        cwd = os.fspath(Path.cwd())
         files = QFileDialog.getOpenFileNames(
             self,
             "Select videos to add to the project",
