@@ -284,7 +284,7 @@ def video_inference(
         if len(snapshots) == 0:
             raise FileNotFoundError(f"Did not find any super animal snapshots in {weight_folder}")
 
-        init_weights = str(Path(snapshots[0]).resolve()).replace(".index", "")
+        init_weights = str(auxiliaryfunctions.safe_resolve(snapshots[0].with_suffix("")))
         test_cfg["init_weights"] = init_weights
 
     test_cfg["num_outputs"] = 1

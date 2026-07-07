@@ -354,7 +354,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         )
 
         if filenames[0]:
-            abs_files = [str(Path(vid).resolve()) for vid in filenames[0]]
+            abs_files = [str(Path(vid).absolute()) for vid in filenames[0]]
             self.root.add_video_files(abs_files)
 
             # Optional safety: sync dropdown to selected file suffix
@@ -435,7 +435,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
         )
         # When Canceling a file selection, Qt returns an empty string as selected file
         if selected_snapshot:
-            self.selected_snapshot = str(Path(selected_snapshot).resolve())
+            self.selected_snapshot = str(Path(selected_snapshot).absolute())
 
         self._update_selected_snapshot_display()
 
@@ -524,7 +524,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
                 selected_conditions = None
 
         # When Canceling a file selection, Qt returns an empty string as selected file
-        self.selected_conditions = str(Path(selected_conditions).resolve()) if selected_conditions else None
+        self.selected_conditions = str(Path(selected_conditions).absolute()) if selected_conditions else None
 
         self._update_selected_conditions_display()
 
