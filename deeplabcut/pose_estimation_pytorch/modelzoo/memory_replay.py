@@ -58,6 +58,9 @@ def get_pose_predictions(
     Returns:
         The predictions made by the SuperAnimal model on each image in the images list.
     """
+    model_snapshot_path = Path(model_snapshot_path)
+    detector_snapshot_path = Path(detector_snapshot_path)
+
     model_name = detector_snapshot_path.stem + "-" + model_snapshot_path.stem
     predictions_folder = loader.project_path / "memory_replay" / superanimal_name / model_name
     predictions_folder.mkdir(exist_ok=True, parents=True)
@@ -98,9 +101,7 @@ def get_pose_predictions(
     # FIXME(niels, yeshaokai) - Use the detector to combine GT-keypoint created bounding
     #  boxes and predicted bounding boxes - keep the larger of the two
     # bbox_predictions = detector_runner.inference(images=images_to_process)
-    pose_inputs = [
-        (str(loader.project_path / Path(image)), {"bboxes": np.array(bboxes[image])}) for image in images_to_process
-    ]
+    pose_inputs = [(loader.project_path / image, {"bboxes": np.array(bboxes[image])}) for image in images_to_process]
     predictions = pose_runner.inference(pose_inputs)
 
     for image, prediction in zip(images_to_process, predictions, strict=False):
@@ -126,8 +127,8 @@ def prepare_memory_replay_dataset(
     loader: DLCLoader,
     source_dataset_folder: str | Path,
     superanimal_name: str,
-    model_snapshot_path: str,
-    detector_snapshot_path: str,
+    model_snapshot_path: str | Path,
+    detector_snapshot_path: str | Path,
     max_individuals: int = 1,
     train_file: str = "train.json",
     pose_threshold: float = 0.0,
@@ -139,6 +140,8 @@ def prepare_memory_replay_dataset(
     # \\?\Volume{GUID}\... paths. See https://github.com/DeepLabCut/DeepLabCut/issues/3348
     project_root = af.safe_resolve(loader.project_path)
     source_dataset_folder = af.safe_resolve(Path(source_dataset_folder))
+    model_snapshot_path = Path(model_snapshot_path)
+    detector_snapshot_path = Path(detector_snapshot_path)
 
     # Contains the ground truth annotations for the DeepLabCut project
     # .../dlc-models-pytorch/.../...shuffle0/train/memory_replay/annotations/train.json
@@ -238,8 +241,7 @@ def prepare_memory_replay_dataset(
 
                 gts[idx]["keypoints"] = list(matched_gt.flatten())
 
-    # memory replay path
-    memory_replay_train_file_path = Path(source_dataset_folder) / "annotations" / "memory_replay_train.json"
+    memory_replay_train_file_path = source_dataset_folder / "annotations" / "memory_replay_train.json"
 
     # parse the GT to put the image paths back into OS-specific format
     for image in project_gt["images"]:
@@ -286,9 +288,9 @@ def prepare_memory_replay(
     super_animal_cfg = af.read_plainconfig(get_super_animal_project_config_path(super_animal=superanimal_name))
 
     if "individuals" in cfg:
-        temp_dataset = MaDLCPoseDataset(str(loader.project_path), "temp_dataset", shuffle=loader.shuffle)
+        temp_dataset = MaDLCPoseDataset(loader.project_path, "temp_dataset", shuffle=loader.shuffle)
     else:
-        temp_dataset = SingleDLCPoseDataset(str(loader.project_path), "temp_dataset", shuffle=loader.shuffle)
+        temp_dataset = SingleDLCPoseDataset(loader.project_path, "temp_dataset", shuffle=loader.shuffle)
 
     memory_replay_folder = loader.model_folder / "memory_replay"
     temp_dataset.materialize(
