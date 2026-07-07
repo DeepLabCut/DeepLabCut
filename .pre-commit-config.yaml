@@ -90,15 +90,7 @@ repos:
       - id: mdformat
         additional_dependencies:
           - mdformat-myst
-        files: ^docs/.*\.md$
-        stages: [pre-commit]
-
-  - repo: https://github.com/hukkin/mdformat
-    rev: 1.0.0
-    hooks:
-      - id: mdformat
-        additional_dependencies:
-          - mdformat-mkdocs==5.2.0
+          - mdformat-mkdocs==5.2.1
         args: [--ignore-missing-references]
         files: ^dev-docs/.*\.md$
         stages: [pre-commit]

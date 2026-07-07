@@ -19,6 +19,7 @@ Backbones are feature extraction networks that process input images and produce 
 All backbones inherit from [`BaseBackbone`][deeplabcut.pose_estimation_pytorch.models.backbones.BaseBackbone] and must define a stride property indicating the downsampling factor.
 
 **Example:**
+
 ```python
 from deeplabcut.pose_estimation_pytorch.models.backbones import BACKBONES
 
@@ -38,6 +39,7 @@ All necks inherit from [`BaseNeck`][deeplabcut.pose_estimation_pytorch.models.ne
 Heads are task-specific output layers that produce the final predictions. The [`deeplabcut.pose_estimation_pytorch.models.heads`][] module contains various head architectures for different pose estimation approaches.
 
 Each head contains:
+
 - A **predictor** to convert model outputs to keypoint locations
 - A **target generator** to create training targets from annotations
 - A **criterion** to compute the loss
@@ -46,6 +48,7 @@ Each head contains:
 All heads inherit from [`BaseHead`][deeplabcut.pose_estimation_pytorch.models.heads.BaseHead] and output a dictionary mapping output names to tensors.
 
 **Example:**
+
 ```python
 from deeplabcut.pose_estimation_pytorch.models.heads import HEADS
 
