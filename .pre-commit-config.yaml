@@ -84,13 +84,24 @@ repos:
         args: [--check, --diff]
         stages: [manual]
 
+  # docs/ and dev-docs/ use different MkDocs/Markdown dialects, so each tree gets its
+  # own mdformat hook with the matching plugin (see https://github.com/hukkin/mdformat/issues/546).
   - repo: https://github.com/hukkin/mdformat
     rev: 1.0.0
     hooks:
       - id: mdformat
+        name: mdformat (docs — myst)
         additional_dependencies:
           - mdformat-myst
+        files: ^docs/.*\.md$
+        stages: [pre-commit]
+
+      - id: mdformat
+        name: mdformat (dev-docs — mkdocs)
+        additional_dependencies:
           - mdformat-mkdocs==5.2.1
+        # Autoref targets may not resolve in the formatter env; without this flag,
+        # mdformat-mkdocs can rewrite links incorrectly (see KyleKing/mdformat-mkdocs#80).
         args: [--ignore-missing-references]
         files: ^dev-docs/.*\.md$
         stages: [pre-commit]
