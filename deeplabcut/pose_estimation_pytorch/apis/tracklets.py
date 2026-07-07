@@ -82,7 +82,7 @@ def convert_detections2tracklets(
         modelprefix=modelprefix,
         engine=Engine.PYTORCH,
     )
-    model_dir = Path(cfg["project_path"]) / rel_model_dir
+    model_dir = cfg.project_path / rel_model_dir
     path_test_config = model_dir / "test" / "pose_cfg.yaml"
     dlc_cfg = auxiliaryfunctions.read_plainconfig(path_test_config)
 

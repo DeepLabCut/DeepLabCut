@@ -294,7 +294,7 @@ def analyze_images(
     """
     cfg = auxiliaryfunctions.read_config(config)
     train_frac = cfg["TrainingFraction"][trainingsetindex]
-    model_folder = Path(cfg["project_path"]) / auxiliaryfunctions.get_model_folder(
+    model_folder = cfg.project_path / auxiliaryfunctions.get_model_folder(
         train_frac,
         shuffle,
         cfg,

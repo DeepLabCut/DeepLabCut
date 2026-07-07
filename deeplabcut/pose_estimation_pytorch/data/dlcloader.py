@@ -213,7 +213,7 @@ class DLCLoader(Loader):
 
     def load_ground_truth(
         self,
-        config: dict,
+        config: ProjectConfig,
         trainset_index: int,
         shuffle: int,
     ) -> tuple[dict[str, pd.DataFrame], set[tuple[int, int]]]:
@@ -233,7 +233,7 @@ class DLCLoader(Loader):
             ValueError: if the data contained in the ground truth HDF does not contain
                 a dataframe.
         """
-        trainset_dir = Path(config["project_path"]) / af.get_training_set_folder(config)
+        trainset_dir = config.project_path / af.get_training_set_folder(config)
         dataset_path = f"CollectedData_{config['scorer']}.h5"
         train_frac = int(100 * config["TrainingFraction"][trainset_index])
         project_id = f"{config['Task']}_{config['scorer']}"
@@ -268,7 +268,7 @@ class DLCLoader(Loader):
 
     @staticmethod
     def load_split(
-        config: dict,
+        config: ProjectConfig,
         trainset_index: int = 0,
         shuffle: int = 0,
     ) -> dict[str, list[int]]:
@@ -282,7 +282,7 @@ class DLCLoader(Loader):
         Return:
             the {"train": [train_ids], "test": [test_ids]} data split
         """
-        trainset_dir = Path(config["project_path"]) / af.get_training_set_folder(config)
+        trainset_dir = config.project_path / af.get_training_set_folder(config)
         train_frac = int(100 * config["TrainingFraction"][trainset_index])
         shuffle_id = f"{config['Task']}_{train_frac}shuffle{shuffle}.pickle"
         doc_path = trainset_dir / f"Documentation_data-{shuffle_id}"

@@ -149,7 +149,7 @@ def return_train_network_path(
         the path to the folder containing the snapshots
     """
     cfg = auxiliaryfunctions.read_config(config)
-    project_path = Path(cfg["project_path"])
+    project_path = cfg.project_path
     train_frac = cfg["TrainingFraction"][trainingsetindex]
     model_folder = auxiliaryfunctions.get_model_folder(
         train_frac, shuffle, cfg, engine=Engine.PYTORCH, modelprefix=modelprefix
@@ -267,7 +267,7 @@ def get_scorer_name(
         the scorer name
     """
     cfg = ProjectConfig.from_any(cfg)
-    model_dir = Path(cfg["project_path"]) / auxiliaryfunctions.get_model_folder(
+    model_dir = cfg.project_path / auxiliaryfunctions.get_model_folder(
         train_fraction,
         shuffle,
         cfg,

@@ -227,10 +227,10 @@ def plot_and_save_labeled_frame(
     scaling=1,
 ):
     if isinstance(DataCombined.index[ind], tuple):
-        image_path = str(Path(cfg["project_path"]).joinpath(*DataCombined.index[ind]))
+        image_path = Path(cfg["project_path"]).joinpath(*DataCombined.index[ind])
     else:
-        image_path = str(Path(cfg["project_path"]) / DataCombined.index[ind])
-    frame = io.imread(image_path)
+        image_path = Path(cfg["project_path"]) / DataCombined.index[ind]
+    frame = io.imread(os.fspath(image_path))
     if np.ndim(frame) > 2:  # color image!
         h, w, numcolors = np.shape(frame)
     else:
@@ -251,19 +251,23 @@ def plot_and_save_labeled_frame(
         scaling=scaling,
         ax=ax,
     )
-    save_labeled_frame(fig, image_path, foldername, ind in trainIndices)
+    save_labeled_frame(fig, image_path, Path(foldername), ind in trainIndices)
     return ax
 
 
-def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
-    path = Path(image_path)
-    imagename = path.parts[-1]
-    imfoldername = path.parts[-2]
+def save_labeled_frame(
+    fig,
+    image_path: Path,
+    dest_folder: Path,
+    belongs_to_train: bool,
+) -> None:
+    imagename = image_path.parts[-1]
+    imfoldername = image_path.parts[-2]
     if belongs_to_train:
         dest = "-".join(("Training", imfoldername, imagename))
     else:
         dest = "-".join(("Test", imfoldername, imagename))
-    full_path = str(Path(dest_folder) / dest)
+    full_path = os.fspath(dest_folder / dest)
 
     # Windows throws error if file path is > 260 characters, can fix with prefix.
     # See https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#maximum-path-length-limitation
@@ -441,10 +445,10 @@ def make_labeled_images_from_dataframe(
 
 def plot_evaluation_results(
     df_combined: pd.DataFrame,
-    project_root: str,
+    project_root: Path,
     scorer: str,
     model_name: str,
-    output_folder: str,
+    output_folder: Path,
     in_train_set: bool,
     plot_unique_bodyparts: bool = False,
     mode: str = "bodypart",
@@ -464,10 +468,10 @@ def plot_evaluation_results(
             image_name) and columns ("scorer", "individuals", "bodyparts", "coords").
             There should be two scorers: scorer (for ground truth data) and model_name
             (for prediction data)
-        project_root: the project root path
+        project_root: the project root directory
         scorer: the name of the scorer for ground truth data in df_combined
         model_name: the name of the model for predictions in df_combined
-        output_folder: the name of the folder where images should be saved
+        output_folder: the directory where images should be saved
         in_train_set: whether df_combined is for train set images
         plot_unique_bodyparts: whether we should plot unique bodyparts
         mode: one of {"bodypart", "individual"}. Determines the keypoint color grouping
@@ -496,7 +500,7 @@ def plot_evaluation_results(
         else:
             data_folder, video, image = row_index
 
-        image_path = Path(project_root) / data_folder / video / image
+        image_path = project_root / data_folder / video / image
         frame = auxfun_videos.imread(str(image_path), mode="skimage")
 
         row_multi = row.loc[(slice(None), row.index.get_level_values("individuals") != "single")]
@@ -600,7 +604,7 @@ def plot_evaluation_results(
 
         save_labeled_frame(
             fig,
-            str(image_path),
+            image_path,
             output_folder,
             belongs_to_train=in_train_set,
         )

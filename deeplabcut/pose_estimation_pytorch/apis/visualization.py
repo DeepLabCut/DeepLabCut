@@ -638,7 +638,7 @@ def _prepare_maps_for_plotting(maps: list[np.ndarray], image_size: tuple[int, in
 
 
 def _get_maps_folder(
-    cfg: dict,
+    cfg: ProjectConfig,
     train_frac: float,
     shuffle: int,
     model_prefix: str | None,
@@ -646,7 +646,7 @@ def _get_maps_folder(
 ) -> Path:
     """Gets the destination folder for output maps."""
     if dest_folder is None:
-        project_path = Path(cfg["project_path"])
+        project_path = cfg.project_path
         eval_folder = auxiliaryfunctions.get_evaluation_folder(
             trainFraction=train_frac,
             shuffle=shuffle,
