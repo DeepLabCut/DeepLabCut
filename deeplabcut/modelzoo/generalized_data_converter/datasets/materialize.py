@@ -692,7 +692,7 @@ def _generic2coco(
     for image in train_images + test_images:
         # important to resolve the filepath! Otherwise, errors can occur when running
         # this code from Jupyter Notebooks
-        src = Path(image["file_name"]).resolve()
+        src = Path(image["file_name"]).absolute()
         image_id = image["id"]
 
         if not src.exists():
@@ -714,7 +714,7 @@ def _generic2coco(
                 dest_image_name = f"{src.stem}_{image_id}{src.suffix}"
 
             dest = Path(proj_root) / "images" / dest_image_name
-            dest = dest.resolve()
+            dest = dest.absolute()
 
             file_name = str(Path(*dest.parts[-2:]))
             if full_image_path:

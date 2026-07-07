@@ -122,7 +122,7 @@ def add_new_videos(
     for idx, video in enumerate(videos):
         try:
             # For windows os.path.realpath does not work and does not link to the real video.
-            video_path = str(Path.resolve(Path(video)))
+            video_path = str(Path(video).absolute())
         #           video_path = os.path.realpath(video)
         except Exception:
             video_path = str(Path(video).readlink())

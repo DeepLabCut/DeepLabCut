@@ -8,7 +8,8 @@ deeplabcut:
 ---
 
 (file:napari-dlc-basic-usage)=
-# napari-DLC - Basic usage
+
+# Basic usage
 
 `napari-deeplabcut` is a napari plugin for keypoint annotation and label refinement. It can be used either as part of the DeepLabCut GUI or as a standalone annotation tool.
 
@@ -55,6 +56,14 @@ You can load files either by:
 ```{tip}
 If you drag and drop a compatible labeled-data folder, the widget opens automatically.
 ```
+
+## Using napari
+
+```{important}
+To familiarize yourself with napari, we recommend checking out the [official napari documentation and tutorials](https://napari.org/stable/usage.html).
+```
+
+(sec:napari-dlc-basic-workflow)=
 
 ## Recommended basic labeling workflow
 
@@ -164,7 +173,7 @@ Keeping data inside the project directory is recommended for best compatibility.
 - napari-deeplabcut specific:
   - `M`: cycle through annotation modes
   - `E`: toggle edge coloring
-  - `F`: toggle between individual and body-part coloring modes
+  - `F`: toggle between individual and bodypart coloring modes
   - `V`: toggle visibility of the selected layer
   - `Backspace`: delete selected point(s)
   - `Ctrl+C` / `Ctrl+V`: copy and paste selected points
@@ -175,7 +184,7 @@ Use the **View shortcuts** button in the dock widget for a quick reference of na
 
 ### More quality-of-life features
 
-See the {ref}`Advanced features <file:napari-dlc-advanced-features>` for useful features such as copy-pasting annotations, quick body part selection, and more.
+See the {ref}`Advanced features <file:napari-dlc-advanced-features>` for useful features such as copy-pasting annotations, quick bodypart selection, and more.
 
 ## Labeling workflows
 
@@ -203,9 +212,9 @@ Use this when the folder already contains a `CollectedData_<ScorerName>.h5` file
 - Open (or drag and drop) the folder in napari.
 
 Existing annotations and keypoint metadata will be loaded automatically from the H5 file.
-In this case, loading `config.yaml` is usually **not needed** unless :
+In this case, loading `config.yaml` is usually **not needed** unless:
 
-- The project's body parts have changed or
+- The project's bodyparts have changed or
 - You want to refresh the configured color scheme
 
 ### Refining machine labels
@@ -270,8 +279,9 @@ This helps keep saving behavior unambiguous.
 
 A short demo video is available here:
 
+[Link to video](https://youtu.be/hsA9IB5r73E)
+
 ```{warning}
 This demo may be outdated, but the general annotation workflow remains the same. If you would like an updated video tutorial, please open a feature request issue on GitHub, and we will update it.
 
-[Link to video](https://youtu.be/hsA9IB5r73E)
 ```

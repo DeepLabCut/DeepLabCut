@@ -4,8 +4,10 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
+
 (dlc3-user-guide)=
-# DeepLabCut 3.0 - PyTorch User Guide
+
+# What is new in DeepLabCut 3.0
 
 ## Using DeepLabCut 3.0
 
@@ -21,10 +23,9 @@ already labeled data by simply switching the engine (and thereby also compare
 performance). In short, expect a boost 🔥.
 
 In short, PyTorch models can be trained in any DeepLabCut project. If you have a project
-already made,  simply add a new key to your project `config.yaml` file specifying
+already made, simply add a new key to your project `config.yaml` file specifying
 `engine: pytorch`. Then any new training dataset that will be created will be a PyTorch
-model (see [Creating Shuffles and Model Configuration](
-#Creating-Shuffles-and-Model-Configuration)) to learn more about training PyTorch
+model (see [Creating Shuffles and Model Configuration](#Creating-Shuffles-and-Model-Configuration)) to learn more about training PyTorch
 models. To train Tensorflow models again, you can set `engine: tensorflow`.
 
 ### Installation
@@ -53,7 +54,7 @@ maximum number of `iterations`. An epoch is a single pass through the training d
 which means your model has seen each training image exactly once.
 
 - So if you have 64 training images for your network, an epoch is 64 iterations with batch
-size 1 (or 32 iterations with batch size 2, 16 with batch size 4, etc.).
+  size 1 (or 32 iterations with batch size 2, 16 with batch size 4, etc.).
 
 ## API
 
@@ -73,28 +74,27 @@ from deeplabcut.pose_estimation_pytorch import available_models
 print(available_models())
 ```
 
+<!-- Roadmap is outdated -->
 
-
-### Development State and Road Map 🚧
+<!-- ### Development State and Road Map 🚧
 
 The table below describes the DeepLabCut API methods that have been implemented for the
 PyTorch engine, as well as indications which options are not yet implemented, and which
 parameters are not valid for the DLC 3.0 PyTorch API.
 
-
-| API Method                     | Implemented | Parameters not yet implemented                                                                      | Parameters invalid for pytorch                      |
-|--------------------------------|:-----------:|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------|
-| `train_network`                |     🟢      |                                                                                                     | `maxiters`, `saveiters`, `allow_growth`, `autotune` |
-| `return_train_network_path`    |     🟢      |                                                                                                     |                                                     |
-| `evaluate_network`             |     🟢      |                                                                                                     |                                                     |
-| `return_evaluate_network_data` |     🔴      |                                                                                                     | `TFGPUinference`, `allow_growth`                    |
-| `analyze_videos`               |     🟠      | `greedy`, `calibrate`, `window_size`                                                                |                                                     |
-| `create_tracking_dataset`      |     🟢      |                                                                                                     |                                                     |
-| `analyze_time_lapse_frames`    |     🟢      | the name has changed to  `analyze_images` to better reflect what it actually does (no video needed) |                                                     |
-| `convert_detections2tracklets` |     🟠      | `greedy`, `calibrate`, `window_size`                                                                |                                                     |
-| `extract_maps`                 |     🟢      |                                                                                                     |                                                     |
-| `visualize_scoremaps`          |     🟢      |                                                                                                     |                                                     |
-| `visualize_locrefs`            |     🟢      |                                                                                                     |                                                     |
-| `visualize_paf`                |     🟢      |                                                                                                     |                                                     |
-| `extract_save_all_maps`        |     🟢      |                                                                                                     |                                                     |
-| `export_model`                 |     🟢      |                                                                                                     |                                                     |
+| API Method                     | Implemented | Parameters not yet implemented                                                                     | Parameters invalid for pytorch                      |
+| ------------------------------ | :---------: | -------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `train_network`                |     🟢      |                                                                                                    | `maxiters`, `saveiters`, `allow_growth`, `autotune` |
+| `return_train_network_path`    |     🟢      |                                                                                                    |                                                     |
+| `evaluate_network`             |     🟢      |                                                                                                    |                                                     |
+| `return_evaluate_network_data` |     🔴      |                                                                                                    | `TFGPUinference`, `allow_growth`                    |
+| `analyze_videos`               |     🟠      | `greedy`, `calibrate`, `window_size`                                                               |                                                     |
+| `create_tracking_dataset`      |     🟢      |                                                                                                    |                                                     |
+| `analyze_time_lapse_frames`    |     🟢      | the name has changed to `analyze_images` to better reflect what it actually does (no video needed) |                                                     |
+| `convert_detections2tracklets` |     🟠      | `greedy`, `calibrate`, `window_size`                                                               |                                                     |
+| `extract_maps`                 |     🟢      |                                                                                                    |                                                     |
+| `visualize_scoremaps`          |     🟢      |                                                                                                    |                                                     |
+| `visualize_locrefs`            |     🟢      |                                                                                                    |                                                     |
+| `visualize_paf`                |     🟢      |                                                                                                    |                                                     |
+| `extract_save_all_maps`        |     🟢      |                                                                                                    |                                                     |
+| `export_model`                 |     🟢      |                                                                                                    |                                                     | -->

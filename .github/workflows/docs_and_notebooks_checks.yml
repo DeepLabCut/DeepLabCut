@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   staleness:
-    name: Docs and notebooks scan (read-only)
+    name: Docs and notebooks scan (changed docs only)
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -31,29 +31,75 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install "pydantic>=2,<3" pyyaml "nbformat>=5"
 
+      - name: Collect changed .md/.ipynb files
+        id: changed_docs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tmp/docs_nb_checks
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+          else
+            base="${{ github.event.before }}"
+            head="${{ github.sha }}"
+          fi
+
+          git diff --name-only --diff-filter=ACMR "$base" "$head" \
+          | { grep -iE '\.(md|ipynb)$' || true; } \
+          | { grep -E '^(docs/|tools/|examples/COLAB/|examples/JUPYTER/)' || true; } \
+          | sort -u > tmp/docs_nb_checks/changed_docs.txt
+
+          count=$(wc -l < tmp/docs_nb_checks/changed_docs.txt | tr -d ' ')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+          echo "Changed docs files:"
+          if [[ "$count" -eq 0 ]]; then
+            echo "(none)"
+          else
+            sed 's/^/- /' tmp/docs_nb_checks/changed_docs.txt
+          fi
+
       - name: Run staleness report (read-only)
+        if: steps.changed_docs.outputs.count != '0'
+        shell: bash
         run: |
+          set -euo pipefail
+          mapfile -t targets < tmp/docs_nb_checks/changed_docs.txt
+
           python tools/docs_and_notebooks_check.py \
-          --config tools/docs_and_notebooks_report_config.yml \
-          --out-dir tmp/docs_nb_checks \
-          report
+            --config tools/docs_and_notebooks_report_config.yml \
+            --out-dir tmp/docs_nb_checks \
+            report \
+            --targets "${targets[@]}"
 
-
-      # Optional: run check mode (will fail only once you populate allowlists in config)
       - name: Run staleness policy check (optional gate)
+        if: steps.changed_docs.outputs.count != '0'
         continue-on-error: true
+        shell: bash
         run: |
+          set -euo pipefail
+          mapfile -t targets < tmp/docs_nb_checks/changed_docs.txt
+
           python tools/docs_and_notebooks_check.py \
-          --config tools/docs_and_notebooks_report_config.yml \
-          --out-dir tmp/docs_nb_checks \
-          --no-step-summary \
-          check
+            --config tools/docs_and_notebooks_report_config.yml \
+            --out-dir tmp/docs_nb_checks \
+            --no-step-summary \
+            check \
+            --targets "${targets[@]}"
+
+      - name: No changed docs to scan
+        if: steps.changed_docs.outputs.count == '0'
+        run: echo "No changed .md or .ipynb files found in the repo. Skipping scan."
 
       - name: Upload staleness artifacts
+        if: steps.changed_docs.outputs.count != '0'
         uses: actions/upload-artifact@v4
         with:
           name: staleness-report
           path: |
             tmp/docs_nb_checks/*.json
             tmp/docs_nb_checks/*.md
+            tmp/docs_nb_checks/changed_docs.txt
           if-no-files-found: error

@@ -285,8 +285,8 @@ class ExtractFrames(DefaultTab):
             FileNotFoundError if there is no symlink or video in the 'videos' folder for
                 the given video
         """
-        video_path = Path(video_path).resolve()
-        project_videos = (Path(self.root.config).parent / "videos").resolve()
+        video_path = Path(video_path).absolute()
+        project_videos = (Path(self.root.config).parent / "videos").absolute()
         if video_path.parent == project_videos:
             return video_path
 

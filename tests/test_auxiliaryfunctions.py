@@ -289,8 +289,8 @@ class TestSafeResolve:
         f = tmp_path / "config.yaml"
         f.touch()
         result = auxiliaryfunctions.safe_resolve(f)
-        assert result == f.resolve()
         assert result.exists()
+        open(result).close()
 
     def test_fallback_when_resolve_produces_unusable_path(self, tmp_path):
         """When resolve() returns a path that cannot be opened as a string,

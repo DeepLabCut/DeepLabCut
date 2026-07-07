@@ -62,7 +62,7 @@ def _env_optional_float(name: str, default: float | None = None) -> float | None
 def _which(command: str) -> str:
     try:
         resolved = shutil.which(command)
-        return str(Path(resolved).resolve()) if resolved else "not-found"
+        return str(Path(resolved).absolute()) if resolved else "not-found"
     except Exception:
         return "not-found"
 
