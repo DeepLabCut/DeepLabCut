@@ -37,7 +37,7 @@ from deeplabcut import __version__ as DLC_VERSION
 from deeplabcut import auxiliaryfunctions, compat
 from deeplabcut.core.debug import install_debug_recorder
 from deeplabcut.core.engine import Engine
-from deeplabcut.gui import BASE_DIR, components
+from deeplabcut.gui import ASSETS, LOGO_PATH, LOGO_TRANSPARENT_PATH, components
 from deeplabcut.gui.dialogs import create_generate_debug_log_action
 from deeplabcut.gui.tabs import (
     AnalyzeVideos,
@@ -217,9 +217,7 @@ class MainWindow(QMainWindow):
 
                 msg.setWindowTitle("Info")
                 msg.setMinimumWidth(900)
-                logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-                logo = logo_dir + "/assets/logo.png"
-                msg.setWindowIcon(QIcon(logo))
+                msg.setWindowIcon(QIcon(str(LOGO_PATH)))
                 msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
                 msg.exec_()
 
@@ -609,8 +607,7 @@ class MainWindow(QMainWindow):
         palette.setColor(QtGui.QPalette.Window, QtGui.QColor("#ffffff"))
         self.setPalette(palette)
 
-        icon = os.path.join(BASE_DIR, "assets", "logo.png")
-        self.setWindowIcon(QIcon(icon))
+        self.setWindowIcon(QIcon(str(LOGO_PATH)))
 
         # Set default window size and allow resizing
         self.resize(
@@ -643,8 +640,7 @@ class MainWindow(QMainWindow):
         image_widget = QtWidgets.QLabel(self)
         image_widget.setAlignment(Qt.AlignCenter)
         image_widget.setContentsMargins(0, 0, 0, 0)
-        logo = os.path.join(BASE_DIR, "assets", "logo_transparent.png")
-        pixmap = QtGui.QPixmap(logo)
+        pixmap = QtGui.QPixmap(str(LOGO_TRANSPARENT_PATH))
         image_widget.setPixmap(pixmap.scaledToHeight(400, QtCore.Qt.SmoothTransformation))
         self.layout.addWidget(image_widget)
         description = (
@@ -700,7 +696,7 @@ class MainWindow(QMainWindow):
         self.newAction = QAction(self)
         self.newAction.setText("&New Project...")
 
-        self.newAction.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", names[0])))
+        self.newAction.setIcon(QIcon(str(ASSETS / "icons" / names[0])))
         self.newAction.setShortcut("Ctrl+N")
         self.newAction.setStatusTip("Create a new project...")
 
@@ -708,7 +704,7 @@ class MainWindow(QMainWindow):
 
         # Creating actions using the second constructor
         self.openAction = QAction("&Open...", self)
-        self.openAction.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", names[1])))
+        self.openAction.setIcon(QIcon(str(ASSETS / "icons" / names[1])))
         self.openAction.setShortcut("Ctrl+O")
         self.openAction.setStatusTip("Open a project...")
         self.openAction.triggered.connect(self._open_project)
@@ -722,7 +718,7 @@ class MainWindow(QMainWindow):
         self.darkmodeAction.triggered.connect(self.darkmode)
 
         self.helpAction = QAction("&Help", self)
-        self.helpAction.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", names[2])))
+        self.helpAction.setIcon(QIcon(str(ASSETS / "icons" / names[2])))
         self.helpAction.setStatusTip("Ask for help...")
         self.helpAction.triggered.connect(self._ask_for_help)
 

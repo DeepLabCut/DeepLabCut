@@ -13,6 +13,8 @@ import os
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtGui import QIcon
 
+from deeplabcut.gui import LOGO_PATH
+
 
 class OpenProject(QtWidgets.QDialog):
     def __init__(self, parent):
@@ -76,17 +78,12 @@ class OpenProject(QtWidgets.QDialog):
 
             msg.setWindowTitle("Error")
             msg.setMinimumWidth(400)
-            self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-            self.logo = self.logo_dir + "/assets/logo.png"
-            msg.setWindowIcon(QIcon(self.logo))
+            msg.setWindowIcon(QIcon(str(LOGO_PATH)))
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.exec_()
 
             self.loaded = False
         else:
-            self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-            self.logo = self.logo_dir + "/assets/logo.png"
-
             self.loaded = True
             self.accept()
             self.close()

@@ -27,16 +27,14 @@ import qdarkstyle
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap
 
-from deeplabcut.gui import BASE_DIR
+from deeplabcut.gui import BASE_DIR, LOGO_PATH, WELCOME_PATH
 
 
 def launch_dlc():
     app = QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(QIcon(os.path.join(BASE_DIR, "assets", "logo.png")))
+    app.setWindowIcon(QIcon(str(LOGO_PATH)))
     screen_size = app.screens()[0].size()
-    pixmap = QPixmap(os.path.join(BASE_DIR, "assets", "welcome.png")).scaledToWidth(
-        int(0.7 * screen_size.width()), Qt.SmoothTransformation
-    )
+    pixmap = QPixmap(str(WELCOME_PATH)).scaledToWidth(int(0.7 * screen_size.width()), Qt.SmoothTransformation)
     splash = QtWidgets.QSplashScreen(pixmap)
     splash.show()
 
