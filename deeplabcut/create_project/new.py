@@ -221,7 +221,7 @@ def create_new_project(
         try:
             # For windows os.path.realpath does not work and does not link to the real
             # video. [old: rel_video_path = os.path.realpath(video)]
-            rel_video_path = str(Path.resolve(Path(video)))
+            rel_video_path = str(Path(video).absolute())
         except Exception:
             rel_video_path = os.readlink(str(video))
 
