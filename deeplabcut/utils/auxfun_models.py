@@ -42,7 +42,8 @@ MODELTYPE_FILEPATH_MAP = {
 }
 
 
-def check_for_weights(modeltype, parent_path):
+# NOTE @deruyter92 2026-07-09: This is only used in TensorFlow code.
+def check_for_weights(modeltype, parent_path) -> str:
     """Gets local path to network weights and checks if they are present.
 
     If not, downloads them from tensorflow.org
@@ -53,7 +54,7 @@ def check_for_weights(modeltype, parent_path):
             "supported, please change 'resnet' entry in config.yaml!"
         )
         # Exit the function early if an unknown modeltype is provided.
-        return parent_path
+        return str(parent_path)
 
     exists = False
     model_path = parent_path / MODELTYPE_FILEPATH_MAP[modeltype]
