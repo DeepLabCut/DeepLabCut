@@ -1030,14 +1030,11 @@ def create_training_dataset(
         )
 
     if posecfg_template:
-        if (
-            not posecfg_template.endswith("pose_cfg.yaml")
-            and not posecfg_template.endswith("superquadruped.yaml")
-            and not posecfg_template.endswith("supertopview.yaml")
-        ):
+        posecfg_template = Path(posecfg_template)
+        if posecfg_template.name not in {"pose_cfg.yaml", "superquadruped.yaml", "supertopview.yaml"}:
             raise ValueError("posecfg_template argument must contain path to a pose_cfg.yaml file")
         else:
-            print("Reloading pose_cfg parameters from " + posecfg_template + "\n")
+            print(f"Reloading pose_cfg parameters from {posecfg_template}\n")
             from deeplabcut.utils.auxiliaryfunctions import read_plainconfig
 
         prior_cfg = read_plainconfig(posecfg_template)

@@ -15,7 +15,7 @@ from pathlib import Path
 
 import tensorflow as tf
 
-from deeplabcut.core.config import get_yaml_loader
+from deeplabcut.core.config import get_yaml_dumper, get_yaml_loader
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.utils import auxiliaryfunctions
@@ -300,8 +300,8 @@ def export_model(
             sorted_cfg[key] = value
 
     pose_cfg_file = full_export_dir / "pose_cfg.yaml"
-    ruamel_file = get_yaml_loader()
-    ruamel_file.dump(sorted_cfg, open(pose_cfg_file, "w"))
+    with pose_cfg_file.open("w") as f:
+        get_yaml_dumper().dump(sorted_cfg, f)
 
     ### copy checkpoint to export directory
 
