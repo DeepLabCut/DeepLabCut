@@ -426,7 +426,7 @@ def _generic2madlc(
 
     data = format_multianimal_training_data(dlc_df, trainIndices, cfg["project_path"])
 
-    datafilename = datafilename.split(".mat")[0] + ".pickle"
+    datafilename = datafilename.with_suffix(".pickle")
 
     print(f"overwriting data file {datafilename}")
 
