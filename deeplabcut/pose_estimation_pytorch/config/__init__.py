@@ -14,6 +14,11 @@ from deeplabcut.core.config import (
     read_config_as_dict,
     write_config,
 )
+from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
+    ConditionsConfig,
+    ConditionsFileConfig,
+    ConditionsModelConfig,
+)
 from deeplabcut.pose_estimation_pytorch.config.data import (
     COCOLoaderConfig,
     DataConfig,
@@ -118,6 +123,10 @@ __all__ = [
     "DataTransformationConfig",
     "DLCLoaderConfig",
     "GenSamplingConfig",
+    # CTD conditions config
+    "ConditionsConfig",
+    "ConditionsFileConfig",
+    "ConditionsModelConfig",
     # Inference config
     "AutocastConfig",
     "CompileConfig",

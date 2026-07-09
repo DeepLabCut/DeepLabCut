@@ -15,6 +15,11 @@ from pathlib import Path
 import numpy as np
 
 import deeplabcut.pose_estimation_pytorch.data as data
+from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
+    ConditionsConfig,
+    ConditionsFileConfig,
+    ConditionsModelConfig,
+)
 from deeplabcut.pose_estimation_pytorch.data.ctd import (
     CondFromFile,
     CondFromModel,
@@ -23,39 +28,39 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 def get_condition_provider(
-    condition_cfg: dict,
+    condition_cfg: ConditionsModelConfig | dict,
     config: str | Path | None = None,
 ) -> CondFromModel:
     """Creates a CondFromModel conditions provider for a CTD model.
 
     Args:
-        condition_cfg: The configuration for the condition provider. This is the
-            content of "inference": "conditions" in the pytorch_config
-        config: The path to the project config file, if the condition provider is
-            given as a snapshot from a DeepLabCut shuffle.
+        condition_cfg: The conditions configuration. Either a
+            ``ConditionsModelConfig`` instance, or a raw dict (e.g. read from
+            ``model_cfg["inference"]["conditions"]``).
+        config: Path to the DLC project ``config.yaml``. Injected into the
+            config when the shuffle shorthand is used and ``config`` is not
+            already set on ``condition_cfg``.
 
     Returns:
         The CondFromModel provider that can be used to generate conditions from a BU
         model for a CTD model.
     """
-    error_message = (
-        f"Misconfigured conditions in the pytorch_config: {condition_cfg}. Valid "
-        f"examples:\n" + _CONDITION_EXAMPLES_INFERENCE
-    )
+    # Normalize the conditions configuration
+    condition_cfg = ConditionsConfig.build(condition_cfg)
 
-    if isinstance(condition_cfg, (str, Path)):
-        error_message = (
-            "To run inference with CTD models, you must specify the BU model you want to use to generate conditions.\n"
-        ) + error_message
-        raise ValueError(error_message)
-    # TODO @deruyter92: decide on typed / plain dict
-    elif not isinstance(condition_cfg, dict):
-        raise ValueError(error_message)
+    if isinstance(condition_cfg, ConditionsFileConfig):
+        raise ValueError(
+            "To run inference with CTD models, you must specify the BU model "
+            "you want to use to generate conditions.\n" + _CONDITION_EXAMPLES_INFERENCE
+        )
 
-    if config is not None:
-        condition_cfg["config"] = Path(config)
+    # Inject the project config for the shuffle shorthand if not already set.
+    if config is not None and condition_cfg.config is None:
+        condition_cfg.config = config
 
-    return CondFromModel(**condition_cfg)
+    kwargs = condition_cfg.to_dict()
+    kwargs.pop("source")
+    return CondFromModel(**kwargs)
 
 
 def get_conditions_provider_for_video(
