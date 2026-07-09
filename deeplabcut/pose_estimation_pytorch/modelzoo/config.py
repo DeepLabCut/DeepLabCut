@@ -19,12 +19,12 @@ if TYPE_CHECKING:
     from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
     from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 
-from ruamel.yaml import YAML
 
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.config import (
     ProjectConfig,
+    get_yaml_dumper,
     read_config_as_dict,
 )
 from deeplabcut.core.deprecation import deprecated
@@ -171,5 +171,4 @@ def write_pytorch_config_for_memory_replay(config_path, shuffle, pytorch_config)
     (model_folder / "train").mkdir(parents=True, exist_ok=True)
     out_path = model_folder / "train" / "pytorch_config.yaml"
     with out_path.open("w") as f:
-        yaml = YAML()
-        yaml.dump(pytorch_config, f)
+        get_yaml_dumper().dump(pytorch_config, f)

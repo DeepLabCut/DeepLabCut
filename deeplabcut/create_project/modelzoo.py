@@ -23,7 +23,7 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
 )
 
 import deeplabcut
-from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.config import ProjectConfig, write_config
 from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import (
@@ -57,8 +57,7 @@ def MakeTrain_pose_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
     for key in itemstochange.keys():
         docs[0][key] = itemstochange[key]
     docs[0]["max_input_size"] = 1500
-    with Path(saveasconfigfile).open("w") as f:
-        yaml.dump(docs[0], f)
+    write_config(saveasconfigfile, docs[0])
     return docs[0]
 
 

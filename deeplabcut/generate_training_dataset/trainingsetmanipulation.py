@@ -23,7 +23,7 @@ from PIL import Image
 
 import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
-from deeplabcut.core.config import ProjectConfig, read_config
+from deeplabcut.core.config import ProjectConfig, read_config, write_config
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
@@ -391,8 +391,7 @@ def MakeTrain_pose_yaml(
         docs[0][key] = itemstochange[key]
 
     if save:
-        with Path(saveasconfigfile).open("w") as f:
-            yaml.dump(docs[0], f)
+        write_config(saveasconfigfile, docs[0])
 
     return docs[0]
 
@@ -421,8 +420,7 @@ def MakeTest_pose_yaml(
         dict_test["locref_smooth"] = locref_smooth
 
     dict_test["scoremap_dir"] = "test"
-    with Path(saveasfile).open("w") as f:
-        yaml.dump(dict_test, f)
+    write_config(saveasfile, dict_test)
 
 
 def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
@@ -430,8 +428,7 @@ def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
     for key in itemstochange.keys():
         docs[0][key] = itemstochange[key]
 
-    with Path(saveasconfigfile).open("w") as f:
-        yaml.dump(docs[0], f)
+    write_config(saveasconfigfile, docs[0])
     return docs[0]
 
 
