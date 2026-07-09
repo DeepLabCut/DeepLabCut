@@ -331,7 +331,7 @@ def extract_save_all_maps(
             )
         attempt_to_make_folder(dest_folder)
         filepath = "{imname}_{map}_{label}_{shuffle}_{frac}_{snap}.png"
-        dest_path = Path(dest_folder) / filepath
+        dest_path = str(Path(dest_folder) / filepath)
         for snap, maps in values.items():
             for imagenr in tqdm(maps):
                 (
