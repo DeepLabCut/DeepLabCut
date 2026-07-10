@@ -44,8 +44,13 @@ class ConditionsConfig(DLCBaseConfig):
         Returns:
             ConditionsFileConfig | ConditionsModelConfig | None
             - If None or already-typed instance, returned unchanged.
-            - If ``str`` / ``Path`` or ``dict`` with ``source="file"``, returns a ``ConditionsFileConfig``
-            - If ``dict`` with ``source="model"``, returns a ``ConditionsModelConfig``
+            - If ``str`` / ``Path`` or ``dict`` with ``source="file"``, returns a
+              ``ConditionsFileConfig``.
+            - If ``dict`` with ``source="model"`` and ``config_path``/``snapshot_path``,
+              returns a ``ConditionsModelConfig`` directly.
+            - If ``dict`` with ``source="model"`` and ``config``/``shuffle`` keys
+              (shuffle shorthand), resolves the shuffle via ``ConditionsModelConfig.from_shuffle``
+              (touches the filesystem) and returns a ``ConditionsModelConfig``.
         """
         if v is None or isinstance(v, ConditionsConfig):
             return v
@@ -55,6 +60,10 @@ class ConditionsConfig(DLCBaseConfig):
             source = v.get("source")
             if source == "file" or (source is None and "filepath" in v):
                 return ConditionsFileConfig.model_validate(v if source else {"source": "file", **v})
+            # model source — direct form or shuffle shorthand
+            if "config" in v and "shuffle" in v:
+                shuffle_keys = {"config", "shuffle", "trainset_index", "modelprefix", "snapshot", "snapshot_index"}
+                return ConditionsModelConfig.from_shuffle(**{k: v[k] for k in shuffle_keys if k in v})
             return ConditionsModelConfig.model_validate(v if source else {"source": "model", **v})
         raise TypeError(f"Cannot build a ConditionsConfig from {type(v).__name__!r}: {v!r}")
 
@@ -73,41 +82,34 @@ class ConditionsFileConfig(ConditionsConfig):
 class ConditionsModelConfig(ConditionsConfig):
     """Conditions generated at inference time by running a BU model snapshot.
 
-    Two construction modes:
-
-    Directly provide the BU model config and snapshot explicitly:
-
-        config_path:   /path/to/model-dir/pytorch_config.yaml
-        snapshot_path: /path/to/model-dir/snapshot-best.pth
-
-    DLC shuffle shorthand to resolve from a project shuffle:
-
-        config:         /path/to/project/config.yaml
-        shuffle:        1
-        snapshot:       snapshot-250.pt   # or use snapshot_index
-
     Attributes:
         config_path: Path to the BU model's ``pytorch_config.yaml`` (direct form).
         snapshot_path: Path to the BU snapshot file (direct form).
         scorer: Scorer name for the BU model. Used to look for pre-computed
             conditions files on disk before running the model.
-        config: Path to the DLC project ``config.yaml`` (shuffle shorthand).
-        shuffle: Shuffle index (shuffle shorthand).
-        snapshot: Snapshot filename within the shuffle (shuffle shorthand).
-        snapshot_index: Snapshot index within the shuffle (shuffle shorthand).
-        trainset_index: Training-set fraction index (shuffle shorthand).
-        modelprefix: Model prefix for the shuffle (shuffle shorthand).
     """
 
     source: Literal["model"] = "model"
-    # Direct form
-    config_path: Path | None = None
-    snapshot_path: Path | None = None
+    config_path: Path
+    snapshot_path: Path
     scorer: str | None = None
-    # Shuffle shorthand
-    config: Path | None = None
-    shuffle: int | None = None
-    snapshot: str | None = None
-    snapshot_index: int | None = None
-    trainset_index: int = 0
-    modelprefix: str = ""
+
+    @classmethod
+    def from_shuffle(
+        cls,
+        config: str | Path,
+        shuffle: int,
+        trainset_index: int = 0,
+        modelprefix: str = "",
+        snapshot: str | None = None,
+        snapshot_index: int | None = None,
+    ) -> ConditionsModelConfig:
+        """Resolve a DLC BU shuffle to its model config and snapshot paths."""
+        from deeplabcut.pose_estimation_pytorch.data.ctd import resolve_bu_shuffle
+
+        loader, bu_snapshot = resolve_bu_shuffle(config, shuffle, trainset_index, modelprefix, snapshot, snapshot_index)
+        return cls(
+            config_path=loader.model_config_path,
+            snapshot_path=bu_snapshot.path,
+            scorer=loader.scorer(bu_snapshot),
+        )
