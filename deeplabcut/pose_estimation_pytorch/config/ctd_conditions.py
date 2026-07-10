@@ -34,6 +34,20 @@ class ConditionsConfig(DLCBaseConfig):
 
     source: Literal["file", "model"]
 
+    @property
+    def affords_bu_inference(self) -> bool:
+        """Whether the config affords BU inference (requires a BU model)."""
+        return isinstance(self, ConditionsModelConfig)
+
+    def assert_bu_inference(self) -> None:
+        """Raise a ValueError if not configured for BU inference."""
+        if not self.affords_bu_inference:
+            raise ValueError(
+                "This operation requires a BU model to be configured as conditions "
+                f"(ConditionsModelConfig), but got {type(self).__name__}. "
+                "Provide 'config_path' and 'snapshot_path', or use the shuffle shorthand."
+            )
+
     @classmethod
     def build(
         cls,
