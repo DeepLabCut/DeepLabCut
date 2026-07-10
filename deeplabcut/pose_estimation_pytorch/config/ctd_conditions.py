@@ -9,9 +9,18 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Typed configuration for CTD (Conditional Top-Down) model conditions.
-Two subclasses are supported (``ConditionsFileConfig`` and ``ConditionsModelConfig``)
-depending on the source of the conditions (a file path, or a reference to a BU
-model). Use ``ConditionsConfig.build()`` to construct from any raw input.
+
+Three subclasses cover the supported input forms:
+
+- ``ConditionsFileConfig``    — pre-computed predictions from a file
+- ``ConditionsModelConfig``   — fully resolved BU model (config path + snapshot path)
+- ``ConditionsShuffleConfig`` — unresolved shuffle shorthand, resolved at runtime via
+                                ``ConditionsModelConfig.resolve_from_conditions()``
+
+Use ``ConditionsConfig.build()`` to normalise any raw input (str, Path, dict) into one
+of these types. ``build()`` is pure (no filesystem access) and safe to call from Pydantic
+validators. Resolution that requires the filesystem must go through
+``ConditionsModelConfig.resolve_from_conditions()``.
 """
 
 from __future__ import annotations
@@ -25,46 +34,50 @@ from deeplabcut.core.config import DLCBaseConfig
 class ConditionsConfig(DLCBaseConfig):
     """Base class for CTD conditions configuration.
 
-    Use ``ConditionsConfig.build()`` to construct from any supported input,
-    or instantiate a subclass directly:
+    Use ``ConditionsConfig.build()`` to normalise any raw input into a typed subclass,
 
-    - ``ConditionsFileConfig`` load pre-computed predictions from a file
-    - ``ConditionsModelConfig`` run a BU model snapshot live at inference time
+    Subclasses:
+        - ``ConditionsFileConfig``    — pre-computed predictions file
+        - ``ConditionsModelConfig``   — resolved BU model (config + snapshot paths)
+        - ``ConditionsShuffleConfig`` — unresolved shuffle shorthand
     """
 
     source: Literal["file", "model"]
 
     @property
     def affords_bu_inference(self) -> bool:
-        """Whether the config affords BU inference (requires a BU model)."""
-        return isinstance(self, ConditionsModelConfig)
+        """Whether the config affords BU inference. This requires a BU model, so
+        must be a resolved ``ConditionsModelConfig`` (can be resolved from a
+        ``ConditionsShuffleConfig``).
 
-    def assert_bu_inference(self) -> None:
-        """Raise a ValueError if not configured for BU inference."""
-        if not self.affords_bu_inference:
-            raise ValueError(
-                "This operation requires a BU model to be configured as conditions "
-                f"(ConditionsModelConfig), but got {type(self).__name__}. "
-                "Provide 'config_path' and 'snapshot_path', or use the shuffle shorthand."
-            )
+        Returns:
+            True if the config affords BU inference, False otherwise.
+        """
+        return isinstance(self, ConditionsModelConfig)
 
     @classmethod
     def build(
         cls,
         v: str | Path | dict | ConditionsConfig | None,
-    ) -> ConditionsFileConfig | ConditionsModelConfig | None:
-        """Build a typed conditions config from any supported input.
+    ) -> ConditionsFileConfig | ConditionsModelConfig | ConditionsShuffleConfig | None:
+        """Normalise any raw input into a typed conditions config.
+
+        This method is pure — it never touches the filesystem. For shuffle
+        shorthand inputs it returns a ``ConditionsShuffleConfig`` (unresolved).
+        To obtain a fully resolved ``ConditionsModelConfig`` call
+        ``ConditionsModelConfig.resolve_from_conditions()`` at the point where
+        the project config is available.
+
+        Args:
+            v: Raw input. Accepted forms:
+                - ``None`` or an existing ``ConditionsConfig`` → returned unchanged
+                - ``str`` / ``Path`` → ``ConditionsFileConfig``
+                - ``dict`` with ``filepath`` → ``ConditionsFileConfig``
+                - ``dict`` with ``config_path`` + ``snapshot_path`` → ``ConditionsModelConfig``
+                - ``dict`` with ``shuffle`` → ``ConditionsShuffleConfig``
 
         Returns:
-            ConditionsFileConfig | ConditionsModelConfig | None
-            - If None or already-typed instance, returned unchanged.
-            - If ``str`` / ``Path`` or ``dict`` with ``source="file"``, returns a
-              ``ConditionsFileConfig``.
-            - If ``dict`` with ``source="model"`` and ``config_path``/``snapshot_path``,
-              returns a ``ConditionsModelConfig`` directly.
-            - If ``dict`` with ``source="model"`` and ``config``/``shuffle`` keys
-              (shuffle shorthand), resolves the shuffle via ``ConditionsModelConfig.from_shuffle``
-              (touches the filesystem) and returns a ``ConditionsModelConfig``.
+            A typed ``ConditionsConfig`` subclass, or ``None``.
         """
         if v is None or isinstance(v, ConditionsConfig):
             return v
@@ -75,15 +88,15 @@ class ConditionsConfig(DLCBaseConfig):
             source = v.pop("source", None)
             if source == "file" or (source is None and "filepath" in v):
                 return ConditionsFileConfig(**v)
-            if "config" in v and "shuffle" in v:
-                return ConditionsModelConfig.from_shuffle(**v)
+            if source == "shuffle" or (source is None and "shuffle" in v):
+                return ConditionsShuffleConfig(**v)
             if source == "model" or "config_path" in v or "snapshot_path" in v:
                 return ConditionsModelConfig(**v)
             raise ValueError(
                 "Cannot determine conditions source from dict. "
                 "Provide 'filepath' for a file source, "
                 "'config_path'+'snapshot_path' for a model source, "
-                "or 'config'+'shuffle' for a shuffle shorthand."
+                "or 'shuffle' for a shuffle shorthand."
             )
         raise TypeError(f"Cannot build a ConditionsConfig from {type(v).__name__!r}: {v!r}")
 
@@ -100,11 +113,11 @@ class ConditionsFileConfig(ConditionsConfig):
 
 
 class ConditionsModelConfig(ConditionsConfig):
-    """Conditions generated at inference time by running a BU model snapshot.
+    """Resolved config for a BU model (i.e. a snapshot ref for live inference).
 
     Attributes:
-        config_path: Path to the BU model's ``pytorch_config.yaml`` (direct form).
-        snapshot_path: Path to the BU snapshot file (direct form).
+        config_path: Path to the BU model's ``pytorch_config.yaml``.
+        snapshot_path: Path to the BU snapshot file.
         scorer: Scorer name for the BU model. Used to look for pre-computed
             conditions files on disk before running the model.
     """
@@ -133,3 +146,85 @@ class ConditionsModelConfig(ConditionsConfig):
             snapshot_path=bu_snapshot.path,
             scorer=loader.scorer(bu_snapshot),
         )
+
+    @classmethod
+    def resolve_from_conditions(
+        cls,
+        conditions: str | Path | dict | ConditionsConfig,
+        config: str | Path | None = None,
+    ) -> ConditionsModelConfig:
+        """Resolve any conditions input to a ``ConditionsModelConfig`` for live
+        BUCTD inference.
+
+        Call this in runtime code. It may touch the filesystem when resolving a
+        ``ConditionsShuffleConfig`` to a ``ConditionsModelConfig``.
+
+        Args:
+            conditions (str | Path | dict | ConditionsConfig): Raw input or any
+                ``ConditionsConfig`` subtype.
+            config (str | Path | None): Project ``config.yaml`` path. Required
+                when resolving a ``ConditionsShuffleConfig`` that does not
+                already carry one in its ``config`` attribute.
+
+        Returns:
+            A resolved ``ConditionsModelConfig``.
+
+        Raises:
+            ValueError: If ``conditions`` is a ``ConditionsFileConfig`` (file configs
+                are not valid for live BU inference), or if a shuffle config has no
+                project config available.
+        """
+        if not isinstance(conditions, ConditionsConfig):
+            conditions = ConditionsConfig.build(conditions)
+
+        if isinstance(conditions, ConditionsFileConfig):
+            raise ValueError(
+                "A file config cannot be used for live BU inference. "
+                "Provide 'config_path'+'snapshot_path' or a shuffle shorthand."
+            )
+        if isinstance(conditions, cls):
+            return conditions
+
+        assert isinstance(conditions, ConditionsShuffleConfig)
+        cfg = conditions.config or (Path(config) if config is not None else None)
+        if cfg is None:
+            raise ValueError(
+                "Cannot resolve shuffle conditions: no project config provided. "
+                "Set 'config' in the shuffle conditions or pass it to "
+                "resolve_from_conditions()."
+            )
+        return cls.from_shuffle(
+            config=cfg,
+            shuffle=conditions.shuffle,
+            trainset_index=conditions.trainset_index,
+            modelprefix=conditions.modelprefix,
+            snapshot=conditions.snapshot,
+            snapshot_index=conditions.snapshot_index,
+        )
+
+
+class ConditionsShuffleConfig(ConditionsConfig):
+    """Unresolved shuffle shorthand for CTD conditions.
+
+    Stores shuffle parameters without touching the filesystem. Call
+    ``ConditionsModelConfig.resolve_from_conditions()`` at runtime (when the
+    project config is available) to resolve to a ``ConditionsModelConfig``.
+
+    Attributes:
+        shuffle: The index of the BU shuffle to use for conditions.
+        config: Path to the DLC project ``config.yaml``. Optional — can be
+            injected later via ``resolve_from_conditions(config=...)``.
+        trainset_index: The TrainingsetFraction index.
+        modelprefix: The model prefix for the shuffle.
+        snapshot: Specific snapshot filename to use. Takes priority over
+            ``snapshot_index``.
+        snapshot_index: Index of the snapshot to use (default: -1, last).
+    """
+
+    source: Literal["shuffle"] = "shuffle"
+    shuffle: int
+    config: Path | None = None
+    trainset_index: int = 0
+    modelprefix: str = ""
+    snapshot: str | None = None
+    snapshot_index: int | None = None

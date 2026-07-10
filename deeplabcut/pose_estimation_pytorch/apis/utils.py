@@ -29,10 +29,7 @@ from torchvision.models.detection import (
 from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import deprecated
 from deeplabcut.core.engine import Engine
-from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
-    ConditionsConfig,
-    ConditionsModelConfig,
-)
+from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import ConditionsModelConfig
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import (
@@ -881,8 +878,7 @@ def get_pose_inference_runner(
 
         if pose_task == Task.COND_TOP_DOWN:
             if cond_provider is not None:
-                cond_provider = ConditionsConfig.build(cond_provider)
-                cond_provider.assert_bu_inference()
+                cond_provider = ConditionsModelConfig.resolve_from_conditions(cond_provider)
                 kwargs["bu_runner"] = get_pose_inference_runner(
                     model_config=PoseConfig.from_yaml(cond_provider.config_path),
                     snapshot_path=cond_provider.snapshot_path,

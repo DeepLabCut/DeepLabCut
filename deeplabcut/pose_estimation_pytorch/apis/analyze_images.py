@@ -36,10 +36,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_uid,
     parse_snapshot_index_for_analysis,
 )
-from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
-    ConditionsConfig,
-    ConditionsModelConfig,
-)
+from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import ConditionsModelConfig
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     COCO_PERSON_CATEGORY_ID,
@@ -309,11 +306,9 @@ def analyze_images(
     model_cfg = PoseConfig.from_any(model_cfg_path)
     pose_task = Task(model_cfg["method"])
 
-    # Normalize the CTD conditions (if provided)
     ctd_conditions = ctd_conditions or model_cfg["inference"]["conditions"]
     if ctd_conditions is not None:
-        ctd_conditions = ConditionsConfig.build(ctd_conditions)
-        ctd_conditions.assert_bu_inference()
+        ctd_conditions = ConditionsModelConfig.resolve_from_conditions(ctd_conditions, config=config)
 
     # get the snapshots to analyze images with
     snapshot_index, detector_snapshot_index = parse_snapshot_index_for_analysis(
@@ -458,11 +453,9 @@ def analyze_image_folder(
     """
     model_cfg = PoseConfig.from_any(model_cfg)
 
-    # Normalize the CTD conditions (if provided)
     cond_provider = cond_provider or model_cfg["inference"]["conditions"]
     if cond_provider is not None:
-        cond_provider = ConditionsConfig.build(cond_provider)
-        cond_provider.assert_bu_inference()
+        cond_provider = ConditionsModelConfig.resolve_from_conditions(cond_provider)
 
     pose_task = Task(model_cfg["method"])
     if pose_task == Task.TOP_DOWN and detector_path is None and filtered_detector_config is None:

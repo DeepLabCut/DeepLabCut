@@ -18,6 +18,7 @@ from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
     ConditionsConfig,
     ConditionsFileConfig,
     ConditionsModelConfig,
+    ConditionsShuffleConfig,
 )
 from deeplabcut.pose_estimation_pytorch.config.data import (
     COCOLoaderConfig,
@@ -127,6 +128,7 @@ __all__ = [
     "ConditionsConfig",
     "ConditionsFileConfig",
     "ConditionsModelConfig",
+    "ConditionsShuffleConfig",
     # Inference config
     "AutocastConfig",
     "CompileConfig",

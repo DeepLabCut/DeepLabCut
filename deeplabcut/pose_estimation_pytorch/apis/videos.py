@@ -32,10 +32,7 @@ from deeplabcut.pose_estimation_pytorch.apis.ctd import get_conditions_provider_
 from deeplabcut.pose_estimation_pytorch.apis.tracklets import (
     convert_detections2tracklets,
 )
-from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
-    ConditionsConfig,
-    ConditionsModelConfig,
-)
+from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import ConditionsModelConfig
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader
 from deeplabcut.pose_estimation_pytorch.runners import (
@@ -491,8 +488,7 @@ def analyze_videos(
 
     ctd_conditions = ctd_conditions or loader.model_cfg["inference"]["conditions"]
     if ctd_conditions is not None:
-        ctd_conditions = ConditionsConfig.build(ctd_conditions)
-        ctd_conditions.assert_bu_inference()
+        ctd_conditions = ConditionsModelConfig.resolve_from_conditions(ctd_conditions, config=config)
 
     cond_provider = None
     if loader.pose_task == Task.COND_TOP_DOWN:

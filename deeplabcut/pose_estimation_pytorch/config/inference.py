@@ -19,6 +19,7 @@ from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
     ConditionsConfig,
     ConditionsFileConfig,
     ConditionsModelConfig,
+    ConditionsShuffleConfig,
 )
 
 
@@ -97,7 +98,7 @@ class InferenceConfig(DLCBaseConfig):
     multithreading: MultithreadingConfig = Field(default_factory=MultithreadingConfig)
     compile: CompileConfig = Field(default_factory=CompileConfig)
     autocast: AutocastConfig = Field(default_factory=AutocastConfig)
-    conditions: ConditionsModelConfig | ConditionsFileConfig | None = None
+    conditions: ConditionsModelConfig | ConditionsFileConfig | ConditionsShuffleConfig | None = None
     snapshot: int | str | list[int] | None = None
     eval: EvaluationConfig = Field(default_factory=EvaluationConfig)
     output_dir: str | None = None
