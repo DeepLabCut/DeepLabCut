@@ -16,63 +16,21 @@ import numpy as np
 
 import deeplabcut.pose_estimation_pytorch.data as data
 from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
-    ConditionsConfig,
-    ConditionsFileConfig,
     ConditionsModelConfig,
 )
-from deeplabcut.pose_estimation_pytorch.data.ctd import (
-    CondFromFile,
-    CondFromModel,
-)
+from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromFile
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
-def get_condition_provider(
-    condition_cfg: ConditionsModelConfig | dict,
-    config: str | Path | None = None,
-) -> CondFromModel:
-    """Creates a CondFromModel conditions provider for a CTD model.
-
-    Args:
-        condition_cfg: The conditions configuration. Either a
-            ``ConditionsModelConfig`` instance, or a raw dict (e.g. read from
-            ``model_cfg["inference"]["conditions"]``).
-        config: Path to the DLC project ``config.yaml``. Injected into the
-            config when the shuffle shorthand is used and ``config`` is not
-            already set on ``condition_cfg``.
-
-    Returns:
-        The CondFromModel provider that can be used to generate conditions from a BU
-        model for a CTD model.
-    """
-    # Normalize the conditions configuration
-    condition_cfg = ConditionsConfig.build(condition_cfg)
-
-    if isinstance(condition_cfg, ConditionsFileConfig):
-        raise ValueError(
-            "To run inference with CTD models, you must specify the BU model "
-            "you want to use to generate conditions.\n" + _CONDITION_EXAMPLES_INFERENCE
-        )
-
-    # Inject the project config for the shuffle shorthand if not already set.
-    if config is not None and condition_cfg.config is None:
-        condition_cfg.config = config
-
-    kwargs = condition_cfg.to_dict()
-    kwargs.pop("source")
-    return CondFromModel(**kwargs)
-
-
 def get_conditions_provider_for_video(
-    cond_provider: CondFromModel,
+    cond_provider: ConditionsModelConfig,
     video: str | Path,
 ) -> CondFromFile | None:
-    """Tries to create a conditions loader.
+    """Tries to create a conditions loader from a pre-computed video predictions file.
 
     Args:
-        cond_provider: The CondFromModel condition provider that will be used. The
-            scorer must be set, or potential conditions files for the video cannot be
-            found.
+        cond_provider: The resolved ``ConditionsModelConfig``. The scorer must be
+            set, or pre-computed conditions files for the video cannot be found.
         video: The path to the video file for which to look for the conditions.
 
     Returns:
@@ -117,14 +75,12 @@ def load_conditions_for_evaluation(loader: data.Loader, images: list[str]) -> di
         f"examples:\n" + _CONDITION_EXAMPLES_INFERENCE + _CONDITION_EXAMPLES_FROM_FILE
     )
 
-    if isinstance(condition_cfg, (str, Path)):
-        condition_filepath = Path(condition_cfg)
-        cond_provider = CondFromFile(filepath=condition_filepath)
-    # TODO @deruyter92: decide on typed / plain dict
+    if isinstance(condition_cfg, str | Path):
+        cond_provider = CondFromFile(filepath=Path(condition_cfg))
     elif isinstance(condition_cfg, dict):
+        condition_cfg = condition_cfg.copy()
         if isinstance(loader, data.DLCLoader) and "config" not in condition_cfg:
             condition_cfg["config"] = loader.project_root / "config.yaml"
-
         cond_provider = CondFromFile(**condition_cfg)
     else:
         raise ValueError(error_message)
