@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import json
 import pickle
-from abc import ABC, abstractmethod
 from pathlib import Path
 
 import numpy as np
@@ -83,49 +82,7 @@ def resolve_bu_shuffle(
     return loader, bu_snapshot
 
 
-class CondProvider(ABC):
-    """A class providing conditions for a CTD model."""
-
-    @classmethod
-    @abstractmethod
-    def get_loader_and_snapshot(
-        cls,
-        config: str | Path,
-        shuffle: int,
-        trainset_index: int = 0,
-        modelprefix: str = "",
-        snapshot: str | None = None,
-        snapshot_index: int | None = None,
-    ) -> tuple[DLCLoader, Snapshot]:
-        """Creates a DLCLoader for the BU shuffle and the path to conditions snapshot.
-
-        Args:
-            config: Path to the DeepLabCut project config, or the project config itself
-            trainset_index: The index of the TrainingsetFraction for which to load data
-            shuffle: The index of the shuffle for which to load data.
-            modelprefix: The modelprefix for the shuffle.
-            snapshot: The name of the snapshot to use.
-            snapshot_index: The index of the snapshot to use. If `snapshot` is
-                provided, the `snapshot_index` is not used.
-
-        Returns:
-            loader: The DLCLoader for the BU shuffle.
-            snapshot: The BU Snapshot to use for conditions.
-
-        Raises:
-            ValueError: If the given shuffle is not for a BU model.
-        """
-        return resolve_bu_shuffle(
-            config=config,
-            shuffle=shuffle,
-            trainset_index=trainset_index,
-            modelprefix=modelprefix,
-            snapshot=snapshot,
-            snapshot_index=snapshot_index,
-        )
-
-
-class CondFromFile(CondProvider):
+class CondFromFile:
     """A class providing conditions for a CTD model from a file.
 
     Args:
@@ -144,7 +101,7 @@ class CondFromFile(CondProvider):
     ) -> None:
         if filepath is None:
             # Load the conditions filepath from the Shuffle
-            bu_loader, bu_snapshot = self.get_loader_and_snapshot(**kwargs)
+            bu_loader, bu_snapshot = resolve_bu_shuffle(**kwargs)
             bu_scorer = bu_loader.scorer(bu_snapshot)
             filepath = bu_loader.evaluation_folder / f"{bu_scorer}.h5"
             if not filepath.exists():
@@ -160,25 +117,6 @@ class CondFromFile(CondProvider):
             raise ValueError(f"Conditions file {filepath} does not exist. Please check the given path.")
 
         self.filepath = filepath
-
-    @classmethod
-    def get_loader_and_snapshot(
-        cls,
-        config: str | Path,
-        shuffle: int,
-        trainset_index: int = 0,
-        modelprefix: str = "",
-        snapshot: str | None = None,
-        snapshot_index: int | None = None,
-    ) -> tuple[DLCLoader, Snapshot]:
-        return super().get_loader_and_snapshot(
-            config=config,
-            shuffle=shuffle,
-            trainset_index=trainset_index,
-            modelprefix=modelprefix,
-            snapshot=snapshot,
-            snapshot_index=snapshot_index,
-        )
 
     def load_conditions(
         self,
@@ -479,7 +417,7 @@ class CondFromFile(CondProvider):
         return parsed
 
 
-class CondFromModel(CondProvider):
+class CondFromModel:
     """A class providing conditions for a CTD model from a BU model.
 
     Attributes:
@@ -511,7 +449,7 @@ class CondFromModel(CondProvider):
             config_path = Path(config_path)
             snapshot_path = Path(snapshot_path)
         elif "config" in kwargs and "shuffle" in kwargs:
-            bu_loader, snapshot = self.get_loader_and_snapshot(**kwargs)
+            bu_loader, snapshot = resolve_bu_shuffle(**kwargs)
             config_path = bu_loader.model_config_path
             snapshot_path = snapshot.path
             if scorer is None:
@@ -520,22 +458,3 @@ class CondFromModel(CondProvider):
         self.config_path = config_path
         self.snapshot_path = snapshot_path
         self.scorer = scorer
-
-    @classmethod
-    def get_loader_and_snapshot(
-        cls,
-        config: str | Path,
-        shuffle: int,
-        trainset_index: int = 0,
-        modelprefix: str = "",
-        snapshot: str | None = None,
-        snapshot_index: int | None = None,
-    ) -> tuple[DLCLoader, Snapshot]:
-        return super().get_loader_and_snapshot(
-            config=config,
-            shuffle=shuffle,
-            trainset_index=trainset_index,
-            modelprefix=modelprefix,
-            snapshot=snapshot,
-            snapshot_index=snapshot_index,
-        )
