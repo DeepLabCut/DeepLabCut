@@ -9,7 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Typed configuration for CTD (Conditional Top-Down) model conditions.
-Two subclasses are supported (``ConditionsFileConfig`` and `ConditionsModelConfig``)
+Two subclasses are supported (``ConditionsFileConfig`` and ``ConditionsModelConfig``)
 depending on the source of the conditions (a file path, or a reference to a BU
 model). Use ``ConditionsConfig.build()`` to construct from any raw input.
 """
@@ -57,14 +57,20 @@ class ConditionsConfig(DLCBaseConfig):
         if isinstance(v, (str, Path)):
             return ConditionsFileConfig(filepath=Path(v))
         if isinstance(v, dict):
-            source = v.get("source")
+            v = v.copy()
+            source = v.pop("source", None)
             if source == "file" or (source is None and "filepath" in v):
-                return ConditionsFileConfig.model_validate(v if source else {"source": "file", **v})
-            # model source — direct form or shuffle shorthand
+                return ConditionsFileConfig(**v)
             if "config" in v and "shuffle" in v:
-                shuffle_keys = {"config", "shuffle", "trainset_index", "modelprefix", "snapshot", "snapshot_index"}
-                return ConditionsModelConfig.from_shuffle(**{k: v[k] for k in shuffle_keys if k in v})
-            return ConditionsModelConfig.model_validate(v if source else {"source": "model", **v})
+                return ConditionsModelConfig.from_shuffle(**v)
+            if source == "model" or "config_path" in v or "snapshot_path" in v:
+                return ConditionsModelConfig(**v)
+            raise ValueError(
+                "Cannot determine conditions source from dict. "
+                "Provide 'filepath' for a file source, "
+                "'config_path'+'snapshot_path' for a model source, "
+                "or 'config'+'shuffle' for a shuffle shorthand."
+            )
         raise TypeError(f"Cannot build a ConditionsConfig from {type(v).__name__!r}: {v!r}")
 
 
