@@ -23,6 +23,66 @@ from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
+def resolve_bu_shuffle(
+    config: str | Path,
+    shuffle: int,
+    trainset_index: int = 0,
+    modelprefix: str = "",
+    snapshot: str | None = None,
+    snapshot_index: int | None = None,
+) -> tuple[DLCLoader, Snapshot]:
+    """Resolves a DLC BU shuffle to a (loader, snapshot) pair.
+
+    Args:
+        config: Path to the DeepLabCut project config.
+        shuffle: The index of the shuffle for which to load data.
+        trainset_index: The index of the TrainingsetFraction for which to load data.
+        modelprefix: The modelprefix for the shuffle.
+        snapshot: The name of the snapshot to use. Takes priority over snapshot_index.
+        snapshot_index: The index of the snapshot to use. Defaults to -1 (last).
+
+    Returns:
+        loader: The DLCLoader for the BU shuffle.
+        snapshot: The BU Snapshot to use for conditions.
+
+    Raises:
+        ValueError: If the given shuffle is not for a BU model.
+    """
+    loader = DLCLoader(
+        config,
+        trainset_index=trainset_index,
+        shuffle=shuffle,
+        modelprefix=modelprefix,
+    )
+    if loader.pose_task != Task.BOTTOM_UP:
+        raise ValueError(
+            "Conditions can only be loaded from shuffles for bottom-up models, but "
+            f"shuffle {shuffle} has task {loader.pose_task} (config={config}, "
+            f"trainset_index={trainset_index}, modelprefix={modelprefix})."
+        )
+
+    if snapshot is not None:
+        snapshot_path = loader.model_folder / snapshot
+        if not snapshot_path.exists():
+            raise ValueError(f"Snapshot file {snapshot_path} does not exist.")
+        bu_snapshot = Snapshot.from_path(snapshot_path)
+    else:
+        if snapshot_index is None:
+            snapshot_index = -1
+
+        snapshots = loader.snapshots()
+        if len(snapshots) == 0:
+            raise ValueError(f"No snapshots found for shuffle={shuffle} in {loader.model_folder}")
+
+        if snapshot_index > len(snapshots):
+            snapshot_str = "\n".join([f"  {i}: {s.path.name}" for i, s in enumerate(snapshots)])
+            raise ValueError(f"Snapshot index {snapshot_index} is out of range. Existing snapshots: {snapshot_str}")
+
+        bu_snapshot = snapshots[snapshot_index]
+
+    return loader, bu_snapshot
+
+
 class CondProvider(ABC):
     """A class providing conditions for a CTD model."""
 
@@ -38,8 +98,6 @@ class CondProvider(ABC):
         snapshot_index: int | None = None,
     ) -> tuple[DLCLoader, Snapshot]:
         """Creates a DLCLoader for the BU shuffle and the path to conditions snapshot.
-
-        One of `snapshot` or `snapshot_index` must be provided.
 
         Args:
             config: Path to the DeepLabCut project config, or the project config itself
@@ -57,40 +115,14 @@ class CondProvider(ABC):
         Raises:
             ValueError: If the given shuffle is not for a BU model.
         """
-        loader = DLCLoader(
-            config,
-            trainset_index=trainset_index,
+        return resolve_bu_shuffle(
+            config=config,
             shuffle=shuffle,
+            trainset_index=trainset_index,
             modelprefix=modelprefix,
+            snapshot=snapshot,
+            snapshot_index=snapshot_index,
         )
-        if loader.pose_task != Task.BOTTOM_UP:
-            raise ValueError(
-                "Conditions can only be loaded from shuffles for bottom-up models, but "
-                f"shuffle {shuffle} has task {loader.pose_task} (config={config}, "
-                f"trainset_index={trainset_index}, modelprefix={modelprefix})."
-            )
-
-        if snapshot is not None:
-            snapshot_path = loader.model_folder / snapshot
-            if not snapshot_path.exists():
-                raise ValueError(f"Snapshot file {snapshot_path} does not exist.")
-            bu_snapshot = Snapshot.from_path(snapshot_path)
-
-        else:
-            if snapshot_index is None:
-                snapshot_index = -1
-
-            snapshots = loader.snapshots()
-            if len(snapshots) == 0:
-                raise ValueError(f"No snapshots found for shuffle={shuffle} in {loader.model_folder}")
-
-            if snapshot_index > len(snapshots):
-                snapshot_str = "\n".join([f"  {i}: {s.path.name}" for i, s in enumerate(snapshots)])
-                raise ValueError(f"Snapshot index {snapshot_index} is out of range. Existing snapshots: {snapshot_str}")
-
-            bu_snapshot = snapshots[snapshot_index]
-
-        return loader, bu_snapshot
 
 
 class CondFromFile(CondProvider):
