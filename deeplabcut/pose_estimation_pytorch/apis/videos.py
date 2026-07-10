@@ -28,16 +28,16 @@ import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import renamed_parameter
-from deeplabcut.pose_estimation_pytorch.apis.ctd import (
-    get_condition_provider,
-    get_conditions_provider_for_video,
-)
+from deeplabcut.pose_estimation_pytorch.apis.ctd import get_conditions_provider_for_video
 from deeplabcut.pose_estimation_pytorch.apis.tracklets import (
     convert_detections2tracklets,
 )
+from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
+    ConditionsConfig,
+    ConditionsModelConfig,
+)
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader
-from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.runners import (
     CTDTrackingConfig,
     DynamicCropper,
@@ -260,7 +260,7 @@ def analyze_videos(
     batch_size: int | None = None,
     detector_batch_size: int | None = None,
     dynamic: tuple[bool, float, int] = (False, 0.5, 10),
-    ctd_conditions: dict | CondFromModel | None = None,
+    ctd_conditions: str | Path | dict | ConditionsModelConfig | None = None,
     ctd_tracking: bool | dict | CTDTrackingConfig = False,
     top_down_dynamic: dict | None = None,
     modelprefix: str = "",
@@ -326,14 +326,13 @@ def analyze_videos(
             is utilized for updating the crop window for the next frame (this is why the
             margin is important and should be set large enough given the movement of the
             animal).
-        ctd_conditions: Only for CTD models. If None, the configuration for the
-            condition provider will be loaded from the pytorch_config file (under the
-            "inference": "conditions"). If the ctd_conditions is given as a dict, creates a
-            CondFromModel from the dict. Otherwise, a CondFromModel can be given
-            directly. Example configuration:
-                ```
-                ctd_conditions = {"shuffle": 17, "snapshot": "snapshot-best-190.pt"}
-                ```
+        ctd_conditions: Only for CTD models. Specifies the BU model used to generate
+            conditions. If None, loaded from the pytorch_config file (under
+            ``"inference": "conditions"``). Accepts a ``ConditionsModelConfig``
+            instance or any raw form accepted by ``ConditionsConfig.build()``
+            (str, Path, dict). Must resolve to a ``ConditionsModelConfig`` (file
+            configs are not valid for inference).
+            Example: ``ctd_conditions = {"shuffle": 17, "snapshot": "snapshot-best-190.pt"}``
         ctd_tracking: Only for CTD models. Conditional top-down models can be used
             to directly track individuals. Poses from frame T are given as conditions
             for frame T+1. This also means a BU model is only needed to "initialize" the
@@ -490,22 +489,16 @@ def analyze_videos(
 
     snapshot = utils.get_model_snapshots(snapshot_index, loader.model_folder, loader.pose_task)[0]
 
-    # Load the BU model for the conditions provider
+    ctd_conditions = ctd_conditions or loader.model_cfg["inference"]["conditions"]
+    if ctd_conditions is not None:
+        ctd_conditions = ConditionsConfig.build(ctd_conditions)
+        ctd_conditions.assert_bu_inference()
+
     cond_provider = None
     if loader.pose_task == Task.COND_TOP_DOWN:
         if ctd_conditions is None:
-            cond_provider = get_condition_provider(
-                condition_cfg=loader.model_cfg["inference"]["conditions"],
-                config=config,
-            )
-        # TODO @deruyter92: decide on typed / plain dict
-        elif isinstance(ctd_conditions, dict):
-            cond_provider = get_condition_provider(
-                condition_cfg=ctd_conditions,
-                config=config,
-            )
-        else:
-            cond_provider = ctd_conditions
+            raise ValueError("CTD conditions are required for video analysis with cond-top-down models")
+        cond_provider = ctd_conditions
 
     # TODO @deruyter92: decide on typed / plain dict
     if isinstance(ctd_tracking, dict):
