@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
 
 
 def select_cropping_area(config, videos=None):
@@ -62,20 +63,20 @@ def select_cropping_area(config, videos=None):
 
 
 def extract_frames(
-    config,
-    mode="automatic",
-    algo="kmeans",
-    crop=False,
-    userfeedback=True,
-    cluster_step=1,
-    cluster_resizewidth=30,
-    cluster_color=False,
-    opencv=True,
-    slider_width=25,
-    config3d=None,
-    extracted_cam=0,
-    videos_list=None,
-):
+    config: str,
+    mode: str = "automatic",
+    algo: str = "kmeans",
+    crop: bool | str = False,
+    userfeedback: bool = True,
+    cluster_step: int = 1,
+    cluster_resizewidth: int = 30,
+    cluster_color: bool = False,
+    opencv: bool = True,
+    slider_width: int = 25,
+    config3d: str | None = None,
+    extracted_cam: int = 0,
+    videos_list: list[str] | None = None,
+) -> dict[str, np.ndarray]:
     """Extracts frames from the project videos.
 
     Frames will be extracted from videos listed in the config.yaml file.
@@ -173,7 +174,11 @@ def extract_frames(
 
     Returns
     -------
-    None
+    frames_by_video : dict[str, np.ndarray]
+        Mapping of each processed video's full path to the array of frame indices
+        that were picked for extraction. In ``"automatic"`` mode, a video maps to an
+        empty array if frame selection failed for it. In ``"manual"`` and ``"match"``
+        modes an empty dict is returned, as no frames are selected programmatically.
 
     Notes
     -----
@@ -275,7 +280,7 @@ def extract_frames(
         from deeplabcut.gui.widgets import launch_napari
 
         _ = launch_napari(videos[0])
-        return
+        return {}
 
     elif mode == "automatic":
         numframes2pick = cfg["numframes2pick"]
@@ -294,6 +299,7 @@ def extract_frames(
             from moviepy.editor import VideoFileClip
 
         has_failed = []
+        frames_by_video: dict[str, np.ndarray] = {}
         for video in videos:
             if userfeedback:
                 print(
@@ -395,7 +401,11 @@ def extract_frames(
 
                 if not len(frames2pick):
                     print("Frame selection failed...")
-                    return []
+                    frames_by_video[video] = np.array([], dtype=int)
+                    has_failed.append(True)
+                    continue
+
+                frames_by_video[video] = np.asarray(frames2pick)
 
                 output_path = Path(config).parents[0] / "labeled-data" / Path(video).stem
                 output_path.mkdir(parents=True, exist_ok=True)
@@ -441,7 +451,7 @@ def extract_frames(
 
         if all(has_failed):
             print("Frame extraction failed. Video files must be corrupted.")
-            return has_failed
+            return frames_by_video
         elif any(has_failed):
             print("Although most frames were extracted, some were invalid.")
         else:
@@ -451,7 +461,7 @@ def extract_frames(
             "(Note, you should label frames extracted from diverse videos "
             "(and many videos; we do not recommend training on single videos!))."
         )
-        return has_failed
+        return frames_by_video
 
     elif mode == "match":
         import cv2
@@ -539,6 +549,7 @@ def extract_frames(
                         else:
                             io.imsave(img_name, image)
         print("\n Done extracting matched frames. You can now begin labeling frames using the function label_frames\n")
+        return {}
 
     else:
         print(
@@ -546,3 +557,4 @@ def extract_frames(
             "Check ``help(deeplabcut.extract_frames)`` on python and ``deeplabcut.extract_frames?``"
             " for ipython/jupyter notebook for more details."
         )
+        return {}
