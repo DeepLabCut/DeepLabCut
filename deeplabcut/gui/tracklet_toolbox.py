@@ -24,6 +24,7 @@ from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.refine_training_dataset.tracklets import TrackletManager
 from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.auxiliaryfunctions import attempt_to_make_folder
+from deeplabcut.utils.matplotlib_future_mode import get_colormap
 
 
 class DraggablePoint:
@@ -288,7 +289,7 @@ class PointSelector:
 class TrackletVisualizer:
     def __init__(self, manager, videoname, trail_len=50):
         self.manager = manager
-        self.cmap = plt.cm.get_cmap(manager.cfg["colormap"], len(set(manager.tracklet2id)))
+        self.cmap = get_colormap(manager.cfg["colormap"], len(set(manager.tracklet2id)))
         self.videoname = videoname
         self.video = VideoReader(videoname)
         self.nframes = len(self.video)
