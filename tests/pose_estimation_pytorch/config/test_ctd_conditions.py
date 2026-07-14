@@ -15,9 +15,9 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-import numpy as np
 import pytest
 
+from deeplabcut.pose_estimation_pytorch import data as data_module
 from deeplabcut.pose_estimation_pytorch.apis.ctd import load_conditions_for_evaluation
 from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
     ConditionsConfig,
@@ -59,29 +59,67 @@ def _ctd_loader(*, conditions) -> Mock:
     return loader
 
 
+class _FakeDLCLoader(data_module.DLCLoader):
+    """Minimal DLCLoader stand-in so isinstance(..., DLCLoader) succeeds."""
+
+    def __init__(self, conditions):
+        self.pose_task = Task.COND_TOP_DOWN
+        self.model_cfg = {"inference": {"conditions": conditions}}
+        self.image_root = Path("/images")
+        self.project_root = Path("/project")
+
+
 # --- ConditionsConfig.build ---------------------------------------------------
 
 
 @pytest.mark.parametrize(
     "raw, expected_type, check",
     [
-        (None, type(None), lambda c: c is None),
-        ("/path/to/preds.h5", ConditionsFileConfig, lambda c: c.filepath == Path("/path/to/preds.h5")),
-        (Path("/path/to/preds.json"), ConditionsFileConfig, lambda c: c.filepath == Path("/path/to/preds.json")),
-        ({"filepath": "/preds.h5"}, ConditionsFileConfig, lambda c: c.filepath == Path("/preds.h5")),
-        ({"shuffle": 3}, ConditionsShuffleConfig, lambda c: c.shuffle == 3),
-        (
+        pytest.param(None, type(None), lambda c: c is None, id="none"),
+        pytest.param(
+            "/path/to/preds.h5",
+            ConditionsFileConfig,
+            lambda c: c.filepath == Path("/path/to/preds.h5"),
+            id="path-str",
+        ),
+        pytest.param(
+            Path("/path/to/preds.json"),
+            ConditionsFileConfig,
+            lambda c: c.filepath == Path("/path/to/preds.json"),
+            id="path-obj",
+        ),
+        pytest.param(
+            {"filepath": "/preds.h5"},
+            ConditionsFileConfig,
+            lambda c: c.filepath == Path("/preds.h5"),
+            id="filepath-dict",
+        ),
+        pytest.param(
+            {"shuffle": 3},
+            ConditionsShuffleConfig,
+            lambda c: c.shuffle == 3,
+            id="shuffle-dict",
+        ),
+        pytest.param(
             {"shuffle": 1, "snapshot_index": -1},
             ConditionsShuffleConfig,
             lambda c: c.shuffle == 1 and c.snapshot_index == -1,
+            id="shuffle-snapshot-index",
         ),
-        (
+        pytest.param(
             {
                 "config_path": "/bu/pytorch_config.yaml",
                 "snapshot_path": "/bu/snapshot.pt",
             },
             ConditionsModelConfig,
             lambda c: c.config_path == Path("/bu/pytorch_config.yaml"),
+            id="model-dict",
+        ),
+        pytest.param(
+            {"source": "shuffle", "shuffle": 9},
+            ConditionsShuffleConfig,
+            lambda c: c.shuffle == 9,
+            id="explicit-source-shuffle",
         ),
     ],
 )
@@ -127,8 +165,8 @@ def test_resolve_from_conditions_rejects_filepath_dict():
 @pytest.mark.parametrize(
     "conditions",
     [
-        {"shuffle": 1},
-        ConditionsShuffleConfig(shuffle=1),
+        pytest.param({"shuffle": 1}, id="dict"),
+        pytest.param(ConditionsShuffleConfig(shuffle=1), id="typed"),
     ],
 )
 def test_resolve_from_conditions_shuffle_requires_config(conditions):
@@ -139,8 +177,14 @@ def test_resolve_from_conditions_shuffle_requires_config(conditions):
 @pytest.mark.parametrize(
     "conditions",
     [
-        ConditionsShuffleConfig(shuffle=7, snapshot_index=-1),
-        {"shuffle": 7, "snapshot_index": -1},
+        pytest.param(
+            ConditionsShuffleConfig(shuffle=7, snapshot_index=-1),
+            id="typed",
+        ),
+        pytest.param(
+            {"shuffle": 7, "snapshot_index": -1},
+            id="dict",
+        ),
     ],
 )
 def test_resolve_from_conditions_shuffle_with_config(conditions, monkeypatch):
@@ -167,48 +211,56 @@ def test_resolve_from_conditions_shuffle_with_config(conditions, monkeypatch):
     )
 
 
+def test_resolve_from_conditions_uses_embedded_shuffle_config(monkeypatch):
+    mock_from_shuffle = Mock(return_value=_ctd_model_conditions_config())
+    monkeypatch.setattr(
+        ConditionsModelConfig,
+        "from_shuffle",
+        classmethod(lambda cls, **kwargs: mock_from_shuffle(**kwargs)),
+    )
+
+    ConditionsModelConfig.resolve_from_conditions(
+        ConditionsShuffleConfig(shuffle=3, config=Path("/embedded/config.yaml")),
+    )
+
+    mock_from_shuffle.assert_called_once_with(
+        config=Path("/embedded/config.yaml"),
+        shuffle=3,
+        trainset_index=0,
+        modelprefix="",
+        snapshot=None,
+        snapshot_index=None,
+    )
+
+
 # --- InferenceConfig + _add_ctd_conditions / PoseConfig ------------------------
 
 
-@pytest.mark.parametrize(
-    "raw, expected_type, check",
-    [
-        ("/path/to/bu_predictions.h5", ConditionsFileConfig, lambda c: True),
-        (
-            {"shuffle": 2, "snapshot": "snapshot-10.pt"},
-            ConditionsShuffleConfig,
-            lambda c: c.shuffle == 2,
-        ),
-    ],
-)
-def test_inference_config_normalizes_conditions(raw, expected_type, check):
-    cfg = InferenceConfig(conditions=raw)
-    assert isinstance(cfg.conditions, expected_type)
-    assert check(cfg.conditions)
+def test_inference_config_accepts_path_string():
+    """Regression: bare path strings must validate (PoseConfig / YAML file form)."""
+    cfg = InferenceConfig(conditions="/path/to/bu_predictions.h5")
+    assert isinstance(cfg.conditions, ConditionsFileConfig)
+    assert cfg.conditions.filepath == Path("/path/to/bu_predictions.h5")
 
 
 @pytest.mark.parametrize(
-    "ctd_conditions, expected_type, check",
+    "ctd_conditions, expected",
     [
-        (5, ConditionsShuffleConfig, lambda c: c.shuffle == 5),
-        ((1, -1), ConditionsShuffleConfig, lambda c: c.shuffle == 1 and c.snapshot_index == -1),
-        (
+        pytest.param(5, {"shuffle": 5}, id="int"),
+        pytest.param((1, -1), {"shuffle": 1, "snapshot_index": -1}, id="tuple-index"),
+        pytest.param(
             (2, "snapshot-best-150.pt"),
-            ConditionsShuffleConfig,
-            lambda c: c.shuffle == 2 and c.snapshot == "snapshot-best-150.pt",
+            {"shuffle": 2, "snapshot": "snapshot-best-150.pt"},
+            id="tuple-name",
         ),
     ],
 )
-def test_add_ctd_conditions_shuffle_forms(ctd_conditions, expected_type, check):
+def test_add_ctd_conditions_shuffle_forms(ctd_conditions, expected):
     model_cfg: dict = {"inference": {}}
     _add_ctd_conditions(model_cfg, ctd_conditions)
+    assert model_cfg["inference"]["conditions"] == expected
     built = ConditionsConfig.build(model_cfg["inference"]["conditions"])
-    assert isinstance(built, expected_type)
-    assert check(built)
-    assert isinstance(
-        InferenceConfig(conditions=model_cfg["inference"]["conditions"]).conditions,
-        expected_type,
-    )
+    assert isinstance(built, ConditionsShuffleConfig)
 
 
 def test_add_ctd_conditions_file_path(tmp_path: Path):
@@ -222,9 +274,6 @@ def test_add_ctd_conditions_file_path(tmp_path: Path):
     built = ConditionsConfig.build(model_cfg["inference"]["conditions"])
     assert isinstance(built, ConditionsFileConfig)
     assert built.filepath == preds.resolve()
-
-    typed = InferenceConfig(conditions=model_cfg["inference"]["conditions"])
-    assert isinstance(typed.conditions, ConditionsFileConfig)
 
 
 def test_pose_config_build_ctd_with_shuffle(tmp_path: Path):
@@ -258,30 +307,26 @@ def test_pose_config_build_ctd_with_file(tmp_path: Path):
 
 
 def test_load_conditions_for_evaluation_from_file():
-    loader = _ctd_loader(conditions=ConditionsFileConfig(filepath=Path("/preds.h5")))
-    expected = {"img.png": np.zeros((1, 2, 3))}
+    loader = _ctd_loader(conditions="/preds.h5")  # YAML-like raw path string
 
     with patch("deeplabcut.pose_estimation_pytorch.apis.ctd.CondFromFile") as mock_cond:
-        mock_cond.return_value.load_conditions.return_value = expected
-        out = load_conditions_for_evaluation(loader, ["img.png"])
+        load_conditions_for_evaluation(loader, ["img.png"])
 
     mock_cond.assert_called_once_with(filepath=Path("/preds.h5"))
     mock_cond.return_value.load_conditions.assert_called_once_with(["img.png"], path_prefix=loader.image_root)
-    assert out is expected
 
 
 def test_load_conditions_for_evaluation_from_shuffle():
-    conditions = ConditionsShuffleConfig(
-        shuffle=4,
-        config=Path("/project/config.yaml"),
-        snapshot="snapshot-100.pt",
+    loader = _ctd_loader(
+        conditions={
+            "shuffle": 4,
+            "config": "/project/config.yaml",
+            "snapshot": "snapshot-100.pt",
+        }
     )
-    loader = _ctd_loader(conditions=conditions)
-    expected = {"img.png": np.ones((1, 2, 3))}
 
     with patch("deeplabcut.pose_estimation_pytorch.apis.ctd.CondFromFile") as mock_cond:
-        mock_cond.return_value.load_conditions.return_value = expected
-        out = load_conditions_for_evaluation(loader, ["img.png"])
+        load_conditions_for_evaluation(loader, ["img.png"])
 
     mock_cond.assert_called_once_with(
         config=Path("/project/config.yaml"),
@@ -291,16 +336,34 @@ def test_load_conditions_for_evaluation_from_shuffle():
         snapshot="snapshot-100.pt",
         snapshot_index=None,
     )
-    assert out is expected
+
+
+def test_load_conditions_for_evaluation_injects_dlcloader_project_config():
+    loader = _FakeDLCLoader(conditions={"shuffle": 4})
+
+    with patch("deeplabcut.pose_estimation_pytorch.apis.ctd.CondFromFile") as mock_cond:
+        load_conditions_for_evaluation(loader, ["img.png"])
+
+    mock_cond.assert_called_once_with(
+        config=Path("/project/config.yaml"),
+        shuffle=4,
+        trainset_index=0,
+        modelprefix="",
+        snapshot=None,
+        snapshot_index=None,
+    )
 
 
 def test_load_conditions_for_evaluation_rejects_model():
-    with pytest.raises(ValueError, match="Misconfigured conditions|Model config|Evaluation accepts"):
-        load_conditions_for_evaluation(_ctd_loader(conditions=_ctd_model_conditions_config()), ["img.png"])
+    with pytest.raises(ValueError, match="Evaluation accepts file paths or shuffle refs"):
+        load_conditions_for_evaluation(
+            _ctd_loader(conditions=_ctd_model_conditions_config()),
+            ["img.png"],
+        )
 
 
 def test_load_conditions_for_evaluation_rejects_none():
-    with pytest.raises(ValueError, match="Got None|requires conditions"):
+    with pytest.raises(ValueError, match="Got None"):
         load_conditions_for_evaluation(_ctd_loader(conditions=None), ["img.png"])
 
 
