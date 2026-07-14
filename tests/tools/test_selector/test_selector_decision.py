@@ -387,3 +387,8 @@ def test_3d_changes_select_scripts_in_dependency_order():
         "examples/testscript_tensorflow_single_animal.py",
         "examples/testscript_3d.py",
     ]
+    assert (
+        "dependency:examples/testscript_3d.py"
+        in result.provenance.scripts["examples/testscript_tensorflow_single_animal.py"]
+    )
+    assert "3d_pose_estimation" in result.provenance.scripts["examples/testscript_3d.py"]
