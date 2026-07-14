@@ -32,7 +32,7 @@ from deeplabcut.pose_estimation_pytorch.apis.ctd import get_conditions_provider_
 from deeplabcut.pose_estimation_pytorch.apis.tracklets import (
     convert_detections2tracklets,
 )
-from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import ConditionsModelConfig
+from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import ConditionsModelConfig, ConditionsShuffleConfig
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader
 from deeplabcut.pose_estimation_pytorch.runners import (
@@ -257,7 +257,7 @@ def analyze_videos(
     batch_size: int | None = None,
     detector_batch_size: int | None = None,
     dynamic: tuple[bool, float, int] = (False, 0.5, 10),
-    ctd_conditions: str | Path | dict | ConditionsModelConfig | None = None,
+    ctd_conditions: dict | ConditionsShuffleConfig | ConditionsModelConfig | None = None,
     ctd_tracking: bool | dict | CTDTrackingConfig = False,
     top_down_dynamic: dict | None = None,
     modelprefix: str = "",
@@ -325,10 +325,8 @@ def analyze_videos(
             animal).
         ctd_conditions: Only for CTD models. Specifies the BU model used to generate
             conditions. If None, loaded from the pytorch_config file (under
-            ``"inference": "conditions"``). Accepts a ``ConditionsModelConfig``
-            instance or any raw form accepted by ``ConditionsConfig.build()``
-            (str, Path, dict). Must resolve to a ``ConditionsModelConfig`` (file
-            configs are not valid for inference).
+            ``"inference": "conditions"``). Accepts ``ConditionsModelConfig`` or
+            ``ConditionsShuffleConfig`` as a BU model ref for live inference.
             Example: ``ctd_conditions = {"shuffle": 17, "snapshot": "snapshot-best-190.pt"}``
         ctd_tracking: Only for CTD models. Conditional top-down models can be used
             to directly track individuals. Poses from frame T are given as conditions
@@ -486,17 +484,13 @@ def analyze_videos(
 
     snapshot = utils.get_model_snapshots(snapshot_index, loader.model_folder, loader.pose_task)[0]
 
-    ctd_conditions = ctd_conditions or loader.model_cfg["inference"]["conditions"]
-    if ctd_conditions is not None:
-        ctd_conditions = ConditionsModelConfig.resolve_from_conditions(ctd_conditions, config=config)
-
     cond_provider = None
     if loader.pose_task == Task.COND_TOP_DOWN:
+        ctd_conditions = loader.model_cfg.inference.conditions if ctd_conditions is None else ctd_conditions
         if ctd_conditions is None:
             raise ValueError("CTD conditions are required for video analysis with cond-top-down models")
-        cond_provider = ctd_conditions
+        cond_provider = ConditionsModelConfig.resolve_from_conditions(ctd_conditions, config=config)
 
-    # TODO @deruyter92: decide on typed / plain dict
     if isinstance(ctd_tracking, dict):
         # FIXME(niels) - add video FPS setting
         ctd_tracking = CTDTrackingConfig.build(ctd_tracking)

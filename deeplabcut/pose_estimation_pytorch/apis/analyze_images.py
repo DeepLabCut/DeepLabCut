@@ -36,7 +36,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_uid,
     parse_snapshot_index_for_analysis,
 )
-from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import ConditionsModelConfig
+from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import ConditionsModelConfig, ConditionsShuffleConfig
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     COCO_PERSON_CATEGORY_ID,
@@ -248,7 +248,7 @@ def analyze_images(
     pcutoff: float | None = None,
     bbox_pcutoff: float | None = None,
     plot_skeleton: bool = True,
-    ctd_conditions: str | Path | dict | ConditionsModelConfig | None = None,
+    ctd_conditions: dict | ConditionsShuffleConfig | ConditionsModelConfig | None = None,
 ) -> dict[str, dict]:
     """Runs analysis on images using a pose model.
 
@@ -282,10 +282,9 @@ def analyze_images(
             to plot the skeleton connecting the predicted bodyparts on the images.
         ctd_conditions: Only for CTD models. Specifies the BU model used to generate
             conditions. If None, loaded from the pytorch_config file (under
-            ``"inference": "conditions"``). Accepts a ``ConditionsModelConfig``
-            instance or any raw form accepted by ``ConditionsConfig.build()``
-            (str, Path, dict). A BU model is required for inference, file configs
-            are not valid for this purpose.
+            ``"inference": "conditions"``). Accepts a ``ConditionsModelConfig`` or a
+            ``ConditionsShuffleConfig``. A BU model is required for live inference,
+            file configs are not valid for this purpose.
 
     Returns:
         A dictionary mapping each image filename to the different types of predictions
