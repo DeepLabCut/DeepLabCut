@@ -334,6 +334,49 @@ def _matches_any(path: str, preds: Sequence[Callable[[str], bool]]) -> bool:
     return False
 
 
+def resolve_functional_scripts(
+    selected: set[str],
+) -> tuple[list[str], dict[str, set[str]]]:
+    """Expand and dependency-order functional scripts.
+
+    Returns:
+        ordered
+            Selected scripts and their transitive dependencies, with each
+            dependency appearing before scripts that depend on it.
+        dependency_sources
+            Provenance entries for every dependency added during expansion.
+    """
+    ordered: list[str] = []
+    dependency_sources: dict[str, set[str]] = defaultdict(set)
+    visited: set[str] = set()
+    visiting: set[str] = set()
+
+    def visit(script: str) -> None:
+        if script in visited:
+            return
+
+        if script in visiting:
+            raise ValueError(f"Cyclic functional-script dependency involving {script!r}")
+
+        visiting.add(script)
+
+        for dependency in FUNC_SCRIPT_DEPENDENCIES.get(
+            script,
+            (),
+        ):
+            dependency_sources[dependency].add(f"dependency:{script}")
+            visit(dependency)
+
+        visiting.remove(script)
+        visited.add(script)
+        ordered.append(script)
+
+    for script in sorted(selected):
+        visit(script)
+
+    return ordered, dependency_sources
+
+
 def order_functional_scripts(
     selected: set[str],
 ) -> list[str]:
@@ -534,22 +577,17 @@ def decide(files: list[str]) -> SelectorResult:
         fast_reasons.append("fallback_minimal_pytest")
     lane_reasons["fast"] = fast_reasons
 
-    ordered_functional_scripts = order_functional_scripts(functional_set)
-
-    for dependent in functional_set:
-        for dependency in FUNC_SCRIPT_DEPENDENCIES.get(
-            dependent,
-            (),
-        ):
-            script_sources[dependency].add(f"dependency:{dependent}")
+    ordered_functional_scripts, dependency_sources = resolve_functional_scripts(functional_set)
+    for scrpt, srcs in dependency_sources.items():
+        script_sources[scrpt].update(srcs)
 
     return SelectorResult(
         lanes=lanes,
         pytest_paths=sorted(pytest_paths_set),
         functional_scripts=ordered_functional_scripts,
         provenance=SelectionProvenance(
-            pytest={k: sorted(v) for k, v in sorted(pytest_sources.items())},
-            scripts={k: sorted(v) for k, v in sorted(script_sources.items())},
+            pytest={path: sorted(sources) for path, sources in sorted(pytest_sources.items())},
+            scripts={path: sorted(sources) for path, sources in sorted(script_sources.items())},
         ),
         reasons=reasons,
         changed_files=files,
