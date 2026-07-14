@@ -578,8 +578,8 @@ def decide(files: list[str]) -> SelectorResult:
     lane_reasons["fast"] = fast_reasons
 
     ordered_functional_scripts, dependency_sources = resolve_functional_scripts(functional_set)
-    for scrpt, srcs in dependency_sources.items():
-        script_sources[scrpt].update(srcs)
+    for script, srcs in dependency_sources.items():
+        script_sources[script].update(srcs)
 
     return SelectorResult(
         lanes=lanes,
