@@ -306,8 +306,10 @@ def analyze_images(
     model_cfg = PoseConfig.from_any(model_cfg_path)
     pose_task = Task(model_cfg["method"])
 
-    ctd_conditions = ctd_conditions or model_cfg["inference"]["conditions"]
-    if ctd_conditions is not None:
+    if pose_task == Task.COND_TOP_DOWN:
+        ctd_conditions = model_cfg.inference.conditions if ctd_conditions is None else ctd_conditions
+        if ctd_conditions is None:
+            raise ValueError("CTD conditions are required for image analysis with cond-top-down models")
         ctd_conditions = ConditionsModelConfig.resolve_from_conditions(ctd_conditions, config=config)
 
     # get the snapshots to analyze images with
@@ -318,10 +320,6 @@ def analyze_images(
     detector_snapshot = None
     if detector_snapshot_index is not None:
         detector_snapshot = get_model_snapshots(detector_snapshot_index, train_folder, Task.DETECT)[0]
-
-    if pose_task == Task.COND_TOP_DOWN:
-        if ctd_conditions is None:
-            raise ValueError("CTD conditions are required for image analysis with cond-top-down models")
 
     predictions = analyze_image_folder(
         model_cfg=model_cfg,
