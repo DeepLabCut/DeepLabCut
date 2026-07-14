@@ -12,6 +12,7 @@ import logging
 import os
 import sys
 import warnings
+from enum import Enum, auto
 from functools import cached_property
 from importlib.resources import files
 from importlib.util import find_spec
@@ -19,6 +20,7 @@ from pathlib import Path
 
 import qdarkstyle
 from napari_deeplabcut import __version__ as NAPARI_DLC_VERSION
+from pydantic import ValidationError
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon, QPixmap
@@ -39,6 +41,10 @@ from deeplabcut.core.debug import install_debug_recorder
 from deeplabcut.core.engine import Engine
 from deeplabcut.gui import BASE_DIR, components
 from deeplabcut.gui.dialogs import create_generate_debug_log_action
+from deeplabcut.gui.dialogs.config_errors import (
+    ConfigErrorReport,
+    format_config_error,
+)
 from deeplabcut.gui.tabs import (
     AnalyzeVideos,
     CreateTrainingDataset,
@@ -57,13 +63,25 @@ from deeplabcut.gui.tabs import (
     VideoEditor,
 )
 from deeplabcut.gui.utils import UpdateChecker, _build_update_commands
-from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
+from deeplabcut.gui.widgets import (
+    ConfigEditor,
+    StreamReceiver,
+    StreamWriter,
+)
 
 warnings.filterwarnings(
     "ignore",
     message=r".*shibokensupport/signature/parser.py:269: RuntimeWarning: pyside_type_init:_resolve_value.*",
     category=RuntimeWarning,
 )
+
+
+class ConfigErrorAction(Enum):
+    """Recovery action selected after a configuration error."""
+
+    CANCEL = auto()
+    RETRY = auto()
+    EDIT = auto()
 
 
 class MainWindow(QMainWindow):
@@ -87,6 +105,7 @@ class MainWindow(QMainWindow):
 
         self.config = None
         self.loaded = False
+        self._config_repair_editor: ConfigEditor | None = None
 
         self.shuffle_value = 1
         self.trainingset_index = 0
@@ -184,11 +203,9 @@ class MainWindow(QMainWindow):
 
     @property
     def cfg(self):
-        try:
-            cfg = auxiliaryfunctions.read_config(self.config)
-        except TypeError:
-            cfg = {}
-        return cfg
+        if self.config is None:
+            return {}
+        return auxiliaryfunctions.read_config(self.config)
 
     @property
     def engine(self) -> Engine:
@@ -752,7 +769,8 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.openAction)
 
         self.recentfiles_menu = self.file_menu.addMenu("Open Recent")
-        self.recentfiles_menu.triggered.connect(lambda a: self._update_project_state(a.text(), True))
+        # self.recentfiles_menu.triggered.connect(lambda a: self._update_project_state(a.text(), True))
+        self.recentfiles_menu.triggered.connect(self._open_recent_project)
         self.file_menu.addAction(self.saveAction)
         self.file_menu.addAction(self.exitAction)
 
@@ -828,12 +846,28 @@ class MainWindow(QMainWindow):
         self.toolbar.removeAction(self.openAction)
         self.toolbar.removeAction(self.helpAction)
 
-    def _update_project_state(self, config, loaded):
-        self.config = config
-        self.loaded = loaded
-        if loaded:
-            self.add_recent_filename(self.config)
-            self.add_tabs()
+    def _update_project_state(
+        self,
+        config: str | Path,
+        loaded: bool,
+    ) -> bool:
+        """Select a project and build its UI from the current config."""
+        self.config = str(Path(config))
+        self.loaded = False
+
+        if not loaded:
+            return True
+
+        # Do not keep an old project's controls active while self.config
+        # points to a newly selected project.
+        self._generate_welcome_page()
+
+        if not self._build_project_ui_from_current_config():
+            return False
+
+        self.loaded = True
+        self.add_recent_filename(self.config)
+        return True
 
     def _ask_for_help(self):
         dlg = QMessageBox(self)
@@ -855,16 +889,182 @@ class MainWindow(QMainWindow):
         dlg = ProjectCreator(self)
         dlg.show()
 
-    def _open_project(self):
+    def _show_config_error(
+        self,
+        report: ConfigErrorReport,
+    ) -> ConfigErrorAction:
+        """Show a configuration error and return the requested action."""
+        message = QMessageBox(self)
+        message.setIcon(QMessageBox.Critical)
+        message.setWindowTitle(report.title)
+        message.setText(report.summary)
+        message.setInformativeText(report.details)
+        message.setDetailedText(report.technical_details)
+
+        edit_button = message.addButton(
+            "Edit configuration",
+            QMessageBox.ActionRole,
+        )
+        retry_button = message.addButton(
+            "Reload",
+            QMessageBox.AcceptRole,
+        )
+        cancel_button = message.addButton(
+            QMessageBox.Cancel,
+        )
+
+        message.setDefaultButton(retry_button)
+        message.exec()
+
+        clicked_button = message.clickedButton()
+
+        if clicked_button is edit_button:
+            return ConfigErrorAction.EDIT
+
+        if clicked_button is retry_button:
+            return ConfigErrorAction.RETRY
+
+        assert clicked_button is cancel_button
+        return ConfigErrorAction.CANCEL
+
+    def _open_config_for_repair(self) -> None:
+        """Open the current config and reload it after the editor closes."""
+        if self.config is None:
+            return
+
+        existing_editor = self._config_repair_editor
+
+        if existing_editor is not None:
+            try:
+                existing_editor.show()
+                existing_editor.raise_()
+                existing_editor.activateWindow()
+                return
+            except RuntimeError:
+                # The underlying Qt object has already been deleted.
+                self._config_repair_editor = None
+
+        editor = ConfigEditor(self.config)
+        editor.setAttribute(Qt.WA_DeleteOnClose, True)
+        editor.destroyed.connect(self._reload_project_after_config_edit)
+
+        self._config_repair_editor = editor
+        editor.show()
+        editor.raise_()
+        editor.activateWindow()
+
+    def _reload_project_after_config_edit(
+        self,
+        *_args,
+    ) -> None:
+        """Reload the project from disk after the config editor closes."""
+        self._config_repair_editor = None
+
+        if self._closing or self.config is None:
+            return
+
+        if self._build_project_ui_from_current_config():
+            self.loaded = True
+            self.add_recent_filename(self.config)
+
+    def _build_project_ui_from_current_config(self) -> bool:
+        """Build project tabs using the current config file on disk.
+
+        The configuration is read again for every attempt. No validated
+        configuration state is cached between attempts.
+        """
+        if self.config is None:
+            return False
+
+        while True:
+            self._discard_partial_project_tabs()
+
+            try:
+                # Preflight validation only. The result is deliberately not cached.
+                self._read_current_config_for_ui()
+                self.add_tabs()
+                return True
+
+            except ValidationError as exc:
+                config_error: Exception = exc
+
+                self.logger.warning(
+                    "Invalid project configuration %s: %s",
+                    self.config,
+                    exc,
+                )
+
+            except (
+                FileNotFoundError,
+                PermissionError,
+                OSError,
+                TypeError,
+                ValueError,
+            ) as exc:
+                config_error = exc
+
+                self.logger.warning(
+                    "Could not read project configuration %s: %s",
+                    self.config,
+                    exc,
+                )
+
+            except Exception:
+                # Unexpected programming errors should remain visible rather
+                # than being mislabeled as configuration errors.
+                self._discard_partial_project_tabs()
+                self._generate_welcome_page()
+                raise
+
+            self._discard_partial_project_tabs()
+            self._generate_welcome_page()
+
+            report = format_config_error(
+                self.config,
+                config_error,
+            )
+            action = self._show_config_error(report)
+
+            if action is ConfigErrorAction.RETRY:
+                # Loop and perform a fresh read from disk.
+                continue
+
+            if action is ConfigErrorAction.EDIT:
+                self._open_config_for_repair()
+
+            return False
+
+    def _open_project(self) -> None:
         open_project = OpenProject(self)
         open_project.load_config()
+
         if not open_project.config:
             return
 
-        open_project.loaded = True
         self._update_project_state(
             open_project.config,
-            open_project.loaded,
+            loaded=True,
+        )
+
+    def _open_recent_project(
+        self,
+        action: QAction,
+    ) -> None:
+        """Open a recent project through the normal validation boundary."""
+        config_path = Path(action.text())
+
+        if not config_path.is_file():
+            QMessageBox.warning(
+                self,
+                "Project not found",
+                (f"The project configuration no longer exists:\n\n{config_path}"),
+            )
+            self.recentfiles_menu.removeAction(action)
+            return
+
+        self._update_project_state(
+            config_path,
+            loaded=True,
         )
 
     def _goto_superanimal(self):
@@ -874,10 +1074,77 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.modelzoo, "Model Zoo")
         self.setCentralWidget(self.tab_widget)
 
-    def load_config(self, config):
-        self.config = config
+    def _read_current_config_for_ui(self) -> dict:
+        """Read the current config from disk for a UI-building attempt."""
+        if self.config is None:
+            raise FileNotFoundError("No project configuration is selected.")
+
+        return auxiliaryfunctions.read_config(self.config)
+
+    def load_config(
+        self,
+        config: str | Path,
+    ) -> bool:
+        """Reload a config from disk and notify config-dependent widgets."""
+        self.config = str(Path(config))
+
+        try:
+            cfg = self.cfg
+        except ValidationError as error:
+            self.logger.warning(
+                "Invalid project configuration %s",
+                self.config,
+                exc_info=True,
+            )
+
+            report = format_config_error(
+                self.config,
+                error,
+            )
+            action = self._show_config_error(report)
+
+            if action is ConfigErrorAction.EDIT:
+                self._open_config_for_repair()
+            elif action is ConfigErrorAction.RETRY:
+                return self.load_config(self.config)
+
+            return False
+
+        except (
+            FileNotFoundError,
+            PermissionError,
+            OSError,
+        ) as error:
+            self.logger.warning(
+                "Could not read project configuration %s",
+                self.config,
+                exc_info=True,
+            )
+
+            report = format_config_error(
+                self.config,
+                error,
+            )
+            action = self._show_config_error(report)
+
+            if action is ConfigErrorAction.EDIT:
+                self._open_config_for_repair()
+            elif action is ConfigErrorAction.RETRY:
+                return self.load_config(self.config)
+
+            return False
+
         self.config_loaded.emit()
-        print(f'Project "{self.cfg["Task"]}" successfully loaded.')
+
+        task = cfg.get(
+            "Task",
+            Path(self.config).parent.name,
+        )
+        self.logger.info(
+            'Project "%s" successfully loaded.',
+            task,
+        )
+        return True
 
     def darkmode(self):
         dark_stylesheet = qdarkstyle.load_stylesheet_pyside2()
@@ -900,6 +1167,27 @@ class MainWindow(QMainWindow):
         self.create_actions(names)
         self.create_toolbar()
         self.update_menu_bar()
+
+    def _discard_partial_project_tabs(self) -> None:
+        """Dispose of tabs created during a failed UI-building attempt."""
+        tab_widget = getattr(self, "tab_widget", None)
+
+        if tab_widget is None:
+            return
+
+        try:
+            if self.centralWidget() is tab_widget:
+                self.takeCentralWidget()
+        except RuntimeError:
+            # The Qt object may already have been scheduled for deletion.
+            pass
+
+        try:
+            tab_widget.deleteLater()
+        except RuntimeError:
+            pass
+
+        self.tab_widget = None
 
     def add_tabs(self):
         self.tab_widget = QtWidgets.QTabWidget()
