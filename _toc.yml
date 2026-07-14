@@ -101,6 +101,7 @@ parts:
           - file: docs/recipes/io
           - file: docs/recipes/nn
           - file: docs/recipes/post
+          - file: docs/recipes/fish_swimming_kinematics
           - file: docs/recipes/BatchProcessing
           - file: docs/recipes/DLCMethods
           - file: docs/recipes/ClusteringNapari
