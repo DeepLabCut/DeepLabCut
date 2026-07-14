@@ -16,7 +16,10 @@ import numpy as np
 
 import deeplabcut.pose_estimation_pytorch.data as data
 from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
+    ConditionsConfig,
+    ConditionsFileConfig,
     ConditionsModelConfig,
+    ConditionsShuffleConfig,
 )
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromFile
 from deeplabcut.pose_estimation_pytorch.task import Task
@@ -56,6 +59,15 @@ def get_conditions_provider_for_video(
 def load_conditions_for_evaluation(loader: data.Loader, images: list[str]) -> dict[str, np.ndarray]:
     """Loads the conditions needed to evaluate a CTD model.
 
+    Evaluation loads pre-computed BU predictions from disk via ``CondFromFile``.
+    Supported ``inference.conditions`` forms:
+
+    - ``ConditionsFileConfig`` / path string — load that predictions file
+    - ``ConditionsShuffleConfig`` / shuffle dict — resolve the BU shuffle's evaluation
+      ``.h5`` (project ``config.yaml`` is injected from the loader when missing)
+
+    ``ConditionsModelConfig`` is not valid here (that form is for live BU inference).
+
     Args:
         loader: The Loader for the CTD model to evaluate.
         images: A list of image paths to load conditions for.
@@ -75,13 +87,36 @@ def load_conditions_for_evaluation(loader: data.Loader, images: list[str]) -> di
         f"examples:\n" + _CONDITION_EXAMPLES_INFERENCE + _CONDITION_EXAMPLES_FROM_FILE
     )
 
-    if isinstance(condition_cfg, str | Path):
-        cond_provider = CondFromFile(filepath=Path(condition_cfg))
-    elif isinstance(condition_cfg, dict):
-        condition_cfg = condition_cfg.copy()
-        if isinstance(loader, data.DLCLoader) and "config" not in condition_cfg:
-            condition_cfg["config"] = loader.project_root / "config.yaml"
-        cond_provider = CondFromFile(**condition_cfg)
+    try:
+        conditions = ConditionsConfig.build(condition_cfg)
+    except (TypeError, ValueError) as e:
+        raise ValueError(error_message) from e
+
+    if conditions is None:
+        raise ValueError(
+            "CTD evaluation requires conditions in the pytorch_config "
+            "(`inference.conditions`). Got None.\n" + error_message
+        )
+
+    if isinstance(conditions, ConditionsFileConfig):
+        cond_provider = CondFromFile(filepath=conditions.filepath)
+    elif isinstance(conditions, ConditionsShuffleConfig):
+        config = conditions.config
+        if config is None and isinstance(loader, data.DLCLoader):
+            config = loader.project_root / "config.yaml"
+        if config is None:
+            raise ValueError(
+                "Cannot load shuffle conditions for evaluation: no project config "
+                "available. Set 'config' in the shuffle conditions.\n" + error_message
+            )
+        cond_provider = CondFromFile(
+            config=config,
+            shuffle=conditions.shuffle,
+            trainset_index=conditions.trainset_index,
+            modelprefix=conditions.modelprefix,
+            snapshot=conditions.snapshot,
+            snapshot_index=conditions.snapshot_index,
+        )
     else:
         raise ValueError(error_message)
 

@@ -207,9 +207,11 @@ class ConditionsModelConfig(ConditionsConfig):
 class ConditionsShuffleConfig(ConditionsConfig):
     """Unresolved shuffle shorthand for CTD conditions.
 
-    Stores shuffle parameters without touching the filesystem. Call
-    ``ConditionsModelConfig.resolve_from_conditions()`` at runtime (when the
-    project config is available) to resolve to a ``ConditionsModelConfig``.
+    Stores shuffle parameters without touching the filesystem. Resolve at runtime
+    when the project config is available:
+
+    - Live BU inference: ``ConditionsModelConfig.resolve_from_conditions()``
+    - Evaluation predictions file: ``CondFromFile(config=..., shuffle=..., ...)``
 
     Attributes:
         shuffle: The index of the BU shuffle to use for conditions.
