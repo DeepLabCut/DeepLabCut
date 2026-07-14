@@ -65,6 +65,7 @@ try:
         CATEGORY_RULE_BY_NAME,
         CATEGORY_RULES,
         FULL_SUITE_TRIGGERS,
+        FUNC_SCRIPT_DEPENDENCIES,
         LINT_ONLY_FILES,
         MINIMAL_PYTEST,
     )
@@ -75,6 +76,7 @@ except ImportError:  # pragma: no cover
         CATEGORY_RULE_BY_NAME,
         CATEGORY_RULES,
         FULL_SUITE_TRIGGERS,
+        FUNC_SCRIPT_DEPENDENCIES,
         LINT_ONLY_FILES,
         MINIMAL_PYTEST,
     )
@@ -332,6 +334,39 @@ def _matches_any(path: str, preds: Sequence[Callable[[str], bool]]) -> bool:
     return False
 
 
+def order_functional_scripts(
+    selected: set[str],
+) -> list[str]:
+    """Expand and order functional scripts after their dependencies."""
+    ordered: list[str] = []
+    visited: set[str] = set()
+    visiting: set[str] = set()
+
+    def visit(script: str) -> None:
+        if script in visited:
+            return
+
+        if script in visiting:
+            raise ValueError(f"Cyclic functional-script dependency involving {script!r}")
+
+        visiting.add(script)
+
+        for dependency in FUNC_SCRIPT_DEPENDENCIES.get(
+            script,
+            (),
+        ):
+            visit(dependency)
+
+        visiting.remove(script)
+        visited.add(script)
+        ordered.append(script)
+
+    for script in sorted(selected):
+        visit(script)
+
+    return ordered
+
+
 def decide(files: list[str]) -> SelectorResult:
     reasons: list[str] = []
     lane_reasons: dict[str, list[str]] = {}
@@ -499,10 +534,19 @@ def decide(files: list[str]) -> SelectorResult:
         fast_reasons.append("fallback_minimal_pytest")
     lane_reasons["fast"] = fast_reasons
 
+    ordered_functional_scripts = order_functional_scripts(functional_set)
+
+    for dependent in functional_set:
+        for dependency in FUNC_SCRIPT_DEPENDENCIES.get(
+            dependent,
+            (),
+        ):
+            script_sources[dependency].add(f"dependency:{dependent}")
+
     return SelectorResult(
         lanes=lanes,
         pytest_paths=sorted(pytest_paths_set),
-        functional_scripts=sorted(functional_set),
+        functional_scripts=ordered_functional_scripts,
         provenance=SelectionProvenance(
             pytest={k: sorted(v) for k, v in sorted(pytest_sources.items())},
             scripts={k: sorted(v) for k, v in sorted(script_sources.items())},
