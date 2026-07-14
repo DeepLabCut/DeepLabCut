@@ -54,17 +54,6 @@ class ConditionsConfig(DLCBaseConfig):
 
     source: Literal["file", "model", "shuffle"]
 
-    @property
-    def affords_bu_inference(self) -> bool:
-        """Whether this config is already a resolved BU model for live inference.
-
-        Only ``ConditionsModelConfig`` returns ``True``. A ``ConditionsShuffleConfig``
-        can be turned into one via ``ConditionsModelConfig.resolve_from_conditions()``
-        but does not afford inference until resolved. ``ConditionsFileConfig`` never
-        affords live BU inference (evaluation-only).
-        """
-        return isinstance(self, ConditionsModelConfig)
-
     @classmethod
     def build(
         cls,

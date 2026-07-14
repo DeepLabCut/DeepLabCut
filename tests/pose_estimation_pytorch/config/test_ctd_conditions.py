@@ -106,18 +106,6 @@ def test_conditions_config_build_rejects_unsupported_type():
         ConditionsConfig.build(42)  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize(
-    "conditions, expected",
-    [
-        (_model_cfg(), True),
-        (ConditionsShuffleConfig(shuffle=1), False),
-        (ConditionsFileConfig(filepath=Path("/x.h5")), False),
-    ],
-)
-def test_affords_bu_inference(conditions, expected):
-    assert conditions.affords_bu_inference is expected
-
-
 # --- resolve_from_conditions --------------------------------------------------
 
 
