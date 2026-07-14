@@ -31,7 +31,7 @@ from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
-def _model_cfg() -> ConditionsModelConfig:
+def _ctd_model_conditions_config() -> ConditionsModelConfig:
     return ConditionsModelConfig(
         config_path=Path("/bu/pytorch_config.yaml"),
         snapshot_path=Path("/bu/snapshot-best.pt"),
@@ -92,8 +92,8 @@ def test_conditions_config_build(raw, expected_type, check):
 
 
 def test_conditions_config_build_passthrough():
-    model = _model_cfg()
-    assert ConditionsConfig.build(model) is model
+    ctd_conditions = _ctd_model_conditions_config()
+    assert ConditionsConfig.build(ctd_conditions) is ctd_conditions
 
 
 def test_conditions_config_build_rejects_ambiguous_dict():
@@ -110,8 +110,8 @@ def test_conditions_config_build_rejects_unsupported_type():
 
 
 def test_resolve_from_conditions_model_identity():
-    model = _model_cfg()
-    assert ConditionsModelConfig.resolve_from_conditions(model) is model
+    ctd_conditions = _ctd_model_conditions_config()
+    assert ConditionsModelConfig.resolve_from_conditions(ctd_conditions) is ctd_conditions
 
 
 def test_resolve_from_conditions_rejects_file_config():
@@ -144,31 +144,27 @@ def test_resolve_from_conditions_shuffle_requires_config(conditions):
     ],
 )
 def test_resolve_from_conditions_shuffle_with_config(conditions, monkeypatch):
-    resolved = _model_cfg()
-    calls: list[dict] = []
+    """Shuffle forms are forwarded to from_shuffle with the project config injected."""
+    mock_from_shuffle = Mock(return_value=_ctd_model_conditions_config())
+    monkeypatch.setattr(
+        ConditionsModelConfig,
+        "from_shuffle",
+        classmethod(lambda cls, **kwargs: mock_from_shuffle(**kwargs)),
+    )
 
-    @classmethod
-    def fake_from_shuffle(cls, **kwargs):
-        calls.append(kwargs)
-        return resolved
-
-    monkeypatch.setattr(ConditionsModelConfig, "from_shuffle", fake_from_shuffle)
-
-    out = ConditionsModelConfig.resolve_from_conditions(
+    ConditionsModelConfig.resolve_from_conditions(
         conditions,
         config="/project/config.yaml",
     )
-    assert out is resolved
-    assert calls == [
-        {
-            "config": Path("/project/config.yaml"),
-            "shuffle": 7,
-            "trainset_index": 0,
-            "modelprefix": "",
-            "snapshot": None,
-            "snapshot_index": -1,
-        }
-    ]
+
+    mock_from_shuffle.assert_called_once_with(
+        config=Path("/project/config.yaml"),
+        shuffle=7,
+        trainset_index=0,
+        modelprefix="",
+        snapshot=None,
+        snapshot_index=-1,
+    )
 
 
 # --- InferenceConfig + _add_ctd_conditions / PoseConfig ------------------------
@@ -300,7 +296,7 @@ def test_load_conditions_for_evaluation_from_shuffle():
 
 def test_load_conditions_for_evaluation_rejects_model():
     with pytest.raises(ValueError, match="Misconfigured conditions|Model config|Evaluation accepts"):
-        load_conditions_for_evaluation(_ctd_loader(conditions=_model_cfg()), ["img.png"])
+        load_conditions_for_evaluation(_ctd_loader(conditions=_ctd_model_conditions_config()), ["img.png"])
 
 
 def test_load_conditions_for_evaluation_rejects_none():
