@@ -42,7 +42,7 @@ class ConditionsConfig(DLCBaseConfig):
         - ``ConditionsShuffleConfig`` — unresolved shuffle shorthand
     """
 
-    source: Literal["file", "model"]
+    source: Literal["file", "model", "shuffle"]
 
     @property
     def affords_bu_inference(self) -> bool:
@@ -185,7 +185,8 @@ class ConditionsModelConfig(ConditionsConfig):
         if isinstance(conditions, cls):
             return conditions
 
-        assert isinstance(conditions, ConditionsShuffleConfig)
+        if not isinstance(conditions, ConditionsShuffleConfig):
+            raise RuntimeError("Shuffle configs cannot be used for live BU inference")
         cfg = conditions.config or (Path(config) if config is not None else None)
         if cfg is None:
             raise ValueError(
