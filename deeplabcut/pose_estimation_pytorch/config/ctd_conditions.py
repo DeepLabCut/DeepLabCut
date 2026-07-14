@@ -12,15 +12,24 @@
 
 Three subclasses cover the supported input forms:
 
-- ``ConditionsFileConfig``    — pre-computed predictions from a file
+- ``ConditionsFileConfig``    — pre-computed predictions from a file (evaluation only)
 - ``ConditionsModelConfig``   — fully resolved BU model (config path + snapshot path)
-- ``ConditionsShuffleConfig`` — unresolved shuffle shorthand, resolved at runtime via
-                                ``ConditionsModelConfig.resolve_from_conditions()``
+                                for live ``analyze_*`` inference
+- ``ConditionsShuffleConfig`` — unresolved shuffle shorthand. At runtime:
+                                - live inference → ``ConditionsModelConfig.resolve_from_conditions()``
+                                - evaluation → ``CondFromFile(config=..., shuffle=..., ...)``
 
 Use ``ConditionsConfig.build()`` to normalise any raw input (str, Path, dict) into one
 of these types. ``build()`` is pure (no filesystem access) and safe to call from Pydantic
 validators. Resolution that requires the filesystem must go through
 ``ConditionsModelConfig.resolve_from_conditions()``.
+
+Context rules for ``inference.conditions`` / ``ctd_conditions``:
+
+- **Evaluation** accepts File and Shuffle (loads pre-computed BU predictions).
+- **Live analyze** (``analyze_images`` / ``analyze_videos``) accepts Shuffle and Model
+  only. A predictions file path in the YAML is evaluation-only and is rejected by
+  ``resolve_from_conditions``.
 """
 
 from __future__ import annotations
@@ -34,24 +43,25 @@ from deeplabcut.core.config import DLCBaseConfig
 class ConditionsConfig(DLCBaseConfig):
     """Base class for CTD conditions configuration.
 
-    Use ``ConditionsConfig.build()`` to normalise any raw input into a typed subclass,
+    Use ``ConditionsConfig.build()`` to normalise any raw input into a typed subclass.
 
     Subclasses:
-        - ``ConditionsFileConfig``    — pre-computed predictions file
+        - ``ConditionsFileConfig``    — pre-computed predictions file (evaluation only)
         - ``ConditionsModelConfig``   — resolved BU model (config + snapshot paths)
-        - ``ConditionsShuffleConfig`` — unresolved shuffle shorthand
+        - ``ConditionsShuffleConfig`` — unresolved shuffle shorthand (resolve to Model
+          for live inference, or to ``CondFromFile`` for evaluation)
     """
 
     source: Literal["file", "model", "shuffle"]
 
     @property
     def affords_bu_inference(self) -> bool:
-        """Whether the config affords BU inference. This requires a BU model, so
-        must be a resolved ``ConditionsModelConfig`` (can be resolved from a
-        ``ConditionsShuffleConfig``).
+        """Whether this config is already a resolved BU model for live inference.
 
-        Returns:
-            True if the config affords BU inference, False otherwise.
+        Only ``ConditionsModelConfig`` returns ``True``. A ``ConditionsShuffleConfig``
+        can be turned into one via ``ConditionsModelConfig.resolve_from_conditions()``
+        but does not afford inference until resolved. ``ConditionsFileConfig`` never
+        affords live BU inference (evaluation-only).
         """
         return isinstance(self, ConditionsModelConfig)
 
@@ -104,6 +114,10 @@ class ConditionsConfig(DLCBaseConfig):
 class ConditionsFileConfig(ConditionsConfig):
     """Conditions loaded from a pre-computed predictions file (.h5, .json, .pickle).
 
+    File-based conditions are for **evaluation only** (``load_conditions_for_evaluation``
+    / ``CondFromFile``). They cannot be used for live ``analyze_images`` /
+    ``analyze_videos`` inference — use a shuffle or ``ConditionsModelConfig`` instead.
+
     Attributes:
         filepath: Path to the predictions file.
     """
@@ -150,43 +164,50 @@ class ConditionsModelConfig(ConditionsConfig):
     @classmethod
     def resolve_from_conditions(
         cls,
-        conditions: str | Path | dict | ConditionsConfig,
+        conditions: dict | ConditionsShuffleConfig | ConditionsModelConfig,
         config: str | Path | None = None,
     ) -> ConditionsModelConfig:
-        """Resolve any conditions input to a ``ConditionsModelConfig`` for live
-        BUCTD inference.
+        """Resolve conditions input to a ``ConditionsModelConfig`` for live BUCTD
+        inference (``analyze_images`` / ``analyze_videos``).
 
         Call this in runtime code. It may touch the filesystem when resolving a
         ``ConditionsShuffleConfig`` to a ``ConditionsModelConfig``.
 
         Args:
-            conditions (str | Path | dict | ConditionsConfig): Raw input or any
-                ``ConditionsConfig`` subtype.
-            config (str | Path | None): Project ``config.yaml`` path. Required
-                when resolving a ``ConditionsShuffleConfig`` that does not
-                already carry one in its ``config`` attribute.
+            conditions: A dict, ``ConditionsShuffleConfig``, or
+                ``ConditionsModelConfig``.File / path conditions cannot be resolved
+                to a BU model for live inference; they are rejected.
+            config: Project ``config.yaml`` path. Required when resolving a
+                ``ConditionsShuffleConfig`` that does not already carry one in its
+                ``config`` attribute.
 
         Returns:
             A resolved ``ConditionsModelConfig``.
 
         Raises:
-            ValueError: If ``conditions`` is a ``ConditionsFileConfig`` (file configs
-                are not valid for live BU inference), or if a shuffle config has no
-                project config available.
+            ValueError: If ``conditions`` builds to a ``ConditionsFileConfig``, or
+                if a shuffle config has no project config available.
+            TypeError: If ``conditions`` cannot be built into a supported type.
         """
         if not isinstance(conditions, ConditionsConfig):
             conditions = ConditionsConfig.build(conditions)
 
         if isinstance(conditions, ConditionsFileConfig):
             raise ValueError(
-                "A file config cannot be used for live BU inference. "
-                "Provide 'config_path'+'snapshot_path' or a shuffle shorthand."
+                "File-based conditions are for evaluation only and cannot be used "
+                "for live BU inference. Provide a ConditionsModelConfig "
+                "('config_path'+'snapshot_path') or a ConditionsShuffleConfig / "
+                "shuffle dict."
             )
         if isinstance(conditions, cls):
             return conditions
 
         if not isinstance(conditions, ConditionsShuffleConfig):
-            raise RuntimeError("Shuffle configs cannot be used for live BU inference")
+            raise TypeError(
+                f"Cannot resolve conditions of type {type(conditions).__name__} "
+                "for live BU inference. Expected ConditionsShuffleConfig, "
+                "ConditionsModelConfig, or a dict that builds to one of those."
+            )
         cfg = conditions.config or (Path(config) if config is not None else None)
         if cfg is None:
             raise ValueError(

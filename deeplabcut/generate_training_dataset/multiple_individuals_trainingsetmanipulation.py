@@ -258,8 +258,9 @@ def create_multianimaltraining_dataset(
         It defines the conditions that will be used with the CTD model.
         It can be either:
             * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
+              Valid for both evaluation and live analyze.
             * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5
-            predictions file.
+            predictions file. Evaluation-only — not valid for ``analyze_images`` / ``analyze_videos``.
             * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which
             respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
 

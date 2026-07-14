@@ -90,7 +90,8 @@ class InferenceConfig(DLCBaseConfig):
         multithreading: Multithreading configuration
         compile: Compilation configuration
         autocast: Autocast configuration
-        conditions: Conditions for conditional models (CTD)
+        conditions: Conditions for conditional models (CTD). File configs are
+            evaluation-only; Shuffle/Model are used for live analyze.
         snapshot: Snapshot(s) to use for inference
         eval: Evaluation configuration
     """

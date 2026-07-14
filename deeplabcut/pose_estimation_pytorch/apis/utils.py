@@ -805,7 +805,7 @@ def get_pose_inference_runner(
     max_individuals: int | None = None,
     transform: A.BaseCompose | None = None,
     dynamic: DynamicCropper | None = None,
-    cond_provider: str | Path | dict | ConditionsModelConfig | None = None,
+    cond_provider: ConditionsModelConfig | None = None,
     ctd_tracking: bool | CTDTrackingConfig = False,
     inference_cfg: InferenceConfig | dict | None = None,
 ) -> PoseInferenceRunner:
@@ -823,10 +823,10 @@ def get_pose_inference_runner(
             cropping should not be used. Should only be used when creating inference
             runners for video pose estimation with batch size 1. For top-down pose
             estimation models, a `TopDownDynamicCropper` must be used.
-        cond_provider: Only for CTD models. Specifies the BU model used to generate
-            conditions. Accepts any raw form supported by ``ConditionsConfig.build()``
-            (str, Path, dict, or a ``ConditionsModelConfig`` instance). A model
-            is required for inference, file configs are not valid for this purpose.
+        cond_provider: Only for CTD models. A resolved ``ConditionsModelConfig`` for
+            the BU model used to generate conditions. Resolve shuffle / dict inputs
+            via ``ConditionsModelConfig.resolve_from_conditions()`` before calling
+            this function. File configs are not valid for live inference.
         ctd_tracking: Only for CTD models. Conditional top-down models can be used
             to directly track individuals. Poses from frame T are given as conditions
             for frame T+1. This also means a BU model is only needed to "initialize" the
@@ -878,7 +878,6 @@ def get_pose_inference_runner(
 
         if pose_task == Task.COND_TOP_DOWN:
             if cond_provider is not None:
-                cond_provider = ConditionsModelConfig.resolve_from_conditions(cond_provider)
                 kwargs["bu_runner"] = get_pose_inference_runner(
                     model_config=PoseConfig.from_yaml(cond_provider.config_path),
                     snapshot_path=cond_provider.snapshot_path,

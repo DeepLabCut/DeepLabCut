@@ -282,9 +282,9 @@ def analyze_images(
             to plot the skeleton connecting the predicted bodyparts on the images.
         ctd_conditions: Only for CTD models. Specifies the BU model used to generate
             conditions. If None, loaded from the pytorch_config file (under
-            ``"inference": "conditions"``). Accepts a ``ConditionsModelConfig`` or a
-            ``ConditionsShuffleConfig``. A BU model is required for live inference,
-            file configs are not valid for this purpose.
+            ``"inference": "conditions"``). Accepts a raw dict or a typed
+            ``ConditionsModelConfig`` / ``ConditionsShuffleConfig``. A BU model
+            is required for live inference; file / path conditions not valid.
 
     Returns:
         A dictionary mapping each image filename to the different types of predictions
@@ -437,7 +437,8 @@ def analyze_image_folder(
         filtered_detector_config: If using a filtered torchvision detector instead of a saved detector snapshot,
             specify the filtered detector configuration
         cond_provider: If using a CTD model - needed to configure the BU model for generating conditions. A
-            ``ConditionsModelConfig`` is required for inference, file / shuffle configs are not valid for this purpose.
+            ``ConditionsModelConfig`` is required (resolve shuffle refs first). File conditions are
+            evaluation-only and not valid here.
 
     Returns:
         A dictionary mapping each image filename to the different types of predictions

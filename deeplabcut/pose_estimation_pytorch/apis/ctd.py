@@ -67,6 +67,7 @@ def load_conditions_for_evaluation(loader: data.Loader, images: list[str]) -> di
       ``.h5`` (project ``config.yaml`` is injected from the loader when missing)
 
     ``ConditionsModelConfig`` is not valid here (that form is for live BU inference).
+    File-path conditions are evaluation-only and cannot be used with ``analyze_*``.
 
     Args:
         loader: The Loader for the CTD model to evaluate.
@@ -83,8 +84,9 @@ def load_conditions_for_evaluation(loader: data.Loader, images: list[str]) -> di
 
     # prepare error message
     error_message = (
-        f"Misconfigured conditions in the pytorch_config: {condition_cfg}. Valid "
-        f"examples:\n" + _CONDITION_EXAMPLES_INFERENCE + _CONDITION_EXAMPLES_FROM_FILE
+        f"Misconfigured conditions in the pytorch_config: {condition_cfg}. "
+        f"Evaluation accepts file paths or shuffle refs (not a Model config). "
+        f"Valid examples:\n" + _CONDITION_EXAMPLES_SHUFFLE + _CONDITION_EXAMPLES_FROM_FILE
     )
 
     try:
@@ -123,14 +125,7 @@ def load_conditions_for_evaluation(loader: data.Loader, images: list[str]) -> di
     return cond_provider.load_conditions(images, path_prefix=loader.image_root)
 
 
-_CONDITION_EXAMPLES_INFERENCE = """
-Example: Using a bottom-up model for conditions
-  ```
-  inference:
-    conditions:
-      config_path: /path/to/model-dir/pytorch_config.yaml
-      snapshot_path: /path/to/model-dir/snapshot-best-150.pth
-  ```
+_CONDITION_EXAMPLES_SHUFFLE = """
 Example: Loading the predictions for snapshot-250.pt of shuffle 1.
   ```
   inference:

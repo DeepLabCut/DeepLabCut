@@ -325,8 +325,9 @@ def analyze_videos(
             animal).
         ctd_conditions: Only for CTD models. Specifies the BU model used to generate
             conditions. If None, loaded from the pytorch_config file (under
-            ``"inference": "conditions"``). Accepts ``ConditionsModelConfig`` or
-            ``ConditionsShuffleConfig`` as a BU model ref for live inference.
+            ``"inference": "conditions"``). Accepts a raw dict or a typed
+            ``ConditionsModelConfig`` / ``ConditionsShuffleConfig``. A BU model
+            is required for live inference; file / path conditions not valid.
             Example: ``ctd_conditions = {"shuffle": 17, "snapshot": "snapshot-best-190.pt"}``
         ctd_tracking: Only for CTD models. Conditional top-down models can be used
             to directly track individuals. Poses from frame T are given as conditions
