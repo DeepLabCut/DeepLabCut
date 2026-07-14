@@ -417,7 +417,7 @@ def analyze_image_folder(
     max_individuals: int | None = None,
     progress_bar: bool = True,
     filtered_detector_config: dict | None = None,
-    cond_provider: str | Path | dict | ConditionsModelConfig | None = None,
+    cond_provider: ConditionsModelConfig | None = None,
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
     """Runs pose inference on a folder of images and returns the predictions.
 
@@ -437,10 +437,8 @@ def analyze_image_folder(
         progress_bar: Whether to display a progress bar when running inference.
         filtered_detector_config: If using a filtered torchvision detector instead of a saved detector snapshot,
             specify the filtered detector configuration
-        cond_provider: If using a CTD model - this parameter is needed to provide the BU model used to generate
-            conditions. Accepts any raw form supported by ``ConditionsConfig.build()``
-            (str, Path, dict, or a ``ConditionsModelConfig`` instance). A model
-            is required for inference, file configs are not valid for this purpose.
+        cond_provider: If using a CTD model - needed to configure the BU model for generating conditions. A
+            ``ConditionsModelConfig`` is required for inference, file / shuffle configs are not valid for this purpose.
 
     Returns:
         A dictionary mapping each image filename to the different types of predictions
@@ -451,14 +449,17 @@ def analyze_image_folder(
     """
     model_cfg = PoseConfig.from_any(model_cfg)
 
-    cond_provider = cond_provider or model_cfg["inference"]["conditions"]
-    if cond_provider is not None:
-        cond_provider = ConditionsModelConfig.resolve_from_conditions(cond_provider)
-
     pose_task = Task(model_cfg["method"])
+    if pose_task == Task.COND_TOP_DOWN:
+        if not isinstance(cond_provider, ConditionsModelConfig):
+            raise TypeError(
+                "A ``ConditionsModelConfig`` must be specified for image folder analysis with cond-top-down models. Got"
+                f" type(cond_provider)={type(cond_provider).__name__!r}. Please correctly specify ``cond_provider``."
+            )
+
     if pose_task == Task.TOP_DOWN and detector_path is None and filtered_detector_config is None:
         raise ValueError(
-            "A detector path or filtered_detector_config must be specified for image analysis using top-down models"
+            "A detector path or filtered_detector_config must be specified for image analysis using top-down models."
             " Please specify the `detector_path` parameter or the `filtered_detector_config` parameter."
         )
 
@@ -467,12 +468,6 @@ def analyze_image_folder(
 
     if device is None:
         device = resolve_device(model_cfg)
-
-    if pose_task == Task.COND_TOP_DOWN and cond_provider is None:
-        raise ValueError(
-            "A conditions provider must be specified for image analysis when using cond-top-down models"
-            " Please specify the `cond_provider` parameter."
-        )
 
     pose_runner = get_pose_inference_runner(
         model_config=model_cfg,
