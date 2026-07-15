@@ -156,7 +156,7 @@ def analyzebone(bp1, bp2):
     bone_orientation = calc_angle_between_vectors_of_points_2d(bp1_pos.T, bp2_pos.T)
 
     # keep the smallest of the two likelihoods
-    likelihoods = np.vstack([bp2.likelihood.values, bp2.likelihood.values]).T
+    likelihoods = np.vstack([bp1.likelihood.values, bp2.likelihood.values]).T
     likelihood = np.min(likelihoods, 1)
 
     # Create dataframe and return
