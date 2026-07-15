@@ -63,7 +63,7 @@ from deeplabcut.gui.tabs import (
     UnsupervizedIdTracking,
     VideoEditor,
 )
-from deeplabcut.gui.utils import UpdateChecker, _build_update_commands
+from deeplabcut.gui.utils import UpdateChecker, _build_update_commands, absolute_path
 from deeplabcut.gui.widgets import (
     StreamReceiver,
     StreamWriter,
@@ -851,7 +851,7 @@ class MainWindow(QMainWindow):
         loaded: bool,
     ) -> bool:
         """Select a project and build its UI from the current config."""
-        self.config = str(Path(config))
+        self.config = str(absolute_path(config))
         self.loaded = False
 
         if not loaded:
@@ -943,6 +943,10 @@ class MainWindow(QMainWindow):
         while True:
             message.exec()
             clicked_button = message.clickedButton()
+
+            # close -> cancel
+            if clicked_button is None:
+                return ConfigErrorAction.CANCEL
 
             if clicked_button is reload_button:
                 return ConfigErrorAction.RETRY
@@ -1057,7 +1061,7 @@ class MainWindow(QMainWindow):
         action: QAction,
     ) -> None:
         """Open a recent project through the normal validation boundary."""
-        config_path = Path(action.text())
+        config_path = absolute_path(action.text())
 
         if not config_path.is_file():
             QMessageBox.warning(
@@ -1092,7 +1096,7 @@ class MainWindow(QMainWindow):
         config: str | Path,
     ) -> bool:
         """Reload a config from disk and notify config-dependent widgets."""
-        self.config = str(Path(config))
+        self.config = str(absolute_path(config))
 
         while True:
             try:

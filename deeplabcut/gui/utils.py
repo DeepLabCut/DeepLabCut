@@ -14,6 +14,7 @@ import shutil
 import sys
 import urllib.request
 from collections.abc import Callable
+from pathlib import Path
 
 from PySide6 import QtCore, QtNetwork
 
@@ -22,6 +23,10 @@ try:
 except Exception:  # packaging should usually be available, but keep fallback safe
     Version = None
     InvalidVersion = Exception
+
+
+def absolute_path(path: str | Path) -> Path:
+    return Path(path).expanduser().absolute()
 
 
 class Worker(QtCore.QObject):
