@@ -601,7 +601,7 @@ class SORTSkeleton(SORTBase):
         for tracker in reversed(self.trackers):
             i -= 1
             if tracker.time_since_update > self.max_age:
-                self.trackers.pop()
+                self.trackers.pop(i)
                 continue
             state = tracker.predict()
             states.append(np.r_[state, [tracker.id, int(animalindex[i])]])
