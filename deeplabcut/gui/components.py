@@ -189,6 +189,11 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
         # Number of selected videos text
         self.selected_videos_text = QtWidgets.QLabel("")
+        self.selected_videos_text.setWordWrap(True)
+        self.selected_videos_text.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
 
         # Clear video selection
         self.clear_videos = QtWidgets.QPushButton("Clear selection")
