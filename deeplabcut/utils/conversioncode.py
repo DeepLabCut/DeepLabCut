@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-import os
 from itertools import islice
 from pathlib import Path
 
@@ -23,7 +22,7 @@ from deeplabcut.utils import auxiliaryfunctions
 SUPPORTED_FILETYPES = "csv", "nwb"
 
 
-def convertcsv2h5(config, userfeedback=True, scorer=None):
+def convertcsv2h5(config: str | Path, userfeedback=True, scorer=None):
     """
     Convert (image) annotation files in folder labeled-data from csv to h5.
     This function allows the user to manually edit the csv
@@ -68,10 +67,10 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
                 askuser = "yes"
 
             if askuser in ("y", "yes", "Ja", "ha", "oui"):  # multilanguage support :)
-                fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
+                fn = folder / ("CollectedData_" + cfg["scorer"] + ".csv")
                 # Determine whether the data are single- or multi-animal without loading into memory
                 # simply by checking whether 'individuals' is in the second line of the CSV.
-                with open(fn) as datafile:
+                with fn.open() as datafile:
                     head = list(islice(datafile, 0, 5))
                 if "individuals" in head[1]:
                     header = list(range(4))
@@ -90,7 +89,12 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts=False, other_scorer=False, userfeedback=False):
+def adapt_labeled_data_to_new_project(
+    config_path: str | Path,
+    remove_old_bodyparts=False,
+    other_scorer=False,
+    userfeedback=False,
+):
     """Given the config.yaml file, this function will convert the labels of an ancient
     project to a new project. For this, the labeled data must be in the project folder,
     under the labeled-data folder and with the same configuration as all deeplabcut
@@ -130,12 +134,12 @@ def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts=False, o
         # discard the file extension
         video_name = video_name.split(".")[0]
         # Load the csv file
-        label_path = os.path.join(project_path, "labeled-data", video_name)
-        csv_files = [file for file in os.listdir(label_path) if file.endswith(".csv")]
+        label_path = Path(project_path) / "labeled-data" / video_name
+        csv_files = [f.name for f in label_path.iterdir() if f.name.endswith(".csv")]
         if not csv_files:
             print("No csv file in the folder:", label_path)
         else:
-            csv_path = os.path.join(label_path, csv_files[0])
+            csv_path = str(label_path / csv_files[0])
             df = pd.read_csv(csv_path, header=None)
 
             # get the scorer
@@ -257,8 +261,8 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
 # TODO: @deruyter92 2026-05-20: this function still uses grab_files_in_folder instead
 # of collect_video_paths and videotype instead of video_extensions.
 def analyze_videos_converth5_to_nwb(
-    config,
-    video_folder,
+    config: str | Path,
+    video_folder: str | Path,
     videotype=".mp4",
     listofvideos=False,
 ):
@@ -339,11 +343,11 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
     data_path = Path(cfg["project_path"], "labeled-data")
     annotationfolders = []
     for elem in auxiliaryfunctions.grab_files_in_folder(data_path, relative=False):
-        if os.path.isdir(elem):
+        if Path(elem).is_dir():
             annotationfolders.append(elem)
     print("The following folders were found:", annotationfolders)
     for folder in annotationfolders:
-        filename = os.path.join(folder, "CollectedData_" + cfg["scorer"] + ".h5")
+        filename = str(Path(folder) / ("CollectedData_" + cfg["scorer"] + ".h5"))
         try:
             data = pd.read_hdf(filename)
             guarantee_multiindex_rows(data)

@@ -334,7 +334,7 @@ def _module_path(module_name: str) -> str:
     try:
         mod = __import__(module_name)
         p = getattr(mod, "__file__", None)
-        return str(Path(p).resolve()) if p else "unknown"
+        return str(Path(p).absolute()) if p else "unknown"
     except Exception:
         return "unknown"
 

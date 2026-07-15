@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import warnings
 from collections.abc import Sequence
 from pathlib import Path
@@ -62,7 +61,7 @@ def video_inference_superanimal(
     detector_name: str | None = None,
     scale_list: list | None = None,
     video_extensions: str | Sequence[str] | None = None,
-    dest_folder: str | None = None,
+    dest_folder: str | Path | None = None,
     cropping: list[int] | None = None,
     video_adapt: bool = False,
     plot_trajectories: bool = False,
@@ -333,11 +332,14 @@ def video_inference_superanimal(
     """
     if scale_list is None:
         scale_list = []
+    if dest_folder is not None:
+        dest_folder = Path(dest_folder)
     if not model_name.startswith("fmpose3d"):
         print(f"Running video inference on {videos} with {superanimal_name}_{model_name}")
     dlc_root_path = get_deeplabcut_path()
-    modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
-    available_architectures = json.load(open(os.path.join(modelzoo_path, "models_to_framework.json")))
+    modelzoo_path = dlc_root_path / "modelzoo"
+    with (modelzoo_path / "models_to_framework.json").open() as _f:
+        available_architectures = json.load(_f)
     framework = available_architectures[model_name]
     print(f"Using {framework} for model {model_name}")
     if framework == "tensorflow":
@@ -501,7 +503,7 @@ def video_inference_superanimal(
                     pseudo_anno_dir = Path(dest_folder)
 
                 pseudo_anno_name = f"{video_path.stem}_{dlc_scorer}_before_adapt.json"
-                with open(pseudo_anno_dir / pseudo_anno_name) as f:
+                with (pseudo_anno_dir / pseudo_anno_name).open() as f:
                     predictions = json.load(f)
 
                 # make sure we tune parameters inside this function such as pseudo
@@ -570,7 +572,7 @@ def video_inference_superanimal(
                 print("Running video adaptation with following parameters:\n" + params_msg)
 
                 train_file = pseudo_dataset_folder / "annotations" / "train.json"
-                with open(train_file) as f:
+                with train_file.open() as f:
                     temp_obj = json.load(f)
 
                 annotations = temp_obj["annotations"]

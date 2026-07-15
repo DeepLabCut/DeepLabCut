@@ -10,7 +10,6 @@
 #
 
 
-import os
 from pathlib import Path
 
 from deeplabcut import DEBUG
@@ -59,7 +58,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     if working_directory is None:
         working_directory = "."
 
-    wd = Path(working_directory).resolve()
+    wd = Path(working_directory).absolute()
     project_name = "{pn}-{exp}-{date}-{triangulate}".format(pn=project, exp=experimenter, date=date, triangulate="3d")
     project_path = wd / project_name
     # Create project and sub-directories
@@ -122,7 +121,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
         cfg_file_3d.insert(len(cfg_file_3d), str("shuffle_camera-" + str(i + 1)), 1)
         cfg_file_3d.insert(len(cfg_file_3d), str("trainingsetindex_camera-" + str(i + 1)), 0)
 
-    projconfigfile = os.path.join(str(project_path), "config.yaml")
+    projconfigfile = project_path / "config.yaml"
     auxiliaryfunctions.write_config_3d(projconfigfile, cfg_file_3d)
 
     print('Generated "{}"'.format(project_path / "config.yaml"))

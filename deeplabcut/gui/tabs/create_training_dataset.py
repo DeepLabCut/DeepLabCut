@@ -10,7 +10,6 @@
 #
 from __future__ import annotations
 
-import os
 import re
 from importlib import import_module
 from pathlib import Path
@@ -199,8 +198,8 @@ class CreateTrainingDataset(DefaultTab):
         # Test beforehand whether a conversion table exists
         memory_replay_folder = Path(self.root.project_folder) / "memory_replay"
         conversion_matrix_out_path = str(memory_replay_folder / "confusion_matrix.png")
-        files = [self.root.config]
-        if os.path.exists(conversion_matrix_out_path):
+        files = [self.root.config_path]
+        if Path(conversion_matrix_out_path).exists():
             files.append(conversion_matrix_out_path)
         _ = launch_napari(files)
 
@@ -269,7 +268,7 @@ class CreateTrainingDataset(DefaultTab):
 
                 if self.data_split_selection.selected:
                     deeplabcut.create_training_dataset_from_existing_split(
-                        self.root.config,
+                        self.root.config_path,
                         from_shuffle=self.data_split_selection.from_shuffle,
                         shuffles=[self.shuffle.value()],
                         net_type=net_type,
@@ -282,7 +281,7 @@ class CreateTrainingDataset(DefaultTab):
 
                 elif self.root.is_multianimal:
                     deeplabcut.create_multianimaltraining_dataset(
-                        self.root.config,
+                        self.root.config_path,
                         shuffle,
                         Shuffles=[self.shuffle.value()],
                         net_type=net_type,
@@ -294,7 +293,7 @@ class CreateTrainingDataset(DefaultTab):
                     )
                 else:
                     deeplabcut.create_training_dataset(
-                        self.root.config,
+                        self.root.config_path,
                         shuffle,
                         Shuffles=[self.shuffle.value()],
                         net_type=net_type,
@@ -339,8 +338,8 @@ class CreateTrainingDataset(DefaultTab):
                 )
             )
             if self.root.is_multianimal:
-                filenames[0] = filenames[0].replace("mat", "pickle")
-            if all(os.path.exists(os.path.join(self.root.project_folder, file)) for file in filenames):
+                filenames[0] = filenames[0].with_suffix(".pickle")
+            if all((Path(self.root.project_folder) / file).exists() for file in filenames):
                 self.root.shuffle_created.emit(self.shuffle.value())
                 msg = _create_message_box(
                     "The training dataset is successfully created.",

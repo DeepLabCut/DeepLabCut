@@ -20,6 +20,7 @@ import torch.nn as nn
 from huggingface_hub import hf_hub_download
 
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+from deeplabcut.utils.auxiliaryfunctions import safe_resolve
 
 BACKBONES = Registry("backbones", build_func=build_from_cfg)
 
@@ -97,7 +98,7 @@ class HuggingFaceWeightsMixin:
         if backbone_weight_folder is None:
             backbone_weight_folder = Path(__file__).parent / "pretrained_weights"
         else:
-            backbone_weight_folder = Path(backbone_weight_folder).resolve()
+            backbone_weight_folder = Path(backbone_weight_folder).absolute()
 
         self.backbone_weight_folder = backbone_weight_folder
         self.repo_id = repo_id
@@ -122,8 +123,8 @@ class HuggingFaceWeightsMixin:
         self.backbone_weight_folder.mkdir(exist_ok=True, parents=False)
         output_path = Path(hf_hub_download(self.repo_id, filename, cache_dir=self.backbone_weight_folder))
 
-        # resolve gets the actual path if the output path is a symlink
-        output_path = output_path.resolve()
+        # safe_resolve gets the actual path if the output path is a symlink
+        output_path = safe_resolve(output_path)
         # move to the target path
         output_path.rename(model_path)
 

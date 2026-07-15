@@ -227,10 +227,10 @@ def plot_and_save_labeled_frame(
     scaling=1,
 ):
     if isinstance(DataCombined.index[ind], tuple):
-        image_path = os.path.join(cfg["project_path"], *DataCombined.index[ind])
+        image_path = Path(cfg["project_path"]).joinpath(*DataCombined.index[ind])
     else:
-        image_path = os.path.join(cfg["project_path"], DataCombined.index[ind])
-    frame = io.imread(image_path)
+        image_path = Path(cfg["project_path"]) / DataCombined.index[ind]
+    frame = io.imread(os.fspath(image_path))
     if np.ndim(frame) > 2:  # color image!
         h, w, numcolors = np.shape(frame)
     else:
@@ -251,19 +251,23 @@ def plot_and_save_labeled_frame(
         scaling=scaling,
         ax=ax,
     )
-    save_labeled_frame(fig, image_path, foldername, ind in trainIndices)
+    save_labeled_frame(fig, image_path, Path(foldername), ind in trainIndices)
     return ax
 
 
-def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
-    path = Path(image_path)
-    imagename = path.parts[-1]
-    imfoldername = path.parts[-2]
+def save_labeled_frame(
+    fig,
+    image_path: Path,
+    dest_folder: Path,
+    belongs_to_train: bool,
+) -> None:
+    imagename = image_path.parts[-1]
+    imfoldername = image_path.parts[-2]
     if belongs_to_train:
         dest = "-".join(("Training", imfoldername, imagename))
     else:
         dest = "-".join(("Test", imfoldername, imagename))
-    full_path = os.path.join(dest_folder, dest)
+    full_path = os.fspath(dest_folder / dest)
 
     # Windows throws error if file path is > 260 characters, can fix with prefix.
     # See https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#maximum-path-length-limitation
@@ -299,7 +303,7 @@ def prepare_figure_axes(width, height, scale=1.0, dpi=100):
 def make_labeled_images_from_dataframe(
     df,
     cfg,
-    destfolder="",
+    destfolder=None,
     scale=1.0,
     dpi=100,
     keypoint="+",
@@ -315,7 +319,7 @@ def make_labeled_images_from_dataframe(
         through pandas.read_csv() or pandas.read_hdf().
     cfg : dict
         Project configuration.
-    destfolder : string, optional
+    destfolder : str or Path, optional
         Destination folder into which images will be stored. By default, same location as the labeled data.
         Note that the folder will be created if it does not exist.
     scale : float, optional
@@ -369,10 +373,12 @@ def make_labeled_images_from_dataframe(
             bones.extend(zip(match1, match2, strict=False))
     ind_bones = tuple(zip(*bones, strict=False))
 
-    images_list = [os.path.join(cfg["project_path"], *tuple_) for tuple_ in df.index.tolist()]
-    if not destfolder:
-        destfolder = os.path.dirname(images_list[0])
-    tmpfolder = destfolder + "_labeled"
+    images_list = [str(Path(cfg["project_path"]).joinpath(*tuple_)) for tuple_ in df.index.tolist()]
+    if destfolder is None:
+        destfolder = Path(images_list[0]).parent
+    else:
+        destfolder = Path(destfolder)
+    tmpfolder = destfolder.parent / (destfolder.name + "_labeled")
     auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
     ic = io.imread_collection(images_list)
 
@@ -406,10 +412,10 @@ def make_labeled_images_from_dataframe(
                 pt.set_data(*np.expand_dims(coord, axis=1))
             if ind_bones:
                 coll.set_segments(segs[ind])
-            imagename = os.path.basename(filename)
+            imagename = Path(filename).name
             fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             fig.savefig(
-                os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png")),
+                tmpfolder / imagename.replace(".png", f"_{color_by}.png"),
                 dpi=dpi,
             )
         plt.close(fig)
@@ -428,10 +434,10 @@ def make_labeled_images_from_dataframe(
             if ind_bones:
                 coll = LineCollection(segs[ind], colors=cfg["skeleton_color"], alpha=alpha)
                 ax.add_collection(coll)
-            imagename = os.path.basename(filename)
+            imagename = Path(filename).name
             fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             fig.savefig(
-                os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png")),
+                tmpfolder / imagename.replace(".png", f"_{color_by}.png"),
                 dpi=dpi,
             )
             plt.close(fig)
@@ -439,10 +445,10 @@ def make_labeled_images_from_dataframe(
 
 def plot_evaluation_results(
     df_combined: pd.DataFrame,
-    project_root: str,
+    project_root: Path,
     scorer: str,
     model_name: str,
-    output_folder: str,
+    output_folder: Path,
     in_train_set: bool,
     plot_unique_bodyparts: bool = False,
     mode: str = "bodypart",
@@ -462,10 +468,10 @@ def plot_evaluation_results(
             image_name) and columns ("scorer", "individuals", "bodyparts", "coords").
             There should be two scorers: scorer (for ground truth data) and model_name
             (for prediction data)
-        project_root: the project root path
+        project_root: the project root directory
         scorer: the name of the scorer for ground truth data in df_combined
         model_name: the name of the model for predictions in df_combined
-        output_folder: the name of the folder where images should be saved
+        output_folder: the directory where images should be saved
         in_train_set: whether df_combined is for train set images
         plot_unique_bodyparts: whether we should plot unique bodyparts
         mode: one of {"bodypart", "individual"}. Determines the keypoint color grouping
@@ -494,7 +500,7 @@ def plot_evaluation_results(
         else:
             data_folder, video, image = row_index
 
-        image_path = Path(project_root) / data_folder / video / image
+        image_path = project_root / data_folder / video / image
         frame = auxfun_videos.imread(str(image_path), mode="skimage")
 
         row_multi = row.loc[(slice(None), row.index.get_level_values("individuals") != "single")]
@@ -598,7 +604,7 @@ def plot_evaluation_results(
 
         save_labeled_frame(
             fig,
-            str(image_path),
+            image_path,
             output_folder,
             belongs_to_train=in_train_set,
         )

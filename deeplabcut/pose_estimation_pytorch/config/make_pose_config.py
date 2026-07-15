@@ -381,7 +381,7 @@ def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tupl
             raise FileNotFoundError(f"Invalid path: {ctd_conditions}")
         if ctd_conditions.suffix not in (".h5", ".json"):
             raise ValueError("Invalid conditions file extension.")
-        conditions = str(ctd_conditions.resolve())
+        conditions = str(ctd_conditions.absolute())
 
     elif isinstance(ctd_conditions, tuple):
         if len(ctd_conditions) != 2:
