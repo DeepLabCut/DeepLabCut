@@ -10,7 +10,6 @@
 #
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from PySide6 import QtWidgets
@@ -21,7 +20,7 @@ from deeplabcut.gui.components import DefaultTab
 from deeplabcut.gui.widgets import SkeletonBuilder, launch_napari
 
 
-def label_frames(config_path: str | Path | None = None, image_folder: str | None = None):
+def label_frames(config_path: str | Path | None = None, image_folder: str | Path | None = None):
     """Launches the napari-deeplabcut labelling GUI.
 
     For more information on labelling data with napari-deeplabcut, see our docs:
@@ -122,21 +121,21 @@ class LabelFrames(DefaultTab):
         dialog = QtWidgets.QFileDialog(self)
         dialog.setFileMode(QtWidgets.QFileDialog.Directory)
         dialog.setViewMode(QtWidgets.QFileDialog.Detail)
-        dialog.setDirectory(os.path.join(os.path.dirname(self.root.config), "labeled-data"))
+        dialog.setDirectory(str(Path(self.root.config_path).parent / "labeled-data"))
         if dialog.exec_():
             folder = dialog.selectedFiles()[0]
             has_h5 = False
-            for file in os.listdir(folder):
-                if file.endswith(".h5"):
+            for file in Path(folder).iterdir():
+                if file.name.endswith(".h5"):
                     has_h5 = True
                     break
             if not has_h5:
-                folder = [folder, self.root.config]
+                folder = [folder, self.root.config_path]
             _ = launch_napari(folder)
 
     def check_labels(self):
-        check_labels(self.root.config, visualizeindividuals=self.root.is_multianimal)
-        labeled_images = (Path(self.root.config).parent / "labeled-data").rglob("*_labeled/*.png")
+        check_labels(self.root.config_path, visualizeindividuals=self.root.is_multianimal)
+        labeled_images = (Path(self.root.config_path).parent / "labeled-data").rglob("*_labeled/*.png")
         _ = launch_napari(labeled_images, plugin="napari", stack=True)
 
     def _on_skeleton_builder_destroyed(self):
@@ -145,7 +144,7 @@ class LabelFrames(DefaultTab):
     def build_skeleton(self, *args):
         if self.skeleton_builder is None:
             self.skeleton_builder = SkeletonBuilder(
-                config_path=self.root.config,
+                config_path=self.root.config_path,
                 parent=self.root,
             )
             self.skeleton_builder.show()

@@ -140,7 +140,7 @@ def train(
     keepdeconvweights=True,
     allow_growth=True,
 ):
-    start_path = os.getcwd()
+    start_path = Path.cwd()
     os.chdir(str(Path(config_yaml).parents[0]))  # switch to folder of config_yaml (for logging)
     setup_logging()
 
@@ -251,7 +251,7 @@ def train(
     lr_gen = LearningRate(cfg)
 
     stats_path = Path(config_yaml).with_name("learning_stats.csv")
-    lrf = open(str(stats_path), "w")
+    lrf = stats_path.open("w")
 
     print("Training parameter:")
     print(cfg)
@@ -294,4 +294,4 @@ if __name__ == "__main__":
     parser.add_argument("config", help="Path to yaml configuration file.")
     cli_args = parser.parse_args()
 
-    train(Path(cli_args.config).resolve())
+    train(Path(cli_args.config).absolute())

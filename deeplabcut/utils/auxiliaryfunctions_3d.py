@@ -18,7 +18,6 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import glob
 import os
 import pickle
 from pathlib import Path
@@ -32,11 +31,11 @@ import pandas as pd
 def Foldernames3Dproject(cfg_3d):
     """Definitions of subfolders in 3D projects."""
 
-    img_path = os.path.join(cfg_3d["project_path"], "calibration_images")
-    path_corners = os.path.join(cfg_3d["project_path"], "corners")
-    path_camera_matrix = os.path.join(cfg_3d["project_path"], "camera_matrix")
-    path_undistort = os.path.join(cfg_3d["project_path"], "undistortion")
-    path_removed_images = os.path.join(cfg_3d["project_path"], "removed_calibration_images")
+    img_path = str(Path(cfg_3d["project_path"]) / "calibration_images")
+    path_corners = str(Path(cfg_3d["project_path"]) / "corners")
+    path_camera_matrix = str(Path(cfg_3d["project_path"]) / "camera_matrix")
+    path_undistort = str(Path(cfg_3d["project_path"]) / "undistortion")
+    path_removed_images = str(Path(cfg_3d["project_path"]) / "removed_calibration_images")
 
     return (
         img_path,
@@ -102,7 +101,7 @@ def compute_triangulation_calibration_images(
             ax.set_xlabel("X")
             ax.set_ylabel("Y")
             ax.set_zlabel("Z")
-        plt.savefig(os.path.join(str(path_undistort), "checkerboard_3d.png"))
+        plt.savefig(Path(path_undistort) / "checkerboard_3d.png")
     return triangulate
 
 
@@ -121,26 +120,23 @@ def get_camerawise_videos(path, cam_names, videotype):
     then it will return [['somename-camera-1-othername.avi', 'somename-
     camera-2-othername.avi']]
     """
-    import glob
     from pathlib import Path
 
     vid = []
 
     # Find videos only specific to the cam names
-    videos = [glob.glob(os.path.join(path, str("*" + cam_names[i] + "*" + videotype))) for i in range(len(cam_names))]
-    videos = [y for x in videos for y in x]
+    videos = [list(Path(path).glob("*" + cam_names[i] + "*" + videotype)) for i in range(len(cam_names))]
+    videos = [str(y) for x in videos for y in x]
 
     # Exclude the labeled video files
     if "." in videotype:
         file_to_exclude = str("labeled" + videotype)
     else:
         file_to_exclude = str("labeled." + videotype)
-    videos = [v for v in videos if os.path.isfile(v) and file_to_exclude not in v]
+    videos = [v for v in videos if Path(v).is_file() and file_to_exclude not in v]
     video_list = []
     cam = cam_names[0]  # camera1
-    vid.append(
-        [name for name in glob.glob(os.path.join(path, str("*" + cam + "*" + videotype)))]
-    )  # all videos with cam
+    vid.append([str(name) for name in Path(path).glob("*" + cam + "*" + videotype)])  # all videos with cam
     # print("here is what I found",vid)
     for k in range(len(vid[0])):
         if cam in str(Path(vid[0][k]).stem):
@@ -151,16 +147,16 @@ def get_camerawise_videos(path, cam_names, videotype):
                 if suf == "":
                     print("Strange naming convention on your part. Respect.")
                 else:
-                    putativecam2name = os.path.join(path, cam_names[1] + suf + ending)
+                    putativecam2name = str(Path(path) / (cam_names[1] + suf + ending))
             else:
                 if suf == "":
-                    putativecam2name = os.path.join(path, pref + cam_names[1] + ending)
+                    putativecam2name = str(Path(path) / (pref + cam_names[1] + ending))
                 else:
-                    putativecam2name = os.path.join(path, pref + cam_names[1] + suf + ending)
-            # print([os.path.join(path,pref+cam+suf+ending),putativecam2name])
-            if os.path.isfile(putativecam2name):
+                    putativecam2name = str(Path(path) / (pref + cam_names[1] + suf + ending))
+            # print([str(Path(path) / (pref+cam+suf+ending)), putativecam2name])
+            if Path(putativecam2name).is_file():
                 # found a pair!!!
-                video_list.append([os.path.join(path, pref + cam + suf + ending), putativecam2name])
+                video_list.append([str(Path(path) / (pref + cam + suf + ending)), putativecam2name])
     return video_list
 
 
@@ -173,13 +169,13 @@ def Get_list_of_triangulated_and_videoFiles(filepath, videotype, scorer_3d, cam_
     string_to_search = scorer_3d + ".h5"
 
     # Checks if filepath is a directory
-    if [os.path.isdir(i) for i in filepath] == [True]:
+    if [Path(i).is_dir() for i in filepath] == [True]:
         """Analyzes all the videos in the directory."""
         print("Analyzing all the videos in the directory")
         videofolder = filepath[0]
-        cwd = os.getcwd()
+        cwd = Path.cwd()
         os.chdir(videofolder)
-        triangulated_file_list = [fn for fn in os.listdir(os.curdir) if (string_to_search in fn)]
+        triangulated_file_list = [fn.name for fn in Path(videofolder).iterdir() if (string_to_search in fn.name)]
         video_list = get_camerawise_videos(videofolder, cam_names, videotype)
         os.chdir(cwd)
         triangulated_folder = videofolder
@@ -230,12 +226,9 @@ def Get_list_of_triangulated_and_videoFiles(filepath, videotype, scorer_3d, cam_
             if (prefix[j][0] in filename[k] and prefix[j][1] in filename[k]) and (
                 suffix[j][0] in filename[k] and suffix[j][1] in filename[k]
             ):
-                triangulated_file = glob.glob(
-                    os.path.join(
-                        triangulated_folder,
-                        str("*" + filename[k] + "*" + string_to_search),
-                    )
-                )
+                triangulated_file = [
+                    str(p) for p in Path(triangulated_folder).glob("*" + filename[k] + "*" + string_to_search)
+                ]
                 vfiles = get_camerawise_videos(videofolder, cam_names, videotype)
                 vfiles = [z for z in vfiles if prefix[j][0] in z[0] and suffix[j][0] in z[1]][0]
                 file_list.append(triangulated_file + vfiles)
@@ -244,12 +237,12 @@ def Get_list_of_triangulated_and_videoFiles(filepath, videotype, scorer_3d, cam_
 
 
 def SaveMetadata3d(metadatafilename, metadata):
-    with open(metadatafilename, "wb") as f:
+    with Path(metadatafilename).open("wb") as f:
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
 
 def LoadMetadata3d(metadatafilename):
-    with open(metadatafilename, "rb") as f:
+    with Path(metadatafilename).open("rb") as f:
         metadata = pickle.load(f)
         return metadata
 

@@ -8,7 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 import pickle
 import re
 import shelve
@@ -494,7 +493,7 @@ class TrackletStitcher:
         split_tracklets=True,
         prestitch_residuals=True,
     ):
-        with open(pickle_file, "rb") as file:
+        with Path(pickle_file).open("rb") as file:
             tracklets = pickle.load(file)
         class_ = cls.from_dict_of_dict(tracklets, n_tracks, min_length, split_tracklets, prestitch_residuals)
         class_.filename = pickle_file
@@ -961,8 +960,8 @@ class TrackletStitcher:
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def stitch_tracklets(
-    config_path,
-    videos,
+    config_path: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
@@ -986,11 +985,11 @@ def stitch_tracklets(
 
     Parameters
     ----------
-    config_path : str
+    config_path : str or Path
         Path to the main project config.yaml file.
 
-    videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the
+    videos : list[str] or list[Path]
+        Full paths to videos for analysis, or a path to the directory where all the
         videos with same extension are stored.
 
     video_extensions : str | Sequence[str] | None, optional, default=None
@@ -1150,7 +1149,7 @@ def stitch_tracklets(
         deeplabcut.utils.auxiliaryfunctions.attempt_to_make_folder(dest)
         vname = Path(video).stem
 
-        feature_dict_path = os.path.join(dest, vname + DLCscorer + "_bpt_features.pickle")
+        feature_dict_path = str(Path(dest) / (vname + DLCscorer + "_bpt_features.pickle"))
         # should only exist one
         if transformer_checkpoint:
             import dbm
@@ -1160,7 +1159,7 @@ def stitch_tracklets(
             except dbm.error as err:
                 raise FileNotFoundError(f"{feature_dict_path} does not exist. Did you run transformer_reID()?") from err
 
-        dataname = os.path.join(dest, vname + DLCscorer + ".h5")
+        dataname = str(Path(dest) / (vname + DLCscorer + ".h5"))
 
         method = TRACK_METHODS[track_method]
         pickle_file = dataname.split(".h5")[0] + f"{method}.pickle"
