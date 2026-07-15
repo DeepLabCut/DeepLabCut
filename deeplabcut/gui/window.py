@@ -75,6 +75,9 @@ warnings.filterwarnings(
     category=RuntimeWarning,
 )
 
+WINDOW_RESIZE_FACTOR = 0.8
+DEFAULT_MINIMUM_WIDTH, DEFAULT_MINIMUM_HEIGHT = 800, 600
+
 
 class ConfigErrorAction(Enum):
     """Recovery action selected after a configuration error."""
@@ -615,8 +618,6 @@ class MainWindow(QMainWindow):
         self.logger.info("All video files have been cleared.")
 
     def window_set(self):
-        WINDOW_RESIZE_FACTOR = 0.8
-        DEFAULT_MINIMUM_WIDTH, DEFAULT_MINIMUM_HEIGHT = 800, 600
 
         self.setWindowTitle("DeepLabCut")
 
@@ -633,7 +634,7 @@ class MainWindow(QMainWindow):
             int(self.screen_height * WINDOW_RESIZE_FACTOR),
         )
         self.setMinimumSize(DEFAULT_MINIMUM_WIDTH, DEFAULT_MINIMUM_HEIGHT)
-        self.setMaximumSize(self.screen_width, self.screen_height)
+        # self.setMaximumSize(self.screen_width, self.screen_height) # prevents proper Maximize
         self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, True)
         self.setWindowFlag(Qt.WindowCloseButtonHint, True)
