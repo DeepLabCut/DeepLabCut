@@ -477,7 +477,7 @@ class CondFromModel(CondProvider):
     ) -> None:
         if config_path is not None and snapshot_path is not None:
             config_path = Path(config_path)
-            snapshot_path = Path(config_path)
+            snapshot_path = Path(snapshot_path)
         elif "config" in kwargs and "shuffle" in kwargs:
             bu_loader, snapshot = self.get_loader_and_snapshot(**kwargs)
             config_path = bu_loader.model_config_path
