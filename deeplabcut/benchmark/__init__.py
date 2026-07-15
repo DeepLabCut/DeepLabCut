@@ -13,12 +13,13 @@
 import json
 import os
 from collections.abc import Container
+from pathlib import Path
 from typing import Literal
 
 from deeplabcut.benchmark.base import Benchmark, Result, ResultCollection
 
-DATA_ROOT = os.path.join(os.getcwd(), "data")
-CACHE = os.path.join(os.getcwd(), ".results")
+DATA_ROOT = Path.cwd() / "data"
+CACHE = Path.cwd() / ".results"
 
 __registry = []
 
@@ -99,20 +100,20 @@ def evaluate(
 
 
 def get_filepath(basename: str):
-    return os.path.join(DATA_ROOT, basename)
+    return DATA_ROOT / basename
 
 
 def savecache(results: ResultCollection):
-    with open(CACHE, "w") as fh:
+    with Path(CACHE).open("w") as fh:
         json.dump(results.todicts(), fh, indent=2)
 
 
 def loadcache(cache=CACHE, on_missing: Literal["raise", "ignore"] = "ignore") -> ResultCollection:
-    if not os.path.exists(cache):
+    if not Path(cache).exists():
         if on_missing == "raise":
             raise FileNotFoundError(cache)
         return ResultCollection()
-    with open(cache) as fh:
+    with Path(cache).open() as fh:
         try:
             data = json.load(fh)
         except json.decoder.JSONDecodeError as e:

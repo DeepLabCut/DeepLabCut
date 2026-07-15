@@ -339,7 +339,7 @@ def extract_maps(
         if len(image_paths) > 0 and isinstance(image_paths[0], tuple):
             image_paths = [Path(*img_path) for img_path in image_paths]
 
-        image_paths = [(loader.project_path / img_path).resolve() for img_path in image_paths]
+        image_paths = [(loader.project_path / img_path).absolute() for img_path in image_paths]
 
         context = _get_context(image_paths, loader, detector_snapshot_index, device)
         train_idx = set(loader.split["train"])
@@ -638,7 +638,7 @@ def _prepare_maps_for_plotting(maps: list[np.ndarray], image_size: tuple[int, in
 
 
 def _get_maps_folder(
-    cfg: dict,
+    cfg: ProjectConfig,
     train_frac: float,
     shuffle: int,
     model_prefix: str | None,
@@ -646,7 +646,7 @@ def _get_maps_folder(
 ) -> Path:
     """Gets the destination folder for output maps."""
     if dest_folder is None:
-        project_path = Path(cfg["project_path"])
+        project_path = cfg.project_path
         eval_folder = auxiliaryfunctions.get_evaluation_folder(
             trainFraction=train_frac,
             shuffle=shuffle,

@@ -10,8 +10,14 @@
 #
 from __future__ import annotations
 
+from pathlib import Path
+from typing import TYPE_CHECKING, Literal
 
-def select_cropping_area(config, videos=None):
+if TYPE_CHECKING:
+    import numpy as np
+
+
+def select_cropping_area(config: str | Path, videos=None):
     """Interactively select the cropping area of all videos in the config. A user
     interface pops up with a frame to select the cropping parameters. Use the left click
     to draw a box and hit the button 'set cropping parameters' to store the cropping
@@ -63,17 +69,17 @@ def select_cropping_area(config, videos=None):
 
 
 def extract_frames(
-    config: str,
+    config: str | Path,
     mode: str = "automatic",
     algo: str = "kmeans",
-    crop: bool | str = False,
+    crop: bool | Literal["GUI"] = False,
     userfeedback: bool = True,
     cluster_step: int = 1,
     cluster_resizewidth: int = 30,
     cluster_color: bool = False,
     opencv: bool = True,
     slider_width: int = 25,
-    config3d: str | None = None,
+    config3d: str | Path | None = None,
     extracted_cam: int = 0,
     videos_list: list[str] | None = None,
 ) -> dict[str, np.ndarray]:
@@ -255,8 +261,6 @@ def extract_frames(
             extracted_cam=0,
         )
     """
-    import glob
-    import os
     import re
     import sys
     from pathlib import Path
@@ -267,7 +271,7 @@ def extract_frames(
 
     from deeplabcut.utils import auxiliaryfunctions, frameselectiontools
 
-    config_file = Path(config).resolve()
+    config_file = Path(config)
     cfg = auxiliaryfunctions.read_config(config_file)
     print("Config file read successfully.")
 
@@ -337,7 +341,7 @@ def extract_frames(
                 output_path = Path(config).parents[0] / "labeled-data" / fname.stem
 
                 if output_path.exists():
-                    if len(os.listdir(output_path)):
+                    if any(output_path.iterdir()):
                         if userfeedback:
                             askuser = input(
                                 "The directory already contains some frames. Do you want to add to it?(yes/no): "
@@ -466,15 +470,14 @@ def extract_frames(
     elif mode == "match":
         import cv2
 
-        config_file = Path(config).resolve()
+        config_file = Path(config)
         cfg = auxiliaryfunctions.read_config(config_file)
         print("Config file read successfully.")
         videos = sorted(cfg["video_sets"].keys())
         if videos_list is not None:  # filter video_list by the ones in the config file
             videos = [v for v in videos if v in videos_list]
         project_path = Path(config).parents[0]
-        labels_path = os.path.join(project_path, "labeled-data/")
-        os.path.join(project_path, "videos/")
+        labels_path = project_path / "labeled-data"
         try:
             cfg_3d = auxiliaryfunctions.read_config(config3d)
         except Exception as e:
@@ -484,7 +487,7 @@ def extract_frames(
         cams = cfg_3d["camera_names"]
         extCam_name = cams[extracted_cam]
         del cams[extracted_cam]
-        label_dirs = sorted(glob.glob(os.path.join(labels_path, "*" + extCam_name + "*")))
+        label_dirs = sorted(labels_path.glob("*" + extCam_name + "*"))
 
         # select crop method
         crop_list = []
@@ -507,19 +510,19 @@ def extract_frames(
                 crop_list.append(coords)
 
         for coords, dirPath in zip(crop_list, label_dirs, strict=False):
-            extracted_images = glob.glob(os.path.join(dirPath, "*png"))
+            extracted_images = list(dirPath.glob("*png"))
 
             imgPattern = re.compile("[0-9]{1,10}")
             for cam in cams:
-                output_path = re.sub(extCam_name, cam, dirPath)
+                output_path = Path(re.sub(extCam_name, cam, str(dirPath)))
 
-                for fname in os.listdir(output_path):
-                    if fname.endswith(".png"):
-                        os.remove(os.path.join(output_path, fname))
+                for p in output_path.iterdir():
+                    if p.name.endswith(".png"):
+                        p.unlink()
 
                 # Find the matching video from the config `video_sets`,
                 # as it may be stored elsewhere than in the `videos` directory.
-                video_name = os.path.basename(output_path)
+                video_name = output_path.name
                 vid = ""
                 for video in cfg["video_sets"]:
                     if video_name in video:
@@ -531,12 +534,12 @@ def extract_frames(
                 cap = cv2.VideoCapture(vid)
                 print("\n extracting matched frames from " + video_name)
                 for img in extracted_images:
-                    imgNum = re.findall(imgPattern, os.path.basename(img))[0]
+                    imgNum = re.findall(imgPattern, img.name)[0]
                     cap.set(1, int(imgNum))
                     ret, frame = cap.read()
                     if ret:
                         image = img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                        img_name = os.path.join(output_path, "img" + imgNum + ".png")
+                        img_name = str(output_path / ("img" + imgNum + ".png"))
                         if crop:
                             io.imsave(
                                 img_name,

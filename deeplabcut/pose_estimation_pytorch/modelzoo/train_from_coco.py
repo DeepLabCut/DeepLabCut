@@ -50,7 +50,7 @@ def adaptation_train(
     utils.fix_seeds(loader.model_cfg["train_settings"]["seed"])
 
     # Config updates
-    loader.model_cfg.model.backbone.freeze_bn_stats = True
+    loader.model_cfg.model.backbone["freeze_bn_stats"] = True
     loader.model_cfg.runner.snapshots.save_epochs = save_epochs
     loader.model_cfg.train_settings.batch_size = batch_size
     loader.model_cfg.train_settings.epochs = epochs

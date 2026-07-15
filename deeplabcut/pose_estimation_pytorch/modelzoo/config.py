@@ -12,7 +12,6 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -20,11 +19,12 @@ if TYPE_CHECKING:
     from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
     from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 
-from ruamel.yaml import YAML
 
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.config import (
+    ProjectConfig,
+    get_yaml_dumper,
     read_config_as_dict,
 )
 from deeplabcut.core.deprecation import deprecated
@@ -40,10 +40,10 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 
 def build_superanimal_metadata(super_animal: str, model_name: str, max_individuals: int) -> dict:
     project_cfg_path = get_super_animal_project_config_path(super_animal=super_animal)
-    project_config = read_config_as_dict(project_cfg_path)
+    project_config = ProjectConfig.from_yaml(project_cfg_path)
     model_cfg_path = get_super_animal_model_config_path(model_name=model_name)
     metadata = {
-        "project_path": project_config.get("project_path"),
+        "project_path": project_config.project_path,
         "pose_config_path": model_cfg_path,
         "bodyparts": af.get_bodyparts(project_config),
         "unique_bodyparts": af.get_unique_bodyparts(project_config),
@@ -168,8 +168,7 @@ def write_pytorch_config_for_memory_replay(config_path, shuffle, pytorch_config)
     model_folder = dlc_proj_root / af.get_model_folder(
         cfg["TrainingFraction"][trainIndex], shuffle, cfg, engine=Engine.PYTORCH
     )
-    os.makedirs(model_folder / "train", exist_ok=True)
+    (model_folder / "train").mkdir(parents=True, exist_ok=True)
     out_path = model_folder / "train" / "pytorch_config.yaml"
-    with open(str(out_path), "w") as f:
-        yaml = YAML()
-        yaml.dump(pytorch_config, f)
+    with out_path.open("w") as f:
+        get_yaml_dumper().dump(pytorch_config, f)

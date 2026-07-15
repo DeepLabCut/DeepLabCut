@@ -16,7 +16,6 @@
 
 import argparse
 import os
-import os.path
 import pickle
 import re
 import time
@@ -91,7 +90,7 @@ def create_tracking_dataset(
         auxfun_models.set_visible_devices(gputouse)
 
     tf.compat.v1.reset_default_graph()
-    start_path = os.getcwd()  # record cwd to return to this directory in the end
+    start_path = Path.cwd()  # record cwd to return to this directory in the end
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
@@ -102,9 +101,8 @@ def create_tracking_dataset(
         print("Overwriting cropping parameters:", cropping)
         print("These are used for all videos, but won't be save to the cfg file.")
 
-    modelfolder = os.path.join(
-        cfg["project_path"],
-        str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+    modelfolder = Path(cfg["project_path"]) / str(
+        auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
     )
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     try:
@@ -136,8 +134,8 @@ def create_tracking_dataset(
     ##################################################
 
     # Check if data already was generated:
-    dlc_cfg["init_weights"] = os.path.join(modelfolder, "train", Snapshots[snapshotindex])
-    trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
+    dlc_cfg["init_weights"] = str(Path(modelfolder) / "train" / Snapshots[snapshotindex])
+    trainingsiterations = Path(dlc_cfg["init_weights"]).name.split("-")[-1]
     # Update number of output and batchsize
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
 
@@ -491,7 +489,7 @@ def analyze_videos(
         auxfun_models.set_visible_devices(gputouse)
 
     tf.compat.v1.reset_default_graph()
-    start_path = os.getcwd()  # record cwd to return to this directory in the end
+    start_path = Path.cwd()  # record cwd to return to this directory in the end
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
@@ -503,9 +501,8 @@ def analyze_videos(
         print("Overwriting cropping parameters:", cropping)
         print("These are used for all videos, but won't be save to the cfg file.")
 
-    modelfolder = os.path.join(
-        cfg["project_path"],
-        str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+    modelfolder = Path(cfg["project_path"]) / str(
+        auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
     )
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     try:
@@ -538,8 +535,8 @@ def analyze_videos(
     ##################################################
 
     # Check if data already was generated:
-    dlc_cfg["init_weights"] = os.path.join(modelfolder, "train", Snapshots[snapshotindex])
-    trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
+    dlc_cfg["init_weights"] = str(Path(modelfolder) / "train" / Snapshots[snapshotindex])
+    trainingsiterations = Path(dlc_cfg["init_weights"]).name.split("-")[-1]
     # Update number of output and batchsize
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
 
@@ -1078,7 +1075,7 @@ def AnalyzeVideo(
         metadata = {"data": dictionary}
 
         print(f"Saving results in {destfolder}...")
-        dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
+        dataname = str(Path(destfolder) / (vname + DLCscorer + ".h5"))
         auxiliaryfunctions.save_data(
             PredictedData[:nframes, :],
             metadata,
@@ -1095,7 +1092,7 @@ def GetPosesofFrames(cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, 
     from deeplabcut.utils.auxfun_videos import imread
 
     print("Starting to extract posture")
-    im = imread(os.path.join(directory, framelist[0]), mode="skimage")
+    im = imread(Path(directory) / framelist[0], mode="skimage")
 
     ny, nx, nc = np.shape(im)
     print(
@@ -1132,7 +1129,7 @@ def GetPosesofFrames(cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, 
 
     if batchsize == 1:
         for counter, framename in enumerate(framelist):
-            im = imread(os.path.join(directory, framename), mode="skimage")
+            im = imread(Path(directory) / framename, mode="skimage")
 
             if counter != 0 and counter % step == 0:
                 pbar.update(step)
@@ -1147,7 +1144,7 @@ def GetPosesofFrames(cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, 
     else:
         frames = np.empty((batchsize, ny, nx, 3), dtype="ubyte")  # this keeps all the frames of a batch
         for counter, framename in enumerate(framelist):
-            im = imread(os.path.join(directory, framename), mode="skimage")
+            im = imread(Path(directory) / framename, mode="skimage")
 
             if counter != 0 and counter % step == 0:
                 pbar.update(step)
@@ -1246,13 +1243,12 @@ def analyze_time_lapse_frames(
         auxfun_models.set_visible_devices(gputouse)
 
     tf.compat.v1.reset_default_graph()
-    start_path = os.getcwd()  # record cwd to return to this directory in the end
+    start_path = Path.cwd()  # record cwd to return to this directory in the end
 
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    modelfolder = os.path.join(
-        cfg["project_path"],
-        str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+    modelfolder = Path(cfg["project_path"]) / str(
+        auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
     )
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     try:
@@ -1284,8 +1280,8 @@ def analyze_time_lapse_frames(
     ##################################################
 
     # Check if data already was generated:
-    dlc_cfg["init_weights"] = os.path.join(modelfolder, "train", Snapshots[snapshotindex])
-    trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
+    dlc_cfg["init_weights"] = str(Path(modelfolder) / "train" / Snapshots[snapshotindex])
+    trainingsiterations = Path(dlc_cfg["init_weights"]).name.split("-")[-1]
 
     # update batchsize (based on parameters in config.yaml)
     dlc_cfg["batch_size"] = cfg["batch_size"]
@@ -1320,11 +1316,11 @@ def analyze_time_lapse_frames(
     # Loading the images
     ##################################################
     # checks if input is a directory
-    if os.path.isdir(directory):
+    if Path(directory).is_dir():
         """Analyzes all the frames in the directory."""
         print("Analyzing all frames in the directory: ", directory)
         os.chdir(directory)
-        framelist = np.sort([fn for fn in os.listdir(os.curdir) if (frametype in fn)])
+        framelist = np.sort([fn.name for fn in Path(directory).iterdir() if (frametype in fn.name)])
         vname = Path(directory).stem
         notanalyzed, dataname, DLCscorer = auxiliaryfunctions.check_if_not_analyzed(
             directory, vname, DLCscorer, DLCscorerlegacy, flag="framestack"
@@ -1441,15 +1437,13 @@ def _convert_detections_to_tracklets(
     )
     if calibrate:
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
-        train_data_file = os.path.join(
-            cfg["project_path"],
-            str(trainingsetfolder),
-            "CollectedData_" + cfg["scorer"] + ".h5",
+        train_data_file = (
+            Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5")
         )
         assembly_builder.calibrate(train_data_file)
     assembly_builder.assemble()
 
-    output_path, _ = os.path.splitext(output_path)
+    output_path = str(Path(output_path).with_suffix(""))
     output_path += ".pickle"
     assembly_builder.to_pickle(output_path.replace(".pickle", "_assemblies.pickle"))
 
@@ -1480,7 +1474,7 @@ def _convert_detections_to_tracklets(
         names=["scorer", "bodyparts", "coords"],
     )
     tracklets["header"] = pdindex
-    with open(output_path, "wb") as f:
+    with Path(output_path).open("wb") as f:
         pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -1597,7 +1591,7 @@ def convert_detections2tracklets(
         auxiliaryfunctions.write_config(config, cfg)
 
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    start_path = os.getcwd()  # record cwd to return to this directory in the end
+    start_path = Path.cwd()  # record cwd to return to this directory in the end
 
     # TODO: add cropping as in video analysis!
     # if cropping is not None:
@@ -1606,9 +1600,8 @@ def convert_detections2tracklets(
     #    print("Overwriting cropping parameters:", cropping)
     #    print("These are used for all videos, but won't be save to the cfg file.")
 
-    modelfolder = os.path.join(
-        cfg["project_path"],
-        str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+    modelfolder = Path(cfg["project_path"]) / str(
+        auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
     )
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     try:
@@ -1650,8 +1643,8 @@ def convert_detections2tracklets(
         snapshotindex = cfg["snapshotindex"]
 
     print(f"Using {Snapshots[snapshotindex]}", "for model", modelfolder)
-    dlc_cfg["init_weights"] = os.path.join(modelfolder, "train", Snapshots[snapshotindex])
-    trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
+    dlc_cfg["init_weights"] = str(Path(modelfolder) / "train" / Snapshots[snapshotindex])
+    trainingsiterations = Path(dlc_cfg["init_weights"]).name.split("-")[-1]
 
     # Name for scorer:
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
@@ -1674,7 +1667,7 @@ def convert_detections2tracklets(
                 destfolder = videofolder
             auxiliaryfunctions.attempt_to_make_folder(destfolder)
             vname = Path(video).stem
-            dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
+            dataname = str(Path(destfolder) / (vname + DLCscorer + ".h5"))
             data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(dataname)
             if track_method == "ellipse":
                 method = "el"
@@ -1685,7 +1678,7 @@ def convert_detections2tracklets(
             trackname = dataname.split(".h5")[0] + f"_{method}.pickle"
             # NOTE: If dataname line above is changed then line below is obsolete?
             # trackname = trackname.replace(videofolder, destfolder)
-            if os.path.isfile(trackname) and not overwrite:  # TODO: check if metadata are identical (same parameters!)
+            if Path(trackname).is_file() and not overwrite:  # TODO: check if metadata are identical (same parameters!)
                 print("Tracklets already computed", trackname)
                 print("Set overwrite = True to overwrite.")
             else:
@@ -1741,13 +1734,13 @@ def convert_detections2tracklets(
                     min_n_links=inferencecfg["minimalnumberofconnections"],
                 )
                 assemblies_filename = dataname.split(".h5")[0] + "_assemblies.pickle"
-                if not os.path.exists(assemblies_filename) or overwrite:
+                if not Path(assemblies_filename).exists() or overwrite:
                     if calibrate:
                         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
-                        train_data_file = os.path.join(
-                            cfg["project_path"],
-                            str(trainingsetfolder),
-                            "CollectedData_" + cfg["scorer"] + ".h5",
+                        train_data_file = (
+                            Path(cfg["project_path"])
+                            / str(trainingsetfolder)
+                            / ("CollectedData_" + cfg["scorer"] + ".h5")
                         )
                         assembly_builder.calibrate(train_data_file)
                     assembly_builder.assemble()
@@ -1806,7 +1799,7 @@ def convert_detections2tracklets(
                         trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
 
                 tracklets["header"] = pdindex
-                with open(trackname, "wb") as f:
+                with Path(trackname).open("wb") as f:
                     pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
         os.chdir(str(start_path))

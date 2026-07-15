@@ -21,12 +21,10 @@ Licensed under GNU Lesser General Public License v3.0
 from __future__ import annotations
 
 import argparse
-import os
 
 ####################################################
 # Dependencies
 ####################################################
-import os.path
 import pickle
 from collections.abc import Sequence
 from pathlib import Path
@@ -149,17 +147,17 @@ def PlottingResults(
         cbar.set_ticklabels(bodyparts2plot)
 
     fig1.savefig(
-        os.path.join(tmpfolder, "trajectory" + suffix),
+        Path(tmpfolder) / ("trajectory" + suffix),
         bbox_inches="tight",
         dpi=resolution,
     )
-    fig2.savefig(os.path.join(tmpfolder, "plot" + suffix), bbox_inches="tight", dpi=resolution)
+    fig2.savefig(Path(tmpfolder) / ("plot" + suffix), bbox_inches="tight", dpi=resolution)
     fig3.savefig(
-        os.path.join(tmpfolder, "plot-likelihood" + suffix),
+        Path(tmpfolder) / ("plot-likelihood" + suffix),
         bbox_inches="tight",
         dpi=resolution,
     )
-    fig4.savefig(os.path.join(tmpfolder, "hist" + suffix), bbox_inches="tight", dpi=resolution)
+    fig4.savefig(Path(tmpfolder) / ("hist" + suffix), bbox_inches="tight", dpi=resolution)
 
     if showfigures:
         plt.show()
@@ -172,8 +170,8 @@ def PlottingResults(
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def plot_trajectories(
-    config,
-    videos,
+    config: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
@@ -194,12 +192,12 @@ def plot_trajectories(
 
     Parameters
     ----------
-    config: str
+    config: str or Path
         Full path of the config.yaml file.
 
-    videos: list[str]
-        Full paths to videos for analysis or a path to the directory, where all the
-        videos with same extension are stored.
+    videos: list[str] or list[Path]
+        Full paths to videos for analysis, or a path to the directory where all videos
+        with the same extension are stored.
 
     video_extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
@@ -278,6 +276,9 @@ def plot_trajectories(
             ['/home/alex/analysis/project/videos/reachingvideo1.avi'],
         )
     """
+    config = Path(config)
+    if destfolder is not None:
+        destfolder = Path(destfolder)
     cfg = auxiliaryfunctions.read_config(config)
 
     if pcutoff is None:
@@ -313,7 +314,7 @@ def plot_trajectories(
             df, filepath, _, suffix = auxiliaryfunctions.load_analyzed_data(
                 videofolder, vname, DLCscorer, filtered, track_method
             )
-            tmpfolder = os.path.join(videofolder, "plot-poses", vname)
+            tmpfolder = str(Path(videofolder) / "plot-poses" / vname)
             _plot_trajectories(
                 filepath,
                 bodyparts,
@@ -383,9 +384,9 @@ def _plot_trajectories(
         except KeyError:
             individuals = [""]
     if dest_folder is None:
-        vname = os.path.basename(h5file).split("DLC")[0]
-        vid_folder = os.path.dirname(h5file)
-        dest_folder = os.path.join(vid_folder, "plot-poses", vname)
+        vname = Path(h5file).name.split("DLC")[0]
+        vid_folder = Path(h5file).parent
+        dest_folder = str(vid_folder / "plot-poses" / vname)
     auxiliaryfunctions.attempt_to_make_folder(dest_folder, recursive=True)
     # Keep only the individuals and bodyparts that were labeled
     labeled_bpts = [bp for bp in df.columns.get_level_values("bodyparts").unique() if bp in bodyparts]
@@ -444,8 +445,7 @@ def plot_edge_affinity_distributions(
 
     Parameters
     ----------
-    eval_pickle_file : string
-        Path to a *_full.pickle from the evaluation-results folder.
+    eval_pickle_file (str | Path): Path to a *_full.pickle from the evaluation-results folder.
 
     include_bodyparts : list of strings, optional
         A list of body part names whose edges are to be shown.
@@ -459,10 +459,11 @@ def plot_edge_affinity_distributions(
         Figure size in inches.
     """
 
-    with open(eval_pickle_file, "rb") as file:
+    eval_pickle_file = Path(eval_pickle_file)
+    with eval_pickle_file.open("rb") as file:
         data = pickle.load(file)
-    meta_pickle_file = eval_pickle_file.replace("_full.", "_meta.")
-    with open(meta_pickle_file, "rb") as file:
+    meta_pickle_file = eval_pickle_file.with_name(eval_pickle_file.name.replace("_full.", "_meta."))
+    with meta_pickle_file.open("rb") as file:
         metadata = pickle.load(file)
     (w_train, _), (b_train, _) = crossvalutils._calc_within_between_pafs(
         data,
