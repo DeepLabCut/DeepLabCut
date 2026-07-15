@@ -480,7 +480,7 @@ def extract_outlier_frames(
                 if frames2use is not None:
                     try:
                         frames2use = np.array(frames2use).astype("int")
-                    except ValueError():
+                    except ValueError:
                         print(
                             "Could not cast frames2use into np array, "
                             "please check that frames2use is a simply a list of integers!"
