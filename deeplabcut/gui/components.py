@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import os
 from os import PathLike
 from pathlib import Path
 
@@ -79,7 +80,7 @@ def _dialog_directory(directory: PathInput | None) -> str:
     """Convert an optional path to a QFileDialog-compatible string."""
     if directory is None or directory == "":
         return ""
-    return str(Path(directory))
+    return os.fspath(directory)
 
 
 def _get_open_file_name(
@@ -531,7 +532,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
 
     def _update_selected_conditions_display(self):
         def _shorten_path(path: Path | str, max_length: int = 30) -> str:
-            path_str = str(path)
+            path_str = os.fspath(path)
             if len(path_str) <= max_length:
                 return path_str
             return "..." + path_str[-(max_length - 3) :]
