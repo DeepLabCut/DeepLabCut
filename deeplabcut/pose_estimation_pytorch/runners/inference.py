@@ -801,7 +801,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         else:
             self._prev_pose = None
             self._idx_to_id = None
-            self._idx_ages = None
+            self._ctd_track_ages = None
 
     def _merge_conditions(self, bu_cond: np.ndarray) -> np.ndarray:
         """Merges conditions made by a BU model with existing conditions from CTD
