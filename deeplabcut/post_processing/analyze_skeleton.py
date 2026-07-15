@@ -271,13 +271,14 @@ def analyzeskeleton(
     Videos = collect_video_paths(videos, extensions=video_extensions)
     for video in Videos:
         print(f"Processing {video}")
-        if destfolder is None:
-            destfolder = str(Path(video).parents[0])
+        videofolder = destfolder
+        if videofolder is None:
+            videofolder = str(Path(video).parents[0])
 
         vname = Path(video).stem
         try:
             df, filepath, scorer, _ = auxiliaryfunctions.load_analyzed_data(
-                destfolder, vname, DLCscorer, filtered, track_method
+                videofolder, vname, DLCscorer, filtered, track_method
             )
         except FileNotFoundError as e:
             print(e)
