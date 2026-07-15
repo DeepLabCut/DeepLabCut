@@ -25,8 +25,8 @@ def select_cropping_area(config: str | Path, videos=None):
 
     Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : str or Path
+        Full path to the ``config.yaml`` file.
 
     videos : optional (default=None)
         List of videos whose cropping areas are to be defined. Note that full paths are required.
@@ -103,8 +103,8 @@ def extract_frames(
 
     Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : str or Path
+        Full path to the ``config.yaml`` file.
 
     mode : string. Either ``"automatic"``, ``"manual"`` or ``"match"``.
         String containing the mode of extraction. It must be either ``"automatic"`` or
@@ -128,10 +128,10 @@ def extract_frames(
         NOTE: Color information is discarded for ``"kmeans"``, thus e.g. for
         camouflaged octopus clustering one might want to change this.
 
-    crop : bool or str, optional
+    crop : bool or {"GUI"}, optional
         If ``True``, video frames are cropped according to the corresponding
         coordinates stored in the project configuration file. Alternatively, if
-        cropping coordinates are not known yet, crop=``"GUI"`` triggers a user
+        cropping coordinates are not known yet, ``crop="GUI"`` triggers a user
         interface where the cropping area can be manually drawn and saved.
 
     userfeedback: bool, optional
@@ -162,7 +162,7 @@ def extract_frames(
     slider_width: int, default: 25
         Width of the video frames slider, in percent of window.
 
-    config3d: string, optional
+    config3d : str or Path, optional
         Path to the project configuration file in the 3D project. This will be used to
         match frames extracted from all cameras present in the field 'camera_names' to
         the frames extracted from the camera given by the parameter 'extracted_cam'.
