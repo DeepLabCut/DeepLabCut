@@ -22,11 +22,10 @@ import yaml
 from PIL import Image
 
 import deeplabcut.generate_training_dataset.metadata as metadata
-from deeplabcut.core.config import ProjectConfig, read_config
+from deeplabcut.core.config import ProjectConfig, read_config, write_config
 from deeplabcut.core.engine import Engine, get_available_aug_methods, get_project_engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
-    auxfun_models,
     auxfun_multianimal,
     auxiliaryfunctions,
     conversioncode,
@@ -1118,7 +1117,11 @@ def create_training_dataset(
         if engine == Engine.PYTORCH:
             model_path = dlcparent_path
         else:
-            model_path = auxfun_models.check_for_weights(net_type, Path(dlcparent_path))
+            from deeplabcut.tensorflow_compat.dataset_management.create_single_animal import (
+                _tf_get_model_path,
+            )
+
+            model_path = _tf_get_model_path(net_type, dlcparent_path)
 
         Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
@@ -1228,63 +1231,24 @@ def create_training_dataset(
 
                 path_train_config = str(Path(cfg["project_path"]) / modelfoldername / "train" / engine.pose_cfg_name)
                 path_test_config = str(Path(cfg["project_path"]) / modelfoldername / "test" / "pose_cfg.yaml")
- 
+
                 if engine == Engine.TF:
-                    if weight_init is not None:
-                        raise ValueError(
-                            "Weight initialization is not supported for TensorFlow engine. "
-                            "Pretrained weights are automatically downloaded."
-                        )
-                    items2change = {
-                        "dataset": datafilename,
-                        "engine": engine.aliases[0],
-                        "metadataset": metadatafilename,
-                        "num_joints": len(bodyparts),
-                        "all_joints": [[i] for i in range(len(bodyparts))],
-                        "all_joints_names": [str(bpt) for bpt in bodyparts],
-                        "init_weights": model_path,
-                        "project_path": str(cfg["project_path"]),
-                        "net_type": net_type,
-                        "dataset_type": augmenter_type,
-                    }
-
-                    items2drop = {}
-                    if augmenter_type == "scalecrop":
-                        # these values are dropped as scalecrop
-                        # doesn't have rotation implemented
-                        items2drop = {"rotation": 0, "rotratio": 0.0}
-                    # Also drop maDLC smart cropping augmentation parameters
-                    for key in [
-                        "pre_resize",
-                        "crop_size",
-                        "max_shift",
-                        "crop_sampling",
-                    ]:
-                        items2drop[key] = None
-
-                    trainingdata = MakeTrain_pose_yaml(
-                        items2change,
-                        path_train_config,
-                        defaultconfigfile,
-                        items2drop,
-                        save=(engine == Engine.TF),
+                    from deeplabcut.tensorflow_compat.dataset_management.create_single_animal import (
+                        _tf_create_pose_config_files,
                     )
 
-                    keys2save = [
-                        "dataset",
-                        "num_joints",
-                        "all_joints",
-                        "all_joints_names",
-                        "net_type",
-                        "init_weights",
-                        "global_scale",
-                        "location_refinement",
-                        "locref_stdev",
-                    ]
-                    MakeTest_pose_yaml(trainingdata, keys2save, path_test_config)
-                    print(
-                        "The training dataset is successfully created. Use the function"
-                        "'train_network' to start training. Happy training!"
+                    _tf_create_pose_config_files(
+                        datafilename=datafilename,
+                        metadatafilename=metadatafilename,
+                        bodyparts=bodyparts,
+                        model_path=model_path,
+                        project_path=str(cfg["project_path"]),
+                        net_type=net_type,
+                        augmenter_type=augmenter_type,
+                        path_train_config=path_train_config,
+                        defaultconfigfile=defaultconfigfile,
+                        path_test_config=path_test_config,
+                        weight_init=weight_init,
                     )
                 elif engine == Engine.PYTORCH:
                     from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
