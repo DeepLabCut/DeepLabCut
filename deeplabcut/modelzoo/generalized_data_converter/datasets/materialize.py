@@ -229,7 +229,6 @@ def _generic2madlc(
     Args:
     proj_root where to materialize the data
     """
-
     assert full_image_path, "DLC wants full image path"
 
     (Path(proj_root) / "labeled-data").mkdir(parents=True, exist_ok=True)
