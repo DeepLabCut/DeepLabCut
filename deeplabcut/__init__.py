@@ -68,13 +68,6 @@ from .pose_estimation_3d import (
     create_labeled_video_3d,
     triangulate,
 )
-from .post_processing import analyzeskeleton, filterpredictions
-from .refine_training_dataset import (
-    extract_outlier_frames,
-    find_outliers_in_raw_data,
-    merge_datasets,
-)
-from .refine_training_dataset.stitch import stitch_tracklets
 from .utils import (
     analyze_videos_converth5_to_csv,
     analyze_videos_converth5_to_nwb,
@@ -134,6 +127,12 @@ _API_EXPORTS_MAP: dict[str, tuple[str, str]] = {
     "visualize_locrefs": (".api.pose_estimation", "visualize_locrefs"),
     "visualize_paf": (".api.pose_estimation", "visualize_paf"),
     "visualize_scoremaps": (".api.pose_estimation", "visualize_scoremaps"),
+    "analyzeskeleton": (".api.post_processing", "analyzeskeleton"),
+    "filterpredictions": (".api.post_processing", "filterpredictions"),
+    "extract_outlier_frames": (".api.refine_training", "extract_outlier_frames"),
+    "find_outliers_in_raw_data": (".api.refine_training", "find_outliers_in_raw_data"),
+    "merge_datasets": (".api.refine_training", "merge_datasets"),
+    "stitch_tracklets": (".api.refine_training", "stitch_tracklets"),
 }
 
 
@@ -239,6 +238,12 @@ _API_EXPORTS = [
     "visualize_locrefs",
     "visualize_paf",
     "visualize_scoremaps",
+    "analyzeskeleton",
+    "filterpredictions",
+    "extract_outlier_frames",
+    "find_outliers_in_raw_data",
+    "merge_datasets",
+    "stitch_tracklets",
 ]
 
 _UTIL_EXPORTS = [
@@ -255,15 +260,6 @@ _UTIL_EXPORTS = [
     "DownSampleVideo",
     "ShortenVideo",
     "check_video_integrity",
-]
-
-_POST_PROCESSING_EXPORTS = [
-    "analyzeskeleton",
-    "filterpredictions",
-    "extract_outlier_frames",
-    "find_outliers_in_raw_data",
-    "merge_datasets",
-    "stitch_tracklets",
 ]
 
 _THREE_D_EXPORTS = [
@@ -286,7 +282,6 @@ __all__ = (
     + _DATASET_EXPORTS
     + _API_EXPORTS
     + _UTIL_EXPORTS
-    + _POST_PROCESSING_EXPORTS
     + _THREE_D_EXPORTS
     + _MODELZOO_EXPORTS
     + _OPTIONAL_API_EXPORTS
