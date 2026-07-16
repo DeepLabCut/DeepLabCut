@@ -61,7 +61,6 @@ from .generate_training_dataset import (
     extract_frames,
     mergeandsplit,
 )
-from .modelzoo.video_inference import video_inference_superanimal
 from .pose_estimation_3d import (
     calibrate_cameras,
     check_undistortion,
@@ -133,6 +132,7 @@ _API_EXPORTS_MAP: dict[str, tuple[str, str]] = {
     "find_outliers_in_raw_data": (".api.refine_training", "find_outliers_in_raw_data"),
     "merge_datasets": (".api.refine_training", "merge_datasets"),
     "stitch_tracklets": (".api.refine_training", "stitch_tracklets"),
+    "video_inference_superanimal": (".api.modelzoo_inference", "video_inference_superanimal"),
 }
 
 
@@ -244,6 +244,7 @@ _API_EXPORTS = [
     "find_outliers_in_raw_data",
     "merge_datasets",
     "stitch_tracklets",
+    "video_inference_superanimal",
 ]
 
 _UTIL_EXPORTS = [
@@ -269,10 +270,6 @@ _THREE_D_EXPORTS = [
     "triangulate",
 ]
 
-_MODELZOO_EXPORTS = [
-    "video_inference_superanimal",
-]
-
 _OPTIONAL_API_EXPORTS = list(_OPTIONAL_EXPORTS)
 
 __all__ = (
@@ -283,6 +280,5 @@ __all__ = (
     + _API_EXPORTS
     + _UTIL_EXPORTS
     + _THREE_D_EXPORTS
-    + _MODELZOO_EXPORTS
     + _OPTIONAL_API_EXPORTS
 )

@@ -39,6 +39,7 @@ __all__ = [
     "find_outliers_in_raw_data",
     "merge_datasets",
     "stitch_tracklets",
+    "video_inference_superanimal",
 ]
 
 _API_MODULES = {
@@ -63,6 +64,7 @@ _API_MODULES = {
     "find_outliers_in_raw_data": "refine_training",
     "merge_datasets": "refine_training",
     "stitch_tracklets": "refine_training",
+    "video_inference_superanimal": "modelzoo_inference",
 }
 
 
