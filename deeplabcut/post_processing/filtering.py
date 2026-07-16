@@ -235,14 +235,17 @@ def filterpredictions(
             return video_to_filtered_df
 
     for video in Videos:
-        if destfolder is None:
-            destfolder = str(Path(video).parents[0])
+        videofolder = destfolder
+        if videofolder is None:
+            videofolder = str(Path(video).parents[0])
 
         print(f"Filtering with {filtertype} model {video}")
         vname = Path(video).stem
 
         try:
-            df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer, True, track_method)
+            df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
+                videofolder, vname, DLCscorer, True, track_method
+            )
             print(f"Data from {vname} were already filtered. Skipping...")
             video_to_filtered_df[video] = df
             # Data has been filtered so continue to the next video
@@ -253,7 +256,7 @@ def filterpredictions(
         # Data haven't been filtered yet
         try:
             df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
-                destfolder, vname, DLCscorer, track_method=track_method
+                videofolder, vname, DLCscorer, track_method=track_method
             )
         except FileNotFoundError as e:
             video_to_filtered_df[video] = None
