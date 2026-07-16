@@ -8,7 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 import webbrowser
 from functools import partial
 from pathlib import Path
