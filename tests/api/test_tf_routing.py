@@ -144,7 +144,7 @@ def test_resolve_engine_uses_explicit_engine():
 
 
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.PYTORCH)
-@patch("deeplabcut.api._tf_routing.read_config", return_value={"project_path": "/tmp"})
+@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 def test_resolve_engine_from_shuffle_metadata(mock_read_config, mock_get_shuffle_engine):
     engine = tf_routing._resolve_engine(
         "cfg.yaml",
@@ -164,7 +164,7 @@ def test_resolve_engine_from_shuffle_metadata(mock_read_config, mock_get_shuffle
 
 
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.PYTORCH)
-@patch("deeplabcut.api._tf_routing.read_config", return_value={"project_path": "/tmp"})
+@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 def test_resolve_engine_defaults_to_shuffle_one(mock_read_config, mock_get_shuffle_engine):
     engine = tf_routing._resolve_engine("cfg.yaml")
 
@@ -178,7 +178,7 @@ def test_resolve_engine_defaults_to_shuffle_one(mock_read_config, mock_get_shuff
 
 
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine")
-@patch("deeplabcut.api._tf_routing.read_config", return_value={"project_path": "/tmp"})
+@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 def test_resolve_engine_from_shuffles_list(mock_read_config, mock_get_shuffle_engine):
     mock_get_shuffle_engine.side_effect = [Engine.PYTORCH, Engine.PYTORCH]
 
@@ -189,7 +189,7 @@ def test_resolve_engine_from_shuffles_list(mock_read_config, mock_get_shuffle_en
 
 
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.TF)
-@patch("deeplabcut.api._tf_routing.read_config", return_value={"project_path": "/tmp"})
+@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 def test_resolve_engine_accepts_legacy_shuffles_kwarg(mock_read_config, mock_get_shuffle_engine):
     engine = tf_routing._resolve_engine("cfg.yaml", Shuffles=[2, 3])
 
@@ -215,7 +215,7 @@ def test_resolve_engine_rejects_both_shuffles_and_shuffles():
 
 
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine")
-@patch("deeplabcut.api._tf_routing.read_config", return_value={"project_path": "/tmp"})
+@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 def test_resolve_engine_raises_when_shuffles_have_different_engines(mock_read_config, mock_get_shuffle_engine):
     mock_get_shuffle_engine.side_effect = [Engine.PYTORCH, Engine.TF]
 
@@ -223,7 +223,7 @@ def test_resolve_engine_raises_when_shuffles_have_different_engines(mock_read_co
         tf_routing._resolve_engine("cfg.yaml", shuffles=[1, 2])
 
 
-@patch("deeplabcut.api._tf_routing.read_config", return_value={"project_path": "/tmp"})
+@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 def test_resolve_engine_reads_config_from_kwargs(mock_read_config):
     with patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.PYTORCH):
         tf_routing._resolve_engine(config="other.yaml", engine=Engine.PYTORCH)
@@ -295,7 +295,7 @@ def test_with_tensorflow_fallback_uses_custom_tensorflow_name():
     ):
         canonical_fn("cfg.yaml")
 
-    mock_get_impl.assert_called_once_with("legacy_fn_name")
+    mock_get_impl.assert_called_once_with("legacy_fn_name", module=None)
 
 
 def test_with_tensorflow_fallback_without_parentheses():
@@ -358,3 +358,115 @@ def test_with_tensorflow_fallback_strips_engine_before_calling_impl():
         canonical_fn("cfg.yaml", engine=Engine.TF)
 
     tf_impl.assert_called_once_with("cfg.yaml")
+
+
+# ---------------------------------------------------------------------------
+# with_tensorflow_fallback — custom `when` predicate
+# ---------------------------------------------------------------------------
+
+
+def test_with_tensorflow_fallback_when_routes_to_tf_if_predicate_true():
+    tf_impl = MagicMock(return_value="tensorflow")
+
+    @tf_routing.with_tensorflow_fallback(
+        when=lambda *a, **kw: kw.get("model_name") == "dlcrnet",
+        tensorflow_module="deeplabcut.tensorflow_compat.superanimal_inference",
+        tensorflow_name="video_inference_superanimal_tf",
+    )
+    def canonical_fn(*args, **kwargs):
+        return "pytorch"
+
+    with (
+        patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl) as mock_get_impl,
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        result = canonical_fn("some_path", model_name="dlcrnet")
+
+    assert result == "tensorflow"
+    mock_get_impl.assert_called_once_with(
+        "video_inference_superanimal_tf",
+        module="deeplabcut.tensorflow_compat.superanimal_inference",
+    )
+
+
+def test_with_tensorflow_fallback_when_routes_to_pt_if_predicate_false():
+    pytorch_fn = MagicMock(return_value="pytorch")
+
+    @tf_routing.with_tensorflow_fallback(
+        when=lambda *a, **kw: kw.get("model_name") == "dlcrnet",
+        dropped_params=["scale_list"],
+    )
+    def canonical_fn(*args, **kwargs):
+        return pytorch_fn(*args, **kwargs)
+
+    with pytest.warns(DLCDeprecationWarning, match="scale_list"):
+        result = canonical_fn("some_path", model_name="hrnet_w32", scale_list=[200, 300])
+
+    assert result == "pytorch"
+    pytorch_fn.assert_called_once_with("some_path", model_name="hrnet_w32")
+
+
+def test_with_tensorflow_fallback_when_receives_args_and_kwargs():
+    tf_impl = MagicMock(return_value="tensorflow")
+
+    captured_args = []
+    captured_kwargs = {}
+
+    def predicate(*a, **kw):
+        captured_args.append(a)
+        captured_kwargs.update(kw)
+        return kw.get("force_tf", False)
+
+    @tf_routing.with_tensorflow_fallback(when=predicate)
+    def canonical_fn(*args, **kwargs):
+        return "pytorch"
+
+    with (
+        patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl),
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        canonical_fn("arg1", "arg2", force_tf=True, extra="val")
+
+    assert captured_args == [("arg1", "arg2")]
+    assert captured_kwargs == {"force_tf": True, "extra": "val"}
+    tf_impl.assert_called_once()
+
+
+def test_with_tensorflow_fallback_when_takes_precedence_over_engine():
+    tf_impl = MagicMock(return_value="tensorflow")
+
+    @tf_routing.with_tensorflow_fallback(
+        when=lambda *a, **kw: kw.get("model_name") == "dlcrnet",
+    )
+    def canonical_fn(*args, **kwargs):
+        return "pytorch"
+
+    # Even if _resolve_engine would return Engine.PYTORCH, the when predicate
+    # should not call _resolve_engine at all when when is provided.
+    with (
+        patch("deeplabcut.api._tf_routing._resolve_engine") as mock_resolve,
+        patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl),
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        result = canonical_fn("path", model_name="dlcrnet")
+
+    assert result == "tensorflow"
+    mock_resolve.assert_not_called()
+
+
+def test_with_tensorflow_fallback_when_without_tensorflow_module_defaults():
+    tf_impl = MagicMock(return_value="tensorflow")
+
+    @tf_routing.with_tensorflow_fallback(
+        when=lambda *a, **kw: True,
+    )
+    def canonical_fn(*args, **kwargs):
+        return "pytorch"
+
+    with (
+        patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl) as mock_get_impl,
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        canonical_fn()
+
+    mock_get_impl.assert_called_once_with("canonical_fn", module=None)
