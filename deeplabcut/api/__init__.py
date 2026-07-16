@@ -14,6 +14,7 @@ Public API for DeepLabCut.
 
 from __future__ import annotations
 
+from importlib import import_module
 from typing import Any
 
 __all__ = [
@@ -32,13 +33,43 @@ __all__ = [
     "visualize_locrefs",
     "visualize_paf",
     "visualize_scoremaps",
+    "analyzeskeleton",
+    "filterpredictions",
+    "extract_outlier_frames",
+    "find_outliers_in_raw_data",
+    "merge_datasets",
+    "stitch_tracklets",
 ]
+
+_API_MODULES = {
+    "analyze_images": "pose_estimation",
+    "analyze_time_lapse_frames": "pose_estimation",
+    "analyze_videos": "pose_estimation",
+    "convert_detections2tracklets": "pose_estimation",
+    "create_tracking_dataset": "pose_estimation",
+    "evaluate_network": "pose_estimation",
+    "export_model": "pose_estimation",
+    "extract_maps": "pose_estimation",
+    "extract_save_all_maps": "pose_estimation",
+    "return_evaluate_network_data": "pose_estimation",
+    "return_train_network_path": "pose_estimation",
+    "train_network": "pose_estimation",
+    "visualize_locrefs": "pose_estimation",
+    "visualize_paf": "pose_estimation",
+    "visualize_scoremaps": "pose_estimation",
+    "analyzeskeleton": "post_processing",
+    "filterpredictions": "post_processing",
+    "extract_outlier_frames": "refine_training",
+    "find_outliers_in_raw_data": "refine_training",
+    "merge_datasets": "refine_training",
+    "stitch_tracklets": "refine_training",
+}
 
 
 def __getattr__(name: str) -> Any:
     if name not in __all__:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
-    from deeplabcut.api import pose_estimation
-
-    return getattr(pose_estimation, name)
+    module_name = _API_MODULES.get(name, "pose_estimation")
+    module = import_module(f".api.{module_name}", package="deeplabcut")
+    return getattr(module, name)
