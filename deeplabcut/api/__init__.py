@@ -10,6 +10,10 @@
 #
 """
 Public API for DeepLabCut.
+
+This is a partial migration. More public functions will be moved into
+``deeplabcut.api`` in future releases. Functions not yet listed here
+are still available at the top-level ``deeplabcut`` module as before.
 """
 
 from __future__ import annotations
