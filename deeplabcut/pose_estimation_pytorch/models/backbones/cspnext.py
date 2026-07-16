@@ -15,8 +15,9 @@ Based on the ``mmdetection`` CSPNeXt implementation. For more information, see:
 
 For more details about this architecture, see CSPNeXt: A new efficient token hybrid backbone:
 https://www.sciencedirect.com/science/article/abs/pii/S0952197624000447
-and:
-
+and
+RTMPose: Real-Time Multi-Person Pose Estimation based on MMPose:
+https://arxiv.org/pdf/2303.07399
 """
 
 from dataclasses import dataclass
