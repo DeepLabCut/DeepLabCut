@@ -19,7 +19,6 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import math
-import os
 import pickle
 import random
 import shelve
@@ -39,17 +38,12 @@ from deeplabcut.utils import auxiliaryfunctions, conversioncode
 def reorder_individuals_in_df(df: pd.DataFrame, order: list) -> pd.DataFrame:
     """Reorders data of df to match the order given in a list.
 
-    Parameters:
-    ----------
-    df: pd.DataFrame
-        Data from tracked .h5 file
-    order: list of str
-        Desired order of individuals
+    Args:
+        df (pd.DataFrame): Data from tracked .h5 file.
+        order (list of str): Desired order of individuals.
 
-    Return:
-    -------
-        df: pd.DataFrame
-            Reordered DataFrame
+    Returns:
+        pd.DataFrame: Reordered DataFrame.
     """
     columns = df.columns
     inds = df.index
@@ -92,7 +86,8 @@ def get_track_method(cfg, track_method=""):
 
 def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
     """Returns all individuals when set to 'all', otherwise all bpts that are in the
-    intersection of comparisonbodyparts and the actual bodyparts."""
+    intersection of comparisonbodyparts and the actual bodyparts.
+    """
     if "individuals" not in cfg:  # Not a multi-animal project...
         return [""]
     all_indivs = extractindividualsandbodyparts(cfg)[0]
@@ -193,27 +188,27 @@ def graph2names(cfg, partaffinityfield_graph):
 
 def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
     """Save predicted data as h5 file and metadata as pickle file; created by
-    predict_videos.py."""
+    predict_videos.py.
+    """
     data_path = dataname.split(".h5")[0] + suffix + ".pickle"
     metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
 
-    with open(data_path, "wb") as f:
+    with Path(data_path).open("wb") as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
-    with open(metadata_path, "wb") as f:
+    with Path(metadata_path).open("wb") as f:
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
     return data_path, metadata_path
 
 
 def LoadFullMultiAnimalData(dataname):
-    """Save predicted data as h5 file and metadata as pickle file; created by
-    predict_videos.py."""
+    """Load predicted data and metadata from pickle files created by predict_videos.py."""
     data_file = dataname.split(".h5")[0] + "_full.pickle"
     try:
-        with open(data_file, "rb") as handle:
+        with Path(data_file).open("rb") as handle:
             data = pickle.load(handle)
     except (pickle.UnpicklingError, FileNotFoundError):
         data = shelve.open(data_file, flag="r")
-    with open(data_file.replace("_full.", "_meta."), "rb") as handle:
+    with Path(data_file.replace("_full.", "_meta.")).open("rb") as handle:
         metadata = pickle.load(handle)
     return data, metadata
 
@@ -228,42 +223,36 @@ def returnlabelingdata(config):
         print("Do you want to get the data for folder:", folder, "?")
         askuser = input("yes/no")
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
-            fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+            fn = folder / ("CollectedData_" + cfg["scorer"] + ".h5")
             Data = pd.read_hdf(fn)
             return Data
 
 
-def convert2_maDLC(config, userfeedback=True, forceindividual=None):
-    """
-    Converts single animal annotation file into a multianimal annotation file,
-    by introducing an individuals column with either the first individual
+def convert2_maDLC(config: str | Path, userfeedback=True, forceindividual=None):
+    """Convert a single-animal annotation file into a multianimal annotation file.
+
+    Introduces an individuals column with either the first individual
     in individuals list in config.yaml or whatever is passed via "forceindividual".
 
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (str | Path): Full path of the config.yaml file as a string.
+        userfeedback (bool, optional): If false, all folders are processed without prompting.
+            If true, the user is asked for each folder whether to convert. Use this, e.g. if you have already labeled
+            some folders and want to convert data for new videos only.
+        forceindividual (str | None, optional): If a string is given, that value is used
+            in the individuals column. Defaults to None.
 
-    userfeedback: bool, optional
-            If this is set to false during automatic mode then frames for all videos are extracted. The user can set
-            this to true, which will result in a dialog,
-            where the user is asked for each video if (additional/any) frames from this video should be extracted. Use
-            this, e.g. if you have already labeled
-            some folders and want to extract data for new videos.
+    Examples:
+        Convert multianimalbodyparts under the 'first individual' in individuals list in
+        `config.yaml` and uniquebodyparts under 'single':
 
-    forceindividual: None default
-            If a string is given that is used in the individuals column.
+            deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml")
 
-    Examples
-    --------
-    Converts mulianimalbodyparts under the 'first individual' in individuals list in config.yaml
-    and uniquebodyparts under 'single'
-    >>> deeplabcut.convert2_maDLC('/socialrearing-task/config.yaml')
+        Convert multianimalbodyparts under the individual label mus17 and uniquebodyparts
+        under 'single':
 
-    --------
-    Converts mulianimalbodyparts under the individual label mus17 and uniquebodyparts under 'single'
-    >>> deeplabcut.convert2_maDLC('/socialrearing-task/config.yaml', forceindividual='mus17')
+            deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml", forceindividual="mus17")
     """
-
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [trainingsetmanipulation._robust_path_split(i)[1] for i in videos]
@@ -292,8 +281,8 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
             askuser = "yes"
 
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
-            fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(fn + ".h5")
+            fn = folder / ("CollectedData_" + cfg["scorer"])
+            Data = pd.read_hdf(str(fn) + ".h5")
             conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
@@ -380,8 +369,8 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
             askuser = "yes"
 
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
-            fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(fn + ".h5")
+            fn = folder / ("CollectedData_" + cfg["scorer"])
+            Data = pd.read_hdf(str(fn) + ".h5")
             conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
@@ -525,9 +514,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
 
 def form_default_inferencecfg(cfg):
     # load defaults
-    inferencecfg = auxiliaryfunctions.read_plainconfig(
-        os.path.join(auxiliaryfunctions.get_deeplabcut_path(), "inference_cfg.yaml")
-    )
+    inferencecfg = auxiliaryfunctions.read_plainconfig(auxiliaryfunctions.get_deeplabcut_path() / "inference_cfg.yaml")
     # set project specific parameters:
     inferencecfg["minimalnumberofconnections"] = len(cfg["multianimalbodyparts"]) / 2  # reasonable default
     inferencecfg["topktoretain"] = len(cfg["individuals"])
@@ -544,7 +531,7 @@ def check_inferencecfg_sanity(cfg, inferencecfg):
 def read_inferencecfg(path_inference_config, cfg):
     """Load inferencecfg or initialize it."""
     try:
-        inferencecfg = auxiliaryfunctions.read_plainconfig(str(path_inference_config))
+        inferencecfg = auxiliaryfunctions.read_plainconfig(path_inference_config)
     except FileNotFoundError:
         inferencecfg = form_default_inferencecfg(cfg)
         auxiliaryfunctions.write_plainconfig(str(path_inference_config), dict(inferencecfg))

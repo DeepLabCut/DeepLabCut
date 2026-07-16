@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-import os
 import pickle
 import shelve
 from pathlib import Path
@@ -61,7 +60,7 @@ def save_train_triplets(feature_fname, triplets, out_name):
 
     ret_vecs = np.array(ret_vecs)
 
-    with open(out_name, "wb") as f:
+    with Path(out_name).open("wb") as f:
         np.save(f, ret_vecs)
 
 
@@ -79,16 +78,16 @@ def create_triplets_dataset(videos, dlcscorer, track_method, n_triplets=1000, de
         videofolder = str(Path(video).parents[0])
         if destfolder is None:
             destfolder = videofolder
-        feature_fname = os.path.join(destfolder, vname + dlcscorer + "_bpt_features.pickle")
+        feature_fname = str(Path(destfolder) / (vname + dlcscorer + "_bpt_features.pickle"))
 
         method = trackingutils.TRACK_METHODS[track_method]
-        track_file = os.path.join(destfolder, vname + dlcscorer + f"{method}.pickle")
-        if not Path(track_file).exists():
+        track_file = Path(destfolder) / (vname + dlcscorer + f"{method}.pickle")
+        if not track_file.exists():
             raise ValueError(
                 f"Tracklet file {track_file} does not exist. Please run "
                 f"`analyze_videos` with the {method} tracker before using the ReID "
                 "transformer."
             )
 
-        out_fname = os.path.join(destfolder, vname + dlcscorer + "_triplet_vector.npy")
+        out_fname = str(Path(destfolder) / (vname + dlcscorer + "_triplet_vector.npy"))
         create_train_using_pickle(feature_fname, track_file, out_fname, n_triplets=n_triplets)

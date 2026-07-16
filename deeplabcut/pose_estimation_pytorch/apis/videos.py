@@ -164,41 +164,41 @@ def video_inference(
 
     Examples:
         Bottom-up video analysis:
-        >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> from deeplabcut.core.config import read_config_as_dict
-        >>> model_cfg = read_config_as_dict("pytorch_config.yaml")
-        >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
-        >>> video_predictions = pep.video_inference("video.mp4", runner)
-        >>>
+
+            import deeplabcut.pose_estimation_pytorch as pep
+            from deeplabcut.core.config import read_config_as_dict
+            model_cfg = read_config_as_dict("pytorch_config.yaml")
+            runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
+            video_predictions = pep.video_inference("video.mp4", runner)
 
         Top-down video analysis:
-        >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> from deeplabcut.core.config import read_config_as_dict
-        >>> model_cfg = read_config_as_dict("pytorch_config.yaml")
-        >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
-        >>> d_runner = pep.get_pose_inference_runner(model_cfg, "snapshot-detector.pt")
-        >>> video_predictions = pep.video_inference("video.mp4", runner, d_runner)
-        >>>
+
+            import deeplabcut.pose_estimation_pytorch as pep
+            from deeplabcut.core.config import read_config_as_dict
+            model_cfg = read_config_as_dict("pytorch_config.yaml")
+            runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
+            d_runner = pep.get_pose_inference_runner(model_cfg, "snapshot-detector.pt")
+            video_predictions = pep.video_inference("video.mp4", runner, d_runner)
+
 
         Top-Down pose estimation with pre-computed bounding boxes:
-        >>> import numpy as np
-        >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> from deeplabcut.core.config import read_config_as_dict
-        >>>
-        >>> video_iterator = pep.VideoIterator("video.mp4")
-        >>> video_iterator.set_context([
-        >>>     { # frame 1 context
-        >>>         "bboxes": np.array([[12, 17, 4, 5]]),  # format (x0, y0, w, h)
-        >>>     },
-        >>>     { # frame 1 context
-        >>>         "bboxes": np.array([[12, 17, 4, 5], [18, 92, 54, 32]]),
-        >>>     },
-        >>>     ...
-        >>> ])
-        >>> model_cfg = read_config_as_dict("pytorch_config.yaml")
-        >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
-        >>> video_predictions = pep.video_inference(video_iterator, runner)
-        >>>
+
+            import numpy as np
+            import deeplabcut.pose_estimation_pytorch as pep
+            from deeplabcut.core.config import read_config_as_dict
+            video_iterator = pep.VideoIterator("video.mp4")
+            video_iterator.set_context([
+                { # frame 1 context
+                    "bboxes": np.array([[12, 17, 4, 5]]),  # format (x0, y0, w, h)
+                },
+                { # frame 1 context
+                    "bboxes": np.array([[12, 17, 4, 5], [18, 92, 54, 32]]),
+                },
+                ...
+            ])
+            model_cfg = read_config_as_dict("pytorch_config.yaml")
+            runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
+            video_predictions = pep.video_inference(video_iterator, runner)
     """
     if not isinstance(video, VideoIterator):
         video = VideoIterator(str(video), cropping=cropping)
@@ -246,8 +246,8 @@ def video_inference(
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def analyze_videos(
-    config: str,
-    videos: str | list[str],
+    config: str | Path,
+    videos: str | Path | list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
@@ -256,7 +256,7 @@ def analyze_videos(
     snapshot_index: int | str | None = None,
     detector_snapshot_index: int | str | None = None,
     device: str | None = None,
-    destfolder: str | None = None,
+    destfolder: str | Path | None = None,
     batch_size: int | None = None,
     detector_batch_size: int | None = None,
     dynamic: tuple[bool, float, int] = (False, 0.5, 10),
@@ -417,6 +417,8 @@ def analyze_videos(
     Returns:
         The scorer used to analyze the videos
     """
+    config = Path(config)
+    destfolder = Path(destfolder) if destfolder is not None else None
     # Create the output folder
     _validate_destfolder(destfolder)
 
@@ -606,7 +608,7 @@ def analyze_videos(
                 robust_nframes=robust_nframes,
             )
 
-            with open(output_path / f"{output_prefix}_meta.pickle", "wb") as f:
+            with (output_path / f"{output_prefix}_meta.pickle").open("wb") as f:
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
             if use_shelve and save_as_df:
@@ -614,7 +616,7 @@ def analyze_videos(
 
             if not use_shelve:
                 output_data = _generate_output_data(pose_cfg, predictions)
-                with open(output_pkl, "wb") as f:
+                with Path(output_pkl).open("wb") as f:
                     pickle.dump(output_data, f, pickle.HIGHEST_PROTOCOL)
 
                 if save_as_df:
@@ -784,7 +786,7 @@ def _generate_assemblies_file(
 ) -> None:
     """Generates the assemblies file from predictions."""
     if full_data_path.exists():
-        with open(full_data_path, "rb") as f:
+        with full_data_path.open("rb") as f:
             data = pickle.load(f)
 
     else:
@@ -835,7 +837,7 @@ def _generate_assemblies_file(
             unique_preds = unique_preds.transpose((1, 0, 2))
             assemblies["single"][frame_index] = unique_preds[0]  # single prediction
 
-    with open(output_path, "wb") as file:
+    with Path(output_path).open("wb") as file:
         pickle.dump(assemblies, file, pickle.HIGHEST_PROTOCOL)
 
     if isinstance(data, shelving.ShelfReader):

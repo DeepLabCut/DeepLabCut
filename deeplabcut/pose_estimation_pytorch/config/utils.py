@@ -57,7 +57,7 @@ def replace_default_values(
         the configuration with placeholder values replaced
 
     Raises:
-        ValueError: if there is a placeholder value who's "updated" value was not
+        ValueError: If there is a placeholder value who's "updated" value was not
             given to the method
     """
 
@@ -173,7 +173,7 @@ def update_config_by_dotpath(config: dict, updates: dict, copy_original: bool = 
 
 def get_config_folder_path() -> Path:
     """Returns: the Path to the folder containing the "configs" for DeepLabCut 3.0"""
-    dlc_parent_path = Path(auxiliaryfunctions.get_deeplabcut_path())
+    dlc_parent_path = auxiliaryfunctions.get_deeplabcut_path()
     return dlc_parent_path / "pose_estimation_pytorch" / "config"
 
 
@@ -185,7 +185,8 @@ def load_base_config(config_folder_path: Path) -> dict:
 
 
 def load_backbones(configs_dir: Path) -> list[str]:
-    """
+    """Load backbones.
+
     Args:
         configs_dir: the Path to the folder containing the "configs" for PyTorch
             DeepLabCut
@@ -199,7 +200,8 @@ def load_backbones(configs_dir: Path) -> list[str]:
 
 
 def load_detectors(configs_dir: Path) -> list[str]:
-    """
+    """Load detectors.
+
     Args:
         configs_dir: the Path to the folder containing the "configs" for PyTorch
             DeepLabCut

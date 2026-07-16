@@ -16,7 +16,7 @@
 import collections
 import contextlib
 import copy
-import os
+from pathlib import Path
 
 import tensorflow as tf
 import tf_slim as slim
@@ -130,7 +130,7 @@ def mobilenet_base(  # pylint: disable=invalid-name
         usage will be to set this value in (0, 1) to reduce the number of
         parameters or computation cost of the model.
       final_endpoint: The name of last layer, for early termination for
-      for V1-based networks: last layer is "layer_14", for V2: "layer_20"
+        for V1-based networks: last layer is "layer_14", for V2: "layer_20"
       output_stride: An integer that specifies the requested ratio of input to
         output spatial resolution. If not None, then we invoke atrous convolution
         if necessary to prevent the network from reducing the spatial resolution
@@ -161,8 +161,7 @@ def mobilenet_base(  # pylint: disable=invalid-name
                   losses.
 
     Raises:
-      ValueError: depth_multiplier <= 0, or the target output_stride is not
-                  allowed.
+      ValueError: If ``depth_multiplier`` <= 0 or the target ``output_stride`` is not allowed.
     """
     if multiplier <= 0:
         raise ValueError("multiplier is not greater than zero.")
@@ -248,7 +247,7 @@ def mobilenet_base(  # pylint: disable=invalid-name
                 print(f"Failed to create op {i}: {opdef} params: {params}")
                 raise
             end_points[end_point] = net
-            scope = os.path.dirname(net.name)
+            scope = str(Path(net.name).parent)
             scopes[scope] = end_point
             if final_endpoint is not None and end_point == final_endpoint:
                 break
@@ -256,8 +255,8 @@ def mobilenet_base(  # pylint: disable=invalid-name
         # Add all tensors that end with 'output' to
         # endpoints
         for t in net.graph.get_operations():
-            scope = os.path.dirname(t.name)
-            bn = os.path.basename(t.name)
+            scope = str(Path(t.name).parent)
+            bn = Path(t.name).name
             if scope in scopes and t.name.endswith("output"):
                 end_points[scopes[scope] + "/" + bn] = t.outputs[0]
         return net, end_points
@@ -319,7 +318,7 @@ def mobilenet(
         activation tensor.
 
     Raises:
-      ValueError: Input rank is invalid.
+      ValueError: If the input rank is invalid.
     """
     is_training = mobilenet_args.get("is_training", False)
     input_shape = inputs.get_shape().as_list()
@@ -370,6 +369,7 @@ def global_pool(input_tensor, pool_op=tf.nn.avg_pool2d):
     Args:
       input_tensor: input tensor
       pool_op: pooling op (avg pool is default)
+
     Returns:
       a tensor batch_size x 1 x 1 x depth.
     """
@@ -406,6 +406,7 @@ def training_scope(
 
        # the network created will be trainble with dropout/batch norm
        # initialized appropriately.
+
     Args:
       is_training: if set to False this will ensure that all customizations are
         set to non-training mode. This might be helpful for code that is reused

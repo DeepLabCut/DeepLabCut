@@ -10,10 +10,8 @@
 #
 from __future__ import annotations
 
-import glob
 import json
 import logging
-import os
 from collections import defaultdict
 from pathlib import Path
 
@@ -79,16 +77,18 @@ def superanimal_analyze_images(
         model_name: str
             The name of the pose model architecture to use for inference. To get a list
             of available models for a SuperAnimal, call:
-                >>> import dlclibrary
-                >>> superanimal_name = "superanimal_topviewmouse"
-                >>> dlclibrary.get_available_models(superanimal_name)
+
+                import dlclibrary
+                superanimal_name = "superanimal_topviewmouse"
+                dlclibrary.get_available_models(superanimal_name)
 
         detector_name: str
             The name of the detector architecture to use for inference. To get a list
             of available detectors for a SuperAnimal, call:
-                >>> import dlclibrary
-                >>> superanimal_name = "superanimal_topviewmouse"
-                >>> dlclibrary.get_available_detectors(superanimal_name)
+
+                import dlclibrary
+                superanimal_name = "superanimal_topviewmouse"
+                dlclibrary.get_available_detectors(superanimal_name)
 
         images: str, Path, list[str], list[Path]
             The images to analyze. Can either be a directory containing images, or
@@ -122,16 +122,16 @@ def superanimal_analyze_images(
             A customized SuperAnimal model configuration, as an alternative to the
             default SuperAnimal model configuration. You can get the default SuperAnimal
             config with:
-                >>> import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
-                >>> config = modelzoo.load_super_animal_config(
-                >>>     super_animal, model_name, detector_name,
-                >>> )
+                import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
+                config = modelzoo.load_super_animal_config(
+                    super_animal, model_name, detector_name,
+                )
 
-        customized_pose_checkpoint: str | None
+        customized_pose_checkpoint (str | Path | None, optional):
             A customized SuperAnimal pose checkpoint, as an alternative to the
             HuggingFace SuperAnimal models.
 
-        customized_detector_checkpoint: str | None
+        customized_detector_checkpoint (str | Path | None, optional):
             A customized SuperAnimal detector checkpoint, as an alternative to the
             HuggingFace SuperAnimal models.
 
@@ -139,19 +139,19 @@ def superanimal_analyze_images(
         The predictions made by the model for each image.
 
     Examples:
-        >>> from deeplabcut.pose_estimation_pytorch.apis import (
-        >>>     superanimal_analyze_images
-        >>> )
-        >>> predictions = superanimal_analyze_images(
-        >>>     superanimal_name="superanimal_topviewmouse",
-        >>>     model_name="resnet_50",
-        >>>     detector_name="fasterrcnn_mobilenet_v3_large_fpn",
-        >>>     images="test_mouse_images",
-        >>>     max_individuals=3,
-        >>>     out_folder="test_mouse_images_labeled",
-        >>>     device="cuda:0",
-        >>>     pose_threshold=0.1,
-        >>> )
+        from deeplabcut.pose_estimation_pytorch.apis import (
+            superanimal_analyze_images
+        )
+        predictions = superanimal_analyze_images(
+            superanimal_name="superanimal_topviewmouse",
+            model_name="resnet_50",
+            detector_name="fasterrcnn_mobilenet_v3_large_fpn",
+            images="test_mouse_images",
+            max_individuals=3,
+            out_folder="test_mouse_images_labeled",
+            device="cuda:0",
+            pose_threshold=0.1,
+        )
     """
     out_folder = Path(out_folder)
     out_folder.mkdir(exist_ok=True, parents=True)
@@ -296,7 +296,7 @@ def analyze_images(
     """
     cfg = auxiliaryfunctions.read_config(config)
     train_frac = cfg["TrainingFraction"][trainingsetindex]
-    model_folder = Path(cfg["project_path"]) / auxiliaryfunctions.get_model_folder(
+    model_folder = cfg.project_path / auxiliaryfunctions.get_model_folder(
         train_frac,
         shuffle,
         cfg,
@@ -353,7 +353,7 @@ def analyze_images(
 
     if output_dir is None:
         images = list(predictions.keys())
-        output_dir = Path(images[0]).parent.resolve()
+        output_dir = Path(images[0]).parent.absolute()
         print(f"Setting output directory to {output_dir}")
 
     output_dir = Path(output_dir)
@@ -458,7 +458,7 @@ def analyze_image_folder(
         for it (e.g. "bodyparts", "unique_bodyparts", "bboxes", "bbox_scores")
 
     Raises:
-        ValueError: if the pose model is a top-down model but no detector path is given
+        ValueError: If the pose model is a top-down model but no detector path is given
     """
     model_cfg = PoseConfig.from_any(model_cfg)
 
@@ -572,9 +572,9 @@ def plot_images_coco(
         A list of dictionaries containing predictions made on each image.
 
     Raises:
-        ValueError: if a top-down model configuration is given but detector_path is None
+        ValueError: If a top-down model configuration is given but detector_path is None
     """
-    with open(data_json_path) as f:
+    with Path(data_json_path).open() as f:
         obj = json.load(f)
 
     coco_images = obj["images"]
@@ -583,7 +583,7 @@ def plot_images_coco(
     image_name_to_id = {}
     for image in coco_images:
         # only works with relative path as a test image can be in a different folder
-        image_name = image["file_name"].split(os.sep)[-1]
+        image_name = Path(image["file_name"]).name
         image_name_to_id[image_name] = image["id"]
 
     image_id_to_annotations = defaultdict(list)
@@ -594,11 +594,11 @@ def plot_images_coco(
             image_id_to_annotations[image_id].append(annotation)
 
     # need to support more image types
-    images_in_folder = glob.glob(str(Path(image_folder) / "*.png"))
+    images_in_folder = list(Path(image_folder).glob("*.png"))
     corresponded_images = []
     for image in images_in_folder:
         image_path = image
-        image_name = image.split(os.sep)[-1]
+        image_name = Path(image).name
         if image_name in image_name_to_id:
             corresponded_images.append(image_path)
 
@@ -615,11 +615,11 @@ def plot_images_coco(
         cond_provider=cond_provider,
     )
 
-    os.makedirs(out_path, exist_ok=True)
+    Path(out_path).mkdir(parents=True, exist_ok=True)
 
     coco_format_predictions = []
     for image_path, prediction in predictions.items():
-        image_name = image_path.split(os.sep)[-1]
+        image_name = Path(image_path).name
         coco_prediction = dict(
             image_id=image_name_to_id[image_name],
             gt_annotations=image_id_to_annotations[image_name_to_id[image_name]],
@@ -654,8 +654,8 @@ def plot_images_coco(
             rect = plt.Rectangle((xmin, ymin), w, h, fill=False, edgecolor="blue", linewidth=2)
 
         ax.add_patch(rect)
-        image_name = image_path.split("/")[-1]
-        fig.savefig(os.path.join(out_path, image_name))
+        image_name = Path(image_path).name
+        fig.savefig(Path(out_path) / image_name)
 
     return coco_format_predictions
 

@@ -116,20 +116,24 @@ class PartAffinityFieldPredictor(BasePredictor):
         output.
 
         Args:
-            stride: the stride of the model
-            outputs: Output tensors from previous layers.
-                output = heatmaps, locref, pafs
-                heatmaps: torch.Tensor([batch_size, num_joints, height, width])
-                locref: torch.Tensor([batch_size, num_joints, height, width])
-
+            stride (float): the stride of the model
+            outputs (dict[str, torch.Tensor]): Output tensors from previous layers.
+                * ``output``: ``heatmaps``, ``locref``, ``pafs``
+                * ``heatmaps``: ``torch.Tensor([batch_size, num_joints, height, width])``
+                * ``locref``: ``torch.Tensor([batch_size, num_joints, height, width])``
         Returns:
-            A dictionary containing a "poses" key with the output tensor as value.
+            dict[str, torch.Tensor]: A dictionary containing a "poses" key with the output tensor as value.
 
-        Example:
-            >>> predictor = PartAffinityFieldPredictor(num_animals=3, location_refinement=True, locref_stdev=7.2801)
-            >>> output = (torch.rand(32, 17, 64, 64), torch.rand(32, 34, 64, 64), torch.rand(32, 136, 64, 64))
-            >>> stride = 8
-            >>> poses = predictor.forward(stride, output)
+        Examples:
+            create a ``PartAffinityFieldPredictor`` and forward a random tensor:
+
+                import torch
+                from deeplabcut.pose_estimation_pytorch.models.predictors import PartAffinityFieldPredictor
+
+                predictor = PartAffinityFieldPredictor(num_animals=3, location_refinement=True, locref_stdev=7.2801)
+                output = (torch.rand(32, 17, 64, 64), torch.rand(32, 34, 64, 64), torch.rand(32, 136, 64, 64))
+                stride = 8
+                poses = predictor.forward(stride, output)
         """
         heatmaps = outputs["heatmap"]  # (batch_size, num_joints, height, width)
         locrefs = outputs["locref"]  # (batch_size, num_joints*2, height, width)
