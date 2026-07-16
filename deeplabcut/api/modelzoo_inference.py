@@ -14,9 +14,6 @@ from pathlib import Path
 
 from deeplabcut.api._tf_routing import with_tensorflow_fallback
 from deeplabcut.core.deprecation import renamed_parameter
-from deeplabcut.modelzoo.video_inference import (
-    video_inference_superanimal as _impl,
-)
 
 
 @with_tensorflow_fallback(
@@ -263,7 +260,11 @@ def video_inference_superanimal(
                 video_adapt=True,
             )
     """
-    return _impl(
+    from deeplabcut.modelzoo.video_inference import (
+        video_inference_superanimal as _video_inference_superanimal,
+    )
+
+    return _video_inference_superanimal(
         videos=videos,
         superanimal_name=superanimal_name,
         model_name=model_name,

@@ -19,7 +19,6 @@ from collections.abc import Sequence
 from deeplabcut.api._tf_routing import with_tensorflow_fallback
 from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.core.engine import Engine
-from deeplabcut.create_project.modelzoo import create_pretrained_project as _create_pretrained_project_impl
 
 
 @with_tensorflow_fallback(
@@ -120,7 +119,11 @@ def create_pretrained_project(
 
         On Windows, paths should be formatted as ``r`"C:\"`` or ``"C:\\"`` (i.e. a double backslash).
     """
-    return _create_pretrained_project_impl(
+    from deeplabcut.create_project.modelzoo import (
+        create_pretrained_project as _create_pretrained_project,
+    )
+
+    return _create_pretrained_project(
         project=project,
         experimenter=experimenter,
         videos=videos,
