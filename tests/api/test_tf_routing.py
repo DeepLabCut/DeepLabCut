@@ -139,7 +139,7 @@ def test_resolve_legacy_kwargs_normalize_gputouse_raises_when_both_given():
 
 
 def test_resolve_engine_uses_explicit_engine():
-    engine = tf_routing._resolve_engine("cfg.yaml", engine=Engine.PYTORCH)
+    engine = tf_routing._resolve_engine({"config": "cfg.yaml", "engine": Engine.PYTORCH})
     assert engine == Engine.PYTORCH
 
 
@@ -147,10 +147,12 @@ def test_resolve_engine_uses_explicit_engine():
 @patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 def test_resolve_engine_from_shuffle_metadata(mock_read_config, mock_get_shuffle_engine):
     engine = tf_routing._resolve_engine(
-        "cfg.yaml",
-        shuffle=2,
-        trainingsetindex=1,
-        modelprefix="prefix",
+        {
+            "config": "cfg.yaml",
+            "shuffle": 2,
+            "trainingsetindex": 1,
+            "modelprefix": "prefix",
+        }
     )
 
     assert engine == Engine.PYTORCH
@@ -166,7 +168,7 @@ def test_resolve_engine_from_shuffle_metadata(mock_read_config, mock_get_shuffle
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.PYTORCH)
 @patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 def test_resolve_engine_defaults_to_shuffle_one(mock_read_config, mock_get_shuffle_engine):
-    engine = tf_routing._resolve_engine("cfg.yaml")
+    engine = tf_routing._resolve_engine({"config": "cfg.yaml"})
 
     assert engine == Engine.PYTORCH
     mock_get_shuffle_engine.assert_called_once_with(
@@ -182,7 +184,7 @@ def test_resolve_engine_defaults_to_shuffle_one(mock_read_config, mock_get_shuff
 def test_resolve_engine_from_shuffles_list(mock_read_config, mock_get_shuffle_engine):
     mock_get_shuffle_engine.side_effect = [Engine.PYTORCH, Engine.PYTORCH]
 
-    engine = tf_routing._resolve_engine("cfg.yaml", shuffles=[1, 2])
+    engine = tf_routing._resolve_engine({"config": "cfg.yaml", "shuffles": [1, 2]})
 
     assert engine == Engine.PYTORCH
     assert mock_get_shuffle_engine.call_count == 2
@@ -191,7 +193,7 @@ def test_resolve_engine_from_shuffles_list(mock_read_config, mock_get_shuffle_en
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.TF)
 @patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 def test_resolve_engine_accepts_legacy_shuffles_kwarg(mock_read_config, mock_get_shuffle_engine):
-    engine = tf_routing._resolve_engine("cfg.yaml", Shuffles=[2, 3])
+    engine = tf_routing._resolve_engine({"config": "cfg.yaml", "Shuffles": [2, 3]})
 
     assert engine == Engine.TF
     assert mock_get_shuffle_engine.call_count == 2
@@ -211,7 +213,7 @@ def test_resolve_engine_accepts_legacy_shuffles_kwarg(mock_read_config, mock_get
 
 def test_resolve_engine_rejects_both_shuffles_and_shuffles():
     with pytest.raises(TypeError, match="Cannot specify both 'Shuffles'"):
-        tf_routing._resolve_engine("cfg.yaml", shuffles=[1], Shuffles=[2])
+        tf_routing._resolve_engine({"config": "cfg.yaml", "shuffles": [1], "Shuffles": [2]})
 
 
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine")
@@ -220,13 +222,13 @@ def test_resolve_engine_raises_when_shuffles_have_different_engines(mock_read_co
     mock_get_shuffle_engine.side_effect = [Engine.PYTORCH, Engine.TF]
 
     with pytest.raises(ValueError, match="All shuffles must have the same engine"):
-        tf_routing._resolve_engine("cfg.yaml", shuffles=[1, 2])
+        tf_routing._resolve_engine({"config": "cfg.yaml", "shuffles": [1, 2]})
 
 
 @patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 def test_resolve_engine_reads_config_from_kwargs(mock_read_config):
     with patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.PYTORCH):
-        tf_routing._resolve_engine(config="other.yaml", engine=Engine.PYTORCH)
+        tf_routing._resolve_engine({"config": "other.yaml", "engine": Engine.PYTORCH})
 
     mock_read_config.assert_not_called()
 
