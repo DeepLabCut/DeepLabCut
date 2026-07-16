@@ -1,0 +1,61 @@
+name: Docs / Manage dev-docs versions
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action to perform"
+        required: true
+        type: choice
+        options:
+          - deploy-version
+          - delete-version
+
+      version_label:
+        description: "Version label to deploy or delete, e.g. 3.0"
+        required: true
+        type: string
+
+      git_tag:
+        description: "Git tag to check out for deploy-version, e.g. v3.0.0rc14. Ignored for delete-version."
+        required: false
+        type: string
+
+      mark_latest_release:
+        description: "Alias this version as latest-release and set /dev/ default to latest-release."
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-version:
+    if: inputs.action == 'deploy-version'
+    uses: ./.github/workflows/deploy-dev-docs-mike.yml
+    with:
+      action: deploy
+      version_label: ${{ inputs.version_label }}
+      git_tag: ${{ inputs.git_tag }}
+      aliases: ${{ inputs.mark_latest_release && 'latest-release' || '' }}
+      default_label: ${{ inputs.mark_latest_release && 'latest-release' || '' }}
+      python-version: "3.10"
+      config-file: dev-docs/mkdocs.yml
+      deploy-prefix: dev
+    secrets: inherit
+
+  delete-version:
+    if: inputs.action == 'delete-version'
+    uses: ./.github/workflows/deploy-dev-docs-mike.yml
+    with:
+      action: delete
+      version_label: ${{ inputs.version_label }}
+      python-version: "3.10"
+      config-file: dev-docs/mkdocs.yml
+      deploy-prefix: dev
+    secrets: inherit
