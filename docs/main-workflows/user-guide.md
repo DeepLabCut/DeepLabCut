@@ -267,11 +267,12 @@ After creating the project and initial configuration, the `task`, the `scorer` a
 
 ###### API Docs
 
-`````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
 [View the `create_new_project` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/create_project/new/#deeplabcut.create_project.new.create_new_project)
+```
 
 #### (B) Configure the Project
 
@@ -305,7 +306,7 @@ align: center
 ---
 Single Animal project configuration file glossary
 ```
-`````
+````
 
 ````{dropdown} : Configuration
 ---
