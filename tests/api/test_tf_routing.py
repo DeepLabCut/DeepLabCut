@@ -472,3 +472,41 @@ def test_with_tensorflow_fallback_when_without_tensorflow_module_defaults():
         canonical_fn()
 
     mock_get_impl.assert_called_once_with("canonical_fn", module=None)
+
+
+def test_with_tensorflow_fallback_forwards_legacy_alias_to_renamed_parameter():
+    """Router must not swallow legacy alias before inner @renamed_parameter."""
+    from deeplabcut.core.deprecation import renamed_parameter
+
+    pytorch_fn = MagicMock(return_value="pytorch")
+
+    @tf_routing.with_tensorflow_fallback
+    @renamed_parameter(old="displayiters", new="display_iters", since="3.0.0")
+    def canonical_fn(config: str, display_iters: int | None = None):
+        return pytorch_fn(config, display_iters=display_iters)
+
+    with (
+        patch("deeplabcut.api._tf_routing._resolve_engine", return_value=Engine.PYTORCH),
+        pytest.warns(DLCDeprecationWarning, match="displayiters"),
+    ):
+        result = canonical_fn("cfg.yaml", displayiters=2)
+
+    assert result == "pytorch"
+    pytorch_fn.assert_called_once_with("cfg.yaml", display_iters=2)
+
+
+def test_with_tensorflow_fallback_drops_unknown_params_on_pytorch_path():
+    pytorch_fn = MagicMock(return_value="pytorch")
+
+    @tf_routing.with_tensorflow_fallback(dropped_params=["allow_growth"])
+    def canonical_fn(config: str, shuffle: int = 1):
+        return pytorch_fn(config, shuffle=shuffle)
+
+    with (
+        patch("deeplabcut.api._tf_routing._resolve_engine", return_value=Engine.PYTORCH),
+        pytest.warns(DLCDeprecationWarning, match="allow_growth"),
+    ):
+        result = canonical_fn("cfg.yaml", shuffle=2, allow_growth=True)
+
+    assert result == "pytorch"
+    pytorch_fn.assert_called_once_with("cfg.yaml", shuffle=2)

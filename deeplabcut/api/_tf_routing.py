@@ -47,24 +47,29 @@ def warn_deprecated_tensorflow():
     )
 
 
-def _bind_unified_kwargs(sig: inspect.Signature, args: tuple, kwargs: dict) -> dict:
-    """Resolve all positional args to a unified kwargs dict using the function signature.
+def _positionals_as_kwargs(sig: inspect.Signature, args: tuple, kwargs: dict) -> dict:
+    """Routing view: kwargs plus positionals mapped to parameter names.
 
-    For ``*args`` parameters, positional values are preserved in a ``_var_positional``
-    key so they can be forwarded to the underlying implementation.
+    Does not validate unknown kwargs — legacy aliases are forwarded downstream
+    and handled by ``@renamed_parameter`` / backend-specific logic.
     """
-    bound = sig.bind(*args, **kwargs)
-    bound.apply_defaults()
-
-    unified: dict = {}
-    for name, param in sig.parameters.items():
-        if param.kind is inspect.Parameter.VAR_POSITIONAL:
-            unified["_var_positional"] = bound.arguments.get(name, ())
-        elif param.kind is inspect.Parameter.VAR_KEYWORD:
-            unified.update(bound.arguments.get(name, {}))
-        elif name in bound.arguments:
-            unified[name] = bound.arguments[name]
-
+    unified = dict(kwargs)
+    params = [
+        p
+        for p in sig.parameters.values()
+        if p.kind
+        in (
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        )
+    ]
+    has_var_positional = any(p.kind is inspect.Parameter.VAR_POSITIONAL for p in sig.parameters.values())
+    if len(args) > len(params) and not has_var_positional:
+        raise TypeError(f"too many positional arguments (expected at most {len(params)}, got {len(args)})")
+    for param, value in zip(params, args, strict=False):
+        if param.name in unified:
+            raise TypeError(f"got multiple values for argument '{param.name}'")
+        unified[param.name] = value
     return unified
 
 
@@ -105,6 +110,9 @@ def with_tensorflow_fallback(
     Note:
         When ``when`` is ``None``, the engine is resolved from the shuffle metadata if not specified explicitly. If
         neither ``shuffles``, ``shuffle`` nor ``engine`` is passed, it assumes shuffle=1.
+
+        The original ``*args`` / ``**kwargs`` (minus ``engine``) are forwarded downstream. Parameter renames such as
+        ``displayiters`` → ``display_iters`` stay on ``@renamed_parameter`` / the TF backend, not in this router.
     """
 
     def decorator(fn):
@@ -113,7 +121,7 @@ def with_tensorflow_fallback(
 
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
-            unified = _bind_unified_kwargs(sig, args, kwargs)
+            unified = _positionals_as_kwargs(sig, args, kwargs)
 
             if when is not None:
                 # Custom condition routing (e.g. modelzoo functions)
@@ -122,27 +130,24 @@ def with_tensorflow_fallback(
                 # Default: engine-based routing (from shuffle / config)
                 route_to_tf = _resolve_engine(unified) == Engine.TF
 
-            # Strip engine before forwarding to either implementation
-            unified.pop("engine", None)
+            kwargs.pop("engine", None)
 
             if route_to_tf:
                 warn_deprecated_tensorflow()
                 return _get_tensorflow_impl(tf_name, module=tensorflow_module)(
                     *args,
-                    **{k: v for k, v in kwargs.items() if k != "engine"},
+                    **kwargs,
                 )
 
-            resolved = _resolve_legacy_kwargs(
-                unified,
+            # PT-only: router-owned legacy cleanup (allow_growth, keepdeconvweights, …)
+            kwargs = _resolve_legacy_kwargs(
+                kwargs,
                 renamed_params=renamed_params or {},
                 dropped_params=dropped_params or [],
                 normalize_gputouse=normalize_gputouse,
             )
-
-            var_positional = resolved.pop("_var_positional", ())
-            if var_positional:
-                return fn(*var_positional, **resolved)
-            return fn(**resolved)
+            # Inner @renamed_parameter still sees aliases like displayiters / videotype
+            return fn(*args, **kwargs)
 
         return wrapper
 
@@ -166,8 +171,8 @@ def _resolve_engine(unified_kwargs: dict) -> Engine:
     """Resolve engine from explicit engine parameter or shuffle metadata.
 
     Args:
-        unified_kwargs: Keyword arguments resolved from positional and keyword args
-                        via ``_bind_unified_kwargs``.
+        unified_kwargs: Keyword arguments with positionals mapped to names via
+                        ``_positionals_as_kwargs``.
     """
     engine = unified_kwargs.get("engine")
     if engine is not None:
