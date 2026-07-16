@@ -13,8 +13,10 @@
 Based on the ``mmdetection`` CSPNeXt implementation. For more information, see:
 <https://github.com/open-mmlab/mmdetection/blob/main/mmdet/models/backbones/cspnext.py>
 
-For more details about this architecture, see `RTMDet: An Empirical Study of Designing
-Real-Time Object Detectors`: https://arxiv.org/abs/1711.05101.
+For more details about this architecture, see CSPNeXt: A new efficient token hybrid backbone:
+https://www.sciencedirect.com/science/article/abs/pii/S0952197624000447
+and:
+
 """
 
 from dataclasses import dataclass
