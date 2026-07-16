@@ -32,19 +32,11 @@ from deeplabcut.tensorflow_compat.pose_estimation import (
 )
 
 __all__ = [
-    "MakeInference_yaml",
-    "MakeTest_pose_yaml",
-    "MakeTrain_pose_yaml",
-    "ParseYaml",
     "analyze_images",
     "analyze_time_lapse_frames",
     "analyze_videos",
     "convert_detections2tracklets",
-    "create_multianimaltraining_dataset",
     "create_tracking_dataset",
-    "create_training_dataset",
-    "create_training_dataset_from_existing_split",
-    "create_training_model_comparison",
     "evaluate_network",
     "export_model",
     "extract_maps",
