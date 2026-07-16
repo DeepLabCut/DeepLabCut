@@ -14,6 +14,7 @@ from pathlib import Path
 
 from dlclibrary import get_available_detectors
 from dlclibrary.dlcmodelzoo.modelzoo_download import (
+    MODELOPTIONS,
     download_huggingface_model,
     get_available_datasets,
     get_available_models,
@@ -38,6 +39,9 @@ from deeplabcut.pose_estimation_pytorch.config import (
 )
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import load_super_animal_config
 from deeplabcut.utils import auxiliaryfunctions
+
+# Deprecated alias; kept for Colab notebook backwards compatibility.
+Modeloptions = MODELOPTIONS
 
 
 @deprecated(replacement="deeplabcut.create_pretrained_project(..., model='full_human')", since="3.0.0")
