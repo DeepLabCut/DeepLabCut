@@ -13,7 +13,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.apis.utils import return_train_network_path
@@ -21,13 +21,13 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import return_train_network_p
 _READ_CONFIG = "deeplabcut.pose_estimation_pytorch.apis.utils.auxiliaryfunctions.read_config"
 _GET_MODEL_FOLDER = "deeplabcut.pose_estimation_pytorch.apis.utils.auxiliaryfunctions.get_model_folder"
 
-_PROJECT_PATH = "/project"
+_PROJECT_PATH = Path("/project")
 _MODEL_FOLDER = "dlc-models/iteration-0/trainset80shuffle1"
 
-_CFG = {
-    "project_path": _PROJECT_PATH,
-    "TrainingFraction": [0.8, 0.95],
-}
+# Mock ProjectConfig with minimal attribute + dict access
+_DATA = {"project_path": Path("/project"), "TrainingFraction": [0.8, 0.95]}
+_CFG = MagicMock(**_DATA)
+_CFG.__getitem__.side_effect = _DATA.__getitem__
 
 
 # ---------------------------------------------------------------------------
