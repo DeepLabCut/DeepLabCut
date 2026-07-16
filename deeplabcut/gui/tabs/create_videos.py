@@ -240,7 +240,7 @@ class CreateVideos(DefaultTab):
         self.draw = rb.text() == "Yes"
 
     def create_videos(self):
-        config = self.root.config
+        config_path = self.root.config_path
         shuffle = self.root.shuffle_value
         videos = self.files
         trailpoints = self.trail_points.value()
@@ -260,7 +260,7 @@ class CreateVideos(DefaultTab):
             bodyparts = self.bodyparts_to_use
 
         videos_created = deeplabcut.create_labeled_video(
-            config=config,
+            config=config_path,
             videos=videos,
             shuffle=shuffle,
             filtered=filtered,
@@ -281,7 +281,7 @@ class CreateVideos(DefaultTab):
 
         if self.plot_trajectories.isChecked():
             deeplabcut.plot_trajectories(
-                config=config,
+                config=config_path,
                 videos=videos,
                 shuffle=shuffle,
                 filtered=filtered,
@@ -294,7 +294,7 @@ class CreateVideos(DefaultTab):
 
         if self.skeleton_builder is None:
             self.skeleton_builder = SkeletonBuilder(
-                config_path=self.root.config,
+                config_path=self.root.config_path,
                 parent=self.root,
             )
             self.skeleton_builder.destroyed.connect(self._on_skeleton_builder_destroyed)

@@ -73,14 +73,14 @@ class ShuffleMetadata:
         _, doc_path = auxiliaryfunctions.get_data_and_metadata_filenames(
             trainset_path, self.train_fraction, self.index, cfg
         )
-        if not Path(doc_path).exists():
+        if not doc_path.exists():
             raise ValueError(
                 f"Could not load the metadata file for {self} as {doc_path} does not "
                 f"exist. If you deleted the shuffle, you also need to delete the "
                 f"shuffle from metadata.yaml or recreate the metadata.yaml file."
             )
 
-        with open(doc_path, "rb") as f:
+        with doc_path.open("rb") as f:
             _, train_idx, test_idx, _ = pickle.load(f)
         return ShuffleMetadata(
             name=self.name,
@@ -236,7 +236,7 @@ class TrainingDatasetMetadata:
                 "engine": s.engine.aliases[0],
             }
 
-        with open(self.path(self.project_config), "w") as file:
+        with self.path(self.project_config).open("w") as file:
             file.write("\n".join(self.file_header) + "\n")
             get_yaml_dumper().dump(metadata, file)
 
@@ -306,7 +306,7 @@ class TrainingDatasetMetadata:
         existing_splits: dict[tuple[tuple[int, ...], tuple[int, ...]], int] = {}
         for doc_path in shuffle_docs:
             index = int(doc_path.stem.split("shuffle")[-1])
-            with open(doc_path, "rb") as f:
+            with doc_path.open("rb") as f:
                 _, train_idx, test_idx, train_frac = pickle.load(f)
 
             engine = Engine.TF

@@ -10,12 +10,10 @@
 #
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QIcon
 
 import deeplabcut.compat as compat
 from deeplabcut.core.engine import Engine
@@ -27,6 +25,7 @@ from deeplabcut.gui.components import (
     _create_label_widget,
 )
 from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
+from deeplabcut.gui.gui_assets import icon_from_resource
 from deeplabcut.gui.widgets import ConfigEditor
 
 
@@ -222,7 +221,7 @@ class TrainNetwork(DefaultTab):
         editor.show()
 
     def train_network(self):
-        config = self.root.config
+        config_path = self.root.config_path
         shuffle = int(self._shuffle.value())
 
         kwargs = dict(gputouse=None, autotune=False)
@@ -236,7 +235,7 @@ class TrainNetwork(DefaultTab):
             if detector_to_start_training_from is not None:
                 kwargs["detector_path"] = detector_to_start_training_from
 
-        compat.train_network(config, shuffle, **kwargs)
+        compat.train_network(config_path, shuffle, **kwargs)
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText("The network is now trained and ready to evaluate.")
@@ -244,9 +243,7 @@ class TrainNetwork(DefaultTab):
 
         msg.setWindowTitle("Info")
         msg.setMinimumWidth(900)
-        self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-        self.logo = self.logo_dir + "/assets/logo.png"
-        msg.setWindowIcon(QIcon(self.logo))
+        msg.setWindowIcon(icon_from_resource("logo.png"))
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
 

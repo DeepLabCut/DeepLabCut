@@ -14,7 +14,6 @@ Contributed by Federico Claudi - https://github.com/FedeClaudi
 """
 
 import argparse
-import os
 from collections.abc import Sequence
 from math import atan2, degrees
 from pathlib import Path
@@ -156,7 +155,7 @@ def analyzebone(bp1, bp2):
     bone_orientation = calc_angle_between_vectors_of_points_2d(bp1_pos.T, bp2_pos.T)
 
     # keep the smallest of the two likelihoods
-    likelihoods = np.vstack([bp2.likelihood.values, bp2.likelihood.values]).T
+    likelihoods = np.vstack([bp1.likelihood.values, bp2.likelihood.values]).T
     likelihood = np.min(likelihoods, 1)
 
     # Create dataframe and return
@@ -169,8 +168,8 @@ def analyzebone(bp1, bp2):
 # MAIN FUNC
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def analyzeskeleton(
-    config,
-    videos,
+    config: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
@@ -285,7 +284,7 @@ def analyzeskeleton(
             continue
 
         output_name = filepath.replace(".h5", "_skeleton.h5")
-        if os.path.isfile(output_name):
+        if Path(output_name).is_file():
             print(f"Skeleton in video {vname} already processed. Skipping...")
             video_to_skeleton_df[video] = pd.read_hdf(output_name, "df_with_missing")
             continue

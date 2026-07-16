@@ -18,6 +18,7 @@ import importlib
 import os
 import pkgutil
 import sys
+from pathlib import Path
 
 
 class RedirectStdStreams:
@@ -46,7 +47,7 @@ class RedirectStdStreams:
 
 class DisableOutput(RedirectStdStreams):
     def __init__(self):
-        devnull = open(os.devnull, "w")
+        devnull = Path(os.devnull).open("w")
         super().__init__(stdout=devnull, stderr=devnull)
 
 
