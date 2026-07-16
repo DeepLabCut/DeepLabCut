@@ -37,24 +37,6 @@ warnings.filterwarnings("once", category=DLCDeprecationWarning)
 # Always-available public API
 # -----------------------------------------------------------------------------
 
-# Train / evaluate / predict functions
-from .api.pose_estimation import (
-    analyze_images,
-    analyze_time_lapse_frames,
-    analyze_videos,
-    convert_detections2tracklets,
-    create_tracking_dataset,
-    evaluate_network,
-    export_model,
-    extract_maps,
-    extract_save_all_maps,
-    return_evaluate_network_data,
-    return_train_network_path,
-    train_network,
-    visualize_locrefs,
-    visualize_paf,
-    visualize_scoremaps,
-)
 from .core.engine import Engine
 from .create_project import (
     add_new_videos,
@@ -135,9 +117,36 @@ _OPTIONAL_EXPORTS: dict[str, tuple[str, str]] = {
     "transformer_reID": (".pose_tracking_pytorch", "transformer_reID"),
 }
 
+# API exports are lazily loaded from the pose_estimation API facade.
+_API_EXPORTS_MAP: dict[str, tuple[str, str]] = {
+    "analyze_images": (".api.pose_estimation", "analyze_images"),
+    "analyze_time_lapse_frames": (".api.pose_estimation", "analyze_time_lapse_frames"),
+    "analyze_videos": (".api.pose_estimation", "analyze_videos"),
+    "convert_detections2tracklets": (".api.pose_estimation", "convert_detections2tracklets"),
+    "create_tracking_dataset": (".api.pose_estimation", "create_tracking_dataset"),
+    "evaluate_network": (".api.pose_estimation", "evaluate_network"),
+    "export_model": (".api.pose_estimation", "export_model"),
+    "extract_maps": (".api.pose_estimation", "extract_maps"),
+    "extract_save_all_maps": (".api.pose_estimation", "extract_save_all_maps"),
+    "return_evaluate_network_data": (".api.pose_estimation", "return_evaluate_network_data"),
+    "return_train_network_path": (".api.pose_estimation", "return_train_network_path"),
+    "train_network": (".api.pose_estimation", "train_network"),
+    "visualize_locrefs": (".api.pose_estimation", "visualize_locrefs"),
+    "visualize_paf": (".api.pose_estimation", "visualize_paf"),
+    "visualize_scoremaps": (".api.pose_estimation", "visualize_scoremaps"),
+}
+
 
 def __getattr__(name: str) -> Any:
-    """Lazily load optional public exports."""
+    """Lazily load optional public exports and API exports."""
+    # Check API exports first (always available, lightweight import)
+    if name in _API_EXPORTS_MAP:
+        module_name, attr_name = _API_EXPORTS_MAP[name]
+        module = import_module(module_name, package=__name__)
+        value = getattr(module, attr_name)
+        globals()[name] = value
+        return value
+
     if name not in _OPTIONAL_EXPORTS:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
@@ -214,7 +223,7 @@ _DATASET_EXPORTS = [
     "mergeandsplit",
 ]
 
-_COMPAT_EXPORTS = [
+_API_EXPORTS = [
     "analyze_images",
     "analyze_time_lapse_frames",
     "analyze_videos",
@@ -275,7 +284,7 @@ __all__ = (
     + _CORE_EXPORTS
     + _PROJECT_EXPORTS
     + _DATASET_EXPORTS
-    + _COMPAT_EXPORTS
+    + _API_EXPORTS
     + _UTIL_EXPORTS
     + _POST_PROCESSING_EXPORTS
     + _THREE_D_EXPORTS

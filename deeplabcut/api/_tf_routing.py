@@ -19,7 +19,6 @@ from importlib import import_module
 
 from deeplabcut.core.deprecation import DLCDeprecationWarning
 from deeplabcut.core.engine import Engine
-from deeplabcut.utils.auxiliaryfunctions import read_config
 
 _TF_MODULE = "deeplabcut.tensorflow_compat"
 
@@ -113,6 +112,8 @@ def _resolve_engine(*args, **kwargs) -> Engine:
     engine = kwargs.get("engine")
     if engine is not None:
         return engine
+
+    from deeplabcut.utils.auxiliaryfunctions import read_config
 
     shuffles = _shuffles_from_kwargs(kwargs)
     config = kwargs["config"] if "config" in kwargs else args[0]
