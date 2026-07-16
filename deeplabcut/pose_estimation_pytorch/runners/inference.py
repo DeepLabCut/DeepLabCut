@@ -664,7 +664,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
 
         # Extract the conditions
         conds = predictions["bodyparts"][..., :3]
-        pred_mask = ~np.all(np.any(conds <= 0 | np.isnan(conds), axis=2), axis=1)
+        pred_mask = ~np.all(np.any((conds <= 0) | np.isnan(conds), axis=2), axis=1)
         if np.sum(pred_mask) > 0:
             conds = conds[pred_mask]
         else:
