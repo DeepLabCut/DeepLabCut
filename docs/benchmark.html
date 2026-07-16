@@ -277,6 +277,10 @@
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">DeepLabCut benchmark</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/TechHardware.html">Technical &amp; hardware considerations</a></li>
 </ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/dev/">Developer Documentation</a></li>
+</ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Additional guides (Recipes)</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="recipes/index.html">The DeepLabCut Cookbook</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -507,11 +511,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#high-level-api">High Level API</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.evaluate"><code class="docutils literal notranslate"><span class="pre">evaluate()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.register"><code class="docutils literal notranslate"><span class="pre">register()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#high-level-api">High Level API</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-benchmark-definitions">Available benchmark definitions</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.benchmarks.FishBenchmark"><code class="docutils literal notranslate"><span class="pre">FishBenchmark</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.benchmarks.MarmosetBenchmark"><code class="docutils literal notranslate"><span class="pre">MarmosetBenchmark</span></code></a></li>
@@ -544,58 +544,6 @@ document.write(`
 <h2>High Level API<a class="headerlink" href="#high-level-api" title="Link to this heading">#</a></h2>
 <p>When implementing your own benchmarks, the most important functions are directly accessible
 under the <code class="docutils literal notranslate"><span class="pre">deeplabcut.benchmark</span></code> package.</p>
-<span class="target" id="module-deeplabcut.benchmark"></span><dl class="py function">
-<dt class="sig sig-object py" id="deeplabcut.benchmark.evaluate">
-<span class="sig-prename descclassname"><span class="pre">deeplabcut.benchmark.</span></span><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_benchmarks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Container</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ResultCollection</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'return'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResultCollection</span></span></span><a class="headerlink" href="#deeplabcut.benchmark.evaluate" title="Link to this definition">#</a></dt>
-<dd><p>Run evaluation for all benchmarks and methods.</p>
-<p>Note that in order for your custom benchmark to be included during
-evaluation, the following conditions need to be met:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>The benchmark subclassed one of the benchmark definitions in
-in <code class="docutils literal notranslate"><span class="pre">benchmark.benchmarks</span></code></p></li>
-<li><p>The benchmark is registered by applying the <code class="docutils literal notranslate"><span class="pre">&#64;benchmark.register</span></code>
-decorator to the class</p></li>
-<li><p>The benchmark was imported. This is done automatically for all
-benchmarks that are defined in submodules or subpackages of the
-<code class="docutils literal notranslate"><span class="pre">benchmark.submissions</span></code> module. For all other locations, make
-sure to manually import the packages <strong>before</strong> calling the
-<code class="docutils literal notranslate"><span class="pre">evaluate()</span></code> function.</p></li>
-</ul>
-</div></blockquote>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>include_benchmarks:</dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">None</span></code>, run all benchmarks that were discovered. If a container
-is passed, only include methods that were defined on benchmarks with
-the specified names. E.g., <code class="docutils literal notranslate"><span class="pre">include_benchmarks</span> <span class="pre">=</span> <span class="pre">[&quot;trimouse&quot;]</span></code> would
-only evaluate methods of the trimouse benchmark dataset.</p>
-</dd>
-<dt>on_error:</dt><dd><p>see documentation in <code class="docutils literal notranslate"><span class="pre">benchmark.base.Benchmark.evaluate()</span></code></p>
-</dd>
-</dl>
-</dd>
-<dt>Returns:</dt><dd><p>A collection of all results, which can be printed or exported to
-<code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code> or <code class="docutils literal notranslate"><span class="pre">json</span></code> file formats.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="deeplabcut.benchmark.register">
-<span class="sig-prename descclassname"><span class="pre">deeplabcut.benchmark.</span></span><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#deeplabcut.benchmark.register" title="Link to this definition">#</a></dt>
-<dd><p>Add a benchmark to the list of evaluations to run.</p>
-<p>Apply this function as a decorator to a class. Note that the
-class needs to be a subclass of the <code class="docutils literal notranslate"><span class="pre">benchmark.base.Benchmark</span></code>
-base class.</p>
-<p>In most situations, it will be a subclass of one of the pre-defined
-benchmarks in <code class="docutils literal notranslate"><span class="pre">benchmark.benchmarks</span></code>.</p>
-<dl class="simple">
-<dt>Throws:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if the decorator is applied to a class that is
-not a subclass of <code class="docutils literal notranslate"><span class="pre">benchmark.base.Benchmark</span></code>.</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <section id="available-benchmark-definitions">
 <h2>Available benchmark definitions<a class="headerlink" href="#available-benchmark-definitions" title="Link to this heading">#</a></h2>
@@ -627,32 +575,6 @@ keypoints were labeled (tip, gill, peduncle, dorsal fin tip, caudal tip). 100 fr
 were labeled, making this a real-world sized laboratory dataset.</p>
 <p>Introduced in Lauer et al. “Multi-animal pose estimation, identification and
 tracking with DeepLabCut.” Nature Methods 19, no. 4 (2022): 496-504.</p>
-<p class="rubric">Methods</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(name[, on_error])</p></td>
-<td><p>Evaluate this benchmark with all registered methods.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_predictions</span></code>()</p></td>
-<td><p>Return predictions for all images in the benchmark.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">names</span></code>()</p></td>
-<td><p>A unique key to describe this submission, e.g. the model name.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="pst-scrollable-table-container"><table class="table">
-<tbody>
-<tr class="row-odd"><td><p><strong>compute_pose_map</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>compute_pose_rmse</strong></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</div>
 </dd></dl>
 
 <dl class="py class">
@@ -674,32 +596,6 @@ applied to its tufts. One human annotator labeled the 15 marker points on each
 animal present in the frame (frames contained either 1 or 2 animals).</p>
 <p>Introduced in Lauer et al. “Multi-animal pose estimation, identification and
 tracking with DeepLabCut.” Nature Methods 19, no. 4 (2022): 496-504.</p>
-<p class="rubric">Methods</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(name[, on_error])</p></td>
-<td><p>Evaluate this benchmark with all registered methods.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_predictions</span></code>()</p></td>
-<td><p>Return predictions for all images in the benchmark.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">names</span></code>()</p></td>
-<td><p>A unique key to describe this submission, e.g. the model name.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="pst-scrollable-table-container"><table class="table">
-<tbody>
-<tr class="row-odd"><td><p><strong>compute_pose_map</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>compute_pose_rmse</strong></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</div>
 </dd></dl>
 
 <dl class="py class">
@@ -727,32 +623,6 @@ approved by the Harvard Institutional Animal Care and Use Committee. 542 frames 
 labeled, making this a real-world sized laboratory dataset.</p>
 <p>Introduced in Lauer et al. “Multi-animal pose estimation, identification and
 tracking with DeepLabCut.” Nature Methods 19, no. 4 (2022): 496-504.</p>
-<p class="rubric">Methods</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(name[, on_error])</p></td>
-<td><p>Evaluate this benchmark with all registered methods.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_predictions</span></code>()</p></td>
-<td><p>Return predictions for all images in the benchmark.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">names</span></code>()</p></td>
-<td><p>A unique key to describe this submission, e.g. the model name.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="pst-scrollable-table-container"><table class="table">
-<tbody>
-<tr class="row-odd"><td><p><strong>compute_pose_map</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>compute_pose_rmse</strong></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</div>
 </dd></dl>
 
 <dl class="py class">
@@ -772,32 +642,6 @@ Institutional Animal Care and Use Committee. 161 frames were labeled, making thi
 real-world sized laboratory dataset.</p>
 <p>Introduced in Lauer et al. “Multi-animal pose estimation, identification and
 tracking with DeepLabCut.” Nature Methods 19, no. 4 (2022): 496-504.</p>
-<p class="rubric">Methods</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code>(name[, on_error])</p></td>
-<td><p>Evaluate this benchmark with all registered methods.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_predictions</span></code>()</p></td>
-<td><p>Return predictions for all images in the benchmark.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">names</span></code>()</p></td>
-<td><p>A unique key to describe this submission, e.g. the model name.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="pst-scrollable-table-container"><table class="table">
-<tbody>
-<tr class="row-odd"><td><p><strong>compute_pose_map</strong></p></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><p><strong>compute_pose_rmse</strong></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</div>
 </dd></dl>
 
 </section>
@@ -896,11 +740,7 @@ corresponding to the test indices.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#high-level-api">High Level API</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.evaluate"><code class="docutils literal notranslate"><span class="pre">evaluate()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.register"><code class="docutils literal notranslate"><span class="pre">register()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#high-level-api">High Level API</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-benchmark-definitions">Available benchmark definitions</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.benchmarks.FishBenchmark"><code class="docutils literal notranslate"><span class="pre">FishBenchmark</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut.benchmark.benchmarks.MarmosetBenchmark"><code class="docutils literal notranslate"><span class="pre">MarmosetBenchmark</span></code></a></li>
