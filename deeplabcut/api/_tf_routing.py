@@ -101,6 +101,9 @@ def with_tensorflow_fallback(
                 warn_deprecated_tensorflow()
                 return _get_tensorflow_impl(tf_name, module=tensorflow_module)(*args, **kwargs)
 
+            if when is not None:
+                kwargs.pop("engine", None)
+
             kwargs = _resolve_legacy_kwargs(
                 kwargs,
                 renamed_params=renamed_params or {},
