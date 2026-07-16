@@ -24,8 +24,9 @@ _TF_MODULE = "deeplabcut.tensorflow_compat"
 
 
 @lru_cache
-def _get_tensorflow_impl(name: str):
-    return getattr(import_module(_TF_MODULE), name)
+def _get_tensorflow_impl(name: str, module: str | None = None):
+    mod = import_module(module or _TF_MODULE)
+    return getattr(mod, name)
 
 
 def warn_deprecated_tensorflow():
@@ -51,36 +52,55 @@ def with_tensorflow_fallback(
     renamed_params: dict[str, str] | None = None,
     dropped_params: list[str] | None = None,
     normalize_gputouse: bool = False,
+    when: Callable[..., bool] | None = None,
+    tensorflow_module: str | None = None,
 ) -> Callable:
     """Decorator for wrapping canonical PyTorch API functions, routing to a fallback TF function if required.
-    It automatically resolves the engine and converts legacy TensorFlow kwargs to canonical PyTorch kwargs, if needed.
+
+    By default, it resolves the engine from project configuration (via ``_resolve_engine``) and converts legacy
+    TensorFlow kwargs to canonical PyTorch kwargs.  For functions that do not have a project config (e.g. modelzoo),
+    a custom ``when`` callable can be supplied.
+
     Can be used with or without parentheses.
 
     Args:
-        tensorflow_name (str | None): The name of the fallback TensorFlow function in ``_TF_MODULE``. If not specified,
-            uses the name of the canonical PyTorch function.
+        tensorflow_name (str | None): The name of the fallback TensorFlow function in ``tensorflow_module``. If not
+            specified, uses the name of the canonical PyTorch function.
         renamed_params (dict[str, str] | None): Optional mapping from old TF parameter names to the new canonical
             PyTorch names. A warning will be emitted and the value is passed under the new canonical name. If both the
             old and new names are specified, raises a TypeError.
-        dropped_params (list[str] | None): Optional list of dropped TensorFlow parameter names. A warning will be
-            emitted and the value is ignored.
+        dropped_params (list[str] | None): TF-only parameters that are silently removed before calling the canonical
+            (PyTorch) function. A warning is emitted when they are dropped.
         normalize_gputouse (bool): resolve the old TF ``gputouse`` parameter to the new canonical PyTorch ``device``
             parameter. Raises a TypeError if both are specified.
+        when (Callable | None): A callable ``(*args, **kwargs) -> bool`` that determines whether to route to the
+            TensorFlow fallback.  When ``None`` (the default), the engine is resolved from shuffle metadata via
+            ``_resolve_engine``.  Supply a custom callable for engine-less routing (e.g. modelzoo functions).
+        tensorflow_module (str | None): Override the module from which to import the TF fallback function. Defaults to
+            ``"deeplabcut.tensorflow_compat"``.
 
     Note:
-        The engine is resolved from the shuffle metadata if not specified explicitly. If neither ``shuffles``,
-        ``shuffle`` or ``engine`` is passed, it assumes shuffle=1.
+        When ``when`` is ``None``, the engine is resolved from the shuffle metadata if not specified explicitly. If
+        neither ``shuffles``, ``shuffle`` nor ``engine`` is passed, it assumes shuffle=1.
     """
 
     def decorator(fn):
         tf_name = tensorflow_name or fn.__name__
 
         def wrapper(*args, **kwargs):
-            engine = _resolve_engine(*args, **kwargs)
-            kwargs.pop("engine", None)
-            if engine == Engine.TF:
+            if when is not None:
+                # Custom condition routing (e.g. modelzoo functions)
+                route_to_tf = when(*args, **kwargs)
+            else:
+                # Default: engine-based routing (from shuffle / config)
+                engine = _resolve_engine(*args, **kwargs)
+                kwargs.pop("engine", None)
+                route_to_tf = engine == Engine.TF
+
+            if route_to_tf:
                 warn_deprecated_tensorflow()
-                return _get_tensorflow_impl(tf_name)(*args, **kwargs)
+                return _get_tensorflow_impl(tf_name, module=tensorflow_module)(*args, **kwargs)
+
             kwargs = _resolve_legacy_kwargs(
                 kwargs,
                 renamed_params=renamed_params or {},
@@ -113,7 +133,7 @@ def _resolve_engine(*args, **kwargs) -> Engine:
     if engine is not None:
         return engine
 
-    from deeplabcut.utils.auxiliaryfunctions import read_config
+    from deeplabcut.core.config.utils import read_config
 
     shuffles = _shuffles_from_kwargs(kwargs)
     config = kwargs["config"] if "config" in kwargs else args[0]
