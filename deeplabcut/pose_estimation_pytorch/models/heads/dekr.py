@@ -90,11 +90,15 @@ class DEKRHeatmap(nn.Module):
             None
 
         Examples:
-            channels = (64,128,17)
-            num_blocks = 3
-            dilation_rate = 2
-            final_conv_kernel = 3
-            block = BasicBlock
+            Initialize a DEKRHeatmap:
+
+                DEKRHeatmap(
+                    channels=(64,128,17),
+                    num_blocks=3,
+                    dilation_rate=2,
+                    final_conv_kernel=3,
+                    block=BasicBlock,
+                )
         """
         super().__init__()
         self.bn_momentum = 0.1
@@ -225,13 +229,14 @@ class DEKROffset(nn.Module):
         final_conv_kernel: int,
         block: type(BaseBlock) = AdaptBlock,
     ) -> None:
-        """Args:
-        channels: tuple containing the number of input, offset, and output channels.
-        num_offset_per_kpt: number of offset values per keypoint.
-        num_blocks: number of blocks in the head.
-        dilation_rate: dilation rate for convolutional layers.
-        final_conv_kernel: kernel size for the final convolution.
-        block: type of block to use in the head. Defaults to AdaptBlock.
+        """
+        Args:
+            channels: tuple containing the number of input, offset, and output channels.
+            num_offset_per_kpt: number of offset values per keypoint.
+            num_blocks: number of blocks in the head.
+            dilation_rate: dilation rate for convolutional layers.
+            final_conv_kernel: kernel size for the final convolution.
+            block: type of block to use in the head. Defaults to AdaptBlock.
         """
         super().__init__()
         self.inp_channels = channels[0]
@@ -283,13 +288,16 @@ class DEKROffset(nn.Module):
             A sequential layer containing stacked num_blocks.
 
         Examples:
-            input:
-                block=BasicBlock
-                in_channels=64
-                out_channels=128
-                num_blocks=3
-                stride=1
-                dilation=1
+            Create a layer:
+
+                _make_layer(
+                    block=BasicBlock,
+                    in_channels=64,
+                    out_channels=128,
+                    num_blocks=3,
+                    stride=1,
+                    dilation=1,
+                )
         """
         downsample = None
         if stride != 1 or in_channels != out_channels * block.expansion:

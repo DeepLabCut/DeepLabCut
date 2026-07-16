@@ -1,0 +1,35 @@
+name: Setup dev-docs environment
+description: Install Python, system deps, and DeepLabCut dev-docs dependencies.
+
+inputs:
+  python-version:
+    description: Python version to use.
+    required: false
+    default: "3.10"
+
+  install-system-deps:
+    description: Install system dependencies required by mkdocs-material social plugin.
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install system dependencies for mkdocs-material social plugin
+      if: ${{ inputs.install-system-deps == 'true' }}
+      shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y libcairo2-dev libfreetype6-dev libffi-dev \
+          libjpeg-dev libpng-dev libz-dev
+
+    - name: Install dev-docs dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install ".[dev-docs]"
