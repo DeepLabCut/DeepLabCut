@@ -12,6 +12,7 @@
 Routing for legacy TensorFlow API while still supported. Remove this module when TF support is dropped.
 """
 
+import functools
 import warnings
 from collections.abc import Callable
 from functools import lru_cache
@@ -87,6 +88,7 @@ def with_tensorflow_fallback(
     def decorator(fn):
         tf_name = tensorflow_name or fn.__name__
 
+        @functools.wraps(fn)
         def wrapper(*args, **kwargs):
             if when is not None:
                 # Custom condition routing (e.g. modelzoo functions)
