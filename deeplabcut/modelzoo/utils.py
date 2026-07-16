@@ -10,9 +10,7 @@
 #
 from __future__ import annotations
 
-import os
 import warnings
-from glob import glob
 from pathlib import Path
 
 import numpy as np
@@ -31,7 +29,7 @@ from deeplabcut.utils.auxiliaryfunctions import (
 
 def dlc_modelzoo_path() -> Path:
     """Returns: the path to the `modelzoo` folder in the DeepLabCut installation"""
-    dlc_root_path = Path(get_deeplabcut_path())
+    dlc_root_path = get_deeplabcut_path()
     return dlc_root_path / "modelzoo"
 
 
@@ -46,7 +44,7 @@ def get_super_animal_project_cfg(super_animal: str) -> dict:
         the project configuration for the given SuperAnimal model
 
     Raises:
-        ValueError if no such SuperAnimal is found
+        ValueError: If no such SuperAnimal is found.
     """
     project_configs_dir = dlc_modelzoo_path() / "project_configs"
     super_animal_projects = {p.stem: p for p in project_configs_dir.iterdir()}
@@ -65,7 +63,8 @@ def get_super_animal_scorer(
     detector_snapshot_path: Path | str | None,
     torchvision_detector_name: str | None = None,
 ) -> str:
-    """
+    """Get the super animal scorer.
+
     Args:
         super_animal: The SuperAnimal dataset on which the models were trained
         model_snapshot_path: The path for the SuperAnimal pose model snapshot
@@ -196,7 +195,6 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
         project_name: the parsed SuperAnimal model name
         model_name: the model architecture (e.g., dlcrnet, hrnetw32)
     """
-
     if superanimal_name == "superanimal_quadruped":
         warnings.warn(
             f"{superanimal_name} is deprecated and will be removed in a future version. Use"
@@ -219,16 +217,16 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
     project_name = superanimal_name.replace(f"_{model_name}", "")
 
     dlc_root_path = get_deeplabcut_path()
-    modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
+    modelzoo_path = dlc_root_path / "modelzoo"
 
-    available_model_configs = glob(os.path.join(modelzoo_path, "model_configs", "*.yaml"))
-    available_models = [os.path.splitext(os.path.basename(path))[0] for path in available_model_configs]
+    available_model_configs = list((modelzoo_path / "model_configs").glob("*.yaml"))
+    available_models = [path.stem for path in available_model_configs]
 
     if model_name not in available_models:
         raise ValueError(f"Model {model_name} not found. Available models are: {available_models}")
 
-    available_project_configs = glob(os.path.join(modelzoo_path, "project_configs", "*.yaml"))
-    [os.path.splitext(os.path.basename(path))[0] for path in available_project_configs]
+    available_project_configs = list((modelzoo_path / "project_configs").glob("*.yaml"))
+    [path.stem for path in available_project_configs]
 
     return project_name, model_name
 

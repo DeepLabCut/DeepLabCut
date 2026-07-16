@@ -9,8 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-import glob
-import os
 import pickle
 from pathlib import Path
 
@@ -25,10 +23,15 @@ from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
 matplotlib_axes_logger.setLevel("ERROR")
 
 
-def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, search_window_size=(11, 11)):
-    """This function extracts the corners points from the calibration images, calibrates
-    the camera and stores the calibration files in the project folder (defined in the
-    config file).
+def calibrate_cameras(
+    config: str | Path,
+    cbrow=8,
+    cbcol=6,
+    calibrate=False,
+    alpha=0.4,
+    search_window_size=(11, 11),
+):
+    """Extract corner points from calibration images, calibrate cameras, and store results.
 
     Make sure you have around 20-60 pairs of calibration images.
     The function should be used iteratively to select the right set of calibration images.
@@ -43,39 +46,29 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
     Once the right number of calibration images are selected,
     use the parameter ``calibrate=True`` to calibrate the cameras.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (str | Path): Full path of the config.yaml file as a string.
+        cbrow (int): Integer specifying the number of rows in the calibration image.
+        cbcol (int): Integer specifying the number of columns in the calibration image.
+        calibrate (bool): If True, calibrate cameras with the current calibration images.
+            Set to True only after checking corner detection and removing bad images.
+            Defaults to False.
+        alpha (float): Free scaling parameter between 0 and 1.
+            When alpha = 0, rectified images with only valid pixels are stored (zoomed in).
+            When alpha = 1, all pixels from the original images are retained.
+            For more details:
+            https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+        search_window_size (tuple of int): Half of the side length of the search window when
+            refining detected checkerboard corners for subpixel accuracy.
 
-    cbrow : int
-        Integer specifying the number of rows in the calibration image.
+    Examples:
+        Linux/MacOs/Windows:
 
-    cbcol : int
-        Integer specifying the number of columns in the calibration image.
+            deeplabcut.calibrate_cameras(config)
 
-    calibrate : bool
-        If this is set to True, the cameras are calibrated with the current set of calibration images.
-        The default is ``False``
-        Set it to True, only after checking the results of the corner detection method
-        and removing dysfunctional images!
+        Once the right set of calibration images are selected:
 
-    alpha: float
-        Floating point number between 0 and 1 specifying the free scaling parameter.
-        When alpha = 0, the rectified images with only valid pixels are stored
-        i.e. the rectified images are zoomed in. When alpha = 1, all the pixels from the original images are retained.
-        For more details: https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
-
-    search_window_size: tuple of int
-        Half of the side length of the search window when refining detected checkerboard corners for subpixel accuracy.
-
-    Example
-    --------
-    Linux/MacOs/Windows
-    >>> deeplabcut.calibrate_camera(config)
-
-    Once the right set of calibration images are selected,
-    >>> deeplabcut.calibrate_camera(config,calibrate=True)
+            deeplabcut.calibrate_cameras(config, calibrate=True)
     """
     # Termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -94,7 +87,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
         path_removed_images,
     ) = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
 
-    images = glob.glob(os.path.join(img_path, "*.jpg"))
+    images = [str(p) for p in Path(img_path).glob("*.jpg")]
     cam_names = cfg_3d["camera_names"]
 
     # update the variable snapshot* in config file according to the name of the cameras
@@ -107,7 +100,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
         pass
 
     project_path = cfg_3d["project_path"]
-    projconfigfile = os.path.join(str(project_path), "config.yaml")
+    projconfigfile = str(Path(project_path) / "config.yaml")
     auxiliaryfunctions.write_config_3d(projconfigfile, cfg_3d)
 
     # Initialize the dictionary
@@ -151,15 +144,12 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
                     imgpoints[cam].append(corners)
                     # Draw the corners and store the images
                     img = cv2.drawChessboardCorners(img, (cbcol, cbrow), corners, ret)
-                    cv2.imwrite(os.path.join(str(path_corners), filename + "_corner.jpg"), img)
+                    cv2.imwrite(str(Path(path_corners) / (filename + "_corner.jpg")), img)
                 else:
                     print(f"Corners not found for the image {Path(fname).name}")
                     for new_cam in cam_names:
                         remove_fname = Path(fname).name.replace(cam, new_cam)
-                        os.rename(
-                            os.path.join(str(img_path), remove_fname),
-                            os.path.join(str(path_removed_images), remove_fname),
-                        )
+                        (Path(img_path) / remove_fname).rename(Path(path_removed_images) / remove_fname)
                         if new_cam != cam:
                             skip_images.append(remove_fname)
 
@@ -190,15 +180,9 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
             }
             pickle.dump(
                 dist_pickle,
-                open(
-                    os.path.join(path_camera_matrix, cam + "_intrinsic_params.pickle"),
-                    "wb",
-                ),
+                (Path(path_camera_matrix) / (cam + "_intrinsic_params.pickle")).open("wb"),
             )
-            print(
-                f"Saving intrinsic camera calibration matrices for {cam}"
-                f" as a pickle file in {os.path.join(path_camera_matrix)}"
-            )
+            print(f"Saving intrinsic camera calibration matrices for {cam} as a pickle file in {path_camera_matrix}")
 
             # Compute mean re-projection errors for individual cameras
             mean_error = 0
@@ -266,12 +250,9 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
                 "image_shape": [img_shape[pair[0]], img_shape[pair[1]]],
             }
 
-        print(
-            "Saving the stereo parameters for every "
-            f"pair of cameras as a pickle file in {str(os.path.join(path_camera_matrix))}"
-        )
+        print(f"Saving the stereo parameters for every pair of cameras as a pickle file in {path_camera_matrix}")
 
-        auxiliaryfunctions.write_pickle(os.path.join(path_camera_matrix, "stereo_params.pickle"), stereo_params)
+        auxiliaryfunctions.write_pickle(str(Path(path_camera_matrix) / "stereo_params.pickle"), stereo_params)
         print("Camera calibration done! Use the function ``check_undistortion`` to check the check the calibration")
     else:
         print(
@@ -282,32 +263,22 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
         )
 
 
-def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
-    """This function undistorts the calibration images based on the camera matrices and
-    stores them in the project folder(defined in the config file) to visually check if
-    the camera matrices are correct.
+def check_undistortion(config: str | Path, cbrow=8, cbcol=6, plot=True):
+    """Undistort calibration images and store them for visual inspection.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Uses camera matrices from calibration to verify they are correct.
 
-    cbrow : int
-        Int specifying the number of rows in the calibration image.
+    Args:
+        config (str | Path): Full path of the config.yaml file as a string.
+        cbrow (int): Number of rows in the calibration image.
+        cbcol (int): Number of columns in the calibration image.
+        plot (bool, optional): If True, save undistortion results as plots. Defaults to True.
 
-    cbcol : int
-        Int specifying the number of columns in the calibration image.
+    Examples:
+        Linux/MacOs/Windows:
 
-    plot : bool
-        If this is set to True, the results of undistortion are saved as plots.
-        The default is ``True``; if provided it must be either ``True`` or ``False``.
-
-    Example
-    --------
-    Linux/MacOs/Windows
-    >>> deeplabcut.check_undistortion(config, cbrow = 8,cbcol = 6)
+            deeplabcut.check_undistortion(config, cbrow=8, cbcol=6)
     """
-
     # Read the config file
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
     cfg_3d = auxiliaryfunctions.read_config(config)
@@ -326,7 +297,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
     markerColor = cfg_3d["markerColor"]
     cam_names = cfg_3d["camera_names"]
 
-    images = glob.glob(os.path.join(img_path, "*.jpg"))
+    images = [str(p) for p in Path(img_path).glob("*.jpg")]
 
     # Sort the images
     images.sort(key=lambda f: int("".join(filter(str.isdigit, f))))
@@ -340,7 +311,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
                 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     """
     camera_pair = [[cam_names[0], cam_names[1]]]
-    stereo_params = auxiliaryfunctions.read_pickle(os.path.join(path_camera_matrix, "stereo_params.pickle"))
+    stereo_params = auxiliaryfunctions.read_pickle(str(Path(path_camera_matrix) / "stereo_params.pickle"))
 
     for pair in camera_pair:
         map1_x, map1_y = cv2.initUndistortRectifyMap(
@@ -382,7 +353,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
                 )
                 cam1_undistort.append(imgpoints_proj_undistort)
                 cv2.imwrite(
-                    os.path.join(str(path_undistort), filename + "_undistort.jpg"),
+                    str(Path(path_undistort) / (filename + "_undistort.jpg")),
                     im_remapped1,
                 )
                 imgpoints_proj_undistort = []
@@ -406,7 +377,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
                 )
                 cam2_undistort.append(imgpoints_proj_undistort2)
                 cv2.imwrite(
-                    os.path.join(str(path_undistort), filename + "_undistort.jpg"),
+                    str(Path(path_undistort) / (filename + "_undistort.jpg")),
                     im_remapped2,
                 )
                 imgpoints_proj_undistort2 = []
@@ -428,7 +399,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
             ax2.imshow(cv2.cvtColor(img2, cv2.COLOR_BGR2RGB))
 
             mcolors.Normalize(vmin=0.0, vmax=cam1_undistort.shape[1])
-            plt.savefig(os.path.join(str(path_undistort), "Original_Image.png"))
+            plt.savefig(str(Path(path_undistort) / "Original_Image.png"))
 
             # Plot the undistorted corner points
             f2, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
@@ -452,7 +423,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
                     color=markerColor,
                     alpha=alphaValue,
                 )
-            plt.savefig(os.path.join(str(path_undistort), "undistorted_points.png"))
+            plt.savefig(str(Path(path_undistort) / "undistorted_points.png"))
 
             # Triangulate
             triangulate = auxiliaryfunctions_3d.compute_triangulation_calibration_images(

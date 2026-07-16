@@ -8,9 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import glob
-import os
-import os.path
 import pickle
 import time
 import warnings
@@ -263,22 +260,8 @@ def video_inference(
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if customized_test_config == "":
-        project_cfg = load_config(
-            os.path.join(
-                dlc_root_path,
-                "modelzoo",
-                "project_configs",
-                f"{project_name}.yaml",
-            )
-        )
-        model_cfg = load_config(
-            os.path.join(
-                dlc_root_path,
-                "modelzoo",
-                "model_configs",
-                f"{model_name}.yaml",
-            )
-        )
+        project_cfg = load_config(dlc_root_path / "modelzoo" / "project_configs" / f"{project_name}.yaml")
+        model_cfg = load_config(dlc_root_path / "modelzoo" / "model_configs" / f"{model_name}.yaml")
         test_cfg = {**project_cfg, **model_cfg}
         test_cfg["all_joints"] = [i for i in range(len(test_cfg["bobyparts"]))]
         test_cfg["all_joints_names"] = test_cfg["bobyparts"]
@@ -290,8 +273,8 @@ def video_inference(
         test_cfg = customized_test_config
 
     # add a temp folder for checkpoint
-    weight_folder = str(Path(dlc_root_path) / "modelzoo" / "checkpoints" / f"{project_name}_{model_name}")
-    snapshots = glob.glob(os.path.join(weight_folder, "snapshot-*.index"))
+    weight_folder = str(dlc_root_path / "modelzoo" / "checkpoints" / f"{project_name}_{model_name}")
+    snapshots = list(Path(weight_folder).glob("snapshot-*.index"))
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False
 
@@ -301,7 +284,7 @@ def video_inference(
         if len(snapshots) == 0:
             raise FileNotFoundError(f"Did not find any super animal snapshots in {weight_folder}")
 
-        init_weights = os.path.abspath(snapshots[0]).replace(".index", "")
+        init_weights = str(auxiliaryfunctions.safe_resolve(snapshots[0].with_suffix("")))
         test_cfg["init_weights"] = init_weights
 
     test_cfg["num_outputs"] = 1
@@ -320,10 +303,10 @@ def video_inference(
             destfolder = videofolder
             auxiliaryfunctions.attempt_to_make_folder(destfolder)
 
-        dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
+        dataname = str(Path(destfolder) / (vname + DLCscorer + ".h5"))
         datafiles.append(dataname)
 
-        if os.path.isfile(dataname):
+        if Path(dataname).is_file():
             print("Video already analyzed!", dataname)
         else:
             print("Loading ", video)
@@ -395,7 +378,7 @@ def video_inference(
 
             metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
 
-            with open(metadata_path, "wb") as f:
+            with Path(metadata_path).open("wb") as f:
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
             xyz_labs = ["x", "y", "likelihood"]
@@ -439,75 +422,54 @@ def _video_inference_superanimal(
     pseudo_threshold=0.1,
     create_labeled_video: bool = True,
 ):
-    """
-    WARNING: This function is an internal utility function and should not be
-    called directly. It is designed to be used by deeplabcut.modelzoo.api.video_inference.py
+    """Internal utility for super-animal model video inference.
 
-    Makes prediction based on a super animal model. Note right now we only support single animal video inference
+    WARNING: Do not call directly. Used by ``deeplabcut.modelzoo.api.video_inference``.
+
+    Makes predictions based on a super animal model. Currently only single-animal
+    video inference is supported.
 
     The index of the trained network is specified by parameters in the config file
-    (in particular the variable 'snapshotindex')
+    (in particular the variable ``snapshotindex``).
 
-    Output: The labels are stored as MultiIndex Pandas Array,
-    which contains the name of the network, body part name, (x, y) label position \n
-            in pixels, and the likelihood for each frame per body part.
-            These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
-            in the same directory, where the video is stored.
+    Output labels are stored as a MultiIndex Pandas DataFrame containing the network
+    name, body part name, (x, y) label position in pixels, and likelihood for each
+    frame per body part. These arrays are stored in HDF format in the same directory
+    as the video.
 
-    Parameters
-    ----------
-    videos: list
-        A list of strings containing the full paths to videos for analysis or a path to the directory,
-        where all the videos with same extension are stored.
+    Args:
+        videos (list): Full paths to videos for analysis, or a directory containing
+            videos with the same extension.
+        project_name (str): SuperAnimal project name (e.g. ``superanimal``).
+        model_name (str): SuperAnimal model name (e.g. ``topviewmouse``).
+            Combined with ``project_name`` as ``project_name + "_" + model_name``.
+        scale_list (list, optional): Target heights for multi-scale test-time
+            augmentation. By default uses the original size.
+        video_extensions (string or Sequence[str], optional): When ``videos`` is a directory, only videos with
+            these extensions are analyzed. Defaults to ``"mp4"``.
+        video_adapt (bool, optional): If True, apply video adaptation for less
+            jittering results. Defaults to False.
+        plot_trajectories (bool, optional): Plot trajectories of body parts.
+            Defaults to True.
+        pcutoff (float, optional): Keypoints with confidence below ``pcutoff`` are
+            hidden in the output video. Defaults to 0.1.
+        adapt_iterations (int, optional): Iterations for adaptation training.
+            Defaults to 1000.
+        pseudo_threshold (float, optional): Video adaptation uses predictions above
+            this threshold. Defaults to 0.1.
+        create_labeled_video (bool, optional): Whether to create a labeled video.
+            Defaults to True.
 
-    superanimal_name: str
-        The name of the superanimal model.
-        In TensorFlow, we only support "superanimal_quadruped", "superanimal_topviewmouse".
-        Check out the PyTorch version for active development,
-        better performance and additional models (humans, birds, ...)
-    scale_list: list
-        A list of int containing the target height of the multi scale test time augmentation.
-        By default it uses the original size.
-        Users are advised to try a wide range of scale list when the super model does not give reasonable results
+    Examples:
+      Given a list of scales for the spatial pyramid, perform inference:
 
-    video_extensions: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n
-        Only videos with this extension are analyzed.
-        The default is ``.avi``
-
-    video_adapt: bool, optional
-        Set True if you want to apply video adaptation to make the resulted video less jittering and better.
-        However, adaptation training takes more time than usual video inference
-
-    plot_trajectories: bool, optional (default=True)
-        By default, plot the trajectories of various body parts across the video.
-
-    pcutoff: float, optional
-        Keypoints confidence that are under pcutoff will not be shown in the resulted video
-
-    adapt_iterations: int, optional:
-        Number of iterations for adaptation training
-
-    pseudo_threshold: float, default 0.1
-        Video adaptation only uses predictions that are above pseudo_threshold
-
-    create_labeled_video (bool):
-        Specifies if a labeled video needs to be created, True by default.
-
-    Given a list of scales for spatial pyramid, i.e. [600, 700]
-
-    scale_list = range(600,800,100)
-
-    superanimal_name = 'superanimal_topviewmouse'
-    video_extensions = 'mp4'
-    scale_list = [200, 300, 400]
-    deeplabcut.video_inference_superanimal(
-         video,
-         superanimal_name,
-         video_extensions = '.avi',
-         scale_list = scale_list,
-    )
-    >>>
+            scale_list = [200, 300, 400]
+            deeplabcut.video_inference_superanimal(
+                video,
+                "superanimal_topviewmouse",
+                video_extensions=".avi",
+                scale_list=scale_list,
+            )
     """
     from deeplabcut.pose_estimation_tensorflow.modelzoo.api import (
         SpatiotemporalAdaptation,

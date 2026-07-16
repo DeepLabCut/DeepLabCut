@@ -37,23 +37,21 @@ class DynamicCropper:
             The margin used to expand an individuals bounding box before cropping it.
 
     Examples:
-        >>> import deeplabcut.pose_estimation_pytorch.models as models
-        >>>
-        >>> model: models.PoseModel
-        >>> frames: torch.Tensor  # shape (num_frames, 3, H, W)
-        >>>
-        >>> dynamic = DynamicCropper(threshold=0.6, margin=25)
-        >>> predictions = []
-        >>> for image in frames:
-        >>>     image = dynamic.crop(image)
-        >>>
-        >>>     outputs = model(image)
-        >>>     preds = model.get_predictions(outputs)
-        >>>     pose = preds["bodypart"]["poses"]
-        >>>
-        >>>     dynamic.update(pose)
-        >>>     predictions.append(pose)
-        >>>
+        Use a DynamicCropper to crop images and update the crop window:
+
+            import deeplabcut.pose_estimation_pytorch.models as models
+            model: models.PoseModel
+            frames: torch.Tensor  # shape (num_frames, 3, H, W)
+            dynamic = DynamicCropper(threshold=0.6, margin=25)
+            predictions = []
+            for image in frames:
+                image = dynamic.crop(image)
+                outputs = model(image)
+                preds = model.get_predictions(outputs)
+                pose = preds["bodypart"]["poses"]
+
+                dynamic.update(pose)
+                predictions.append(pose)
     """
 
     threshold: float
@@ -72,7 +70,7 @@ class DynamicCropper:
             the crop.
 
         Raises:
-            RuntimeError: if there is not exactly one image in the batch to crop, or if
+            RuntimeError: If there is not exactly one image in the batch to crop, or if
                 `crop` was previously called with an image of a different width or
                 height.
         """
@@ -293,7 +291,7 @@ class TopDownDynamicCropper(DynamicCropper):
             the crop.
 
         Raises:
-            RuntimeError: if there is not exactly one image in the batch to crop, or if
+            RuntimeError: If there is not exactly one image in the batch to crop, or if
                 `crop` was previously called with an image of a different W or H.
         """
         if len(image) != 1:

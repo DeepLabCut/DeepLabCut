@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from pathlib import Path
 from threading import Event
 
 import matplotlib.patches as patches
@@ -15,7 +16,7 @@ import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
 import pandas as pd
-from matplotlib.path import Path
+from matplotlib.path import Path as MPLPath
 from matplotlib.widgets import Button, CheckButtons, LassoSelector, Slider, TextBox
 from PySide6.QtCore import QMutex
 from PySide6.QtWidgets import QMessageBox
@@ -50,8 +51,7 @@ class DraggablePoint:
         self.coords = []
 
     def connect(self):
-        "connect to all the events we need"
-
+        """Connect to all the events we need"""
         self.cidpress = self.point.figure.canvas.mpl_connect("button_press_event", self.on_press)
         self.cidrelease = self.point.figure.canvas.mpl_connect("button_release_event", self.on_release)
         self.cidmotion = self.point.figure.canvas.mpl_connect("motion_notify_event", self.on_motion)
@@ -124,7 +124,7 @@ class DraggablePoint:
             canvas.blit(axes.bbox)
 
     def on_release(self, event):
-        "on release we reset the press data"
+        """On release we reset the press data"""
         if DraggablePoint.lock is not self:
             return
         if event.button == 1:
@@ -143,7 +143,8 @@ class DraggablePoint:
 
     def on_hover(self, event):
         """Annotate the labels and likelihood when the user hovers over the data
-        points."""
+        points.
+        """
         vis = self.annot.get_visible()
 
         if event.inaxes == self.point.axes:
@@ -164,7 +165,7 @@ class DraggablePoint:
                     self.annot.set_visible(False)
 
     def disconnect(self):
-        "disconnect all the stored connection ids"
+        """Disconnect all the stored connection ids"""
         self.point.figure.canvas.mpl_disconnect(self.cidpress)
         self.point.figure.canvas.mpl_disconnect(self.cidrelease)
         self.point.figure.canvas.mpl_disconnect(self.cidmotion)
@@ -256,7 +257,7 @@ class PointSelector:
         self.toggle()
 
     def on_select(self, verts):
-        path = Path(verts)
+        path = MPLPath(verts)
         xy = self.collection.get_offsets()
         self.tracker.picked = list(np.nonzero(path.contains_points(xy))[0])
         self.fc[:, -1] = self.alpha_other
@@ -836,7 +837,6 @@ class TrackletVisualizer:
         self.manager.save()
 
     def export_to_training_data(self, pcutoff=0.1):
-        import os
 
         from skimage import io
 
@@ -847,20 +847,20 @@ class TrackletVisualizer:
 
         # Save additional frames to the labeled-data directory
         strwidth = int(np.ceil(np.log10(self.nframes)))
-        tmpfolder = os.path.join(self.manager.cfg["project_path"], "labeled-data", self.video.name)
-        if os.path.isdir(tmpfolder):
+        tmpfolder = Path(self.manager.cfg["project_path"]) / "labeled-data" / self.video.name
+        if tmpfolder.is_dir():
             print(
                 "Frames from video",
                 self.video.name,
                 " already extracted (more will be added)!",
             )
         else:
-            attempt_to_make_folder(tmpfolder)
+            attempt_to_make_folder(str(tmpfolder))
         index = []
         for ind in inds:
-            imagename = os.path.join(tmpfolder, "img" + str(ind).zfill(strwidth) + ".png")
-            index.append(tuple((os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:])).split("\\")))
-            if not os.path.isfile(imagename):
+            imagename = tmpfolder / ("img" + str(ind).zfill(strwidth) + ".png")
+            index.append(tuple(imagename.parts[-3:]))
+            if not imagename.is_file():
                 self.video.set_to_frame(ind)
                 frame = self.video.read_frame()
                 if frame is None:
@@ -870,7 +870,7 @@ class TrackletVisualizer:
                 if self.manager.cfg["cropping"]:
                     x1, x2, y1, y2 = [int(self.manager.cfg[key]) for key in ("x1", "x2", "y1", "y2")]
                     frame = frame[y1:y2, x1:x2]
-                io.imsave(imagename, frame)
+                io.imsave(str(imagename), frame)
 
         # Store the newly-refined data
         data = self.manager.format_data()
@@ -887,22 +887,22 @@ class TrackletVisualizer:
         df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(filter_low_prob, prob=pcutoff)
         df.index = pd.MultiIndex.from_tuples(index)
 
-        machinefile = os.path.join(tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5")
-        if os.path.isfile(machinefile):
+        machinefile = tmpfolder / ("machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5")
+        if machinefile.is_file():
             df_old = pd.read_hdf(machinefile)
             df_joint = pd.concat([df_old, df])
             df_joint = df_joint[~df_joint.index.duplicated(keep="first")]
             df_joint.to_hdf(machinefile, key="df_with_missing", mode="w")
-            df_joint.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
+            df_joint.to_csv(tmpfolder / "machinelabels.csv")
         else:
             df.to_hdf(machinefile, key="df_with_missing", mode="w")
-            df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
+            df.to_csv(tmpfolder / "machinelabels.csv")
 
         # Merge with the already existing annotated data
         df.columns = df.columns.set_levels([self.manager.cfg["scorer"]], level="scorer")
         df.drop("likelihood", level="coords", axis=1, inplace=True)
-        output_path = os.path.join(tmpfolder, f"CollectedData_{self.manager.cfg['scorer']}.h5")
-        if os.path.isfile(output_path):
+        output_path = tmpfolder / f"CollectedData_{self.manager.cfg['scorer']}.h5"
+        if output_path.is_file():
             print(
                 "A training dataset file is already found for this video. The refined machine labels are merged to this"
                 "data!"
@@ -914,11 +914,11 @@ class TrackletVisualizer:
             df_joint = df_joint[~df_joint.index.duplicated(keep="first")]
             df_joint.sort_index(inplace=True)
             df_joint.to_hdf(output_path, key="df_with_missing", mode="w")
-            df_joint.to_csv(output_path.replace("h5", "csv"))
+            df_joint.to_csv(output_path.with_suffix(".csv"))
         else:
             df.sort_index(inplace=True)
             df.to_hdf(output_path, key="df_with_missing", mode="w")
-            df.to_csv(output_path.replace("h5", "csv"))
+            df.to_csv(output_path.with_suffix(".csv"))
 
 
 def refine_tracklets(
@@ -930,8 +930,8 @@ def refine_tracklets(
     max_gap=2,
     trail_len=0,
 ):
-    """
-    Refine tracklets stored either in pickle or h5 format.
+    """Refine tracklets stored either in pickle or h5 format.
+
     The procedure is done in two stages:
     (i) freshly-converted detections are read by the TrackletManager,
     which automatically attempts to optimize tracklet continuity by
@@ -943,40 +943,30 @@ def refine_tracklets(
     selected using the Lasso tool in order to re-assign multiple tracks
     to another identity at once.
 
-    Parameters
-    ----------
-    config: str
-        Full path of the config.yaml file.
+    Args:
+        config (str): Full path of the config.yaml file.
+        pickle_or_h5_file (str): Full path of either the pickle file obtained after calling
+            deeplabcut.convert_detections2tracklets, or the h5 file written after
+            refining the tracklets a first time. Note that refined tracklets are
+            always stored in the h5 format.
+        video (str): Full path of the corresponding video.
+            If the video duration and the total length of the tracklets disagree
+            by more than 5%, a message is printed indicating that the selected
+            video may not be the right one.
+        min_swap_len (int, optional): Minimum swap length.
+            Set to 2 by default. Retained swaps appear in the right panel in
+            shaded regions. Defaults to 2.
+        min_tracklet_len (int, optional): Minimum tracklet length.
+            By default, tracklets shorter than 2 frames are discarded,
+            leaving missing data instead. If set to 0, all tracklets are kept. Defaults to 2.
+        max_gap (int, optional): Maximal gap size (in number of frames) of missing data to be filled.
+            The procedure fits a cubic spline over all individual trajectories,
+            and fills all gaps smaller than or equal to 2 frames by default. Defaults to 2.
+        trail_len (int, optional): Number of trailing points to display.
+            Defaults to 0.
 
-    pickle_or_h5_file: str
-        Full path of either the pickle file obtained after calling
-        deeplabcut.convert_detections2tracklets, or the h5 file written after
-        refining the tracklets a first time. Note that refined tracklets are
-        always stored in the h5 format.
-
-    video: str
-        Full path of the corresponding video.
-        If the video duration and the total length of the tracklets disagree
-        by more than 5%, a message is printed indicating that the selected
-        video may not be the right one.
-
-    min_swap_len : float, optional (default=2)
-        Minimum swap length.
-        Set to 2 by default. Retained swaps appear in the right panel in
-        shaded regions.
-
-    min_tracklet_len : float, optional (default=2)
-        Minimum tracklet length.
-        By default, tracklets shorter than 2 frames are discarded,
-        leaving missing data instead. If set to 0, all tracklets are kept.
-
-    max_gap : int, optional (default=2).
-        Maximal gap size (in number of frames) of missing data to be filled.
-        The procedure fits a cubic spline over all individual trajectories,
-        and fills all gaps smaller than or equal to 2 frames by default.
-
-    trail_len : int, optional (default=0)
-        Number of trailing points. None by default, to accelerate visualization.
+    Returns:
+        tuple[TrackletManager, TrackletVisualizer]: The tracklet manager and visualizer.
     """
     manager = TrackletManager(config, min_swap_len, min_tracklet_len, max_gap)
     if pickle_or_h5_file.endswith("pickle"):

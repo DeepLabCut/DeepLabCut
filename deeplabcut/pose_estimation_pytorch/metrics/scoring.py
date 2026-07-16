@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import pickle
+from pathlib import Path
 
 import numpy as np
 from sklearn.metrics import accuracy_score
@@ -20,7 +21,7 @@ from deeplabcut.utils.auxiliaryfunctions import read_config
 
 
 def _match_identity_preds_to_gt(config_path: str, full_pickle_path: str) -> tuple[np.ndarray, list]:
-    with open(full_pickle_path, "rb") as f:
+    with Path(full_pickle_path).open("rb") as f:
         data = pickle.load(f)
     metadata = data.pop("metadata")
     cfg = read_config(config_path)

@@ -8,8 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import glob
-import os
 import pickle
 from pathlib import Path
 
@@ -60,16 +58,15 @@ def create_dummy_config_file_from_h5(
     proj_root, reference_h5, taskname="dummytask", scorer="dummyscorer", date="March30"
 ):
     """Assuming at least labeled-data folder is there."""
-
     cfg_template = SingleDLC_config()
 
     df = pd.read_hdf(reference_h5)
 
     print(df)
 
-    pattern = glob.glob(os.path.join(proj_root, "labeled-data", "*"))
+    pattern = list(Path(proj_root).glob("labeled-data/*"))
 
-    labeled_folders = [f.split("/")[-1] for f in pattern]
+    labeled_folders = [f.name for f in pattern]
 
     video_sets = {f"{folder}.mp4": {"crop": "0, 400, 0, 400"} for folder in labeled_folders}
 
@@ -100,10 +97,9 @@ def create_dummy_config_file_from_pickle(
     date="March30",
 ):
     """Assuming at least labeled-data folder is there."""
-
     cfg_template = SingleDLC_config()
 
-    with open(reference_pickle, "rb") as f:
+    with Path(reference_pickle).open("rb") as f:
         pickle.load(f)
 
     # bodyparts  = pickle_obj['keypoint_names']
@@ -138,7 +134,7 @@ def create_dummy_config_file_from_pickle(
 
 def create_video_h5_from_pickle(proj_root, cfg, reference_pickle, videopath):
 
-    with open(reference_pickle, "rb") as f:
+    with Path(reference_pickle).open("rb") as f:
         pickle_obj = pickle.load(f)
 
     # bodyparts  = pickle_obj['keypoint_names']
@@ -180,10 +176,7 @@ def create_video_h5_from_pickle(proj_root, cfg, reference_pickle, videopath):
 
     coords = [0, 400, 0, 400]
     trainFraction = cfg["TrainingFraction"][0]
-    modelfolder = os.path.join(
-        cfg["project_path"],
-        str(auxiliaryfunctions.get_model_folder(trainFraction, 0, cfg)),
-    )
+    modelfolder = str(Path(cfg["project_path"]) / str(auxiliaryfunctions.get_model_folder(trainFraction, 0, cfg)))
 
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     test_cfg = auxiliaryfunctions.read_plainconfig(path_test_config)
@@ -208,11 +201,11 @@ def create_video_h5_from_pickle(proj_root, cfg, reference_pickle, videopath):
     }
     metadata = {"data": dictionary}
 
-    dataname = os.path.join(proj_root, vname + DLCscorer + ".h5")
+    dataname = str(Path(proj_root) / (vname + DLCscorer + ".h5"))
 
     metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
 
-    with open(metadata_path, "wb") as f:
+    with Path(metadata_path).open("wb") as f:
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
     df.to_hdf(dataname, key="df_with_missing", format="table", mode="w")
@@ -289,7 +282,7 @@ def create_modelprefix(modelprefix):
 
     shutil.copytree(
         "template-dlc-models",
-        os.path.join(modelprefix, "dlc-models"),
+        str(Path(modelprefix) / "dlc-models"),
         dirs_exist_ok=True,
     )
 

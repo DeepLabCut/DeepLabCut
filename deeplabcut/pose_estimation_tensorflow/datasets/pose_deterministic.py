@@ -11,7 +11,7 @@
 
 
 import logging
-import os
+from pathlib import Path
 
 import numpy as np
 import scipy.io as sio
@@ -47,7 +47,7 @@ class DeterministicPoseDataset(BasePoseDataset):
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
+        file_name = Path(self.cfg["project_path"]) / cfg["dataset"]
         mlab = sio.loadmat(file_name)
         self.raw_data = mlab
         mlab = mlab["dataset"]
@@ -66,7 +66,7 @@ class DeterministicPoseDataset(BasePoseDataset):
                 im_path = robust_split_path(im_path)
             else:
                 im_path = [s.strip() for s in im_path]
-            item.im_path = os.path.join(*im_path)
+            item.im_path = str(Path(*im_path))
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]
@@ -168,7 +168,7 @@ class DeterministicPoseDataset(BasePoseDataset):
         im_file = data_item.im_path
         logging.debug("image %s", im_file)
         logging.debug("mirror %r", mirror)
-        image = imread(os.path.join(self.cfg["project_path"], im_file), mode="skimage")
+        image = imread(Path(self.cfg["project_path"]) / im_file, mode="skimage")
 
         if self.has_gt:
             joints = np.copy(data_item.joints)

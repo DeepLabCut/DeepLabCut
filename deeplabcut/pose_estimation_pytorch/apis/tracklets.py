@@ -36,13 +36,13 @@ from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def convert_detections2tracklets(
-    config: str,
+    config: str | Path,
     videos: str | list[str],
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     overwrite: bool = False,
-    destfolder: str | None = None,
+    destfolder: str | Path | None = None,
     ignore_bodyparts: list[str] | None = None,
     inferencecfg: dict | None = None,
     modelprefix="",
@@ -66,7 +66,7 @@ def convert_detections2tracklets(
         auxiliaryfunctions.write_config(config, cfg)
 
     train_fraction = cfg["TrainingFraction"][trainingsetindex]
-    start_path = os.getcwd()  # record cwd to return to this directory in the end
+    start_path = Path.cwd()  # record cwd to return to this directory in the end
 
     # TODO: add cropping as in video analysis!
     # if cropping is not None:
@@ -82,9 +82,9 @@ def convert_detections2tracklets(
         modelprefix=modelprefix,
         engine=Engine.PYTORCH,
     )
-    model_dir = Path(cfg["project_path"]) / rel_model_dir
+    model_dir = cfg.project_path / rel_model_dir
     path_test_config = model_dir / "test" / "pose_cfg.yaml"
-    dlc_cfg = auxiliaryfunctions.read_plainconfig(str(path_test_config))
+    dlc_cfg = auxiliaryfunctions.read_plainconfig(path_test_config)
 
     if "multi-animal" not in dlc_cfg["dataset_type"]:
         raise ValueError("This function is only required for multianimal projects!")
@@ -182,7 +182,7 @@ def convert_detections2tracklets(
                 identity_only=identity_only,
             )
 
-            with open(track_filename, "wb") as f:
+            with Path(track_filename).open("wb") as f:
                 pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
     os.chdir(str(start_path))
@@ -312,7 +312,8 @@ def _conv_predictions_to_assemblies(
     image_names: list[str], predictions: dict[str, np.ndarray]
 ) -> dict[int, list[Assembly]]:
     """Converts predictions to an assemblies dictionary predictions shape (num_animals,
-    num_keypoints, 2 or 3)"""
+    num_keypoints, 2 or 3)
+    """
     assemblies = {}
     if len(predictions) == 0:
         return assemblies

@@ -20,7 +20,6 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import datetime
-import os
 import random
 import subprocess
 import warnings
@@ -42,10 +41,10 @@ DEFAULT_EXCLUDE_PATTERNS: tuple[str, ...] = "*_labeled.*", "*_full.*"
 
 class VideoReader:
     def __init__(self, video_path):
-        if not os.path.isfile(video_path):
+        if not Path(video_path).is_file():
             raise ValueError(f'Video path "{video_path}" does not point to a file.')
         self.video_path = video_path
-        self.video = cv2.VideoCapture(video_path)
+        self.video = cv2.VideoCapture(str(video_path))
         if not self.video.isOpened():
             raise OSError("Video could not be opened; it may be corrupted.")
         self.parse_metadata()
@@ -60,10 +59,10 @@ class VideoReader:
         return self._n_frames
 
     def check_integrity(self):
-        dest = os.path.join(self.directory, f"{self.name}.log")
+        dest = str(Path(self.directory) / f"{self.name}.log")
         command = f'ffmpeg -v error -i "{self.video_path}" -f null - 2>"{dest}"'
         subprocess.call(command, shell=True)
-        if os.path.getsize(dest) != 0:
+        if Path(dest).stat().st_size != 0:
             warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.', stacklevel=2)
 
     def check_integrity_robust(self):
@@ -77,15 +76,15 @@ class VideoReader:
 
     @property
     def name(self):
-        return os.path.splitext(os.path.split(self.video_path)[1])[0]
+        return Path(self.video_path).stem
 
     @property
     def format(self):
-        return os.path.splitext(self.video_path)[1]
+        return Path(self.video_path).suffix
 
     @property
     def directory(self):
-        return os.path.dirname(self.video_path)
+        return str(Path(self.video_path).parent)
 
     @property
     def metadata(self):
@@ -212,24 +211,18 @@ class VideoWriter(VideoReader):
     def shorten(self, start, end, suffix="short", dest_folder=None, validate_inputs=True):
         """Shorten the video from start to end.
 
-        Parameter
-        ----------
-        start: str
-            Time formatted in hours:minutes:seconds, where shortened video shall start.
+        Args:
+            start (str): Time formatted in hours:minutes:seconds, where shortened video
+                shall start.
+            end (str): Time formatted in hours:minutes:seconds, where shortened video
+                shall end.
+            suffix (str, optional): String added to the name of the shortened video.
+                Defaults to 'short'.
+            dest_folder (str, optional): Folder the video is saved into. By default,
+                same as the original video.
 
-        end: str
-            Time formatted in hours:minutes:seconds, where shortened video shall end.
-
-        suffix: str, optional
-            String added to the name of the shortened video ('short' by default).
-
-        dest_folder: str, optional
-            Folder the video is saved into (by default, same as the original video)
-
-        Returns
-        -------
-        str
-            Full path to the shortened video
+        Returns:
+            str: Full path to the shortened video.
         """
 
         def validate_timestamp(stamp):
@@ -253,21 +246,15 @@ class VideoWriter(VideoReader):
     def split(self, n_splits, suffix="split", dest_folder=None):
         """Split a video into several shorter ones of equal duration.
 
-        Parameters
-        ----------
-        n_splits : int
-            Number of shorter videos to produce
+        Args:
+            n_splits (int): Number of shorter videos to produce.
+            suffix (str, optional): String added to the name of the splits.
+                Defaults to 'split'.
+            dest_folder (str, optional): Folder the video splits are saved into. By
+                default, same as the original video.
 
-        suffix: str, optional
-            String added to the name of the splits ('short' by default).
-
-        dest_folder: str, optional
-            Folder the video splits are saved into (by default, same as the original video)
-
-        Returns
-        -------
-        list
-            Paths of the video splits
+        Returns:
+            list: Paths of the video splits.
         """
         if not n_splits > 1:
             raise ValueError("The video should at least be split in half.")
@@ -346,7 +333,7 @@ class VideoWriter(VideoReader):
     def make_output_path(self, suffix, dest_folder):
         if not dest_folder:
             dest_folder = self.directory
-        return os.path.join(dest_folder, f"{self.name}{suffix}{self.format}")
+        return str(Path(dest_folder) / f"{self.name}{suffix}{self.format}")
 
 
 def check_video_integrity(video_path):
@@ -384,42 +371,41 @@ def imresize(img, size=1.0, interpolationmethod=cv2.INTER_AREA):
 
 
 def ShortenVideo(vname, start="00:00:01", stop="00:01:00", outsuffix="short", outpath=None):
-    """Auxiliary function to shorten video and output with outsuffix appended. to the
+    """Auxiliary function to shorten video and output with outsuffix appended to the
     same folder from start (hours:minutes:seconds) to stop (hours:minutes:seconds).
 
-    Returns the full path to the shortened video!
+    Args:
+        vname (string): A string containing the full path of the video.
+        start (str): Time formatted in hours:minutes:seconds, where shortened video shall
+            start.
+        stop (str): Time formatted in hours:minutes:seconds, where shortened video shall
+            end.
+        outsuffix (str): Suffix for output videoname (see example).
+        outpath (str): Output path for saving video to (by default, same folder as the
+            video).
 
-    Parameter
-    ----------
-    videos : string
-        A string containing the full paths of the video.
+    Returns:
+        str: The full path to the shortened video.
 
-    start: hours:minutes:seconds
-        Time formatted in hours:minutes:seconds, where shortened video shall start.
+    Examples:
+        Linux/MacOs:
 
-    stop: hours:minutes:seconds
-        Time formatted in hours:minutes:seconds, where shortened video shall end.
+            deeplabcut.ShortenVideo("/data/videos/mouse1.avi")
 
-    outsuffix: str
-        Suffix for output videoname (see example).
+        Extracts (sub)video from 1st second to 1st minutes (default values) and saves
+        it in /data/videos as mouse1short.avi
 
-    outpath: str
-        Output path for saving video to (by default will be the same folder as the video)
+        Windows:
 
-    Examples
-    ----------
+            deeplabcut.ShortenVideo(
+                "C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi",
+                start="00:17:00",
+                stop="00:22:00",
+                outsuffix="brief",
+            )
 
-    Linux/MacOs
-    >>> deeplabcut.ShortenVideo('/data/videos/mouse1.avi')
-
-    Extracts (sub)video from 1st second to 1st minutes (default values) and saves it in /data/videos as mouse1short.avi
-
-    Windows:
-    >>> deeplabcut.ShortenVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
-    ... start='00:17:00',stop='00:22:00',outsuffix='brief')
-
-    Extracts (sub)video from minute 17 to 22 and and saves it in
-    C:\\yourusername\\rig-95\\Videos as reachingvideo1brief.avi
+        Extracts (sub)video from minute 17 to 22 and saves it in
+        C:\\yourusername\\rig-95\\Videos as reachingvideo1brief.avi
     """
     writer = VideoWriter(vname)
     return writer.shorten(start, stop, outsuffix, outpath)
@@ -438,44 +424,40 @@ def CropVideo(
     """Auxiliary function to crop a video and output it to the same folder with
     "outsuffix" appended in its name. Width and height will control the new dimensions.
 
-    Returns the full path to the downsampled video!
-
     ffmpeg -i in.mp4 -filter:v "crop=out_w:out_h:x:y" out.mp4
 
-    Parameter
-    ----------
-    vname : string
-        A string containing the full path of the video.
+    Args:
+        vname (string): A string containing the full path of the video.
+        width (int): Width of output video.
+        height (int): Height of output video.
+        origin_x (int): X-axis origin of bounding box for cropping.
+        origin_y (int): Y-axis origin of bounding box for cropping.
+        outsuffix (str): Suffix for output videoname (see example).
+        outpath (str): Output path for saving video to (by default, same folder as the
+            video).
 
-    width: int
-        width of output video
+    Returns:
+        str: The full path to the cropped video.
 
-    height: int
-        height of output video.
+    Examples:
+        Linux/MacOs:
 
-    origin_x, origin_y: int
-        x- and y- axis origin of bounding box for cropping.
+            deeplabcut.CropVideo("/data/videos/mouse1.avi")
 
-    outsuffix: str
-        Suffix for output videoname (see example).
+        Crops the video using default values and saves it in /data/videos as
+        mouse1cropped.avi
 
-    outpath: str
-        Output path for saving video to (by default will be the same folder as the video)
+        Windows:
 
-    Examples
-    ----------
+            deeplabcut.CropVideo(
+                "C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi",
+                width=220,
+                height=320,
+                outsuffix="cropped",
+            )
 
-    Linux/MacOs
-    >>> deeplabcut.CropVideo('/data/videos/mouse1.avi')
-
-    Crops the video using default values and saves it in /data/videos as mouse1cropped.avi
-
-    Windows:
-    >>> =deeplabcut.CropVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
-    ... width=220,height=320,outsuffix='cropped')
-
-    Crops the video to a width of 220 and height of 320 starting at the origin (top left)
-    and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
+        Crops the video to a width of 220 and height of 320 starting at the origin (top
+        left) and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
     writer = VideoWriter(vname)
 
@@ -507,45 +489,40 @@ def DownSampleVideo(
     You can also pass only height or width and set the other one to -1, this will keep
     the aspect ratio identical.
 
-    Returns the full path to the downsampled video!
+    Args:
+        vname (string): A string containing the full path of the video.
+        width (int): Width of output video.
+        height (int): Height of output video.
+        outsuffix (str): Suffix for output videoname (see example).
+        outpath (str): Output path for saving video to (by default, same folder as the
+            video).
+        rotatecw (str): Default "No", rotates clockwise if "Yes", "Arbitrary" for
+            arbitrary rotation by specified angle.
+        angle (float): Angle to rotate by in degrees, default 0.0. Negative values
+            rotate counter-clockwise.
 
-    Parameter
-    ----------
-    vname : string
-        A string containing the full path of the video.
+    Returns:
+        str: The full path to the downsampled video.
 
-    width: int
-        width of output video
+    Examples:
+        Linux/MacOs:
 
-    height: int
-        height of output video.
+            deeplabcut.DownSampleVideo("/data/videos/mouse1.avi")
 
-    outsuffix: str
-        Suffix for output videoname (see example).
+        Downsamples the video using default values and saves it in /data/videos as
+        mouse1downsampled.avi
 
-    outpath: str
-        Output path for saving video to (by default will be the same folder as the video)
+        Windows:
 
-    rotatecw: str
-        Default "No", rotates clockwise if "Yes", "Arbitrary" for arbitrary rotation by specified angle.
+            shortenedvideoname = deeplabcut.DownSampleVideo(
+                "C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi",
+                width=220,
+                height=320,
+                outsuffix="cropped",
+            )
 
-    angle: float
-        Angle to rotate by in degrees, default 0.0. Negative values rotate counter-clockwise
-
-    Examples
-    ----------
-
-    Linux/MacOs
-    >>> deeplabcut.DownSampleVideo('/data/videos/mouse1.avi')
-
-    Downsamples the video using default values and saves it in /data/videos as mouse1cropped.avi
-
-    Windows:
-    >>> shortenedvideoname=deeplabcut.DownSampleVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
-    ... width=220,height=320,outsuffix='cropped')
-
-    Downsamples the video to a width of 220 and height of 320 and
-    saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
+        Downsamples the video to a width of 220 and height of 320 and saves it in
+        C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
     writer = VideoWriter(vname)
     return writer.rescale(width, height, rotatecw, angle, outsuffix, outpath)
@@ -555,39 +532,36 @@ def rotate_video(vname, angle, rotatecw="Arbitrary", outsuffix="rotated", outpat
     """Auxiliary function to rotate a video and output it to the same folder with
     "outsuffix" appended in its name. Angle is in degrees.
 
-    Returns the full path to the rotated video!
+    Args:
+        vname (string): A string containing the full path of the video.
+        angle (float): Angle to rotate by in degrees. Negative values rotate
+            counter-clockwise.
+        rotatecw (str): Default "Arbitrary", rotates clockwise if "Yes", "Arbitrary" for
+            arbitrary rotation by specified angle.
+        outsuffix (str): Suffix for output videoname (see example).
+        outpath (str): Output path for saving video to (by default, same folder as the
+            video).
 
-    Parameter
-    ----------
-    vname : string
-        A string containing the full path of the video.
+    Returns:
+        str: The full path to the rotated video.
 
-    angle: float
-        Angle to rotate by in degrees. Negative values rotate counter-clockwise.
+    Examples:
+        Linux/MacOs:
 
-    rotatecw: str
-        Default "Arbitrary", rotates clockwise if "Yes", "Arbitrary" for arbitrary rotation by specified angle.
+            deeplabcut.rotate_video("/data/videos/mouse1.avi", angle=90)
 
-    outsuffix: str
-        Suffix for output videoname (see example).
+        Rotates the video by 90 degrees and saves it in /data/videos as mouse1rotated.avi
 
-    outpath: str
-        Output path for saving video to (by default will be the same folder as the video)
+        Windows:
 
-    Examples
-    ----------
+            shortenedvideoname = deeplabcut.rotate_video(
+                "C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi",
+                angle=180,
+                rotatecw="Yes",
+            )
 
-    Linux/MacOs
-    >>> deeplabcut.rotate_video('/data/videos/mouse1.avi',angle=90)
-
-    Rotates the video by 90 degrees and saves it in /data/videos as mouse1rotated.avi
-
-    Windows:
-    >>> shortenedvideoname=deeplabcut.rotate_video('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
-    ... angle=180,rotatecw='Yes')
-
-    Rotates the video by 180 degrees and
-    saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1rotated.avi
+        Rotates the video by 180 degrees and saves it in
+        C:\\yourusername\\rig-95\\Videos as reachingvideo1rotated.avi
     """
     writer = VideoWriter(vname)
     return writer.rotate(angle, rotatecw, outsuffix, outpath)
@@ -742,7 +716,7 @@ def collect_video_paths(
                     videos.append(path)
 
     # Resolve video paths and remove duplicates
-    unique_videos = list(dict.fromkeys(v.resolve() for v in videos))
+    unique_videos = list(dict.fromkeys(v.absolute() for v in videos))
     if shuffle:
         random.shuffle(unique_videos)
     else:
