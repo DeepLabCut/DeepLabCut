@@ -29,7 +29,6 @@ if TYPE_CHECKING:
 
 from deeplabcut.api._tf_routing import with_tensorflow_fallback
 from deeplabcut.core.deprecation import deprecated, renamed_parameter
-from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 
 
 @with_tensorflow_fallback(
@@ -104,7 +103,7 @@ def train_network(
             are the dot-separated paths to the values to update in the config. For
             example, to update the GPUs to run the training on::
 
-                pytorch_cfg_updates={"runner.gpus": [0, 1, 2, 3]}
+                pytorch_cfg_updates = {"runner.gpus": [0, 1, 2, 3]}
 
             To see the full list, check the ``pytorch_cfg.yaml`` file in your project
             folder.
@@ -230,13 +229,14 @@ def evaluate_network(
 
         >>> import deeplabcut
         >>> deeplabcut.evaluate_network(
-        ...     '/analysis/project/reaching-task/config.yaml', shuffles=[1],
+        ...     "/analysis/project/reaching-task/config.yaml",
+        ...     shuffles=[1],
         ... )
 
         Evaluate shuffles 0 and 1 and plot the predictions:
 
         >>> deeplabcut.evaluate_network(
-        ...     '/analysis/project/reaching-task/config.yaml',
+        ...     "/analysis/project/reaching-task/config.yaml",
         ...     shuffles=[0, 1],
         ...     plotting=True,
         ... )
@@ -244,7 +244,7 @@ def evaluate_network(
         Plot assemblies for a maDLC project:
 
         >>> deeplabcut.evaluate_network(
-        ...     '/analysis/project/reaching-task/config.yaml',
+        ...     "/analysis/project/reaching-task/config.yaml",
         ...     shuffles=[1],
         ...     plotting="individual",
         ... )
