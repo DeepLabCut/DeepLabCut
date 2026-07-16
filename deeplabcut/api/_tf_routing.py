@@ -13,6 +13,7 @@ Routing for legacy TensorFlow API while still supported. Remove this module when
 """
 
 import functools
+import inspect
 import warnings
 from collections.abc import Callable
 from functools import lru_cache
@@ -44,6 +45,27 @@ def warn_deprecated_tensorflow():
         DLCDeprecationWarning,
         stacklevel=3,
     )
+
+
+def _bind_unified_kwargs(sig: inspect.Signature, args: tuple, kwargs: dict) -> dict:
+    """Resolve all positional args to a unified kwargs dict using the function signature.
+
+    For ``*args`` parameters, positional values are preserved in a ``_var_positional``
+    key so they can be forwarded to the underlying implementation.
+    """
+    bound = sig.bind(*args, **kwargs)
+    bound.apply_defaults()
+
+    unified: dict = {}
+    for name, param in sig.parameters.items():
+        if param.kind is inspect.Parameter.VAR_POSITIONAL:
+            unified["_var_positional"] = bound.arguments.get(name, ())
+        elif param.kind is inspect.Parameter.VAR_KEYWORD:
+            unified.update(bound.arguments.get(name, {}))
+        elif name in bound.arguments:
+            unified[name] = bound.arguments[name]
+
+    return unified
 
 
 def with_tensorflow_fallback(
@@ -87,32 +109,40 @@ def with_tensorflow_fallback(
 
     def decorator(fn):
         tf_name = tensorflow_name or fn.__name__
+        sig = inspect.signature(fn)
 
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
+            unified = _bind_unified_kwargs(sig, args, kwargs)
+
             if when is not None:
                 # Custom condition routing (e.g. modelzoo functions)
                 route_to_tf = when(*args, **kwargs)
             else:
                 # Default: engine-based routing (from shuffle / config)
-                engine = _resolve_engine(*args, **kwargs)
-                kwargs.pop("engine", None)
-                route_to_tf = engine == Engine.TF
+                route_to_tf = _resolve_engine(unified) == Engine.TF
+
+            # Strip engine before forwarding to either implementation
+            unified.pop("engine", None)
 
             if route_to_tf:
                 warn_deprecated_tensorflow()
-                return _get_tensorflow_impl(tf_name, module=tensorflow_module)(*args, **kwargs)
+                return _get_tensorflow_impl(tf_name, module=tensorflow_module)(
+                    *args,
+                    **{k: v for k, v in kwargs.items() if k != "engine"},
+                )
 
-            if when is not None:
-                kwargs.pop("engine", None)
-
-            kwargs = _resolve_legacy_kwargs(
-                kwargs,
+            resolved = _resolve_legacy_kwargs(
+                unified,
                 renamed_params=renamed_params or {},
                 dropped_params=dropped_params or [],
                 normalize_gputouse=normalize_gputouse,
             )
-            return fn(*args, **kwargs)
+
+            var_positional = resolved.pop("_var_positional", ())
+            if var_positional:
+                return fn(*var_positional, **resolved)
+            return fn(**resolved)
 
         return wrapper
 
@@ -132,25 +162,30 @@ def _shuffles_from_kwargs(kwargs: dict) -> list | tuple:
     return [kwargs.get("shuffle", 1)]
 
 
-def _resolve_engine(*args, **kwargs) -> Engine:
-    """Resolve engine from explicit engine parameter or shuffle metadata."""
-    engine = kwargs.get("engine")
+def _resolve_engine(unified_kwargs: dict) -> Engine:
+    """Resolve engine from explicit engine parameter or shuffle metadata.
+
+    Args:
+        unified_kwargs: Keyword arguments resolved from positional and keyword args
+                        via ``_bind_unified_kwargs``.
+    """
+    engine = unified_kwargs.get("engine")
     if engine is not None:
         return engine
 
     from deeplabcut.core.config.utils import read_config
 
-    shuffles = _shuffles_from_kwargs(kwargs)
-    config = kwargs["config"] if "config" in kwargs else args[0]
+    shuffles = _shuffles_from_kwargs(unified_kwargs)
+    config = unified_kwargs["config"]
     cfg = read_config(config)
     from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 
     engines = {
         get_shuffle_engine(
             cfg,
-            trainingsetindex=kwargs.get("trainingsetindex", 0),
+            trainingsetindex=unified_kwargs.get("trainingsetindex", 0),
             shuffle=s,
-            modelprefix=kwargs.get("modelprefix", ""),
+            modelprefix=unified_kwargs.get("modelprefix", ""),
         )
         for s in shuffles
     }
