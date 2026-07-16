@@ -904,8 +904,8 @@ def create_tracking_dataset(
             Introduced in "Pretraining boosts out-of-domain robustness for pose estimation" by Alexander Mathis,
             Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis.
             Source: https://arxiv.org/abs/1909.11229. Defaults to True.
-        destfolder (str | Path | None, optional): Specifies the destination folder for analysis data. If ``None``, the path of the video is
-            used. Note that for subsequent analysis this folder also needs to be passed.
+        destfolder (str | Path | None, optional): Specifies the destination folder for analysis data. If ``None``,
+            the path of the video is used. Note that for subsequent analysis this folder also needs to be passed.
         modelprefix (str, optional): Directory containing the deeplabcut models to use when evaluating the network.
             By default, the models are assumed to exist in the project folder. Defaults to "".
         robust_nframes (bool, optional): Evaluate a video's number of frames in a robust manner. This option is slower
@@ -1140,9 +1140,9 @@ def analyze_time_lapse_frames(
         shuffle (int, optional): Shuffle index of the training dataset used for training the network. Defaults to 1.
         trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use. By default the first
             (note that TrainingFraction is a list in config.yaml).
-        gputouse (int | None, optional): Only for TensorFlow models. For PyTorch models, please use `device`. Natural number
-            indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None. See:
-            https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+        gputouse (int | None, optional): Only for TensorFlow models. For PyTorch models, please use `device`.
+            Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put
+            None. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
         device (str, optional): The CUDA device to use for training. If None, the device will be taken from the
             ``pytorch_config.yaml`` file. Examples: {"cpu", "cuda", "cuda:0", "cuda:1"}. For more information, see
             https://pytorch.org/docs/stable/notes/cuda.html
@@ -1228,8 +1228,8 @@ def convert_detections2tracklets(
 
     Args:
         config (str | Path): Full path of the config.yaml file.
-        videos (list[str | Path]): A list of strings containing the full paths to videos for analysis or a path to the directory,
-            where all the videos with same extension are stored.
+        videos (list[str | Path]): A list of strings containing the full paths to videos for analysis or a path to
+            the directory, where all the videos with same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered,
             based on file extension.
             File paths and directory contents are treated differently: - ``None`` (default): file paths are accepted
@@ -1240,8 +1240,8 @@ def convert_detections2tracklets(
         trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use. By default the first
             (note that TrainingFraction is a list in config.yaml).
         overwrite (bool, optional): Overwrite tracks file i.e. recompute tracks from full detections and overwrite.
-        destfolder (str | Path | None, optional): Specifies the destination folder for analysis data (default is the path of the
-            video). Note that for subsequent analysis this folder also needs to be passed.
+        destfolder (str | Path | None, optional): Specifies the destination folder for analysis data (default is the
+            path of the video). Note that for subsequent analysis this folder also needs to be passed.
         ignore_bodyparts (optional): List of body part names that should be ignored during tracking (advanced). By
             default, all the body parts are used.
         inferencecfg (optional): Configuration file for inference (assembly of individuals). Ideally should be obtained
