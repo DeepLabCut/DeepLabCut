@@ -1,4 +1,4 @@
-name: Deploy docs (main + dev-docs latest)
+name: Docs / Deploy docs (main + dev-docs main)
 
 on:
   push:
@@ -7,8 +7,12 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
 jobs:
-  build:
+  build-main-docs:
     uses: ./.github/workflows/build-main-docs.yml
     with:
       python-version: "3.10"
@@ -17,10 +21,11 @@ jobs:
     secrets: inherit
 
   deploy-main-docs:
-    needs: build
+    needs: build-main-docs
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Download built Jupyter Book artifact
         uses: actions/download-artifact@v4
@@ -33,46 +38,17 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: site
-          keep_files: true  # preserve /dev/ versions managed by mike
+          keep_files: true
 
-  deploy-dev-docs-latest:
+  deploy-dev-docs-main:
     needs: deploy-main-docs
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0  # mike needs full history to read/write gh-pages branch
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
-
-      - name: Install system dependencies for mkdocs-material social plugin
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y libcairo2-dev libfreetype6-dev libffi-dev \
-            libjpeg-dev libpng-dev libz-dev
-
-      - name: Install dev-docs dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install ".[dev-docs]"
-
-      - name: Configure git for mike
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Deploy latest dev-docs with mike (main branch)
-        run: |
-          mike deploy --push \
-            --config-file dev-docs/mkdocs.yml \
-            --deploy-prefix dev \
-            main
-          mike set-default --push \
-            --config-file dev-docs/mkdocs.yml \
-            --deploy-prefix dev \
-            main
+    uses: ./.github/workflows/deploy-dev-docs-mike.yml
+    with:
+      action: deploy
+      version_label: main
+      aliases: ""
+      default_label: ""
+      python-version: "3.10"
+      config-file: dev-docs/mkdocs.yml
+      deploy-prefix: dev
+    secrets: inherit

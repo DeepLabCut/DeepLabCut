@@ -32,19 +32,20 @@ def build_from_cfg(cfg: dict, registry: "Registry", default_args: dict | None = 
     Returns:
         Any: The constructed object.
 
-    Example:
-        >>> from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
-        >>> class Model:
-        >>>     def __init__(self, param):
-        >>>         self.param = param
-        >>> cfg = {"type": "Model", "param": 10}
-        >>> registry = Registry("models")
-        >>> registry.register_module(Model)
-        >>> obj = build_from_cfg(cfg, registry)
-        >>> assert isinstance(obj, Model)
-        >>> assert obj.param == 10
-    """
+    Examples:
+        Build a model from a configuration dictionary:
 
+            from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+            class Model:
+                def __init__(self, param):
+                    self.param = param
+            cfg = {"type": "Model", "param": 10}
+            registry = Registry("models")
+            registry.register_module(Model)
+            obj = build_from_cfg(cfg, registry)
+            assert isinstance(obj, Model)
+            assert obj.param == 10
+    """
     args = cfg.copy()
 
     if default_args is not None:
@@ -138,11 +139,15 @@ class Registry:
         """Split scope and key.
 
         The first scope will be split from key.
+
         Examples:
-            >>> Registry.split_scope_key("mmdet.ResNet")
-            'mmdet', 'ResNet'
-            >>> Registry.split_scope_key("ResNet")
-            None, 'ResNet'
+            Split the scope and key:
+
+                Registry.split_scope_key("mmdet.ResNet")
+                # Output: ('mmdet', 'ResNet')
+
+                Registry.split_scope_key("ResNet")
+                # Output: (None, 'ResNet')
         Return:
             tuple[str | None, str]: The former element is the first scope of
             the key, which can be ``None``. The latter is the remaining key.
@@ -178,13 +183,15 @@ class Registry:
         Returns:
             class: The corresponding class.
 
-        Example:
-            >>> from deeplabcut.pose_estimation_pytorch.registry import Registry
-            >>> registry = Registry("models")
-            >>> class Model:
-            >>>     pass
-            >>> registry.register_module(Model, "Model")
-            >>> assert registry.get("Model") == Model
+        Examples:
+            Get a model class from the registry:
+
+                from deeplabcut.pose_estimation_pytorch.registry import Registry
+                registry = Registry("models")
+                class Model:
+                    pass
+                registry.register_module(Model, "Model")
+                assert registry.get("Model") == Model
         """
         scope, real_key = self.split_scope_key(key)
         if scope is None or scope == self._scope:
@@ -212,17 +219,19 @@ class Registry:
         Returns:
             Any: The constructed object.
 
-        Example:
-            >>> from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
-            >>> class Model:
-            >>>     def __init__(self, param):
-            >>>         self.param = param
-            >>> cfg = {"type": "Model", "param": 10}
-            >>> registry = Registry("models")
-            >>> registry.register_module(Model)
-            >>> obj = registry.build(cfg, param=20)
-            >>> assert isinstance(obj, Model)
-            >>> assert obj.param == 20
+        Examples:
+            Build an instance from the registry:
+
+                from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+                class Model:
+                    def __init__(self, param):
+                        self.param = param
+                cfg = {"type": "Model", "param": 10}
+                registry = Registry("models")
+                registry.register_module(Model)
+                obj = registry.build(cfg, param=20)
+                assert isinstance(obj, Model)
+                assert obj.param == 20
         """
         return self.build_func(*args, **kwargs, registry=self)
 
@@ -235,15 +244,17 @@ class Registry:
         Returns:
             None
 
-        Example:
-            >>> from deeplabcut.pose_estimation_pytorch.registry import Registry
-            >>> models = Registry("models")
-            >>> mmdet_models = Registry("models", parent=models)
-            >>> class Model:
-            >>>     pass
-            >>> mmdet_models.register_module(Model)
-            >>> obj = models.build(dict(type="mmdet.Model"))
-            >>> assert isinstance(obj, Model)
+        Examples:
+            Register and build a model from the registry:
+
+                from deeplabcut.pose_estimation_pytorch.registry import Registry
+                models = Registry("models")
+                mmdet_models = Registry("models", parent=models)
+                class Model:
+                    pass
+                mmdet_models.register_module(Model)
+                obj = models.build(dict(type="mmdet.Model"))
+                assert isinstance(obj, Model)
         """
         assert isinstance(registry, Registry)
         assert registry.scope is not None
@@ -263,13 +274,15 @@ class Registry:
         Returns:
             None
 
-        Example:
-            >>> from deeplabcut.pose_estimation_pytorch.registry import Registry
-            >>> registry = Registry("models")
-            >>> class Model:
-            >>>     pass
-            >>> registry._register_module(Model, "Model")
-            >>> assert registry.get("Model") == Model
+        Examples:
+            Register a model and get it from the registry:
+
+                from deeplabcut.pose_estimation_pytorch.registry import Registry
+                registry = Registry("models")
+                class Model:
+                    pass
+                registry._register_module(Model, "Model")
+                assert registry.get("Model") == Model
         """
         if not inspect.isclass(module) and not inspect.isfunction(module):
             raise TypeError(f"module must be a class or a function, but got {type(module)}")
@@ -294,13 +307,15 @@ class Registry:
         Returns:
             type: The input class.
 
-        Example:
-            >>> from deeplabcut.pose_estimation_pytorch.registry import Registry
-            >>> registry = Registry("models")
-            >>> @registry.deprecated_register_module()
-            >>> class Model:
-            >>>     pass
-            >>> assert registry.get("Model") == Model
+        Examples:
+            Register a class in the registry with the ``deprecated_register_module`` decorator:
+
+                from deeplabcut.pose_estimation_pytorch.registry import Registry
+                registry = Registry("models")
+                @registry.deprecated_register_module()
+                class Model:
+                    pass
+                assert registry.get("Model") == Model
         """
         if cls is None:
             return partial(self.deprecated_register_module, force=force)
@@ -313,6 +328,7 @@ class Registry:
         A record will be added to `self._module_dict`, whose key is the class
         name or the specified name, and value is the class itself.
         It can be used as a decorator or a normal function.
+
         Args:
             name: The module name to be registered. If not
                   specified, the class name will be used.

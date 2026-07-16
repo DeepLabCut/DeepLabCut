@@ -52,25 +52,19 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
         max_shift=0.4,
         crop_sampling="hybrid",
     ):
-        """
-        Parameters
-        ----------
-        width : int
-            Crop images down to this maximum width.
+        """Crop images to fixed size with keypoint-aware center sampling.
 
-        height : int
-            Crop images down to this maximum height.
-
-        max_shift : float, optional (default=0.25)
-            Maximum allowed shift of the cropping center position
-            as a fraction of the crop size.
-
-        crop_sampling : str, optional (default="hybrid")
-            Crop centers sampling method. Must be either:
-            "uniform" (randomly over the image),
-            "keypoints" (randomly over the annotated keypoints),
-            "density" (weighing preferentially dense regions of keypoints),
-            or "hybrid" (alternating randomly between "uniform" and "density").
+        Args:
+            width (int): Crop images down to this maximum width.
+            height (int): Crop images down to this maximum height.
+            max_shift (float, optional): Maximum allowed shift of the cropping center position
+                as a fraction of the crop size. Defaults to 0.4.
+            crop_sampling (str, optional): Crop centers sampling method. Must be either:
+                "uniform" (randomly over the image),
+                "keypoints" (randomly over the annotated keypoints),
+                "density" (weighing preferentially dense regions of keypoints),
+                or "hybrid" (alternating randomly between "uniform" and "density").
+                Defaults to "hybrid".
         """
         super().__init__(
             width,

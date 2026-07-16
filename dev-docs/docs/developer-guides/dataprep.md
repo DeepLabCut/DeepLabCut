@@ -121,11 +121,13 @@ train_dataset = loader.create_dataset(
 COCO JSON files can specify image paths in two ways:
 
 1. **Relative paths**: Resolved to the `images/` folder
-   - `"file_name": "img0000.png"` → `/path/to/COCOProject/images/img0000.png`
-   - `"file_name": "subfolder/img0000.png"` → `/path/to/COCOProject/images/subfolder/img0000.png`
 
-2. **Absolute paths**: Used directly without resolution
-   - `"file_name": "/data/disk2/images/img0000.png"` → `/data/disk2/images/img0000.png`
+    - `"file_name": "img0000.png"` → `/path/to/COCOProject/images/img0000.png`
+    - `"file_name": "subfolder/img0000.png"` → `/path/to/COCOProject/images/subfolder/img0000.png`
+
+1. **Absolute paths**: Used directly without resolution
+
+    - `"file_name": "/data/disk2/images/img0000.png"` → `/data/disk2/images/img0000.png`
 
 This allows you to keep images on different disks or reuse images across projects without duplication.
 

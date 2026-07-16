@@ -135,7 +135,8 @@ def return_train_network_path(
     trainingsetindex: int = 0,
     modelprefix: str = "",
 ) -> tuple[Path, Path, Path]:
-    """
+    """Return the train network path.
+
     Args:
         config: Full path of the config.yaml file as a string.
         shuffle: The shuffle index to select for training
@@ -167,7 +168,8 @@ def get_model_snapshots(
     task: Task,
     snapshot_filter: list[str] | None = None,
 ) -> list[Snapshot]:
-    """
+    """Get the model snapshots.
+
     Args:
         index: Passing an index returns the snapshot with that index (where snapshots
             based on their number of training epochs, and the last snapshot is the
@@ -223,7 +225,8 @@ def get_model_snapshots(
 
 
 def get_scorer_uid(snapshot: Snapshot, detector_snapshot: Snapshot | None) -> str:
-    """
+    """Get the scorer uid.
+
     Args:
         snapshot: the snapshot for which to get the scorer UID
         detector_snapshot: if a top-down model is used with a detector, the detector
@@ -348,7 +351,6 @@ def _image_names_to_df_index(
         image_names: list of image names
         image_name_to_index, optional: a transform to apply on each image_name
     """
-
     if image_name_to_index is not None:
         return pd.MultiIndex.from_tuples([image_name_to_index(image_name) for image_name in image_names])
     else:
@@ -425,7 +427,6 @@ def build_bboxes_dict_for_dataframe(
         Dictionary with sames keys as in the dataframe returned by
         build_predictions_dataframe, and respective bounding boxes and scores, if any.
     """
-
     image_names = []
     bboxes_data = []
     for image_name, image_predictions in predictions.items():

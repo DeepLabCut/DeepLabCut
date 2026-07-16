@@ -59,8 +59,6 @@ When `deeplabcut.pose_estimation_pytorch.apis.videos.video_inference` is called 
 
 You can easily do so by writing a bit of custom code, as shown in the example below:
 
-
-
 ```python
 from deeplabcut.core.config import read_config_as_dict
 from pathlib import Path
