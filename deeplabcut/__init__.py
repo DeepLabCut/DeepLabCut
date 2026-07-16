@@ -43,7 +43,6 @@ from .create_project import (
     create_new_project,
     create_new_project_3d,
     create_pretrained_human_project,
-    create_pretrained_project,
     load_demo_data,
 )
 from .generate_training_dataset import (
@@ -115,6 +114,7 @@ _API_EXPORTS_MAP: dict[str, tuple[str, str]] = {
     "analyze_time_lapse_frames": (".api.pose_estimation", "analyze_time_lapse_frames"),
     "analyze_videos": (".api.pose_estimation", "analyze_videos"),
     "convert_detections2tracklets": (".api.pose_estimation", "convert_detections2tracklets"),
+    "create_pretrained_project": (".api.create_project", "create_pretrained_project"),
     "create_tracking_dataset": (".api.pose_estimation", "create_tracking_dataset"),
     "evaluate_network": (".api.pose_estimation", "evaluate_network"),
     "export_model": (".api.pose_estimation", "export_model"),
@@ -202,7 +202,6 @@ _PROJECT_EXPORTS = [
     "create_new_project",
     "create_new_project_3d",
     "create_pretrained_human_project",
-    "create_pretrained_project",
     "load_demo_data",
 ]
 
@@ -239,6 +238,7 @@ _API_EXPORTS = [
     "visualize_paf",
     "visualize_scoremaps",
     "analyzeskeleton",
+    "create_pretrained_project",
     "filterpredictions",
     "extract_outlier_frames",
     "find_outliers_in_raw_data",
