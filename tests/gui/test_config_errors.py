@@ -91,19 +91,9 @@ def test_generic_error_report_includes_message():
         FileNotFoundError("x"),
         PermissionError("x"),
         OSError("x"),
-    ],
-)
-def test_config_load_errors_cover_common_failures(error):
-    assert isinstance(error, CONFIG_LOAD_ERRORS)
-
-
-@pytest.mark.parametrize(
-    "error",
-    [
         TypeError("x"),
         ValueError("x"),
     ],
 )
-def test_config_load_errors_excludes_overly_broad_types(error):
-    """TypeError / ValueError are too broad to be treated as config-load errors."""
-    assert not isinstance(error, CONFIG_LOAD_ERRORS)
+def test_config_load_errors_cover_common_failures(error):
+    assert isinstance(error, CONFIG_LOAD_ERRORS)

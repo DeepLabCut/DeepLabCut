@@ -1052,7 +1052,7 @@ class MainWindow(QMainWindow):
 
         self.logger.error("Task failed: %s", error, exc_info=error)
 
-        if isinstance(error, CONFIG_LOAD_ERRORS):
+        if isinstance(error, ValidationError):
             report = format_config_error(config_path or "<unknown>", error)
         else:
             report = ConfigErrorReport(
@@ -1070,7 +1070,7 @@ class MainWindow(QMainWindow):
         message.setDetailedText(report.technical_details)
 
         open_button = None
-        if config_path is not None and isinstance(error, CONFIG_LOAD_ERRORS):
+        if config_path is not None and isinstance(error, ValidationError):
             open_button = message.addButton(
                 "Open configuration",
                 QMessageBox.ActionRole,

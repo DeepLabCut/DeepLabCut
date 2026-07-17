@@ -16,13 +16,13 @@ from typing import Any
 from pydantic import ValidationError
 
 #: Exceptions that indicate a configuration could not be read or validated.
-#: Kept deliberately narrow — TypeError and ValueError are excluded to avoid
-#: catching errors unrelated to configuration (e.g. from arbitrary GUI callbacks).
 CONFIG_LOAD_ERRORS = (
     ValidationError,
     FileNotFoundError,
     PermissionError,
     OSError,
+    TypeError,
+    ValueError,
 )
 
 _CUSTOM_MESSAGES: dict[str, str] = {
