@@ -24,7 +24,6 @@ from deeplabcut.gui.components import (
     _create_grid_layout,
     _create_label_widget,
 )
-from deeplabcut.gui.dialogs.config_errors import CONFIG_LOAD_ERRORS
 from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
 from deeplabcut.gui.gui_assets import icon_from_resource
 from deeplabcut.gui.widgets import ConfigEditor
@@ -223,36 +222,35 @@ class TrainNetwork(DefaultTab):
         editor.show()
 
     def train_network(self):
-        config_path = self.root.config_path
-        shuffle = int(self._shuffle.value())
-
-        kwargs = dict(gputouse=None, autotune=False)
-        for k, spin_box in self._attribute_kwargs[self.root.engine].items():
-            kwargs[k] = int(spin_box.value())
-        if self.root.engine == Engine.PYTORCH:
-            snapshot_to_start_training_from = self.snapshot_selection_widget.selected_snapshot
-            if snapshot_to_start_training_from is not None:
-                kwargs["snapshot_path"] = snapshot_to_start_training_from
-            detector_to_start_training_from = self.detector_snapshot_selection_widget.selected_snapshot
-            if detector_to_start_training_from is not None:
-                kwargs["detector_path"] = detector_to_start_training_from
-
         try:
+            config_path = self.root.config_path
+            shuffle = int(self._shuffle.value())
+
+            kwargs = dict(gputouse=None, autotune=False)
+            for k, spin_box in self._attribute_kwargs[self.root.engine].items():
+                kwargs[k] = int(spin_box.value())
+            if self.root.engine == Engine.PYTORCH:
+                snapshot_to_start_training_from = self.snapshot_selection_widget.selected_snapshot
+                if snapshot_to_start_training_from is not None:
+                    kwargs["snapshot_path"] = snapshot_to_start_training_from
+                detector_to_start_training_from = self.detector_snapshot_selection_widget.selected_snapshot
+                if detector_to_start_training_from is not None:
+                    kwargs["detector_path"] = detector_to_start_training_from
+
             compat.train_network(config_path, shuffle, **kwargs)
-        except CONFIG_LOAD_ERRORS as error:
+
+            msg = QtWidgets.QMessageBox()
+            msg.setIcon(QtWidgets.QMessageBox.Information)
+            msg.setText("The network is now trained and ready to evaluate.")
+            msg.setInformativeText("Use the function 'evaluate_network' to evaluate the network.")
+
+            msg.setWindowTitle("Info")
+            msg.setMinimumWidth(900)
+            msg.setWindowIcon(icon_from_resource("logo.png"))
+            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msg.exec_()
+        except Exception as error:
             self.root.show_task_error(error, self.root.pose_cfg_path)
-            return
-
-        msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Information)
-        msg.setText("The network is now trained and ready to evaluate.")
-        msg.setInformativeText("Use the function 'evaluate_network' to evaluate the network.")
-
-        msg.setWindowTitle("Info")
-        msg.setMinimumWidth(900)
-        msg.setWindowIcon(icon_from_resource("logo.png"))
-        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        msg.exec_()
 
     @Slot(dict)
     def _pose_cfg_change(self, pose_cfg: dict | None) -> None:
