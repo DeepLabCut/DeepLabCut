@@ -672,7 +672,6 @@ def _create_message_box(text, info_text):
 
     msg.setWindowTitle("Info")
     msg.setMinimumWidth(900)
-    # logo = Path("logo.png").resolve().parent / "assets" / "logo.png"
     icon = icon_from_resource("logo.png")
     msg.setWindowIcon(icon)
     msg.setStandardButtons(QtWidgets.QMessageBox.Ok)

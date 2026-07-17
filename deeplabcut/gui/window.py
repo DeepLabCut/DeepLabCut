@@ -609,7 +609,6 @@ class MainWindow(QMainWindow):
         palette.setColor(QtGui.QPalette.Window, QtGui.QColor("#ffffff"))
         self.setPalette(palette)
 
-        # icon = str(BASE_DIR / "assets" / "logo.png")
         self.setWindowIcon(icon_from_resource("logo.png"))
 
         # Set default window size and allow resizing
