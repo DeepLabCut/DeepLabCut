@@ -217,9 +217,9 @@ def _resolve_legacy_kwargs(
 ) -> dict:
     """Resolve legacy TensorFlow kwargs to canonical (PyTorch) kwargs."""
 
-    if normalize_gputouse and (gpu := kwargs.get("gputouse")):
+    if normalize_gputouse and "gputouse" in kwargs:
         # Normalize parameter "gputouse" to torch device string and rename
-        kwargs["gputouse"] = _normalize_gputouse(gpu)
+        kwargs["gputouse"] = _normalize_gputouse(kwargs["gputouse"])
         renamed_params["gputouse"] = "device"
 
     # Rename deprecated parameters
