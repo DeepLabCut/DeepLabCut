@@ -118,6 +118,7 @@ class MainWindow(QMainWindow):
         self.files: set[Path] = set()
 
         self._engine = Engine.PYTORCH
+        self._config_monitor = None
 
         # Update checks
         self._update_process = None
@@ -220,9 +221,8 @@ class MainWindow(QMainWindow):
     def config_path(self, value: Path | None) -> None:
         self._config_path = value
         self._cfg = None
-        monitor = getattr(self, "_config_monitor", None)
-        if monitor is not None:
-            monitor.set_path(str(value) if value is not None else None)
+        if self._config_monitor is not None:
+            self._config_monitor.set_path(str(value) if value is not None else None)
 
     @property
     def cfg(self) -> ProjectConfig | None:
@@ -272,7 +272,6 @@ class MainWindow(QMainWindow):
         self._engine = e
         self.engine_change.emit(e)
 
-    @property
     @property
     def project_folder(self) -> Path:
         cfg = self.cfg
