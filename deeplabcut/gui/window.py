@@ -220,7 +220,7 @@ class MainWindow(QMainWindow):
     @config_path.setter
     def config_path(self, value: Path | None) -> None:
         self._config_path = value
-        self._cfg = None
+        self.invalidate_config_cache()
         if self._config_monitor is not None:
             self._config_monitor.set_path(str(value) if value is not None else None)
 
@@ -922,6 +922,11 @@ class MainWindow(QMainWindow):
             return False
         return self._update_project_state(self.config_path, loaded=True)
 
+    def invalidate_config_cache(self) -> None:
+        """Drop the cached project configuration so the next ``self.cfg``
+        access performs a fresh read-and-validate from disk."""
+        self._cfg = None
+
     def _ask_for_help(self):
         dlg = QMessageBox(self)
         dlg.setWindowTitle("Ask for help")
@@ -1119,7 +1124,7 @@ class MainWindow(QMainWindow):
 
         while True:
             self._discard_partial_project_tabs()
-            self._cfg = None
+            self.invalidate_config_cache()
 
             try:
                 # Read and validate; tabs reuse the cached snapshot via self.cfg.
@@ -1197,7 +1202,7 @@ class MainWindow(QMainWindow):
         self.config_path = absolute_path(config)
 
         while True:
-            self._cfg = None
+            self.invalidate_config_cache()
 
             try:
                 cfg = self._read_current_config_for_ui()
