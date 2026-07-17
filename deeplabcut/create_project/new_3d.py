@@ -10,7 +10,6 @@
 #
 
 
-import os
 from pathlib import Path
 
 from deeplabcut import DEBUG
@@ -21,30 +20,24 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     for 3d project. The configuration file is loaded with the default values. Adjust the
     parameters to your project's needs.
 
-    Parameters
-    ----------
-    project : string
-        String containing the name of the project.
+    Args:
+        project (string): String containing the name of the project.
+        experimenter (string): String containing the name of the experimenter.
+        num_cameras (int): An integer value specifying the number of cameras.
+        working_directory (string, optional): The directory where the project will be
+            created. The default is the ``current working directory``; if provided, it
+            must be a string.
 
-    experimenter : string
-        String containing the name of the experimenter.
+    Examples:
+        Linux/MacOs:
 
-    num_cameras : int
-        An integer value specifying the number of cameras.
+            deeplabcut.create_new_project_3d("reaching-task", "Linus", 2)
 
-    working_directory : string, optional
-        The directory where the project will be created. The default is the ``current working directory``; if provided,
-        it must be a string.
+        Windows:
 
+            deeplabcut.create_new_project_3d("reaching-task", "Bill", 2)
 
-    Example
-    --------
-    Linux/MacOs
-    >>> deeplabcut.create_new_project_3d('reaching-task','Linus',2)
-
-    Windows:
-    >>> deeplabcut.create_new_project('reaching-task','Bill',2)
-    Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \\ )
+        On Windows, paths should be formatted as ``r`"C:\"`` or ``"C:\\"`` (i.e. a double backslash).
     """
     from datetime import datetime as dt
 
@@ -122,7 +115,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
         cfg_file_3d.insert(len(cfg_file_3d), str("shuffle_camera-" + str(i + 1)), 1)
         cfg_file_3d.insert(len(cfg_file_3d), str("trainingsetindex_camera-" + str(i + 1)), 0)
 
-    projconfigfile = os.path.join(str(project_path), "config.yaml")
+    projconfigfile = project_path / "config.yaml"
     auxiliaryfunctions.write_config_3d(projconfigfile, cfg_file_3d)
 
     print('Generated "{}"'.format(project_path / "config.yaml"))

@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-import os
 import warnings
 from pathlib import Path
 
@@ -25,8 +24,8 @@ from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, auxiliaryfu
 # other API (i.e. videotype: str -> video_extensions: str | Sequence[str] | None)
 # this requires updating get_camerawise_videos (matching `collect_video_paths`)
 def triangulate(
-    config,
-    video_path,
+    config: str | Path,
+    video_path: str | Path | list[str | Path] | list[list[str | Path]],
     videotype="",
     filterpredictions=True,
     filtertype="median",
@@ -35,63 +34,63 @@ def triangulate(
     save_as_csv=False,
     track_method="",
 ):
-    """This function triangulates the detected DLC-keypoints from the two camera views
-    using the camera matrices (derived from calibration) to calculate 3D predictions.
+    """Triangulate DLC keypoints from two camera views into 3D predictions.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Uses camera matrices from calibration.
 
-    video_path : string/list of list
-        Full path of the directory where videos are saved. If the user wants to analyze
-        only a pair of videos, the user needs to pass them as a list of list of videos,
-        i.e. [['video1-camera-1.avi','video1-camera-2.avi']]
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        video_path (string/list of list): Directory where videos are saved, or a list of video pairs,
+            e.g. [['video1-camera-1.avi', 'video1-camera-2.avi']].
+        videotype (string, optional): When ``video_path`` is a directory, only videos with this extension
+            are analyzed. If unspecified, common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+        filterpredictions (bool, optional): Filter predictions with ``filtertype``.
+            Defaults to True.
+        filtertype (string): Filter to use: 'arima' or 'median' (currently supported).
+        gputouse (int, optional): GPU index (see nvidia-smi). Use None if no GPU.
+            See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+        destfolder (string, optional): Destination folder for analysis data.
+            Defaults to the video path.
+        save_as_csv (bool, optional): Save predictions as .csv. Defaults to False.
+        track_method (str, optional): Tracking method suffix for multi-animal projects.
+            Defaults to "".
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n
-        Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    Examples:
+        Linux/MacOS — analyze all videos in the directory:
+            deeplabcut.triangulate(config, "/data/project1/videos/")
 
+        To analyze only a few pairs of videos:
+            deeplabcut.triangulate(
+                config,
+                [
+                    [
+                        "/data/project1/videos/video1-camera-1.avi",
+                        "/data/project1/videos/video1-camera-2.avi",
+                    ],
+                    [
+                        "/data/project1/videos/video2-camera-1.avi",
+                        "/data/project1/videos/video2-camera-2.avi",
+                    ],
+                ],
+            )
 
-    filterpredictions: Bool, optional
-        Filter the predictions with filter specified by "filtertype". If specified it
-        should be either ``True`` or ``False``.
+        Windows — analyze all videos in the directory:
+            deeplabcut.triangulate(config, "C:\\yourusername\\rig-95\\Videos")
 
-    filtertype: string
-        Select which filter, 'arima' or 'median' filter (currently supported).
-
-    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi).
-        If you do not have a GPU put None.
-        See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
-
-    destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video)
-
-    save_as_csv: bool, optional
-        Saves the predictions in a .csv file. The default is ``False``
-
-    Example
-    -------
-    Linux/MacOS
-    To analyze all the videos in the directory:
-    >>> deeplabcut.triangulate(config,'/data/project1/videos/')
-
-    To analyze only a few pairs of videos:
-    >>> deeplabcut.triangulate(config,[['/data/project1/videos/video1-camera-1.avi',
-    ... '/data/project1/videos/video1-camera-2.avi'],['/data/project1/videos/video2-camera-1.avi',
-    ... '/data/project1/videos/video2-camera-2.avi']])
-
-
-    Windows
-    To analyze all the videos in the directory:
-    >>> deeplabcut.triangulate(config,'C:\\yourusername\\rig-95\\Videos')
-
-    To analyze only a few pair of videos:
-    >>> deeplabcut.triangulate(config,[['C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi',
-    ... 'C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi'],
-    ... ['C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi',
-    ... 'C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi']])
+        To analyze only a few pairs of videos:
+            deeplabcut.triangulate(
+                config,
+                [
+                    [
+                        "C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi",
+                        "C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi",
+                    ],
+                    [
+                        "C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi",
+                        "C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi",
+                    ],
+                ],
+            )
     """
     from deeplabcut.compat import analyze_videos
     from deeplabcut.post_processing import filtering
@@ -105,7 +104,7 @@ def triangulate(
     for cam in cam_names:
         snapshots[cam] = cfg_3d[str("config_file_" + cam)]
         # Check if the config file exists
-        if not os.path.exists(snapshots[cam]):
+        if not Path(snapshots[cam]).exists():
             raise Exception(
                 str("It seems the file specified in the variable config_file_" + str(cam))
                 + " does not exist. Please edit the config file with correct file path and retry."
@@ -157,10 +156,10 @@ def triangulate(
                 trainingsetindex = cfg_3d[str("trainingsetindex_" + cam_names[j])]
                 trainFraction = cfg["TrainingFraction"][trainingsetindex]
                 if flag:
-                    video = os.path.join(video_path, video_list[i][j])
+                    video = str(Path(video_path) / video_list[i][j])
                 else:
                     video_path = str(Path(video_list[i][j]).parents[0])
-                    video = os.path.join(video_path, video_list[i][j])
+                    video = str(Path(video_path) / video_list[i][j])
 
                 if destfolder is None:
                     destfolder = str(Path(video).parents[0])
@@ -179,18 +178,16 @@ def triangulate(
                     suffix = suffix[1:]
 
                 if prefix == "":
-                    output_file = os.path.join(destfolder, suffix)
+                    output_file = str(Path(destfolder) / suffix)
                 else:
                     if suffix == "":
-                        output_file = os.path.join(destfolder, prefix)
+                        output_file = str(Path(destfolder) / prefix)
                     else:
-                        output_file = os.path.join(destfolder, prefix + "_" + suffix)
+                        output_file = str(Path(destfolder) / (prefix + "_" + suffix))
 
-                output_filename = os.path.join(
-                    output_file + "_" + scorer_3d
-                )  # Check if the videos are already analyzed for 3d
-                if os.path.isfile(output_filename + ".h5"):
-                    if save_as_csv is True and not os.path.exists(output_filename + ".csv"):
+                output_filename = output_file + "_" + scorer_3d  # Check if the videos are already analyzed for 3d
+                if Path(output_filename + ".h5").is_file():
+                    if save_as_csv is True and not Path(output_filename + ".csv").exists():
                         # In case user adds save_as_csv is True after triangulating
                         pd.read_hdf(output_filename + ".h5").to_csv(str(output_filename + ".csv"))
 
@@ -208,7 +205,7 @@ def triangulate(
                         path_undistort,
                         _,
                     ) = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
-                    path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
+                    path_stereo_file = str(Path(path_camera_matrix) / "stereo_params.pickle")
                     stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
                     cam_pair = str(cam_names[0] + "-" + cam_names[1])
                     is_video_analyzed = False  # variable to keep track if the video was already analyzed
@@ -234,7 +231,7 @@ def triangulate(
 
                     if is_video_analyzed:
                         print("This file is already analyzed!")
-                        dataname.append(os.path.join(destfolder, vname + DLCscorer + tr_method_suffix + ".h5"))
+                        dataname.append(str(Path(destfolder) / (vname + DLCscorer + tr_method_suffix + ".h5")))
                         scorer_name[cam_names[j]] = DLCscorer
                     else:
                         # Analyze video if score name is different
@@ -263,7 +260,7 @@ def triangulate(
                             )
                             suffix += "_filtered"
 
-                        dataname.append(os.path.join(destfolder, vname + DLCscorer + suffix + ".h5"))
+                        dataname.append(str(Path(destfolder) / (vname + DLCscorer + suffix + ".h5")))
 
                 else:  # need to do the whole jam.
                     DLCscorer = analyze_videos(
@@ -290,7 +287,7 @@ def triangulate(
                             destfolder=destfolder,
                         )
                         suffix += "_filtered"
-                    dataname.append(os.path.join(destfolder, vname + DLCscorer + suffix + ".h5"))
+                    dataname.append(str(Path(destfolder) / (vname + DLCscorer + suffix + ".h5")))
 
         if run_triangulate:
             #        if len(dataname)>0:
@@ -522,14 +519,14 @@ def undistort_points(config, dataframe, camera_pair):
             f"needs filenames to two data frames, but got dataframe={dataframe}."
         )
     for filename in dataframe:
-        if not os.path.exists(filename):
+        if not Path(filename).exists():
             raise FileNotFoundError(f"Dataframe path '{filename}' could not be found in the filesystem.")
-    if not os.path.exists(path_camera_matrix):
+    if not Path(path_camera_matrix).exists():
         raise FileNotFoundError(f"Camera matrix file '{path_camera_matrix}' could not be found in the filesystem.")
     # Create an empty dataFrame to store the undistorted 2d coordinates and likelihood
     dataframe_cam1 = pd.read_hdf(dataframe[0])
     dataframe_cam2 = pd.read_hdf(dataframe[1])
-    path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
+    path_stereo_file = str(Path(path_camera_matrix) / "stereo_params.pickle")
     stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
     dataFrame_cam1_undistort, dataFrame_cam2_undistort = _undistort_views(
         [(dataframe_cam1, dataframe_cam2)],

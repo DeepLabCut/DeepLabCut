@@ -8,8 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -32,9 +32,9 @@ class BaseDLCPoseDataset(BasePoseDataset):
         self.proj_root = proj_root
 
         if modelprefix:
-            config_file = os.path.join(self.proj_root, modelprefix + "_config.yaml")
+            config_file = Path(self.proj_root) / (modelprefix + "_config.yaml")
         else:
-            config_file = os.path.join(self.proj_root, "config.yaml")
+            config_file = Path(self.proj_root) / "config.yaml"
 
         cfg = auxiliaryfunctions.read_config(config_file)
 
@@ -42,27 +42,21 @@ class BaseDLCPoseDataset(BasePoseDataset):
 
         scorer = cfg["scorer"]
 
-        datasets_folder = os.path.join(
-            self.proj_root,
-            auxiliaryfunctions.GetTrainingSetFolder(cfg),
-        )
+        datasets_folder = Path(self.proj_root) / auxiliaryfunctions.GetTrainingSetFolder(cfg)
 
         self.datasets_folder = datasets_folder
 
         trainingFraction = int(cfg["TrainingFraction"][0] * 100)
 
-        path_dlc_collected = os.path.join(datasets_folder, f"CollectedData_{scorer}.h5")
+        path_dlc_collected = datasets_folder / f"CollectedData_{scorer}.h5"
 
-        path_dlc_document = os.path.join(
-            datasets_folder,
-            f"Documentation_data-{task}_{trainingFraction}shuffle{shuffle}.pickle",
-        )
+        path_dlc_document = datasets_folder / f"Documentation_data-{task}_{trainingFraction}shuffle{shuffle}.pickle"
 
         df = pd.read_hdf(path_dlc_collected)
 
         self.dlc_df = df
 
-        with open(path_dlc_document, "rb") as f:
+        with path_dlc_document.open("rb") as f:
             document_data = pickle.load(f)
 
         train_indices = document_data[1]

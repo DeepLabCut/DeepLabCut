@@ -15,6 +15,7 @@ import shutil
 import warnings
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Literal
 
 from deeplabcut import DEBUG
 from deeplabcut.core.deprecation import renamed_parameter
@@ -26,100 +27,83 @@ from deeplabcut.utils.auxfun_videos import VideoReader, collect_video_paths
 def create_new_project(
     project: str,
     experimenter: str,
-    videos: list[str],
-    working_directory: str | None = None,
+    videos: list[str | Path],
+    working_directory: str | Path | None = None,
     copy_videos: bool = False,
     video_extensions: str | Sequence[str] | None = None,
     multianimal: bool = False,
     individuals: list[str] | None = None,
-):
+) -> Path | Literal["nothingcreated"]:
     r"""Create the necessary folders and files for a new project.
 
     Creating a new project involves creating the project directory, sub-directories and
     a basic configuration file. The configuration file is loaded with the default
     values. Change its parameters to your projects need.
 
-    Parameters
-    ----------
-    project : string
-        The name of the project.
+    Args:
+        project (string): The name of the project.
+        experimenter (string): The name of the experimenter.
+        videos (list[str | Path]): A list of strings or paths representing the full
+            paths of the videos or video-directories to include in the project. If a
+            path represents a directory instead of a file, all videos of
+            ``video_extensions`` will be imported.
+        working_directory (str | Path | None, optional): The directory where the
+            project will be created. The default is the ``current working directory``.
+        copy_videos (bool, optional): If True, the videos are copied to the ``videos``
+            directory. If False, symlinks of the videos will be created in the
+            ``project/videos`` directory; in the event of a failure to create symbolic
+            links, videos will be moved instead. Defaults to False.
+        video_extensions (str | Sequence[str] | None, optional):
+            Controls how ``videos`` are filtered, based on file extension.
+            File paths and directory contents are treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s). Defaults to None.
+        multianimal (bool, optional): For creating a multi-animal project (introduced
+            in DLC 2.2). Defaults to False.
+        individuals (list[str] | None, optional): Relevant only if multianimal is True.
+            List of individuals to be used in the project configuration. If None,
+            defaults to ['individual1', 'individual2', 'individual3'].
 
-    experimenter : string
-        The name of the experimenter.
+    Returns:
+        Path | Literal["nothingcreated"]: Path to the new project configuration file,
+        or ``"nothingcreated"`` if no valid videos were found.
 
-    videos : list[str]
-        A list of strings representing the full paths of the videos or video-directories
-        to include in the project.
+    Raises:
+        FileNotFoundError: If a non-existent path is passed to ``videos``.
 
-    video_extensions (str | Sequence[str] | None, default=None):
-        Controls how ``videos`` are filtered, based on file extension.
-        File paths and directory contents are treated differently:
-        - ``None`` (default): file paths are accepted as-is; directories are
-          scanned for files with a recognized video extension.
-        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
-          both file paths and directory contents are filtered by the given
-          extension(s).
+    Examples:
+        Linux/MacOS:
 
-    working_directory : string, optional
-        The directory where the project will be created. The default is the
-        ``current working directory``.
+            deeplabcut.create_new_project(
+                project='reaching-task',
+                experimenter='Linus',
+                videos=[
+                    '/data/videos/mouse1.avi',
+                    '/data/videos/mouse2.avi',
+                    '/data/videos/mouse3.avi'
+                ],
+                working_directory='/analysis/project/',
+            )
+            deeplabcut.create_new_project(
+                project='reaching-task',
+                experimenter='Linus',
+                videos=['/data/videos'],
+                video_extensions='.mp4',
+            )
 
-    copy_videos : bool, optional, Default: False.
-        If True, the videos are copied to the ``videos`` directory. If False, symlinks
-        of the videos will be created in the ``project/videos`` directory; in the event
-        of a failure to create symbolic links, videos will be moved instead.
+        Windows:
 
-    multianimal: bool, optional. Default: False.
-        For creating a multi-animal project (introduced in DLC 2.2)
+            deeplabcut.create_new_project(
+                'reaching-task',
+                'Bill',
+                [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
+                copy_videos=True,
+            )
 
-    individuals: list[str]|None = None,
-        Relevant only if multianimal is True.
-        list of individuals to be used in the project configuration.
-        If None - defaults to ['individual1', 'individual2', 'individual3']
-
-    Returns
-    -------
-    str
-        Path to the new project configuration file.
-
-    Raises
-    ------
-    FileNotFoundError
-        If a non-existent path is passed to ``videos``.
-
-    Examples
-    --------
-
-    Linux/MacOS:
-
-    >>> deeplabcut.create_new_project(
-            project='reaching-task',
-            experimenter='Linus',
-            videos=[
-                '/data/videos/mouse1.avi',
-                '/data/videos/mouse2.avi',
-                '/data/videos/mouse3.avi'
-            ],
-            working_directory='/analysis/project/',
-        )
-    >>> deeplabcut.create_new_project(
-            project='reaching-task',
-            experimenter='Linus',
-            videos=['/data/videos'],
-            video_extensions='.mp4',
-        )
-
-    Windows:
-
-    >>> deeplabcut.create_new_project(
-            'reaching-task',
-            'Bill',
-            [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
-            copy_videos=True,
-        )
-
-    Users must format paths with either:
-    r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
+        On Windows, paths should be formatted as ``r`"C:\"`` or ``"C:\\"`` (i.e. a double backslash).
     """
     from datetime import datetime as dt
 
@@ -154,7 +138,7 @@ def create_new_project(
     # Create project and sub-directories
     if not DEBUG and project_path.exists():
         print(f'Project "{project_path}" already exists!')
-        return os.path.join(str(project_path), "config.yaml")
+        return (project_path / "config.yaml").absolute()
     video_path = project_path / "videos"
     data_path = project_path / "labeled-data"
     shuffles_path = project_path / "training-datasets"
@@ -196,15 +180,13 @@ def create_new_project(
             if dst.exists() and not DEBUG:
                 raise FileExistsError(f"Video {dst} exists already!")
             try:
-                src = str(src)
-                dst = str(dst)
-                os.symlink(src, dst)
+                dst.symlink_to(src)
                 print(f"Created the symlink of {src} to {dst}")
             except OSError:
                 try:
                     import subprocess
 
-                    subprocess.check_call(f"mklink {dst} {src}", shell=True)
+                    subprocess.check_call(f"mklink {os.fspath(dst)} {os.fspath(src)}", shell=True)
                 except (OSError, subprocess.CalledProcessError):
                     print("Symlink creation impossible (exFat architecture?): copying the video instead.")
                     shutil.copy(os.fspath(src), os.fspath(dst))
@@ -218,19 +200,14 @@ def create_new_project(
     video_sets = {}
     for video in videos:
         print(video)
-        try:
-            # For windows os.path.realpath does not work and does not link to the real
-            # video. [old: rel_video_path = os.path.realpath(video)]
-            rel_video_path = str(Path(video).absolute())
-        except Exception:
-            rel_video_path = os.readlink(str(video))
+        video_key = Path(video).absolute()
 
         try:
-            vid = VideoReader(rel_video_path)
-            video_sets[rel_video_path] = {"crop": ", ".join(map(str, vid.get_bbox()))}
+            vid = VideoReader(os.fspath(video_key))
+            video_sets[os.fspath(video_key)] = {"crop": ", ".join(map(str, vid.get_bbox()))}
         except OSError:
             warnings.warn("Cannot open the video file! Skipping to the next one...", stacklevel=2)
-            os.remove(video)  # Removing the video or link from the project
+            Path(video).unlink()  # Removing the video or link from the project
 
     if not len(video_sets):
         # Silently sweep the files that were already written.
@@ -278,7 +255,7 @@ def create_new_project(
     cfg_file["Task"] = project
     cfg_file["scorer"] = experimenter
     cfg_file["video_sets"] = video_sets
-    cfg_file["project_path"] = str(project_path)
+    cfg_file["project_path"] = project_path
     cfg_file["date"] = d
     cfg_file["cropping"] = False
     cfg_file["start"] = 0
@@ -304,7 +281,7 @@ def create_new_project(
     cfg_file["alphavalue"] = 0.7  # for plots transparency of markers
     cfg_file["colormap"] = "rainbow"  # for plots type of colormap
 
-    projconfigfile = os.path.join(str(project_path), "config.yaml")
+    projconfigfile = (project_path / "config.yaml").absolute()
     # Write dictionary to yaml  config file
     auxiliaryfunctions.write_config(projconfigfile, cfg_file)
 

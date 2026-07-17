@@ -386,7 +386,9 @@ class ModelZoo(DefaultTab):
                 self._update_adaptation_detector_visibility(self.model_combo.currentText())
 
     def select_folder(self):
-        dirname = QtWidgets.QFileDialog.getExistingDirectory(self, "Please select a folder", self.root.project_folder)
+        dirname = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Please select a folder", str(self.root.project_folder)
+        )
         if not dirname:
             return
 

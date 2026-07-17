@@ -8,8 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 import subprocess
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -30,18 +30,18 @@ class OpenVINOSession:
         self.device = device
 
         # Convert a frozen graph to OpenVINO IR format
-        if not os.path.exists(self.xml_path):
+        if not Path(self.xml_path).exists():
             subprocess.run(
                 [
                     "mo",
                     "--output_dir",
-                    os.path.dirname(cfg["init_weights"]),
+                    str(Path(cfg["init_weights"]).parent),
                     "--input_model",
                     cfg["init_weights"] + ".pb",
                     "--input_shape",
                     "[1, 747, 832, 3]",
                     "--extensions",
-                    os.path.join(os.path.dirname(__file__), "mo_extensions"),
+                    str(Path(__file__).parent / "mo_extensions"),
                     "--data_type",
                     "FP16",
                 ],

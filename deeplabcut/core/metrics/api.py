@@ -90,18 +90,22 @@ def compute_metrics(
         added, containing a list of floats representing the RMSE for each keypoint.
 
     Examples:
-        >>> # Define the p-cutoff, prediction, and target DataFrames
-        >>> pcutoff = 0.5
-        >>> ground_truth = {"img0": np.array([[[1.0, 1.0, 2.0], ...], ...]), ...}
-        >>> predictions = {"img0": np.array([[[2.0, 1.0, 0.4], ...], ...]), ...}
-        >>> scores = compute_metrics(ground_truth, predictions, pcutoff=pcutoff)
-        >>> print(scores)
-        {
-            "rmse": 1.0,
-            "rmse_pcutoff": 0.0,
-            'mAP': 84.2,
-            'mAR': 74.5
-        }  # Sample output scores
+        Define the p-cutoff, prediction, and target DataFrames:
+
+            pcutoff = 0.5
+            ground_truth = {"img0": np.array([[[1.0, 1.0, 2.0], ...], ...]), ...}
+            predictions = {"img0": np.array([[[2.0, 1.0, 0.4], ...], ...]), ...}
+            scores = compute_metrics(ground_truth, predictions, pcutoff=pcutoff)
+            print(scores)
+
+        This yields the following output scores:
+
+            {
+                 "rmse": 1.0,
+                 "rmse_pcutoff": 0.0,
+                 "mAP": 84.2,
+                 "mAR": 74.5
+            }
     """
     data = prepare_evaluation_data(ground_truth, predictions)
     oks_scores = distance_metrics.compute_oks(

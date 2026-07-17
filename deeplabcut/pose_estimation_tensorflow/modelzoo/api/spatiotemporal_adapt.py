@@ -8,8 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import glob
-import os
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -39,50 +37,43 @@ class SpatiotemporalAdaptation:
         customized_pose_config="",
         init_weights="",
     ):
-        """This class supports video adaptation to a super model.
+        """Support video adaptation to a super model.
 
-        Parameters
-        ----------
-        video_path: string
-           The string to the path of the video
-        init_weights: string
-           The path to a superanimal model's checkpoint
-        supermodel_name: string
-           Currently we support supertopview(LabMice) and superquadruped (quadruped side-view animals)
-        scale_list: list
-           A list of different resolutions for the spatial pyramid
-        video_extensions: str | Sequence[str] | None, default=None
-        Controls how ``videos`` are filtered, based on file extension.
-        File paths and directory contents are treated differently:
-        - ``None`` (default): file paths are accepted as-is; directories are
-          scanned for files with a recognized video extension.
-        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
-          both file paths and directory contents are filtered by the given
-          extension(s).
-        adapt_iterations: int
-           Number of iterations for adaptation training. Empirically 1000 is sufficient. Training longer can cause worse
-           performance depending whether there is occlusion in the video
-        modelfolder: string, optional
-           Because the API does not need a dlc project, the checkpoint and logs go to this temporary model folder, and
-           otherwise model is saved to the current work place
-        customized_pose_config: string, optional
-           For future support of non modelzoo model
+        Args:
+            video_path (string): The string to the path of the video.
+            init_weights (string): The path to a superanimal model's checkpoint.
+            supermodel_name (string): Currently we support supertopview (LabMice) and
+                superquadruped (quadruped side-view animals).
+            scale_list (list): A list of different resolutions for the spatial pyramid.
+            video_extensions (string or Sequence[str], optional): When the input is a directory, only videos with
+                these extensions are analyzed. Defaults to ``"mp4"``.
+            adapt_iterations (int): Number of iterations for adaptation training.
+                Empirically 1000 is sufficient. Training longer can cause worse
+                performance depending whether there is occlusion in the video.
+            modelfolder (string, optional): Because the API does not need a dlc project,
+                the checkpoint and logs go to this temporary model folder, and otherwise
+                model is saved to the current work place.
+            customized_pose_config (string, optional): Path to a custom pose config for
+                non-modelzoo models. Defaults to "".
 
-        Examples
-        --------
+        Examples:
+            Create a SpatiotemporalAdaptation object and perform inference, adaptation, and post-adaptation inference:
 
-        from  deeplabcut.modelzoo.apis import SpatiotemporalAdaptation
-        video_path = '/mnt/md0/shaokai/openfield_video/m3v1mp4.mp4'
-        superanimal_name = 'superanimal_topviewmouse'
-        video_extensions = 'mp4'
-        >>> adapter = SpatiotemporalAdaptation(video_path,
-                                       superanimal_name,
-                                       modelfolder = "temp_topview",
-                                       video_extensions = video_extensions)
-
-        adapter.before_adapt_inference()
-        adapter.adaptation_training()
-        adapter.after_adapt_inference()
+                from deeplabcut.pose_estimation_tensorflow.modelzoo.api.spatiotemporal_adapt import (
+                    SpatiotemporalAdaptation,
+                )
+                video_path = "/mnt/md0/shaokai/openfield_video/m3v1mp4.mp4"
+                supermodel_name = "superanimal_topviewmouse"
+                video_extensions = "mp4"
+                adapter = SpatiotemporalAdaptation(
+                    video_path,
+                    supermodel_name,
+                    modelfolder="temp_topview",
+                    video_extensions=video_extensions,
+                )
+                adapter.before_adapt_inference()
+                adapter.adaptation_training()
+                adapter.after_adapt_inference()
         """
         if scale_list is None:
             scale_list = []
@@ -105,11 +96,9 @@ class SpatiotemporalAdaptation:
         if not customized_pose_config:
             dlc_root_path = get_deeplabcut_path()
 
-            project_config = read_config(
-                os.path.join(dlc_root_path, "modelzoo", "project_configs", f"{project_name}.yaml")
-            )
+            project_config = read_config(dlc_root_path / "modelzoo" / "project_configs" / f"{project_name}.yaml")
 
-            model_config = read_config(os.path.join(dlc_root_path, "modelzoo", "model_configs", f"{model_name}.yaml"))
+            model_config = read_config(dlc_root_path / "modelzoo" / "model_configs" / f"{model_name}.yaml")
 
             joints = [i for i in range(len(project_config["bodyparts"]))]
             num_joints = len(joints)
@@ -186,7 +175,6 @@ class SpatiotemporalAdaptation:
 
         Or we make up a fake one, then we use a light way convention to do adaptation
         """
-
         # looking for the pseudo label path
         DLCscorer = "DLC_" + Path(self.init_weights).stem
         vname = str(Path(self.video_path).stem)
@@ -194,7 +182,7 @@ class SpatiotemporalAdaptation:
 
         _, pseudo_label_path, _, _ = load_analyzed_data(video_root, vname, DLCscorer, False, "")
         if self.modelfolder != "":
-            os.makedirs(self.modelfolder, exist_ok=True)
+            Path(self.modelfolder).mkdir(parents=True, exist_ok=True)
 
         self.adapt_iterations = kwargs.get("adapt_iterations", self.adapt_iterations)
 
@@ -206,10 +194,9 @@ class SpatiotemporalAdaptation:
         )
 
     def after_adapt_inference(self, create_labeled_video, **kwargs):
-        pattern = os.path.join(self.modelfolder, f"snapshot-{self.adapt_iterations}.index")
         ref_proj_config_path = ""
 
-        files = glob.glob(pattern)
+        files = list(Path(self.modelfolder).glob(f"snapshot-{self.adapt_iterations}.index"))
 
         if not len(files):
             raise ValueError("Weights were not found.")

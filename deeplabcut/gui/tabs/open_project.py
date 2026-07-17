@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
+from pathlib import Path
 
 from PySide6 import QtCore, QtWidgets
 
@@ -21,7 +22,7 @@ class OpenProject(QtWidgets.QDialog):
 
         self.setWindowTitle("Load Existing Project")
 
-        self.config = None
+        self.config_path: Path | None = None
         self.loaded = False
 
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -59,18 +60,22 @@ class OpenProject(QtWidgets.QDialog):
         self.open_line.text()
 
     def load_config(self):
-        cwd = os.getcwd()
+        cwd = os.fspath(Path.cwd())
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
-        if not config:
+        if not config[0]:
             return
-        self.config = config[0]
-        self.open_line.setText(self.config)
+        self.config_path = Path(config[0]).absolute()
+        self.open_line.setText(os.fspath(self.config_path))
         self.ok_button.setFocus()
 
     def open_project(self):
-        if self.config == "":
+        config_text = self.open_line.text().strip()
+        if config_text:
+            self.config_path = Path(config_text).absolute()
+
+        if not self.config_path:
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Critical)
             msg.setText("Please choose the config.yaml file to load the project")
