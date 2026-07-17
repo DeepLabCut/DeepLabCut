@@ -217,13 +217,15 @@ def _resolve_legacy_kwargs(
 ) -> dict:
     """Resolve legacy TensorFlow kwargs to canonical (PyTorch) kwargs."""
 
+    effective_renames = dict(renamed_params)
+
     if normalize_gputouse and "gputouse" in kwargs:
         # Normalize parameter "gputouse" to torch device string and rename
         kwargs["gputouse"] = _normalize_gputouse(kwargs["gputouse"])
-        renamed_params["gputouse"] = "device"
+        effective_renames["gputouse"] = "device"
 
     # Rename deprecated parameters
-    for old, new in renamed_params.items():
+    for old, new in effective_renames.items():
         if old in kwargs:
             if new in kwargs:
                 raise TypeError(f"Cannot specify both '{old}' (deprecated) and '{new}'. Use '{new}' only.")
