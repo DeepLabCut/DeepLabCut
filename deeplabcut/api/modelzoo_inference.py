@@ -17,7 +17,7 @@ from deeplabcut.core.deprecation import renamed_parameter
 
 
 @with_tensorflow_fallback(
-    when=lambda *a, **kw: kw.get("model_name") == "dlcrnet",
+    when=lambda params: params.get("model_name") == "dlcrnet",
     tensorflow_module="deeplabcut.tensorflow_compat.superanimal_inference",
     tensorflow_name="video_inference_superanimal_tf",
 )

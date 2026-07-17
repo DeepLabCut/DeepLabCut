@@ -125,7 +125,7 @@ def with_tensorflow_fallback(
 
             if when is not None:
                 # Custom condition routing (e.g. modelzoo functions)
-                route_to_tf = when(*args, **kwargs)
+                route_to_tf = when(unified)
             else:
                 # Default: engine-based routing (from shuffle / config)
                 route_to_tf = _resolve_engine(unified) == Engine.TF
