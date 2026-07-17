@@ -28,6 +28,12 @@ from deeplabcut.gui.widgets import ConfigEditor
 class ManageProject(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super().__init__(root, parent, h1_description)
+
+        self._reload_timer = QTimer(self)
+        self._reload_timer.setSingleShot(True)
+        self._reload_timer.setInterval(0)
+        self._reload_timer.timeout.connect(self.root.reload_project_config)
+
         self._set_page()
         self._videos = []
 
@@ -64,12 +70,7 @@ class ManageProject(DefaultTab):
     def open_config_editor(self):
         config = self.root.config_path
         editor = ConfigEditor(config, parent=self.root)
-        editor.accepted.connect(
-            lambda: QTimer.singleShot(
-                0,
-                self.root.reload_project_config,
-            )
-        )
+        editor.accepted.connect(self._reload_timer.start)
         editor.show()
 
     def add_new_videos(self):

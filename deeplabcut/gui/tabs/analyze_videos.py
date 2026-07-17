@@ -54,6 +54,11 @@ class AnalyzeVideos(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super().__init__(root, parent, h1_description)
 
+        self._reload_timer = QTimer(self)
+        self._reload_timer.setSingleShot(True)
+        self._reload_timer.setInterval(0)
+        self._reload_timer.timeout.connect(self.root.reload_project_config)
+
         self._set_page()
 
     @property
@@ -267,12 +272,7 @@ class AnalyzeVideos(DefaultTab):
             return
         config = self.root.config_path
         editor = ConfigEditor(config, parent=self.root)
-        editor.accepted.connect(
-            lambda: QTimer.singleShot(
-                0,
-                self.root.reload_project_config,
-            )
-        )
+        editor.accepted.connect(self._reload_timer.start)
         editor.show()
 
     def _collect_options(self) -> AnalyzeVideosOptions:
