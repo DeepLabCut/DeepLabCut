@@ -133,6 +133,34 @@ def test_resolve_legacy_kwargs_normalize_gputouse_raises_when_both_given():
         )
 
 
+def test_resolve_legacy_kwargs_normalizes_gpu_zero():
+    with pytest.warns(DLCDeprecationWarning, match="gputouse"):
+        result = tf_routing._resolve_legacy_kwargs(
+            {"gputouse": 0},
+            renamed_params={},
+            dropped_params=[],
+            normalize_gputouse=True,
+        )
+    assert result == {"device": "cuda:0"}
+
+
+def test_resolve_legacy_kwargs_does_not_mutate_renamed_params():
+    renamed_params = {
+        "keepdeconvweights": "load_head_weights",
+    }
+    with pytest.warns(DLCDeprecationWarning, match="gputouse"):
+        result = tf_routing._resolve_legacy_kwargs(
+            {"gputouse": 1},
+            renamed_params=renamed_params,
+            dropped_params=[],
+            normalize_gputouse=True,
+        )
+    assert result == {"device": "cuda:1"}
+    assert renamed_params == {
+        "keepdeconvweights": "load_head_weights",
+    }
+
+
 # ---------------------------------------------------------------------------
 # _resolve_engine
 # ---------------------------------------------------------------------------
@@ -471,6 +499,44 @@ def test_with_tensorflow_fallback_when_without_tensorflow_module_defaults():
     mock_get_impl.assert_called_once_with("canonical_fn", module=None)
 
 
+def test_with_tensorflow_fallback_when_matches_positional_and_keyword():
+    """Custom when predicate receives bound params regardless of call style."""
+    tf_impl = MagicMock(return_value="tensorflow")
+
+    @tf_routing.with_tensorflow_fallback(
+        when=lambda params: params.get("model_name") == "dlcrnet",
+    )
+    def canonical_fn(path: str, model_name: str, **kwargs):
+        return "pytorch"
+
+    with (
+        patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl),
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        # Keyword call
+        result_kw = canonical_fn("v.mp4", model_name="dlcrnet")
+
+    assert result_kw == "tensorflow"
+
+    with (
+        patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl),
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        # Positional call
+        result_pos = canonical_fn("v.mp4", "dlcrnet")
+
+    assert result_pos == "tensorflow"
+
+    with (
+        patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl),
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        # Positional with non-matching model_name
+        result_no = canonical_fn("v.mp4", "hrnet_w32")
+
+    assert result_no == "pytorch"
+
+
 def test_with_tensorflow_fallback_forwards_legacy_alias_to_renamed_parameter():
     """Router must not swallow legacy alias before inner @renamed_parameter."""
     from deeplabcut.core.deprecation import renamed_parameter
@@ -507,3 +573,95 @@ def test_with_tensorflow_fallback_drops_unknown_params_on_pytorch_path():
 
     assert result == "pytorch"
     pytorch_fn.assert_called_once_with("cfg.yaml", shuffle=2)
+
+
+# ---------------------------------------------------------------------------
+# Integration tests — engine routing with mocked read_config / get_shuffle_engine
+# ---------------------------------------------------------------------------
+
+
+@patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine")
+@patch("deeplabcut.core.config.utils.read_config")
+def test_integration_routes_tf_project(mock_read_config, mock_get_shuffle_engine):
+    """TF project routes to fallback impl."""
+    mock_get_shuffle_engine.return_value = Engine.TF
+    mock_read_config.return_value = {"project_path": "/tmp"}
+    tf_impl = MagicMock(return_value="tensorflow")
+
+    @tf_routing.with_tensorflow_fallback
+    def canonical_fn(config: str, shuffle: int = 1):
+        return "pytorch"
+
+    with (
+        patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl),
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        result = canonical_fn("cfg.yaml", shuffle=1)
+
+    assert result == "tensorflow"
+    tf_impl.assert_called_once_with("cfg.yaml", shuffle=1)
+
+
+@patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine")
+@patch("deeplabcut.core.config.utils.read_config")
+def test_integration_routes_pytorch_project(mock_read_config, mock_get_shuffle_engine):
+    """PyTorch project routes to canonical fn."""
+    mock_get_shuffle_engine.return_value = Engine.PYTORCH
+    mock_read_config.return_value = {"project_path": "/tmp"}
+    pytorch_fn = MagicMock(return_value="pytorch")
+
+    @tf_routing.with_tensorflow_fallback
+    def canonical_fn(config: str, shuffle: int = 1):
+        return pytorch_fn(config, shuffle=shuffle)
+
+    result = canonical_fn("cfg.yaml", shuffle=1)
+
+    assert result == "pytorch"
+    pytorch_fn.assert_called_once_with("cfg.yaml", shuffle=1)
+
+
+@patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine")
+@patch("deeplabcut.core.config.utils.read_config")
+def test_integration_resolves_cfg_path_alias(mock_read_config, mock_get_shuffle_engine):
+    """cfg_path legacy alias is normalized before engine resolution."""
+    mock_get_shuffle_engine.return_value = Engine.PYTORCH
+    mock_read_config.return_value = {"project_path": "/tmp"}
+    pytorch_fn = MagicMock(return_value="pytorch")
+
+    @tf_routing.with_tensorflow_fallback(
+        renamed_params={"cfg_path": "config"},
+    )
+    def canonical_fn(config: str, shuffle: int = 1):
+        return pytorch_fn(config, shuffle=shuffle)
+
+    with pytest.warns(DLCDeprecationWarning, match="cfg_path"):
+        result = canonical_fn(cfg_path="cfg.yaml", shuffle=1)
+
+    assert result == "pytorch"
+    pytorch_fn.assert_called_once_with("cfg.yaml", shuffle=1)
+
+
+@patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.TF)
+@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
+def test_integration_routes_positional_custom_predicate(
+    mock_read_config,
+    mock_get_shuffle_engine,
+):
+    """Custom when predicate matches model_name passed positionally."""
+    tf_impl = MagicMock(return_value="tensorflow")
+
+    @tf_routing.with_tensorflow_fallback(
+        when=lambda params: params.get("model_name") == "dlcrnet",
+        tensorflow_module="deeplabcut.tensorflow_compat.superanimal_inference",
+        tensorflow_name="video_inference_superanimal_tf",
+    )
+    def canonical_fn(path: str, model_name: str, **kwargs):
+        return "pytorch"
+
+    with (
+        patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl),
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        result = canonical_fn("v.mp4", "dlcrnet")
+
+    assert result == "tensorflow"
