@@ -135,6 +135,7 @@ def with_tensorflow_fallback(
                 # Default: engine-based routing (from shuffle / config)
                 route_to_tf = _resolve_engine(unified) == Engine.TF
 
+            unified.pop("engine", None)
             kwargs.pop("engine", None)
 
             if route_to_tf:
@@ -181,11 +182,13 @@ def _resolve_engine(unified_kwargs: dict) -> Engine:
     """
     engine = unified_kwargs.get("engine")
     if engine is not None:
-        return engine
+        return Engine(engine)
 
     from deeplabcut.core.config.utils import read_config
 
     shuffles = _shuffles_from_kwargs(unified_kwargs)
+    if not shuffles:
+        raise ValueError("Shuffles must contain at least one index")
     config = unified_kwargs["config"]
     cfg = read_config(config)
     from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
