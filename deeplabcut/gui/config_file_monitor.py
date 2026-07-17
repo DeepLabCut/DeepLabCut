@@ -31,6 +31,7 @@ class ConfigFileMonitor(QtCore.QObject):
 
         self._watcher = QtCore.QFileSystemWatcher(self)
         self._watcher.fileChanged.connect(self._on_file_changed)
+        self._watcher.directoryChanged.connect(self._on_file_changed)
 
         self._debounce = QtCore.QTimer(self)
         self._debounce.setSingleShot(True)
@@ -44,18 +45,28 @@ class ConfigFileMonitor(QtCore.QObject):
         self._status_bar = status_bar
 
     def set_path(self, path: str | None) -> None:
-        """Watch ``path``, clearing any previous watch and pending notification."""
-        watched = self._watcher.files()
-        if watched:
-            self._watcher.removePaths(watched)
+        """Watch ``path`` and its parent directory, clearing any previous watches."""
+        watched_files = self._watcher.files()
+        if watched_files:
+            self._watcher.removePaths(watched_files)
+        watched_dirs = self._watcher.directories()
+        if watched_dirs:
+            self._watcher.removePaths(watched_dirs)
 
         self._path = path
         self._loaded_signature = None
         self._debounce.stop()
         self._reload_button.hide()
 
-        if path is not None and Path(path).is_file():
-            self._watcher.addPath(path)
+        if path is not None:
+            config_path = Path(path)
+            if config_path.is_file():
+                self._watcher.addPath(path)
+            # Watch the parent directory so atomic file replacements
+            # (delete + rename) are also detected.
+            parent = str(config_path.parent)
+            if parent and Path(parent).is_dir():
+                self._watcher.addPath(parent)
 
     def mark_current(self) -> None:
         """Record that the in-memory config matches the file currently on disk."""
@@ -86,6 +97,7 @@ class ConfigFileMonitor(QtCore.QObject):
             return
 
         # Some editors replace the file, which drops the watch path.
+        # Watching the parent directory helps detect such replacements.
         if current is not None and self._path not in self._watcher.files():
             self._watcher.addPath(self._path)
 
