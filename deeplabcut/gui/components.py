@@ -10,8 +10,6 @@
 #
 from __future__ import annotations
 
-import os
-from os import PathLike
 from pathlib import Path
 
 from PySide6 import QtWidgets
@@ -22,7 +20,7 @@ from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.gui_assets import icon_from_resource
 from deeplabcut.gui.widgets import ConfigEditor
 
-PathInput = str | PathLike[str]
+PathInput = str | Path
 Margins = tuple[int, int, int, int]
 
 
@@ -80,7 +78,7 @@ def _dialog_directory(directory: PathInput | None) -> str:
     """Convert an optional path to a QFileDialog-compatible string."""
     if directory is None or directory == "":
         return ""
-    return os.fspath(directory)
+    return str(directory)
 
 
 def _get_open_file_name(
@@ -532,7 +530,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
 
     def _update_selected_conditions_display(self):
         def _shorten_path(path: Path | str, max_length: int = 30) -> str:
-            path_str = os.fspath(path)
+            path_str = str(path)
             if len(path_str) <= max_length:
                 return path_str
             return "..." + path_str[-(max_length - 3) :]
