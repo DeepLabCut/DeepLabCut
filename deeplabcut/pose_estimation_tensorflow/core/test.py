@@ -14,7 +14,7 @@
 
 import argparse
 import logging
-import os
+from pathlib import Path
 
 import numpy as np
 import scipy.io
@@ -44,8 +44,8 @@ def test_net(visualise, cache_scoremaps):
 
     if cache_scoremaps:
         out_dir = cfg["scoremap_dir"]
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)
+        if not Path(out_dir).exists():
+            Path(out_dir).mkdir(parents=True)
 
     num_images = dataset.num_images
     predictions = np.zeros((num_images,), dtype=np.object)
@@ -71,12 +71,11 @@ def test_net(visualise, cache_scoremaps):
             visualize.waitforbuttonpress()
 
         if cache_scoremaps:
-            base = os.path.basename(batch[Batch.data_item].im_path)
-            raw_name = os.path.splitext(base)[0]
-            out_fn = os.path.join(out_dir, raw_name + ".mat")
+            raw_name = Path(batch[Batch.data_item].im_path).stem
+            out_fn = Path(out_dir) / (raw_name + ".mat")
             scipy.io.savemat(out_fn, mdict={"scoremaps": scmap.astype("float32")})
 
-            out_fn = os.path.join(out_dir, raw_name + "_locreg" + ".mat")
+            out_fn = Path(out_dir) / (raw_name + "_locreg.mat")
             if cfg["location_refinement"]:
                 scipy.io.savemat(out_fn, mdict={"locreg_pred": locref.astype("float32")})
 

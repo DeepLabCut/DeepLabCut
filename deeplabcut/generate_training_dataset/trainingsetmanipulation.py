@@ -12,8 +12,6 @@ from __future__ import annotations
 
 import logging
 import math
-import os
-import os.path
 import warnings
 from functools import cache
 from pathlib import Path
@@ -25,7 +23,7 @@ from PIL import Image
 
 import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
-from deeplabcut.core.config import ProjectConfig, read_config
+from deeplabcut.core.config import ProjectConfig, read_config, write_config
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
@@ -37,7 +35,7 @@ from deeplabcut.utils import (
 from deeplabcut.utils.auxfun_videos import VideoReader
 
 
-def comparevideolistsanddatafolders(config):
+def comparevideolistsanddatafolders(config: str | Path):
     """Auxiliary function that compares the folders in labeled-data and the ones listed
     under video_sets (in the config file).
 
@@ -49,7 +47,7 @@ def comparevideolistsanddatafolders(config):
     cfg = read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
-    alldatafolders = [fn for fn in os.listdir(Path(config).parent / "labeled-data") if "_labeled" not in fn]
+    alldatafolders = [f.name for f in (Path(config).parent / "labeled-data").iterdir() if "_labeled" not in f.name]
 
     print("Config file contains:", len(video_names))
     print("Labeled-data contains:", len(alldatafolders))
@@ -63,7 +61,7 @@ def comparevideolistsanddatafolders(config):
             print(vn, " is missing in config file!")
 
 
-def adddatasetstovideolistandviceversa(config):
+def adddatasetstovideolistandviceversa(config: str | Path):
     """First run comparevideolistsanddatafolders(config) to compare the folders in
     labeled-data and the ones listed under video_sets (in the config file). If you
     detect differences this function can be used to maker sure each folder has a video
@@ -87,8 +85,9 @@ def adddatasetstovideolistandviceversa(config):
     videos = cfg["video_sets"]
     video_names = [Path(i).stem for i in videos]
 
+    labeled_data_dir = Path(config).parent / "labeled-data"
     alldatafolders = [
-        fn for fn in os.listdir(Path(config).parent / "labeled-data") if "_labeled" not in fn and not fn.startswith(".")
+        f.name for f in labeled_data_dir.iterdir() if "_labeled" not in f.name and not f.name.startswith(".")
     ]
 
     print("Config file contains:", len(video_names))
@@ -112,19 +111,19 @@ def adddatasetstovideolistandviceversa(config):
             print(vn, " is missing in config file >> adding it!")
             # Find the corresponding video file
             found = False
-            for file in os.listdir(os.path.join(cfg["project_path"], "videos")):
-                if os.path.splitext(file)[0] == vn:
+            for file in (Path(cfg["project_path"]) / "videos").iterdir():
+                if file.stem == vn:
                     found = True
                     break
             if found:
-                video_path = os.path.join(cfg["project_path"], "videos", file)
+                video_path = str(file)
                 clip = VideoReader(video_path)
                 videos.update({video_path: {"crop": ", ".join(map(str, clip.get_bbox()))}})
 
     auxiliaryfunctions.write_config(config, cfg)
 
 
-def dropduplicatesinannotatinfiles(config):
+def dropduplicatesinannotatinfiles(config: str | Path):
     """Drop duplicate entries (of images) in annotation files (this should no longer
     happen, but might be useful).
 
@@ -140,20 +139,20 @@ def dropduplicatesinannotatinfiles(config):
 
     for folder in folders:
         try:
-            fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+            fn = folder / ("CollectedData_" + cfg["scorer"] + ".h5")
             DC = pd.read_hdf(fn)
             numimages = len(DC.index)
             DC = DC[~DC.index.duplicated(keep="first")]
             if len(DC.index) < numimages:
                 print("Dropped", numimages - len(DC.index))
                 DC.to_hdf(fn, key="df_with_missing", mode="w")
-                DC.to_csv(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv"))
+                DC.to_csv(folder / ("CollectedData_" + cfg["scorer"] + ".csv"))
 
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def dropannotationfileentriesduetodeletedimages(config):
+def dropannotationfileentriesduetodeletedimages(config: str | Path):
     """Drop entries for all deleted images in annotation files, i.e. for folders of the
     type: /labeled-data/*folder*/CollectedData_*scorer*.h5 Will be carried out
     iteratively for all *folders* in labeled-data.
@@ -169,7 +168,7 @@ def dropannotationfileentriesduetodeletedimages(config):
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     for folder in folders:
-        fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+        fn = folder / ("CollectedData_" + cfg["scorer"] + ".h5")
         try:
             DC = pd.read_hdf(fn)
         except FileNotFoundError:
@@ -177,7 +176,7 @@ def dropannotationfileentriesduetodeletedimages(config):
             continue
         dropped = False
         for imagename in DC.index:
-            if os.path.isfile(os.path.join(cfg["project_path"], *imagename)):
+            if Path(cfg["project_path"]).joinpath(*imagename).is_file():
                 pass
             else:
                 print("Dropping...", imagename)
@@ -185,10 +184,10 @@ def dropannotationfileentriesduetodeletedimages(config):
                 dropped = True
         if dropped:
             DC.to_hdf(fn, key="df_with_missing", mode="w")
-            DC.to_csv(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv"))
+            DC.to_csv(folder / ("CollectedData_" + cfg["scorer"] + ".csv"))
 
 
-def dropimagesduetolackofannotation(config):
+def dropimagesduetolackofannotation(config: str | Path):
     """
     Drop images from corresponding folder for not annotated images: /labeled-data/*folder*/CollectedData_*scorer*.h5
     Will be carried out iteratively for all *folders* in labeled-data.
@@ -204,7 +203,7 @@ def dropimagesduetolackofannotation(config):
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     for folder in folders:
-        h5file = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+        h5file = folder / ("CollectedData_" + cfg["scorer"] + ".h5")
         try:
             DC = pd.read_hdf(h5file)
         except FileNotFoundError:
@@ -212,19 +211,19 @@ def dropimagesduetolackofannotation(config):
             continue
         conversioncode.guarantee_multiindex_rows(DC)
         annotatedimages = [fn[-1] for fn in DC.index]
-        imagelist = [fns for fns in os.listdir(str(folder)) if ".png" in fns]
+        imagelist = [f.name for f in folder.iterdir() if ".png" in f.name]
         print("Annotated images: ", len(annotatedimages), " In folder:", len(imagelist))
         for imagename in imagelist:
             if imagename in annotatedimages:
                 pass
             else:
-                fullpath = os.path.join(cfg["project_path"], "labeled-data", folder, imagename)
-                if os.path.isfile(fullpath):
+                fullpath = folder / imagename
+                if fullpath.is_file():
                     print("Deleting", fullpath)
-                    os.remove(fullpath)
+                    fullpath.unlink()
 
         annotatedimages = [fn[-1] for fn in DC.index]
-        imagelist = [fns for fns in os.listdir(str(folder)) if ".png" in fns]
+        imagelist = [f.name for f in folder.iterdir() if ".png" in f.name]
         print(
             "PROCESSED:",
             folder,
@@ -235,7 +234,7 @@ def dropimagesduetolackofannotation(config):
         )
 
 
-def dropunlabeledframes(config):
+def dropunlabeledframes(config: str | Path):
     """Drop entries such that all the bodyparts are not labeled from the annotation
     files, i.e. h5 and csv files Will be carried out iteratively for all *folders* in
     labeled-data.
@@ -251,7 +250,7 @@ def dropunlabeledframes(config):
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     for folder in folders:
-        h5file = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+        h5file = folder / ("CollectedData_" + cfg["scorer"] + ".h5")
         try:
             DC = pd.read_hdf(h5file)
         except FileNotFoundError:
@@ -263,7 +262,7 @@ def dropunlabeledframes(config):
         dropped = before_len - after_len
         if dropped:
             DC.to_hdf(h5file, key="df_with_missing", mode="w")
-            DC.to_csv(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv"))
+            DC.to_csv(folder / ("CollectedData_" + cfg["scorer"] + ".csv"))
 
             print("Dropped ", dropped, "entries in ", folder)
 
@@ -271,7 +270,7 @@ def dropunlabeledframes(config):
 
 
 def check_labels(
-    config,
+    config: str | Path,
     Labels=None,
     scale=1,
     dpi=100,
@@ -328,11 +327,11 @@ def check_labels(
     videos = cfg["video_sets"].keys()
     video_names = [_robust_path_split(video)[1] for video in videos]
 
-    folders = [os.path.join(cfg["project_path"], "labeled-data", str(Path(i))) for i in video_names]
+    folders = [Path(cfg["project_path"]) / "labeled-data" / Path(i) for i in video_names]
     print("Creating images with labels by {}.".format(cfg["scorer"]))
     for folder in folders:
         try:
-            DataCombined = pd.read_hdf(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5"))
+            DataCombined = pd.read_hdf(folder / ("CollectedData_" + cfg["scorer"] + ".h5"))
             conversioncode.guarantee_multiindex_rows(DataCombined)
             if cfg.get("multianimalproject", False):
                 color_by = "individual" if visualizeindividuals else "bodypart"
@@ -392,8 +391,7 @@ def MakeTrain_pose_yaml(
         docs[0][key] = itemstochange[key]
 
     if save:
-        with open(saveasconfigfile, "w") as f:
-            yaml.dump(docs[0], f)
+        write_config(saveasconfigfile, docs[0])
 
     return docs[0]
 
@@ -422,8 +420,7 @@ def MakeTest_pose_yaml(
         dict_test["locref_smooth"] = locref_smooth
 
     dict_test["scoremap_dir"] = "test"
-    with open(saveasfile, "w") as f:
-        yaml.dump(dict_test, f)
+    write_config(saveasfile, dict_test)
 
 
 def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
@@ -431,8 +428,7 @@ def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
     for key in itemstochange.keys():
         docs[0][key] = itemstochange[key]
 
-    with open(saveasconfigfile, "w") as f:
-        yaml.dump(docs[0], f)
+    write_config(saveasconfigfile, docs[0])
     return docs[0]
 
 
@@ -446,7 +442,7 @@ def _robust_path_split(path):
         parent, file = splits
     else:
         raise (f"Unknown filepath split for path {path}")
-    filename, ext = os.path.splitext(file)
+    filename, ext = Path(file).stem, Path(file).suffix
     return parent, filename, ext
 
 
@@ -528,11 +524,11 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
     But if someone labels on windows and wants to train on a unix cluster or colab...
     """
     AnnotationData = []
-    data_path = Path(os.path.join(cfg["project_path"], "labeled-data"))
+    data_path = Path(cfg["project_path"]) / "labeled-data"
     videos = cfg["video_sets"].keys()
     video_filenames = parse_video_filenames(videos)
     for filename in video_filenames:
-        file_path = os.path.join(data_path / filename, f"CollectedData_{cfg['scorer']}.h5")
+        file_path = data_path / filename / f"CollectedData_{cfg['scorer']}.h5"
         try:
             data = pd.read_hdf(file_path)
             conversioncode.guarantee_multiindex_rows(data)
@@ -583,9 +579,9 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
             "Hint: are bodyparts correctly listed in the configuration?"
         )
 
-    filename = os.path.join(trainingsetfolder_full, f"CollectedData_{cfg['scorer']}")
-    AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
-    AnnotationData.to_csv(filename + ".csv")  # human readable.
+    filename = trainingsetfolder_full / f"CollectedData_{cfg['scorer']}"
+    AnnotationData.to_hdf(str(filename) + ".h5", key="df_with_missing", mode="w")
+    AnnotationData.to_csv(str(filename) + ".csv")  # human readable.
     return AnnotationData
 
 
@@ -703,8 +699,8 @@ def mergeandsplit(config: str | Path | ProjectConfig | dict, trainindex=0, unifo
     project_path = cfg["project_path"]
     # Create path for training sets & store data there
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)  # Path concatenation OS platform independent
-    auxiliaryfunctions.attempt_to_make_folder(Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True)
-    fn = os.path.join(project_path, trainingsetfolder, "CollectedData_" + cfg["scorer"])
+    auxiliaryfunctions.attempt_to_make_folder(Path(project_path) / str(trainingsetfolder), recursive=True)
+    fn = str(Path(project_path) / trainingsetfolder / ("CollectedData_" + cfg["scorer"]))
 
     try:
         data = pd.read_hdf(fn + ".h5")
@@ -712,7 +708,7 @@ def mergeandsplit(config: str | Path | ProjectConfig | dict, trainindex=0, unifo
     except FileNotFoundError:
         data = merge_annotateddatasets(
             cfg,
-            Path(os.path.join(project_path, trainingsetfolder)),
+            Path(project_path) / trainingsetfolder,
         )
         if data is None:
             return [], []
@@ -779,7 +775,7 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
         data = dict()
         filename = df.index[i]
         data["image"] = filename
-        img_shape = read_image_shape_fast(os.path.join(project_path, *filename))
+        img_shape = read_image_shape_fast(Path(project_path).joinpath(*filename))
         data["size"] = img_shape
 
         row = df.iloc[i].values
@@ -1034,14 +1030,11 @@ def create_training_dataset(
         )
 
     if posecfg_template:
-        if (
-            not posecfg_template.endswith("pose_cfg.yaml")
-            and not posecfg_template.endswith("superquadruped.yaml")
-            and not posecfg_template.endswith("supertopview.yaml")
-        ):
+        posecfg_template = Path(posecfg_template)
+        if posecfg_template.name not in {"pose_cfg.yaml", "superquadruped.yaml", "supertopview.yaml"}:
             raise ValueError("posecfg_template argument must contain path to a pose_cfg.yaml file")
         else:
-            print("Reloading pose_cfg parameters from " + posecfg_template + "\n")
+            print(f"Reloading pose_cfg parameters from {posecfg_template}\n")
             from deeplabcut.utils.auxiliaryfunctions import read_plainconfig
 
         prior_cfg = read_plainconfig(posecfg_template)
@@ -1073,9 +1066,7 @@ def create_training_dataset(
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
             cfg
         )  # Path concatenation OS platform independent
-        auxiliaryfunctions.attempt_to_make_folder(
-            Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True
-        )
+        auxiliaryfunctions.attempt_to_make_folder(Path(project_path) / str(trainingsetfolder), recursive=True)
 
         # Create the trainset metadata file, if it doesn't yet exist
         if not metadata.TrainingDatasetMetadata.path(cfg).exists():
@@ -1084,7 +1075,7 @@ def create_training_dataset(
 
         Data = merge_annotateddatasets(
             cfg,
-            Path(os.path.join(project_path, trainingsetfolder)),
+            Path(project_path) / trainingsetfolder,
         )
         if Data is None:
             return
@@ -1149,14 +1140,14 @@ def create_training_dataset(
         # Loading the encoder (if necessary downloading from TF)
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
         if not posecfg_template:
-            defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
+            defaultconfigfile = dlcparent_path / "pose_cfg.yaml"
         elif posecfg_template:
             defaultconfigfile = posecfg_template
 
         if engine == Engine.PYTORCH:
             model_path = dlcparent_path
         else:
-            model_path = auxfun_models.check_for_weights(net_type, Path(dlcparent_path))
+            model_path = auxfun_models.check_for_weights(net_type, dlcparent_path)
 
         Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
@@ -1221,13 +1212,13 @@ def create_training_dataset(
                 # Saving data file (convert to training file for deeper cut (*.mat))
                 ################################################################################
                 data, MatlabData = format_training_data(Data, trainIndices, nbodyparts, project_path)
-                sio.savemat(os.path.join(project_path, datafilename), {"dataset": MatlabData})
+                sio.savemat(str(Path(project_path) / datafilename), {"dataset": MatlabData})
 
                 ################################################################################
                 # Saving metadata (Pickle file)
                 ################################################################################
                 auxiliaryfunctions.save_metadata(
-                    os.path.join(project_path, metadatafilename),
+                    Path(project_path) / metadatafilename,
                     data,
                     trainIndices,
                     testIndices,
@@ -1257,22 +1248,8 @@ def create_training_dataset(
                 auxiliaryfunctions.attempt_to_make_folder(cfg.project_path / modelfoldername / "train")
                 auxiliaryfunctions.attempt_to_make_folder(cfg.project_path / modelfoldername / "test")
 
-                path_train_config = str(
-                    os.path.join(
-                        cfg["project_path"],
-                        Path(modelfoldername),
-                        "train",
-                        engine.pose_cfg_name,
-                    )
-                )
-                path_test_config = str(
-                    os.path.join(
-                        cfg["project_path"],
-                        Path(modelfoldername),
-                        "test",
-                        "pose_cfg.yaml",
-                    )
-                )
+                path_train_config = str(Path(cfg["project_path"]) / modelfoldername / "train" / engine.pose_cfg_name)
+                path_test_config = str(Path(cfg["project_path"]) / modelfoldername / "test" / "pose_cfg.yaml")
                 if engine == Engine.TF:
                     if weight_init is not None:
                         raise ValueError(
@@ -1365,7 +1342,7 @@ def create_training_dataset(
         return splits
 
 
-def get_largestshuffle_index(config):
+def get_largestshuffle_index(config: str | Path):
     """Returns the largest shuffle for all dlc-models in the current iteration."""
     shuffle_indices = get_existing_shuffle_indices(config)
     if len(shuffle_indices) > 0:
@@ -1582,7 +1559,7 @@ def create_training_model_comparison(
         )
 
     # create log file
-    log_file_name = os.path.join(cfg["project_path"], "training_model_comparison.log")
+    log_file_name = str(Path(cfg["project_path"]) / "training_model_comparison.log")
     logger = logging.getLogger("training_model_comparison")
     if not logger.handlers:
         logger = logging.getLogger("training_model_comparison")

@@ -187,7 +187,7 @@ class ExtractFrames(DefaultTab):
         self.root.logger.info(f"Cropping set to '{cropping_option}'")
 
     def extract_frames(self):
-        config = self.root.config
+        config_path = self.root.config_path
         mode = self.extraction_method_widget.currentText()
         if mode == "manual":
             videos = list(self.video_selection_widget.files)
@@ -211,14 +211,14 @@ class ExtractFrames(DefaultTab):
 
         crop = False  # default value
         if self.frame_cropping_widget.currentText() == "GUI":
-            _ = select_cropping_area(config)
+            _ = select_cropping_area(config_path)
             crop = True
         elif self.frame_cropping_widget.currentText() == "read from config":
             crop = True
 
         func = partial(
             extract_frames,
-            config,
+            config_path,
             mode,
             algo,
             crop=crop,
@@ -286,7 +286,7 @@ class ExtractFrames(DefaultTab):
                 the given video
         """
         video_path = Path(video_path).absolute()
-        project_videos = (Path(self.root.config).parent / "videos").absolute()
+        project_videos = (Path(self.root.config_path).parent / "videos").absolute()
         if video_path.parent == project_videos:
             return video_path
 

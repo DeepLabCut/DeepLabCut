@@ -95,7 +95,7 @@ def transformer_reID(
     >>> )
     --------
     """
-    import os
+    from pathlib import Path
 
     import deeplabcut
     from deeplabcut.utils import auxiliaryfunctions
@@ -146,9 +146,9 @@ def transformer_reID(
         destfolder=destfolder,
     )
 
-    transformer_checkpoint = os.path.join(snapshotfolder, f"dlc_transreid_{train_epochs}.pth")
+    transformer_checkpoint = Path(snapshotfolder) / f"dlc_transreid_{train_epochs}.pth"
 
-    if not os.path.exists(transformer_checkpoint):
+    if not transformer_checkpoint.exists():
         raise FileNotFoundError(f"checkpoint {transformer_checkpoint} not found")
 
     deeplabcut.stitch_tracklets(

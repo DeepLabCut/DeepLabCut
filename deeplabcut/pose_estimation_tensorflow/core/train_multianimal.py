@@ -51,7 +51,7 @@ def train(
     # in case there was already a graph
     tf.compat.v1.reset_default_graph()
 
-    start_path = os.getcwd()
+    start_path = Path.cwd()
     if modelfolder == "":
         os.chdir(str(Path(config_yaml).parents[0]))  # switch to folder of config_yaml (for logging)
     else:
@@ -78,7 +78,7 @@ def train(
         cfg["log_dir"] = modelfolder
         cfg["project_path"] = modelfolder
         # have to overwrite this
-        cfg["snapshot_prefix"] = os.path.join("snapshot")
+        cfg["snapshot_prefix"] = "snapshot"
 
     if cfg["optimizer"] != "adam":
         print(
@@ -193,7 +193,7 @@ def train(
     lrf = None
     if not isinstance(config_yaml, dict):
         stats_path = Path(config_yaml).with_name("learning_stats.csv")
-        lrf = open(str(stats_path), "w")
+        lrf = stats_path.open("w")
 
     print("Training parameters:")
     print(cfg)
