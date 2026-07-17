@@ -24,6 +24,7 @@ from deeplabcut.gui.components import (
     _create_grid_layout,
     _create_label_widget,
 )
+from deeplabcut.gui.dialogs.config_errors import CONFIG_LOAD_ERRORS
 from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
 from deeplabcut.gui.gui_assets import icon_from_resource
 from deeplabcut.gui.widgets import ConfigEditor
@@ -74,7 +75,8 @@ class TrainNetwork(DefaultTab):
             self.resume_from_snapshot_label.show()
             self.snapshot_selection_widget.show()
             # Display detector snapshot selection widget only if in Top-Down mode
-            if self._shuffle_display.pose_cfg.get("method", "").lower() == "td":
+            pose_cfg = self._shuffle_display.pose_cfg
+            if pose_cfg is not None and pose_cfg.get("method", "").lower() == "td":
                 self.detector_snapshot_selection_widget.show()
             else:
                 self.detector_snapshot_selection_widget.hide()
@@ -235,7 +237,12 @@ class TrainNetwork(DefaultTab):
             if detector_to_start_training_from is not None:
                 kwargs["detector_path"] = detector_to_start_training_from
 
-        compat.train_network(config_path, shuffle, **kwargs)
+        try:
+            compat.train_network(config_path, shuffle, **kwargs)
+        except CONFIG_LOAD_ERRORS as error:
+            self.root.show_task_error(error, self.root.pose_cfg_path)
+            return
+
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText("The network is now trained and ready to evaluate.")

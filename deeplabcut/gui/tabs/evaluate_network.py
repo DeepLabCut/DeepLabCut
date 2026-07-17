@@ -30,6 +30,7 @@ from deeplabcut.gui.components import (
     _create_label_widget,
     _create_vertical_layout,
 )
+from deeplabcut.gui.dialogs.config_errors import CONFIG_LOAD_ERRORS
 from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
 from deeplabcut.gui.widgets import ConfigEditor, launch_napari
 from deeplabcut.utils import auxiliaryfunctions
@@ -191,13 +192,17 @@ class EvaluateNetwork(DefaultTab):
         ) and not self.use_all_bodyparts.isChecked():
             bodyparts_to_use = self.bodyparts_list_widget.selected_bodyparts
 
-        deeplabcut.evaluate_network(
-            config_path,
-            Shuffles=[shuffle],
-            plotting=plotting,
-            show_errors=True,
-            comparisonbodyparts=bodyparts_to_use,
-        )
+        try:
+            deeplabcut.evaluate_network(
+                config_path,
+                Shuffles=[shuffle],
+                plotting=plotting,
+                show_errors=True,
+                comparisonbodyparts=bodyparts_to_use,
+            )
+        except CONFIG_LOAD_ERRORS as error:
+            self.root.show_task_error(error, self.root.pose_cfg_path)
+            return
 
         if plotting:
             project_cfg = self.root.cfg

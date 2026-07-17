@@ -226,6 +226,7 @@ class ExtractFrames(DefaultTab):
         )
 
         self.worker, self.thread = move_to_separate_thread(func, capture_outputs=True)
+        self.worker.error.connect(self.root.show_task_error)
         self.worker.finished.connect(lambda: self.ok_button.setEnabled(True))
         self.worker.finished.connect(lambda: self.root._progress_bar.hide())
         self.thread.finished.connect(self._show_success_message)

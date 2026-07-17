@@ -26,7 +26,7 @@ from deeplabcut.utils import auxiliaryfunctions
 class SelectedShuffleDisplay(QtWidgets.QWidget):
     """A widget displaying information about the selected shuffle."""
 
-    pose_cfg_signal = QtCore.Signal(dict)
+    pose_cfg_signal = QtCore.Signal(object)
 
     def __init__(self, root, row_margin: int = 25):
         super().__init__()
@@ -132,5 +132,5 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
 
         self._engine = Engine.PYTORCH if "pytorch" in pose_cfg_path.stem.lower() else Engine.TF
         self._net_type = pose_cfg.get("net_type", "UNKNOWN")
-        self._is_top_down = self._engine == Engine.PYTORCH and pose_cfg.get("method").lower() == "td"
+        self._is_top_down = self._engine == Engine.PYTORCH and pose_cfg.get("method", "").lower() == "td"
         self.pose_cfg = pose_cfg

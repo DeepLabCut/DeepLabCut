@@ -11,7 +11,7 @@
 import os
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QFileDialog,
     QLabel,
@@ -62,7 +62,14 @@ class ManageProject(DefaultTab):
         self.main_layout.addWidget(self.add_videos_btn, alignment=Qt.AlignRight)
 
     def open_config_editor(self):
-        editor = ConfigEditor(self.root.config_path)
+        config = self.root.config_path
+        editor = ConfigEditor(config, parent=self.root)
+        editor.accepted.connect(
+            lambda: QTimer.singleShot(
+                0,
+                self.root.reload_project_config,
+            )
+        )
         editor.show()
 
     def add_new_videos(self):

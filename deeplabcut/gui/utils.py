@@ -31,14 +31,24 @@ def absolute_path(path: str | Path) -> Path:
 
 class Worker(QtCore.QObject):
     finished = QtCore.Signal()
+    error = QtCore.Signal(object)
 
     def __init__(self, func):
         super().__init__()
         self.func = func
 
     def run(self):
+        try:
+            self._execute()
+        except Exception as exc:
+            # Marshal the exception to the GUI thread instead of crashing or
+            # silently killing the worker thread.
+            self.error.emit(exc)
+        finally:
+            self.finished.emit()
+
+    def _execute(self):
         self.func()
-        self.finished.emit()
 
 
 class CaptureWorker(Worker):
@@ -48,9 +58,8 @@ class CaptureWorker(Worker):
         super().__init__(func)
         self.outputs = None
 
-    def run(self):
+    def _execute(self):
         self.outputs = self.func()
-        self.finished.emit()
 
 
 def move_to_separate_thread(func: Callable, capture_outputs: bool = False):
