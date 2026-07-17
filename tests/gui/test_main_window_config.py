@@ -16,6 +16,8 @@ import pytest
 pytest.importorskip("PySide6")
 pytest.importorskip("pytestqt")
 
+from PySide6 import QtWidgets
+
 pytestmark = pytest.mark.functional
 
 
@@ -118,3 +120,67 @@ class TestRecoveryLoop:
 
         assert stubbed_window._build_project_ui_from_current_config() is True
         assert stubbed_window._built_tabs == [True]
+
+
+class TestConfigCacheInvalidation:
+    def test_invalidate_drops_cache_for_next_access(self, main_window, tmp_path, write_project_config):
+        config_path = tmp_path / "config.yaml"
+        write_project_config(config_path, tmp_path)
+        main_window.config = str(config_path)
+
+        first = main_window.cfg
+        assert first is not None
+
+        write_project_config(config_path, tmp_path, task="changed-on-disk")
+        main_window.invalidate_config_cache()
+        reloaded = main_window.cfg
+
+        assert reloaded is not first
+        assert reloaded.Task == "changed-on-disk"
+
+    def test_invalidate_is_idempotent(self, main_window):
+        # Must not raise even with no config loaded.
+        main_window.config = None
+        main_window.invalidate_config_cache()
+        assert main_window.cfg is None
+
+
+class TestReloadTimer:
+    def test_named_timer_triggers_reload(self, qapp, qtbot, tmp_path, write_project_config, monkeypatch):
+        """Verify the _reload_timer in ManageProject fires reload_project_config."""
+        from deeplabcut.gui.tabs.manage_project import ManageProject
+
+        # Keep QSettings out of the real user settings.
+        qapp.setOrganizationName("DeepLabCut-Tests")
+        qapp.setApplicationName("DLC-GUI-Tests")
+        monkeypatch.setattr(
+            QtWidgets.QMessageBox,
+            "question",
+            lambda *args, **kwargs: QtWidgets.QMessageBox.Yes,
+        )
+
+        config_path = tmp_path / "config.yaml"
+        write_project_config(config_path, tmp_path)
+
+        from deeplabcut.gui.window import MainWindow
+
+        window = MainWindow(qapp)
+        try:
+            window.config = str(config_path)
+
+            reloads = []
+            monkeypatch.setattr(
+                window,
+                "reload_project_config",
+                lambda: reloads.append(True),
+            )
+
+            tab = ManageProject(window, window, "")
+            tab._reload_timer.start()
+
+            # The timer has interval=0 so it fires on the next event loop tick.
+            qtbot.wait(50)
+
+            assert len(reloads) == 1
+        finally:
+            window.close()
