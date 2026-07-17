@@ -103,8 +103,8 @@ def _video_inference_superanimal(
     Returns:
         results: Dictionary with the result pd.DataFrame for each video
 
-    Raises:
-        Warning: If the function is called directly.
+    Warns:
+        UserWarning: If the function is called directly (outside internal pose estimation code).
     """
     raise_warning_if_called_directly()
 
@@ -193,7 +193,7 @@ def _video_inference_superanimal(
         )
 
         results[video_path] = df
-        with open(output_json, "w") as f:
+        with output_json.open("w") as f:
             json.dump(predictions, f, cls=NumpyEncoder)
 
         if create_labeled_video:

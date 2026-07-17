@@ -15,10 +15,10 @@ from pathlib import Path
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QIcon
 
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.gui.dlc_params import DLCParams
+from deeplabcut.gui.gui_assets import icon_from_resource
 from deeplabcut.gui.widgets import ConfigEditor
 
 
@@ -219,7 +219,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         """Return normalized suffixes (without leading dot) of currently selected files."""
         suffixes = set()
         for f in self.files:
-            suffix = Path(f).suffix.lower().lstrip(".")
+            suffix = f.suffix.lower().lstrip(".")
             if suffix:
                 suffixes.add(suffix)
         return suffixes
@@ -247,11 +247,11 @@ class VideoSelectionWidget(QtWidgets.QWidget):
             return f".{videotype}"
         return videotype
 
-    def get_files_grouped_by_suffix(self, keep_dot: bool = False) -> dict[str, list[str]]:
+    def get_files_grouped_by_suffix(self, keep_dot: bool = False) -> dict[str, list[Path]]:
         """Return a dict grouping selected files by their suffixes."""
-        groups: dict[str, list[str]] = {}
+        groups: dict[str, list[Path]] = {}
         for f in self.files:
-            suffix = Path(f).suffix.lower()
+            suffix = f.suffix.lower()
             if not keep_dot:
                 suffix = suffix.lstrip(".")
             groups.setdefault(suffix, []).append(f)
@@ -349,7 +349,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
             self.select_video_button.setText("Select videos")
 
     def update_videos(self):
-        directory_to_open = self.root.project_folder
+        directory_to_open = os.fspath(self.root.project_folder)
         video_filter = self._build_video_filter()
 
         filenames = QtWidgets.QFileDialog.getOpenFileNames(
@@ -360,12 +360,12 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         )
 
         if filenames[0]:
-            abs_files = [os.path.abspath(vid) for vid in filenames[0]]
+            abs_files = [Path(vid).absolute() for vid in filenames[0]]
             self.root.add_video_files(abs_files)
 
             # Optional safety: sync dropdown to selected file suffix
             if self.sync_videotype_with_selection:
-                suffixes = {Path(v).suffix.lower().lstrip(".") for v in abs_files if Path(v).suffix}
+                suffixes = {v.suffix.lower().lstrip(".") for v in abs_files if v.suffix}
 
                 if len(suffixes) == 1:
                     inferred = next(iter(suffixes))
@@ -393,7 +393,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
         super().__init__(parent)
         self.root = root
         self.parent = parent
-        self.selected_snapshot = None
+        self.selected_snapshot: Path | None = None
         self._init_layout(margins, select_button_text)
 
     def _init_layout(self, margins, select_button_text):
@@ -423,7 +423,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
             self.selected_snapshot_text.setText("")
             self.clear_snapshot_button.hide()
         else:
-            self.selected_snapshot_text.setText(f"{os.path.basename(self.selected_snapshot)}")
+            self.selected_snapshot_text.setText(self.selected_snapshot.name)
             self.clear_snapshot_button.show()
 
     def select_snapshot(self):
@@ -431,7 +431,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
         snapshot_types = ["*.pt", "*.PT"]
         snapshot_filter = f"Snapshots ({' '.join(snapshot_types)})"
 
-        directory_to_open = self.root.models_folder
+        directory_to_open = os.fspath(self.root.models_folder)
 
         selected_snapshot, _ = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
@@ -441,7 +441,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
         )
         # When Canceling a file selection, Qt returns an empty string as selected file
         if selected_snapshot:
-            self.selected_snapshot = os.path.abspath(selected_snapshot)
+            self.selected_snapshot = Path(selected_snapshot).absolute()
 
         self._update_selected_snapshot_display()
 
@@ -459,7 +459,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
         super().__init__(parent=parent)
         self.root = root
         self.parent = parent
-        self.selected_conditions = None
+        self.selected_conditions: Path | None = None
         self._init_layout()
 
     def _init_layout(self):
@@ -479,10 +479,11 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def _update_selected_conditions_display(self):
-        def _shorten_path(path: str, max_length: int = 30) -> str:
-            if len(path) <= max_length:
-                return path
-            return "..." + path[-(max_length - 3) :]
+        def _shorten_path(path: Path | str, max_length: int = 30) -> str:
+            path_str = os.fspath(path)
+            if len(path_str) <= max_length:
+                return path_str
+            return "..." + path_str[-(max_length - 3) :]
 
         self.selected_conditions_text.setText(
             "" if self.selected_conditions is None else f"{_shorten_path(self.selected_conditions)}"
@@ -509,7 +510,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
             ]
         )
 
-        directory_to_open = self.root.project_folder
+        directory_to_open = os.fspath(self.root.project_folder)
 
         selected_conditions, selected_filter = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
@@ -530,7 +531,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
                 selected_conditions = None
 
         # When Canceling a file selection, Qt returns an empty string as selected file
-        self.selected_conditions = str(os.path.abspath(selected_conditions)) if selected_conditions else None
+        self.selected_conditions = Path(selected_conditions).absolute() if selected_conditions else None
 
         self._update_selected_conditions_display()
 
@@ -649,7 +650,7 @@ class BrowseFilesButton(QtWidgets.QPushButton):
         self.dialog_text = dialog_text
         self.file_text = file_text
 
-        self.files = set()
+        self.files: set[Path] = set()
 
         self.clicked.connect(self.browse_files)
 
@@ -680,7 +681,11 @@ class BrowseFilesButton(QtWidgets.QPushButton):
         filepaths = open_file_func(self, dialog_text, cwd, file_text)
 
         if filepaths:
-            self.files.update(filepaths[0])
+            if self.single_file_only:
+                if filepaths[0]:
+                    self.files.add(Path(filepaths[0]).absolute())
+            else:
+                self.files.update(Path(path).absolute() for path in filepaths[0])
 
 
 def _create_message_box(text, info_text):
@@ -691,9 +696,9 @@ def _create_message_box(text, info_text):
 
     msg.setWindowTitle("Info")
     msg.setMinimumWidth(900)
-    logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-    logo = logo_dir + "/assets/logo.png"
-    msg.setWindowIcon(QIcon(logo))
+    # logo = Path("logo.png").resolve().parent / "assets" / "logo.png"
+    icon = icon_from_resource("logo.png")
+    msg.setWindowIcon(icon)
     msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
     return msg
 
@@ -706,9 +711,8 @@ def _create_confirmation_box(title, description):
 
     msg.setWindowTitle("Confirmation")
     msg.setMinimumWidth(900)
-    logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-    logo = logo_dir + "/assets/logo.png"
-    msg.setWindowIcon(QIcon(logo))
+    icon = icon_from_resource("logo.png")
+    msg.setWindowIcon(icon)
     msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
     return msg
 

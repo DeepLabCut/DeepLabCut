@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import logging
-import os
 import sys
 import warnings
 from enum import Enum, auto
@@ -24,7 +23,7 @@ from napari_deeplabcut import __version__ as NAPARI_DLC_VERSION
 from pydantic import ValidationError
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QDesktopServices, QIcon, QPixmap
+from PySide6.QtGui import QAction, QDesktopServices, QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QLabel,
@@ -40,12 +39,13 @@ from deeplabcut import __version__ as DLC_VERSION
 from deeplabcut import auxiliaryfunctions, compat
 from deeplabcut.core.debug import install_debug_recorder
 from deeplabcut.core.engine import Engine
-from deeplabcut.gui import BASE_DIR, components
+from deeplabcut.gui import components
 from deeplabcut.gui.dialogs import create_generate_debug_log_action
 from deeplabcut.gui.dialogs.config_errors import (
     ConfigErrorReport,
     format_config_error,
 )
+from deeplabcut.gui.gui_assets import icon_from_resource, pixmap_from_resource
 from deeplabcut.gui.tabs import (
     AnalyzeVideos,
     CreateTrainingDataset,
@@ -105,13 +105,13 @@ class MainWindow(QMainWindow):
         self.logger = logging.getLogger("deeplabcut.gui")
         self.console_logger = logging.getLogger("deeplabcut.gui.console")
 
-        self.config = None
+        self.config_path: Path | None = None
         self.loaded = False
 
         self.shuffle_value = 1
         self.trainingset_index = 0
         self.videotype = "mp4"
-        self.files = set()
+        self.files: set[Path] = set()
 
         self._engine = Engine.PYTORCH
 
@@ -204,9 +204,9 @@ class MainWindow(QMainWindow):
 
     @property
     def cfg(self):
-        if self.config is None:
+        if self.config_path is None:
             return {}
-        return auxiliaryfunctions.read_config(self.config)
+        return auxiliaryfunctions.read_config(self.config_path)
 
     @property
     def engine(self) -> Engine:
@@ -235,9 +235,8 @@ class MainWindow(QMainWindow):
 
                 msg.setWindowTitle("Info")
                 msg.setMinimumWidth(900)
-                logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-                logo = logo_dir + "/assets/logo.png"
-                msg.setWindowIcon(QIcon(logo))
+                icon = icon_from_resource("logo.png")
+                msg.setWindowIcon(icon)
                 msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
                 msg.exec_()
 
@@ -245,8 +244,11 @@ class MainWindow(QMainWindow):
         self.engine_change.emit(e)
 
     @property
-    def project_folder(self) -> str:
-        return self.cfg.get("project_path", os.path.expanduser("~/Desktop"))
+    def project_folder(self) -> Path:
+        path = self.cfg.get("project_path")
+        if path is not None:
+            return Path(path).absolute()
+        return Path("~/Desktop").expanduser().absolute()
 
     @property
     def is_multianimal(self) -> bool:
@@ -267,48 +269,48 @@ class MainWindow(QMainWindow):
             return [""]
 
     @property
-    def pose_cfg_path(self) -> str:
+    def pose_cfg_path(self) -> Path:
         try:
-            return str(
+            return Path(
                 compat.return_train_network_path(
-                    self.config,
+                    self.config_path,
                     shuffle=int(self.shuffle_value),
                     trainingsetindex=int(self.trainingset_index),
                     modelprefix="",
                 )[0]
-            )
+            ).absolute()
         except FileNotFoundError:
-            return str(Path(deeplabcut.__file__).parent / "pose_cfg.yaml")
+            return (Path(deeplabcut.__file__).parent / "pose_cfg.yaml").absolute()
 
     @property
-    def models_folder(self) -> str:
+    def models_folder(self) -> Path:
         try:
-            return str(
+            return Path(
                 compat.return_train_network_path(
-                    self.config,
+                    self.config_path,
                     shuffle=int(self.shuffle_value),
                     trainingsetindex=int(self.trainingset_index),
                     modelprefix="",
                 )[2]
-            )
+            ).absolute()
         except FileNotFoundError:
-            return self.project_folder()
+            return self.project_folder
 
     @property
-    def inference_cfg_path(self) -> str:
-        return os.path.join(
-            self.cfg["project_path"],
-            auxiliaryfunctions.get_model_folder(
+    def inference_cfg_path(self) -> Path:
+        return (
+            Path(self.cfg["project_path"])
+            / auxiliaryfunctions.get_model_folder(
                 self.cfg["TrainingFraction"][int(self.trainingset_index)],
                 int(self.shuffle_value),
                 self.cfg,
-            ),
-            "test",
-            "inference_cfg.yaml",
-        )
+            )
+            / "test"
+            / "inference_cfg.yaml"
+        ).absolute()
 
     def update_cfg(self, text):
-        self.root.config = text
+        self.config_path = Path(text).absolute() if text else None
         self.unsupervised_id_tracking.setEnabled(self.is_transreid_available())
 
     def update_shuffle(self, value):
@@ -604,7 +606,7 @@ class MainWindow(QMainWindow):
         Add new video files to the existing set of files. This method ensures no duplicates are added.
         Emits a signal to notify about the updated set of files.
         """
-        new_video_files = set(new_video_files)
+        new_video_files = {Path(video).absolute() for video in new_video_files}
         self.files.update(new_video_files)  # Add new items to the existing set
         self.video_files_.emit(self.files)  # Emit the updated set of files
         self.logger.info(f"Videos added to analyze:\n{new_video_files}\nCurrent video files:\n{self.files}")
@@ -625,8 +627,8 @@ class MainWindow(QMainWindow):
         palette.setColor(QtGui.QPalette.Window, QtGui.QColor("#ffffff"))
         self.setPalette(palette)
 
-        icon = os.path.join(BASE_DIR, "assets", "logo.png")
-        self.setWindowIcon(QIcon(icon))
+        # icon = str(BASE_DIR / "assets" / "logo.png")
+        self.setWindowIcon(icon_from_resource("logo.png"))
 
         # Set default window size and allow resizing
         self.resize(
@@ -659,8 +661,7 @@ class MainWindow(QMainWindow):
         image_widget = QtWidgets.QLabel(self)
         image_widget.setAlignment(Qt.AlignCenter)
         image_widget.setContentsMargins(0, 0, 0, 0)
-        logo = os.path.join(BASE_DIR, "assets", "logo_transparent.png")
-        pixmap = QtGui.QPixmap(logo)
+        pixmap = pixmap_from_resource("logo_transparent.png")
         image_widget.setPixmap(pixmap.scaledToHeight(400, QtCore.Qt.SmoothTransformation))
         self.layout.addWidget(image_widget)
         description = (
@@ -709,14 +710,14 @@ class MainWindow(QMainWindow):
         self.name_default = ""
         self.proj_default = ""
         self.exp_default = ""
-        self.loc_default = str(Path.home())
+        self.loc_default = Path.home()
 
     def create_actions(self, names):
         # Creating action using the first constructor
         self.newAction = QAction(self)
         self.newAction.setText("&New Project...")
 
-        self.newAction.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", names[0])))
+        self.newAction.setIcon(icon_from_resource("icons", names[0]))
         self.newAction.setShortcut("Ctrl+N")
         self.newAction.setStatusTip("Create a new project...")
 
@@ -724,7 +725,7 @@ class MainWindow(QMainWindow):
 
         # Creating actions using the second constructor
         self.openAction = QAction("&Open...", self)
-        self.openAction.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", names[1])))
+        self.openAction.setIcon(icon_from_resource("icons", names[1]))
         self.openAction.setShortcut("Ctrl+O")
         self.openAction.setStatusTip("Open a project...")
         self.openAction.triggered.connect(self._open_project)
@@ -738,7 +739,7 @@ class MainWindow(QMainWindow):
         self.darkmodeAction.triggered.connect(self.darkmode)
 
         self.helpAction = QAction("&Help", self)
-        self.helpAction.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", names[2])))
+        self.helpAction.setIcon(icon_from_resource("icons", names[2]))
         self.helpAction.setStatusTip("Ask for help...")
         self.helpAction.triggered.connect(self._ask_for_help)
 
@@ -851,13 +852,13 @@ class MainWindow(QMainWindow):
         loaded: bool,
     ) -> bool:
         """Select a project and build its UI from the current config."""
-        self.config = str(absolute_path(config))
+        self.config_path = absolute_path(config)
         self.loaded = False
 
         if not loaded:
             return True
 
-        # Do not keep an old project's controls active while self.config
+        # Do not keep an old project's controls active while self.config_path
         # points to a newly selected project.
         self._generate_welcome_page()
 
@@ -865,7 +866,7 @@ class MainWindow(QMainWindow):
             return False
 
         self.loaded = True
-        self.add_recent_filename(self.config)
+        self.add_recent_filename(str(self.config_path))
         return True
 
     def _ask_for_help(self):
@@ -890,26 +891,24 @@ class MainWindow(QMainWindow):
 
     def _open_config_with_system_application(self) -> bool:
         """Open the current config with the operating system's default app."""
-        if self.config is None:
+        if self.config_path is None:
             return False
 
-        config_path = Path(self.config).expanduser().absolute()
-
-        if not config_path.is_file():
+        if not self.config_path.is_file():
             QMessageBox.warning(
                 self,
                 "Configuration not found",
-                (f"The project configuration no longer exists:\n\n{config_path}"),
+                (f"The project configuration no longer exists:\n\n{self.config_path}"),
             )
             return False
 
-        config_url = QtCore.QUrl.fromLocalFile(str(config_path))
+        config_url = QtCore.QUrl.fromLocalFile(str(self.config_path))
         opened = QDesktopServices.openUrl(config_url)
 
         if not opened:
             self.logger.warning(
                 "The operating system could not open configuration %s",
-                config_path,
+                self.config_path,
             )
 
         return opened
@@ -969,7 +968,7 @@ class MainWindow(QMainWindow):
                         (
                             "DeepLabCut could not open the configuration "
                             "with a system application.\n\n"
-                            f"Open it manually:\n{self.config}"
+                            f"Open it manually:\n{self.config_path}"
                         ),
                     )
 
@@ -979,7 +978,7 @@ class MainWindow(QMainWindow):
         The configuration is reread for every attempt. No validated
         configuration state is cached between attempts.
         """
-        if self.config is None:
+        if self.config_path is None:
             return False
 
         while True:
@@ -1007,14 +1006,14 @@ class MainWindow(QMainWindow):
                 if isinstance(error, ValidationError):
                     self.logger.warning(
                         "Invalid project configuration %s (%d validation error%s)",
-                        self.config,
+                        self.config_path,
                         error.error_count(),
                         "" if error.error_count() == 1 else "s",
                     )
                 else:
                     self.logger.warning(
                         "Could not read project configuration %s: %s",
-                        self.config,
+                        self.config_path,
                         error,
                     )
 
@@ -1028,7 +1027,7 @@ class MainWindow(QMainWindow):
                 )
 
                 report = format_config_error(
-                    self.config,
+                    self.config_path,
                     error,
                 )
                 action = self._show_config_error(report)
@@ -1047,12 +1046,11 @@ class MainWindow(QMainWindow):
     def _open_project(self) -> None:
         open_project = OpenProject(self)
         open_project.load_config()
-
-        if not open_project.config:
+        if not open_project.config_path:
             return
 
         self._update_project_state(
-            open_project.config,
+            open_project.config_path,
             loaded=True,
         )
 
@@ -1086,17 +1084,17 @@ class MainWindow(QMainWindow):
 
     def _read_current_config_for_ui(self) -> dict:
         """Read the current config from disk for a UI-building attempt."""
-        if self.config is None:
+        if self.config_path is None:
             raise FileNotFoundError("No project configuration is selected.")
 
-        return auxiliaryfunctions.read_config(self.config)
+        return auxiliaryfunctions.read_config(self.config_path)
 
     def load_config(
         self,
         config: str | Path,
     ) -> bool:
         """Reload a config from disk and notify config-dependent widgets."""
-        self.config = str(absolute_path(config))
+        self.config_path = absolute_path(config)
 
         while True:
             try:
@@ -1112,14 +1110,14 @@ class MainWindow(QMainWindow):
                 if isinstance(error, ValidationError):
                     self.logger.warning(
                         "Invalid project configuration %s (%d validation error%s)",
-                        self.config,
+                        self.config_path,
                         error.error_count(),
                         "" if error.error_count() == 1 else "s",
                     )
                 else:
                     self.logger.warning(
                         "Could not read project configuration %s: %s",
-                        self.config,
+                        self.config_path,
                         error,
                     )
 
@@ -1133,7 +1131,7 @@ class MainWindow(QMainWindow):
                 )
 
                 report = format_config_error(
-                    self.config,
+                    self.config_path,
                     error,
                 )
                 action = self._show_config_error(report)
@@ -1147,7 +1145,7 @@ class MainWindow(QMainWindow):
 
             task = cfg.get(
                 "Task",
-                Path(self.config).parent.name,
+                self.config_path.parent.name,
             )
             self.logger.info(
                 'Project "%s" successfully loaded.',
@@ -1281,7 +1279,7 @@ class MainWindow(QMainWindow):
                 pass
 
         _attempt_attribute_update("shuffle", self.shuffle_value)
-        _attempt_attribute_update("cfg_line", self.config)
+        _attempt_attribute_update("cfg_line", str(self.config_path) if self.config_path else "")
 
     def is_transreid_available(self):
         if not self.is_multianimal:

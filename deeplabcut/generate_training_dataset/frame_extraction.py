@@ -9,26 +9,23 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+from pathlib import Path
 
-def select_cropping_area(config, videos=None):
+
+def select_cropping_area(config: str | Path, videos=None):
     """Interactively select the cropping area of all videos in the config. A user
     interface pops up with a frame to select the cropping parameters. Use the left click
     to draw a box and hit the button 'set cropping parameters' to store the cropping
     parameters for a video in the config.yaml file.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        videos (list, optional): List of videos whose cropping areas are to be defined.
+            Full paths are required. By default, all videos in the config are loaded.
+            Defaults to None.
 
-    videos : optional (default=None)
-        List of videos whose cropping areas are to be defined. Note that full paths are required.
-        By default, all videos in the config are successively loaded.
-
-    Returns
-    -------
-    cfg : dict
-        Updated project configuration
+    Returns:
+        dict: Updated project configuration
     """
     from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
 
@@ -62,7 +59,7 @@ def select_cropping_area(config, videos=None):
 
 
 def extract_frames(
-    config,
+    config: str | Path,
     mode="automatic",
     algo="kmeans",
     crop=False,
@@ -94,164 +91,135 @@ def extract_frames(
     https://www.nature.com/articles/s41596-019-0176-0 or the preprint:
     https://www.biorxiv.org/content/biorxiv/early/2018/11/24/476531.full.pdf
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        mode (string): Either ``"automatic"``, ``"manual"`` or ``"match"``.
+            String containing the mode of extraction. It must be either ``"automatic"`` or
+            ``"manual"`` to extract the initial set of frames. It can also be ``"match"``
+            to match frames between the cameras in preparation for the use of epipolar line
+            during labeling; namely, extract from camera_1 first, then run this to extract
+            the matched frames in camera_2.
 
-    mode : string. Either ``"automatic"``, ``"manual"`` or ``"match"``.
-        String containing the mode of extraction. It must be either ``"automatic"`` or
-        ``"manual"`` to extract the initial set of frames. It can also be ``"match"``
-        to match frames between the cameras in preparation for the use of epipolar line
-        during labeling; namely, extract from camera_1 first, then run this to extract
-        the matched frames in camera_2.
+            WARNING: if you use ``"match"``, and you previously extracted and labeled
+            frames from the second camera, this will overwrite your data. This will require
+            you to delete the ``collectdata(.h5/.csv)`` files before labeling. Use with
+            caution!
+        algo (string): Either ``"kmeans"`` or ``"uniform"``. Defaults to ``"kmeans"``.
+            String specifying the algorithm to use for selecting the frames. Currently,
+            deeplabcut supports either ``kmeans`` or ``uniform`` based selection. This flag
+            is only required for ``automatic`` mode and the default is ``kmeans``. For
+            ``"uniform"``, frames are picked in temporally uniform way, ``"kmeans"``
+            performs clustering on downsampled frames (see user guide for details).
 
-        WARNING: if you use ``"match"``, and you previously extracted and labeled
-        frames from the second camera, this will overwrite your data. This will require
-        you to delete the ``collectdata(.h5/.csv)`` files before labeling. Use with
-        caution!
+            NOTE: Color information is discarded for ``"kmeans"``, thus e.g. for
+            camouflaged octopus clustering one might want to change this.
+        crop (bool or str, optional): If ``True``, video frames are cropped according to the corresponding
+            coordinates stored in the project configuration file. Alternatively, if
+            cropping coordinates are not known yet, crop=``"GUI"`` triggers a user
+            interface where the cropping area can be manually drawn and saved.
+        userfeedback (bool, optional): If this is set to ``False`` during ``"automatic"`` mode then frames for all
+            videos are extracted. The user can set this to ``"True"``, which will result in
+            a dialog, where the user is asked for each video if (additional/any) frames
+            from this video should be extracted. Use this, e.g. if you have already labeled
+            some folders and want to extract data for new videos. Defaults to True.
+        cluster_resizewidth (int): For ``"k-means"`` one can change the width to which the images are downsampled
+            (aspect ratio is fixed). Defaults to 30.
+        cluster_step (int): By default each frame is used for clustering, but for long videos one could
+            only use every nth frame (set using this parameter). This saves memory before
+            clustering can start, however, reading the individual frames takes longer due
+            to the skipping. Defaults to 1.
+        cluster_color (bool): If ``"False"`` then each downsampled image is treated as a grayscale vector
+            (discarding color information). If ``"True"``, then the color channels are
+            considered. This increases the computational complexity. Defaults to False.
+        opencv (bool): Uses openCV for loading and extracting (otherwise moviepy (legacy)). Defaults to True.
+        slider_width (int): Width of the video frames slider, in percent of window. Defaults to 25.
+        config3d (string, optional): Path to the project configuration file in the 3D project. This will be used to
+            match frames extracted from all cameras present in the field 'camera_names' to
+            the frames extracted from the camera given by the parameter 'extracted_cam'.
+        extracted_cam (int): The index of the camera that already has extracted frames. This will match
+            frame numbers to extract for all other cameras. This parameter is necessary if
+            you wish to use epipolar lines in the labeling toolbox. Only use if
+            ``mode='match'`` and ``config3d`` is provided. Defaults to 0.
+        videos_list (list[str]): A list of the string containing full paths to videos to extract frames for. If
+            this is left as ``None`` all videos specified in the config file will have
+            frames extracted. Otherwise one can select a subset by passing those paths. Defaults to None.
 
-    algo : string, Either ``"kmeans"`` or ``"uniform"``, Default: `"kmeans"`.
-        String specifying the algorithm to use for selecting the frames. Currently,
-        deeplabcut supports either ``kmeans`` or ``uniform`` based selection. This flag
-        is only required for ``automatic`` mode and the default is ``kmeans``. For
-        ``"uniform"``, frames are picked in temporally uniform way, ``"kmeans"``
-        performs clustering on downsampled frames (see user guide for details).
+    Returns:
+        None
 
-        NOTE: Color information is discarded for ``"kmeans"``, thus e.g. for
-        camouflaged octopus clustering one might want to change this.
+    Note:
+        Use the function ``add_new_videos`` at any stage of the project to add new videos
+        to the config file and extract their frames.
 
-    crop : bool or str, optional
-        If ``True``, video frames are cropped according to the corresponding
-        coordinates stored in the project configuration file. Alternatively, if
-        cropping coordinates are not known yet, crop=``"GUI"`` triggers a user
-        interface where the cropping area can be manually drawn and saved.
+        The following parameters for automatic extraction are used from the config file
 
-    userfeedback: bool, optional
-        If this is set to ``False`` during ``"automatic"`` mode then frames for all
-        videos are extracted. The user can set this to ``"True"``, which will result in
-        a dialog, where the user is asked for each video if (additional/any) frames
-        from this video should be extracted. Use this, e.g. if you have already labeled
-        some folders and want to extract data for new videos.
+        * ``numframes2pick``
+        * ``start`` and ``stop``
 
-    cluster_resizewidth: int, default: 30
-        For ``"k-means"`` one can change the width to which the images are downsampled
-        (aspect ratio is fixed).
+        While selecting the frames manually, you do not need to specify the ``crop``
+        parameter in the command. Rather, you will get a prompt in the graphic user
+        interface to choose if you need to crop or not.
 
-    cluster_step: int, default: 1
-        By default each frame is used for clustering, but for long videos one could
-        only use every nth frame (set using this parameter). This saves memory before
-        clustering can start, however, reading the individual frames takes longer due
-        to the skipping.
+    Examples:
+        To extract frames automatically with 'kmeans' and then crop the frames
 
-    cluster_color: bool, default: False
-        If ``"False"`` then each downsampled image is treated as a grayscale vector
-        (discarding color information). If ``"True"``, then the color channels are
-        considered. This increases the computational complexity.
+            deeplabcut.extract_frames(
+                config='/analysis/project/reaching-task/config.yaml',
+                mode='automatic',
+                algo='kmeans',
+                crop=True,
+            )
 
-    opencv: bool, default: True
-        Uses openCV for loading & extractiong (otherwise moviepy (legacy)).
+        To extract frames automatically with 'kmeans' and then defining the cropping area
+        using a GUI
 
-    slider_width: int, default: 25
-        Width of the video frames slider, in percent of window.
+            deeplabcut.extract_frames(
+                '/analysis/project/reaching-task/config.yaml',
+                'automatic',
+                'kmeans',
+                'GUI',
+            )
 
-    config3d: string, optional
-        Path to the project configuration file in the 3D project. This will be used to
-        match frames extracted from all cameras present in the field 'camera_names' to
-        the frames extracted from the camera given by the parameter 'extracted_cam'.
+        To consider the color information when extracting frames automatically with
+        'kmeans':
 
-    extracted_cam: int, default: 0
-        The index of the camera that already has extracted frames. This will match
-        frame numbers to extract for all other cameras. This parameter is necessary if
-        you wish to use epipolar lines in the labeling toolbox. Only use if
-        ``mode='match'`` and ``config3d`` is provided.
+            deeplabcut.extract_frames(
+                '/analysis/project/reaching-task/config.yaml',
+                'automatic',
+                'kmeans',
+                cluster_color=True,
+            )
 
-    videos_list: list[str], Default: None
-        A list of the string containing full paths to videos to extract frames for. If
-        this is left as ``None`` all videos specified in the config file will have
-        frames extracted. Otherwise one can select a subset by passing those paths.
+        To extract frames automatically with 'uniform' and then crop the frames
 
-    Returns
-    -------
-    None
+            deeplabcut.extract_frames(
+                '/analysis/project/reaching-task/config.yaml',
+                'automatic',
+                'uniform',
+                crop=True,
+            )
 
-    Notes
-    -----
-    Use the function ``add_new_videos`` at any stage of the project to add new videos
-    to the config file and extract their frames.
+        To extract frames manually
 
-    The following parameters for automatic extraction are used from the config file
+            deeplabcut.extract_frames(
+                '/analysis/project/reaching-task/config.yaml', 'manual'
+            )
 
-    * ``numframes2pick``
-    * ``start`` and ``stop``
+        To extract frames manually, with a 60% wide frames slider
 
-    While selecting the frames manually, you do not need to specify the ``crop``
-    parameter in the command. Rather, you will get a prompt in the graphic user
-    interface to choose if you need to crop or not.
+            deeplabcut.extract_frames(
+                '/analysis/project/reaching-task/config.yaml', 'manual', slider_width=60,
+            )
 
-    Examples
-    --------
-    To extract frames automatically with 'kmeans' and then crop the frames
+        To extract frames from a second camera that match the frames extracted from the
+        first
 
-    >>> deeplabcut.extract_frames(
-            config='/analysis/project/reaching-task/config.yaml',
-            mode='automatic',
-            algo='kmeans',
-            crop=True,
-        )
-
-    To extract frames automatically with 'kmeans' and then defining the cropping area
-    using a GUI
-
-    >>> deeplabcut.extract_frames(
-            '/analysis/project/reaching-task/config.yaml',
-            'automatic',
-            'kmeans',
-            'GUI',
-        )
-
-    To consider the color information when extracting frames automatically with
-    'kmeans'
-
-    >>> deeplabcut.extract_frames(
-            '/analysis/project/reaching-task/config.yaml',
-            'automatic',
-            'kmeans',
-            cluster_color=True,
-        )
-
-    To extract frames automatically with 'uniform' and then crop the frames
-
-    >>> deeplabcut.extract_frames(
-            '/analysis/project/reaching-task/config.yaml',
-            'automatic',
-            'uniform',
-            crop=True,
-        )
-
-    To extract frames manually
-
-    >>> deeplabcut.extract_frames(
-            '/analysis/project/reaching-task/config.yaml', 'manual'
-        )
-
-    To extract frames manually, with a 60% wide frames slider
-
-    >>> deeplabcut.extract_frames(
-            '/analysis/project/reaching-task/config.yaml', 'manual', slider_width=60,
-        )
-
-    To extract frames from a second camera that match the frames extracted from the
-    first
-
-    >>> deeplabcut.extract_frames(
-            '/analysis/project/reaching-task/config.yaml',
-            mode='match',
-            extracted_cam=0,
-        )
+            deeplabcut.extract_frames(
+                '/analysis/project/reaching-task/config.yaml',
+                mode='match',
+                extracted_cam=0,
+            )
     """
-    import glob
-    import os
     import re
     import sys
     from pathlib import Path
@@ -262,7 +230,7 @@ def extract_frames(
 
     from deeplabcut.utils import auxiliaryfunctions, frameselectiontools
 
-    config_file = Path(config).resolve()
+    config_file = Path(config)
     cfg = auxiliaryfunctions.read_config(config_file)
     print("Config file read successfully.")
 
@@ -331,7 +299,7 @@ def extract_frames(
                 output_path = Path(config).parents[0] / "labeled-data" / fname.stem
 
                 if output_path.exists():
-                    if len(os.listdir(output_path)):
+                    if any(output_path.iterdir()):
                         if userfeedback:
                             askuser = input(
                                 "The directory already contains some frames. Do you want to add to it?(yes/no): "
@@ -456,15 +424,14 @@ def extract_frames(
     elif mode == "match":
         import cv2
 
-        config_file = Path(config).resolve()
+        config_file = Path(config)
         cfg = auxiliaryfunctions.read_config(config_file)
         print("Config file read successfully.")
         videos = sorted(cfg["video_sets"].keys())
         if videos_list is not None:  # filter video_list by the ones in the config file
             videos = [v for v in videos if v in videos_list]
         project_path = Path(config).parents[0]
-        labels_path = os.path.join(project_path, "labeled-data/")
-        os.path.join(project_path, "videos/")
+        labels_path = project_path / "labeled-data"
         try:
             cfg_3d = auxiliaryfunctions.read_config(config3d)
         except Exception as e:
@@ -474,7 +441,7 @@ def extract_frames(
         cams = cfg_3d["camera_names"]
         extCam_name = cams[extracted_cam]
         del cams[extracted_cam]
-        label_dirs = sorted(glob.glob(os.path.join(labels_path, "*" + extCam_name + "*")))
+        label_dirs = sorted(labels_path.glob("*" + extCam_name + "*"))
 
         # select crop method
         crop_list = []
@@ -497,19 +464,19 @@ def extract_frames(
                 crop_list.append(coords)
 
         for coords, dirPath in zip(crop_list, label_dirs, strict=False):
-            extracted_images = glob.glob(os.path.join(dirPath, "*png"))
+            extracted_images = list(dirPath.glob("*png"))
 
             imgPattern = re.compile("[0-9]{1,10}")
             for cam in cams:
-                output_path = re.sub(extCam_name, cam, dirPath)
+                output_path = Path(re.sub(extCam_name, cam, str(dirPath)))
 
-                for fname in os.listdir(output_path):
-                    if fname.endswith(".png"):
-                        os.remove(os.path.join(output_path, fname))
+                for p in output_path.iterdir():
+                    if p.name.endswith(".png"):
+                        p.unlink()
 
                 # Find the matching video from the config `video_sets`,
                 # as it may be stored elsewhere than in the `videos` directory.
-                video_name = os.path.basename(output_path)
+                video_name = output_path.name
                 vid = ""
                 for video in cfg["video_sets"]:
                     if video_name in video:
@@ -521,12 +488,12 @@ def extract_frames(
                 cap = cv2.VideoCapture(vid)
                 print("\n extracting matched frames from " + video_name)
                 for img in extracted_images:
-                    imgNum = re.findall(imgPattern, os.path.basename(img))[0]
+                    imgNum = re.findall(imgPattern, img.name)[0]
                     cap.set(1, int(imgNum))
                     ret, frame = cap.read()
                     if ret:
                         image = img_as_ubyte(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                        img_name = os.path.join(output_path, "img" + imgNum + ".png")
+                        img_name = str(output_path / ("img" + imgNum + ".png"))
                         if crop:
                             io.imsave(
                                 img_name,

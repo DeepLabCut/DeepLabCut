@@ -111,7 +111,7 @@ class UnsupervizedIdTracking(DefaultTab):
         self.root.logger.info(f"Num triplets set to {value}")
 
     def run_transformer(self):
-        config = self.root.config
+        config_path = self.root.config_path
         videos = [v for v in self.files]
         videotype = self.video_selection_widget.videotype_widget.currentText()
         n_tracks = self.num_animals_in_videos.value()
@@ -120,7 +120,7 @@ class UnsupervizedIdTracking(DefaultTab):
 
         func = partial(
             deeplabcut.transformer_reID,
-            config=config,
+            config=config_path,
             videos=videos,
             video_extensions=videotype,
             n_tracks=n_tracks,

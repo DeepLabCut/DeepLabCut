@@ -9,8 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-import glob
-import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -58,8 +56,8 @@ def set_up_grid(figsize, xlim, ylim, zlim, view):
 # other API (i.e. videotype: str -> video_extensions: str | Sequence[str] | None)
 # this requires updating Get_list_of_triangulated_and_videoFiles.
 def create_labeled_video_3d(
-    config,
-    path,
+    config: str | Path,
+    path: str | Path,
     videofolder=None,
     start=0,
     end=None,
@@ -75,84 +73,56 @@ def create_labeled_video_3d(
     fps=30,
     dpi=300,
 ):
-    """Creates a video with views from the two cameras and the 3d reconstruction for a
-    selected number of frames.
+    """Create a video with two camera views and 3D reconstruction for selected frames.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        path (list): Full paths to triangulated files for analysis, or a directory containing them.
+        videofolder (string): Full path of the folder where videos are stored.
+            Use when videos are not co-located with triangulation files.
+            Defaults to None (videos searched next to the triangulation file).
+        start (int): Start frame index to select. Defaults to 0.
+        end (int): End frame index to select.
+            Defaults to None (all frames used).
+        trailpoints (int): Number of previous frames whose body parts are plotted (history).
+            Defaults to 0.
+        videotype (string, optional): When ``path`` is a directory, only videos with this extension are
+            analyzed. If unspecified, common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+        view (list): Elevation (z plane) and azimuth (x,y plane) angles for the 3D view.
+        xlim (list): Limits for the 3D x-axis.
+            Defaults to [None, None] (min/max over all bodyparts).
+        ylim (list): Limits for the 3D y-axis.
+            Defaults to [None, None] (min/max over all bodyparts).
+        zlim (list): Limits for the 3D z-axis.
+            Defaults to [None, None] (min/max over all bodyparts).
+        draw_skeleton (bool): If True, draw skeleton lines on each frame (from config).
+            Defaults to True.
+        color_by (string, optional): Coloring rule. Each bodypart colored differently by default.
+            Use 'individual' to color all points of one individual the same. Defaults to 'bodypart'.
+        figsize (tuple, optional): Figure size for the matplotlib plot. Defaults to (20, 8).
+        fps (int, optional): Output video frame rate. Defaults to 30.
+        dpi (int, optional): Output video DPI. Defaults to 300.
 
-    path : list
-        A list of strings containing the full paths to triangulated files for analysis or a path to the directory,
-        where all the triangulated files are stored.
+    Examples:
+        Linux/MacOs
+            deeplabcut.create_labeled_video_3d(config, ["/data/project1/videos/3d.h5"], start=100, end=500)
 
-    videofolder: string
-        Full path of the folder where the videos are stored.
-        Use this if the videos are stored in a different location other than
-        where the triangulation files are stored.
-        By default is ``None`` and therefore looks for video files in the
-        directory where the triangulation file is stored.
+        To create labeled videos for all the triangulated files in the folder
+            deeplabcut.create_labeled_video_3d(config, ["/data/project1/videos"], start=100, end=500)
 
-    start: int
-        Integer specifying the start of frame index to select.
-        Default is set to 0.
+        To set the xlim, ylim, zlim and rotate the view of the 3d axis:
 
-    end: int
-        Integer specifying the end of frame index to select.
-        Default is set to None, where all the frames of the video are used for creating the labeled video.
-
-    trailpoints: int
-        Number of revious frames whose body parts are plotted in a frame (for displaying history).
-        Default is set to 0.
-
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n
-        Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
-
-    view: list
-        A list that sets the elevation angle in z plane and azimuthal angle in x,y plane of 3d view.
-        Useful for rotating the axis for 3d view
-
-    xlim: list
-        A list of integers specifying the limits for xaxis of 3d view.
-        By default it is set to [None,None], where the x limit is set by t
-        aking the minimum and maximum value of the x coordinates for all the bodyparts.
-
-    ylim: list
-        A list of integers specifying the limits for yaxis of 3d view.
-        By default it is set to [None,None], where the y limit is set by
-        taking the minimum and maximum value of the y coordinates for all the bodyparts.
-
-    zlim: list
-        A list of integers specifying the limits for zaxis of 3d view.
-        By default it is set to [None,None], where the z limit is set by
-        taking the minimum and maximum value of the z coordinates for all the bodyparts.
-
-    draw_skeleton: bool
-        If ``True`` adds a line connecting the body parts making a skeleton on on each frame.
-        The body parts to be connected and the color of these connecting lines are specified in the config file.
-        By default: ``True``
-
-    color_by : string, optional (default='bodypart')
-        Coloring rule. By default, each bodypart is colored differently.
-        If set to 'individual', points belonging to a single individual are colored the same.
-
-    Example
-    -------
-    Linux/MacOs
-    >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos/3d.h5'],start=100, end=500)
-
-    To create labeled videos for all the triangulated files in the folder
-    >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100, end=500)
-
-    To set the xlim, ylim, zlim and rotate the view of the 3d axis
-    >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100,
-        end=500,view=[30,90],xlim=[-12,12],ylim=[15,25],zlim=[20,30])
+            deeplabcut.create_labeled_video_3d(
+                config,
+                ["/data/project1/videos"],
+                start=100,
+                end=500,
+                view=[30, 90],
+                xlim=[-12, 12],
+                ylim=[15, 25],
+                zlim=[20, 30],
+            )
     """
-    os.getcwd()
-
     # Read the config file and related variables
     cfg_3d = auxiliaryfunctions.read_config(config)
     cam_names = cfg_3d["camera_names"]
@@ -184,8 +154,8 @@ def create_labeled_video_3d(
         # triangulated file is a list which is always sorted as [triangulated.h5,camera-1.videotype,camera-2.videotype]
         # name for output video
         file_name = str(Path(triangulate_file).stem)
-        videooutname = os.path.join(path_h5_file, file_name + ".mp4")
-        if os.path.isfile(videooutname):
+        videooutname = path_h5_file / (file_name + ".mp4")
+        if videooutname.is_file():
             print("Video already created...")
         else:
             string_to_remove = str(Path(triangulate_file).suffix)
@@ -211,41 +181,21 @@ def create_labeled_video_3d(
             try:
                 print("Looking for filtered predictions...")
                 df_cam1 = pd.read_hdf(
-                    glob.glob(
-                        os.path.join(
-                            path_h5_file,
-                            str("*" + base_filename_cam1 + cam1_scorer + "*filtered.h5"),
-                        )
-                    )[0]
+                    list(path_h5_file.glob("*" + base_filename_cam1 + cam1_scorer + "*filtered.h5"))[0]
                 )
                 df_cam2 = pd.read_hdf(
-                    glob.glob(
-                        os.path.join(
-                            path_h5_file,
-                            str("*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"),
-                        )
-                    )[0]
+                    list(path_h5_file.glob("*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"))[0]
                 )
                 # print("Found filtered predictions, will be use these for triangulation.")
                 print(
                     "Found the following filtered data: ",
-                    os.path.join(
-                        path_h5_file,
-                        str("*" + base_filename_cam1 + cam1_scorer + "*filtered.h5"),
-                    ),
-                    os.path.join(
-                        path_h5_file,
-                        str("*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"),
-                    ),
+                    path_h5_file / ("*" + base_filename_cam1 + cam1_scorer + "*filtered.h5"),
+                    path_h5_file / ("*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"),
                 )
             except IndexError:
                 print("No filtered predictions found, the unfiltered predictions will be used instead.")
-                df_cam1 = pd.read_hdf(
-                    glob.glob(os.path.join(path_h5_file, str(base_filename_cam1 + cam1_scorer + "*.h5")))[0]
-                )
-                df_cam2 = pd.read_hdf(
-                    glob.glob(os.path.join(path_h5_file, str(base_filename_cam2 + cam2_scorer + "*.h5")))[0]
-                )
+                df_cam1 = pd.read_hdf(list(path_h5_file.glob(base_filename_cam1 + cam1_scorer + "*.h5"))[0])
+                df_cam2 = pd.read_hdf(list(path_h5_file.glob(base_filename_cam2 + cam2_scorer + "*.h5"))[0])
 
             df_3d = pd.read_hdf(triangulate_file)
             try:
@@ -258,7 +208,7 @@ def create_labeled_video_3d(
             end = min(end, min(len(vid_cam1), len(vid_cam2)))
             frames = list(range(start, end))
 
-            output_folder = Path(os.path.join(path_h5_file, "temp_" + file_name))
+            output_folder = path_h5_file / ("temp_" + file_name)
             output_folder.mkdir(parents=True, exist_ok=True)
 
             # Flatten the list of bodyparts to connect
@@ -337,7 +287,7 @@ def create_labeled_video_3d(
                 axes3.add_collection(coll_3d)
 
             writer = FFMpegWriter(fps=fps)
-            with writer.saving(fig, videooutname, dpi=dpi):
+            with writer.saving(fig, str(videooutname), dpi=dpi):
                 for k in tqdm(frames):
                     vid_cam1.set_to_frame(k)
                     vid_cam2.set_to_frame(k)

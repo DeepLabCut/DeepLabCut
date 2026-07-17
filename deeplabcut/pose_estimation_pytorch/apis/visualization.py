@@ -284,12 +284,11 @@ def extract_maps(
         key, the item contains a tuple of:
             (img, scmap, locref, paf, bpt_names, paf_graph, img_name, is_train)
 
-    Examples
-    --------
+    Examples:
         If you want to extract the data for image 0 and 103 (of the training set) for
         model trained with shuffle 0.
 
-        >>> deeplabcut.extract_maps(config, 0, indices=[0, 103])
+            deeplabcut.extract_maps(config, 0, indices=[0, 103])
     """
     cfg = ProjectConfig.from_any(config)
 
@@ -339,7 +338,7 @@ def extract_maps(
         if len(image_paths) > 0 and isinstance(image_paths[0], tuple):
             image_paths = [Path(*img_path) for img_path in image_paths]
 
-        image_paths = [(loader.project_path / img_path).resolve() for img_path in image_paths]
+        image_paths = [(loader.project_path / img_path).absolute() for img_path in image_paths]
 
         context = _get_context(image_paths, loader, detector_snapshot_index, device)
         train_idx = set(loader.split["train"])
@@ -433,14 +432,14 @@ def extract_save_all_maps(
             the given index for pose estimation. To extract maps for all detector
             snapshots, use "all".
 
-    Examples
-    --------
-    Calculated maps for images 0, 1 and 33.
-        >>> deeplabcut.extract_save_all_maps(
-        >>>     "/analysis/project/reaching-task/config.yaml",
-        >>>     shuffle=1,
-        >>>     indices=[0, 1, 33]
-        >>> )
+    Examples:
+        Calculated maps for images 0, 1 and 33:
+
+            deeplabcut.extract_save_all_maps(
+                "/analysis/project/reaching-task/config.yaml",
+                shuffle=1,
+                indices=[0, 1, 33],
+            )
     """
     cfg = ProjectConfig.from_any(config)
     maps = extract_maps(
@@ -550,11 +549,12 @@ def _collect_model_outputs(
         result: A result output by ``extract_model_outputs``.
         image_idx: The index of the image
 
-    Returns: keys, images, outputs
-        keys: The key for each image to plot.
-        images: The images to plot for this input image (a single image for bottom-up
-            models, and the number of bounding boxes for top-down models).
-        outputs: The model outputs for each image.
+    Returns:
+        tuple: keys, images, and outputs.
+            keys: The key for each image to plot.
+            images: The images to plot for this input image (a single image for bottom-up
+                models, and the number of bounding boxes for top-down models).
+            outputs: The model outputs for each image.
     """
     if task == Task.TOP_DOWN:
         keys, images, outputs = [], [], []
@@ -594,11 +594,12 @@ def _parse_model_outputs(
         strides: The total stride for each model head.
         denormalize_image: Whether the image was normalized and should be de-normalized.
 
-    Returns: (img, scmap, locref, paf)
-        img: The (de-normalized) image used as input.
-        scmap: The score maps output by the model.
-        locref: The locref fields output by the model.
-        paf: The part-affinity fields output by the model.
+    Returns:
+        tuple: img, scmap, locref, and paf.
+            img: The (de-normalized) image used as input.
+            scmap: The score maps output by the model.
+            locref: The locref fields output by the model.
+            paf: The part-affinity fields output by the model.
     """
     image = image.transpose((1, 2, 0))
     if denormalize_image:
@@ -638,7 +639,7 @@ def _prepare_maps_for_plotting(maps: list[np.ndarray], image_size: tuple[int, in
 
 
 def _get_maps_folder(
-    cfg: dict,
+    cfg: ProjectConfig,
     train_frac: float,
     shuffle: int,
     model_prefix: str | None,
@@ -646,7 +647,7 @@ def _get_maps_folder(
 ) -> Path:
     """Gets the destination folder for output maps."""
     if dest_folder is None:
-        project_path = Path(cfg["project_path"])
+        project_path = cfg.project_path
         eval_folder = auxiliaryfunctions.get_evaluation_folder(
             trainFraction=train_frac,
             shuffle=shuffle,

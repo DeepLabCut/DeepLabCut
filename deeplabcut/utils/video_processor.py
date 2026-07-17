@@ -177,7 +177,6 @@ class VideoProcessor(ABC):
 
         raise NotImplementedError("Implement your own get_video method.")
 
-
     @abstractmethod
     def get_info(self):
         """Implement your own."""

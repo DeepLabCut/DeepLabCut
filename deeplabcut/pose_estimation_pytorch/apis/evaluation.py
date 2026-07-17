@@ -23,6 +23,7 @@ from tqdm import tqdm
 import deeplabcut.core.metrics as metrics
 import deeplabcut.pose_estimation_pytorch.apis.ctd as ctd
 import deeplabcut.pose_estimation_pytorch.apis.prune_paf_graph as prune_paf_graph
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch import utils
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
@@ -110,7 +111,8 @@ def evaluate(
     pcutoff: float | list[float] = 0.6,
     force_multi_animal: bool = False,
 ) -> tuple[dict[str, float], dict[str, dict[str, np.ndarray]]]:
-    """
+    """Evaluate.
+
     Args:
         pose_runner: The runner for pose estimation
         loader: The loader containing the data to evaluate
@@ -307,7 +309,7 @@ def visualize_predictions(
         # Generate and save visualization
         try:
             plot_gt_and_predictions(
-                image_path=image_path,
+                image_path=Path(image_path),
                 output_dir=output_dir,
                 gt_bodyparts=visible_gt,
                 pred_bodyparts=visible_pred,
@@ -319,8 +321,8 @@ def visualize_predictions(
 
 
 def plot_gt_and_predictions(
-    image_path: str | Path,
-    output_dir: str | Path,
+    image_path: Path,
+    output_dir: Path,
     gt_bodyparts: np.ndarray,
     pred_bodyparts: np.ndarray,
     gt_unique_bodyparts: np.ndarray | None = None,
@@ -359,8 +361,6 @@ def plot_gt_and_predictions(
                 - if mode is "individual", each individual's color will be used for its
                     bounding box
     """
-    # Ensure output directory exists
-    output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Read the image
@@ -442,8 +442,8 @@ def plot_gt_and_predictions(
     # Save the labeled image
     save_labeled_frame(
         fig,
-        str(image_path),
-        str(output_dir),
+        image_path,
+        output_dir,
         belongs_to_train=False,
     )
     erase_artists(ax)
@@ -451,7 +451,7 @@ def plot_gt_and_predictions(
 
 
 def evaluate_snapshot(
-    cfg: dict,
+    cfg: ProjectConfig,
     loader: DLCLoader,
     snapshot: Snapshot,
     scorer: str,
@@ -630,10 +630,10 @@ def evaluate_snapshot(
 
             plot_evaluation_results(
                 df_combined=df_combined,
-                project_root=cfg["project_path"],
+                project_root=cfg.project_path,
                 scorer=cfg["scorer"],
                 model_name=scorer,
-                output_folder=str(folder_path),
+                output_folder=folder_path,
                 in_train_set=mode == "train",
                 plot_unique_bodyparts=eval_parameters.num_unique_bpts > 0,
                 mode=plot_mode,
@@ -710,26 +710,26 @@ def evaluate_network(
     Examples:
         If you want to evaluate on shuffle 1 without plotting predictions.
 
-        >>> import deeplabcut
-        >>> deeplabcut.evaluate_network(
-        >>>     '/analysis/project/reaching-task/config.yaml', shuffles=[1],
-        >>> )
+            import deeplabcut
+            deeplabcut.evaluate_network(
+                '/analysis/project/reaching-task/config.yaml', shuffles=[1],
+            )
 
         If you want to evaluate shuffles 0 and 1 and plot the predictions.
 
-        >>> deeplabcut.evaluate_network(
-        >>>     '/analysis/project/reaching-task/config.yaml',
-        >>>     shuffles=[0, 1],
-        >>>     plotting=True,
-        >>> )
+            deeplabcut.evaluate_network(
+                '/analysis/project/reaching-task/config.yaml',
+                shuffles=[0, 1],
+                plotting=True,
+            )
 
         If you want to plot assemblies for a maDLC project
 
-        >>> deeplabcut.evaluate_network(
-        >>>     '/analysis/project/reaching-task/config.yaml',
-        >>>     shuffles=[1],
-        >>>     plotting="individual",
-        >>> )
+            deeplabcut.evaluate_network(
+                '/analysis/project/reaching-task/config.yaml',
+                shuffles=[1],
+                plotting="individual",
+            )
     """
     cfg = auxiliaryfunctions.read_config(config)
 
@@ -815,7 +815,8 @@ def evaluate_network(
 
 
 def image_to_dlc_df_index(image: str) -> tuple[str, ...]:
-    """
+    """Image to dlc df index.
+
     Args:
         image: the path of the image to map to a DLC index
 

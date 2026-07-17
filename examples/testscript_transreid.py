@@ -112,7 +112,7 @@ if __name__ == "__main__":
         1,
         cfg,
     )
-    datafile = datafile.split(".mat")[0] + ".pickle"
+    datafile = datafile.with_suffix(".pickle")
     with open(os.path.join(cfg["project_path"], datafile), "rb") as f:
         pickledata = pickle.load(f)
     num_images = len(pickledata)

@@ -42,25 +42,17 @@ def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None
 
 
 def calculatepafdistancebounds(config, shuffle=0, trainingsetindex=0, modelprefix="", numdigits=0, onlytrain=False):
+    """Returns distances along paf edges in train/test data.
+
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        shuffle (int): Integer specifying shuffle index of the training dataset.
+            Defaults to 0.
+        trainingsetindex (int, optional): Integer specifying which TrainingsetFraction
+            to use. By default the first (note that TrainingFraction is a list in
+            config.yaml). This variable can also be set to "all".
+        numdigits (int): Number of digits to round for distances.
     """
-    Returns distances along paf edges in train/test data
-
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
-
-    shuffle: integer
-        integers specifying shuffle index of the training dataset. The default is 0.
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use.
-        By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
-
-    numdigits: number of digits to round for distances.
-
-    """
-    import os
 
     from deeplabcut.pose_estimation_tensorflow.config import load_config
     from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
@@ -78,18 +70,13 @@ def calculatepafdistancebounds(config, shuffle=0, trainingsetindex=0, modelprefi
         # Loading human annotatated data
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
-        modelfolder = os.path.join(
-            cfg["project_path"],
-            str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+        modelfolder = Path(cfg["project_path"]) / str(
+            auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
         )
 
         # Load meta data & annotations
         Data = pd.read_hdf(
-            os.path.join(
-                cfg["project_path"],
-                str(trainingsetfolder),
-                "CollectedData_" + cfg["scorer"] + ".h5",
-            )
+            Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5")
         )[cfg["scorer"]]
 
         path_train_config, path_test_config, _ = return_train_network_path(
@@ -204,6 +191,7 @@ def return_evaluate_network_data(
     returnjustfns=True,
 ):
     """Returns the results for (previously evaluated) network.
+
     deeplabcut.evaluate_network(..) Returns list of (per model): [trainingsiterations,tr
     ainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,
     Snapshots[snapindex],scale,net_type]
@@ -212,56 +200,56 @@ def return_evaluate_network_data(
     Returns list of:
     (DataMachine, Data, data, trainIndices, testIndices, trainFraction,
     DLCscorer,comparisonbodyparts, cfg, Snapshots[snapindex])
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
 
-    shuffle: integer
-        integers specifying shuffle index of the training dataset. The default is 0.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        shuffle (int): Integer specifying shuffle index of the training dataset.
+            Defaults to 0.
+        trainingsetindex (int, optional): Integer specifying which TrainingsetFraction
+            to use. By default the first (note that TrainingFraction is a list in
+            config.yaml). This variable can also be set to "all".
+        comparisonbodyparts (list of bodyparts): The average error will be computed for
+            those body parts only (Has to be a subset of the body parts). Defaults to
+            "all".
+        rescale (bool): Evaluate the model at the 'global_scale' variable (as set in the
+            test/pose_config.yaml file for a particular project). I.e. every image will
+            be resized according to that scale and prediction will be compared to the
+            resized ground truth. The error will be reported in pixels at rescaled to
+            the *original* size. I.e. For a [200,200] pixel image evaluated at
+            global_scale=.5, the predictions are calculated on [100,100] pixel images,
+            compared to 1/2*ground truth and this error is then multiplied by 2!. The
+            evaluation images are also shown for the original size! Defaults to False.
 
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use.
-        By default the first (note that TrainingFraction is a list in config.yaml).
-        This variable can also be set to "all".
+    Examples:
+        If you do not want to plot:
 
-    comparisonbodyparts: list of bodyparts, Default is "all".
-        The average error will be computed for those body parts only (Has to be a subset of the body parts).
+            deeplabcut._evaluate_network_data(
+                "/analysis/project/reaching-task/config.yaml",
+                shuffle=[1],
+            )
 
-    rescale: bool, default False
-        Evaluate the model at the 'global_scale' variable
-        (as set in the test/pose_config.yaml file for a particular project).
-        I.e. every image will be resized according to that scale and
-        prediction will be compared to the resized ground truth. The error will be reported
-        in pixels at rescaled to the *original* size.
-        I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
-        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
-        The evaluation images are also shown for the original size!
+        If you want to plot:
 
-    Examples
-    --------
-    If you do not want to plot
-    >>> deeplabcut._evaluate_network_data('/analysis/project/reaching-task/config.yaml', shuffle=[1])
-    --------
-    If you want to plot
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',shuffle=[1],plotting=True)
+            deeplabcut.evaluate_network(
+                "/analysis/project/reaching-task/config.yaml",
+                shuffle=[1],
+                plotting=True,
+            )
     """
-
     import os
 
     from deeplabcut.pose_estimation_tensorflow.config import load_config
     from deeplabcut.utils import auxiliaryfunctions
 
-    start_path = os.getcwd()
+    start_path = Path.cwd()
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
 
     # Loading human annotatated data
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     # Data=pd.read_hdf(
-    # os.path.join(
-    # cfg["project_path"],
-    # str(trainingsetfolder
-    # ),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing'
+    # Path(cfg["project_path"]) / str(trainingsetfolder) / ('CollectedData_' + cfg["scorer"] + '.h5'),
+    # 'df_with_missing'
     # )
 
     # Get list of body parts to evaluate network for
@@ -270,9 +258,8 @@ def return_evaluate_network_data(
     # Load data...
     ##################################################
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    modelfolder = os.path.join(
-        cfg["project_path"],
-        str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+    modelfolder = Path(cfg["project_path"]) / str(
+        auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
     )
     path_train_config, path_test_config, _ = return_train_network_path(
         config=config,
@@ -299,28 +286,17 @@ def return_evaluate_network_data(
         scale = test_pose_cfg["global_scale"]
         print("Rescaling Data to ", scale)
         Data = (
-            pd.read_hdf(
-                os.path.join(
-                    cfg["project_path"],
-                    str(trainingsetfolder),
-                    "CollectedData_" + cfg["scorer"] + ".h5",
-                )
-            )
+            pd.read_hdf(Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5"))
             * scale
         )
     else:
         scale = 1
         Data = pd.read_hdf(
-            os.path.join(
-                cfg["project_path"],
-                str(trainingsetfolder),
-                "CollectedData_" + cfg["scorer"] + ".h5",
-            )
+            Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5")
         )
 
-    evaluationfolder = os.path.join(
-        cfg["project_path"],
-        str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+    evaluationfolder = Path(cfg["project_path"]) / str(
+        auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
     )
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
@@ -339,10 +315,10 @@ def return_evaluate_network_data(
     results = []
     resultsfns = []
     for snapshot_name in snapshot_names:
-        test_pose_cfg["init_weights"] = os.path.join(
-            str(modelfolder), "train", snapshot_name
+        test_pose_cfg["init_weights"] = str(
+            Path(modelfolder) / "train" / snapshot_name
         )  # setting weights to corresponding snapshot.
-        trainingsiterations = (test_pose_cfg["init_weights"].split(os.sep)[-1]).split("-")[
+        trainingsiterations = Path(test_pose_cfg["init_weights"]).name.split("-")[
             -1
         ]  # read how many training siterations that corresponds to.
 
@@ -369,7 +345,7 @@ def return_evaluate_network_data(
         print(resultsfilename)
         resultsfns.append(resultsfilename)
         if not returnjustfns:
-            if not notanalyzed and os.path.isfile(resultsfilename):  # data exists..
+            if not notanalyzed and Path(resultsfilename).is_file():  # data exists..
                 DataMachine = pd.read_hdf(resultsfilename)
                 DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
                 RMSE, RMSEpcutoff = pairwisedistances(
@@ -520,96 +496,78 @@ def evaluate_network(
     subdirectory 'evaluation_results'. Change the snapshotindex parameter in the config
     file to 'all' in order to evaluate all the saved models.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file.
+    Args:
+        config (string): Full path of the config.yaml file.
+        shuffles (list, optional): List of integers specifying the shuffle indices of
+            the training dataset. Defaults to [1].
+        trainingsetindex (int or str, optional): Integer specifying which
+            "TrainingsetFraction" to use. Note that "TrainingFraction" is a list in
+            config.yaml. This variable can also be set to "all". Defaults to 0.
+        plotting (bool or str, optional): Plots the predictions on the train and test
+            images. If provided it must be either ``True``, ``False``, ``"bodypart"``,
+            or ``"individual"``. Setting to ``True`` defaults as ``"bodypart"`` for
+            multi-animal projects. Defaults to False.
+        show_errors (bool, optional): Display train and test errors. Defaults to True.
+        comparisonbodyparts (str or list, optional): The average error will be computed
+            for those body parts only. The provided list has to be a subset of the
+            defined body parts. Defaults to "all".
+        gputouse (int or None, optional): Indicates the GPU to use (see number in
+            ``nvidia-smi``). If you do not have a GPU put `None``. See:
+            https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+            Defaults to None.
+        rescale (bool, optional): Evaluate the model at the ``'global_scale'`` variable
+            (as set in the ``pose_config.yaml`` file for a particular project). I.e.
+            every image will be resized according to that scale and prediction will be
+            compared to the resized ground truth. The error will be reported in pixels at
+            rescaled to the *original* size. I.e. For a [200,200] pixel image evaluated
+            at ``global_scale=.5``, the predictions are calculated on [100,100] pixel
+            images, compared to 1/2*ground truth and this error is then multiplied by
+            2!. The evaluation images are also shown for the original size! Defaults to
+            False.
+        modelprefix (str, optional): Directory containing the deeplabcut models to use
+            when evaluating the network. By default, the models are assumed to exist in
+            the project folder. Defaults to "".
+        per_keypoint_evaluation (bool, optional): Compute the train and test RMSE for
+            each keypoint, and save the results to a {model_name}-keypoint-results.csv in
+            the evaluation-results folder. Defaults to False.
+        snapshots_to_evaluate (list[str], optional): List of snapshot names to evaluate
+            (e.g. ["snapshot-50000", "snapshot-75000", ...]). Defaults to None.
 
-    Shuffles: list, optional, default=[1]
-        List of integers specifying the shuffle indices of the training dataset.
+    Returns:
+        None
 
-    trainingsetindex: int or str, optional, default=0
-        Integer specifying which "TrainingsetFraction" to use.
-        Note that "TrainingFraction" is a list in config.yaml. This variable can also
-        be set to "all".
+    Examples:
+        If you do not want to plot and evaluate with shuffle set to 1:
 
-    plotting: bool or str, optional, default=False
-        Plots the predictions on the train and test images.
-        If provided it must be either ``True``, ``False``, ``"bodypart"``, or
-        ``"individual"``. Setting to ``True`` defaults as ``"bodypart"`` for
-        multi-animal projects.
+            deeplabcut.evaluate_network(
+                "/analysis/project/reaching-task/config.yaml",
+                Shuffles=[1],
+            )
 
-    show_errors: bool, optional, default=True
-        Display train and test errors.
+        If you want to plot and evaluate with shuffle set to 0 and 1:
 
-    comparisonbodyparts: str or list, optional, default="all"
-        The average error will be computed for those body parts only.
-        The provided list has to be a subset of the defined body parts.
+            deeplabcut.evaluate_network(
+                "/analysis/project/reaching-task/config.yaml",
+                Shuffles=[0, 1],
+                plotting=True,
+            )
 
-    gputouse: int or None, optional, default=None
-        Indicates the GPU to use (see number in ``nvidia-smi``). If you do not have a
-        GPU put `None``.
-        See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+        If you want to plot assemblies for a maDLC project:
 
-    rescale: bool, optional, default=False
-        Evaluate the model at the ``'global_scale'`` variable (as set in the
-        ``pose_config.yaml`` file for a particular project). I.e. every image will be
-        resized according to that scale and prediction will be compared to the resized
-        ground truth. The error will be reported in pixels at rescaled to the
-        *original* size. I.e. For a [200,200] pixel image evaluated at
-        ``global_scale=.5``, the predictions are calculated on [100,100] pixel images,
-        compared to 1/2*ground truth and this error is then multiplied by 2!.
-        The evaluation images are also shown for the original size!
+            deeplabcut.evaluate_network(
+                "/analysis/project/reaching-task/config.yaml",
+                Shuffles=[1],
+                plotting="individual",
+            )
 
-    modelprefix: str, optional, default=""
-        Directory containing the deeplabcut models to use when evaluating the network.
-        By default, the models are assumed to exist in the project folder.
-
-    per_keypoint_evaluation: bool, default=False
-        Compute the train and test RMSE for each keypoint, and save the results to
-        a {model_name}-keypoint-results.csv in the evaluation-results folder
-
-    snapshots_to_evaluate: List[str], optional, default=None
-        List of snapshot names to evaluate (e.g. ["snapshot-50000", "snapshot-75000", ...])
-
-    Returns
-    -------
-    None
-
-    Examples
-    --------
-    If you do not want to plot and evaluate with shuffle set to 1.
-
-    >>> deeplabcut.evaluate_network(
-            '/analysis/project/reaching-task/config.yaml', Shuffles=[1],
-        )
-
-    If you want to plot and evaluate with shuffle set to 0 and 1.
-
-    >>> deeplabcut.evaluate_network(
-            '/analysis/project/reaching-task/config.yaml',
-            Shuffles=[0, 1],
-            plotting=True,
-        )
-
-    If you want to plot assemblies for a maDLC project
-
-    >>> deeplabcut.evaluate_network(
-            '/analysis/project/reaching-task/config.yaml',
-            Shuffles=[1],
-            plotting="individual",
-        )
-
-    Note: This defaults to standard plotting for single-animal projects.
+        Note: This defaults to standard plotting for single-animal projects.
     """
     if Shuffles is None:
         Shuffles = [1]
     if plotting not in (True, False, "bodypart", "individual"):
         raise ValueError(f"Unknown value for `plotting`={plotting}")
 
-    import os
-
-    start_path = os.getcwd()
+    start_path = Path.cwd()
     from deeplabcut.utils import auxiliaryfunctions
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -648,7 +606,7 @@ def evaluate_network(
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
         #    tf.logging.set_verbosity(tf.logging.WARN)
 
-        start_path = os.getcwd()
+        start_path = Path.cwd()
         # Read file path for pose_config file. >> pass it on
         cfg = auxiliaryfunctions.read_config(config)
         if gputouse is not None:  # gpu selectinon
@@ -670,11 +628,7 @@ def evaluate_network(
         # Loading human annotatated data
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         Data = pd.read_hdf(
-            os.path.join(
-                cfg["project_path"],
-                str(trainingsetfolder),
-                "CollectedData_" + cfg["scorer"] + ".h5",
-            )
+            Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5")
         )
 
         # Get list of body parts to evaluate network for
@@ -682,7 +636,7 @@ def evaluate_network(
             cfg, comparisonbodyparts
         )
         # Make folder for evaluation
-        auxiliaryfunctions.attempt_to_make_folder(str(Path(cfg["project_path"]) / "evaluation-results"))
+        auxiliaryfunctions.attempt_to_make_folder(Path(cfg["project_path"]) / "evaluation-results")
         for shuffle in Shuffles:
             for trainFraction in TrainingFractions:
                 ##################################################
@@ -726,9 +680,8 @@ def evaluate_network(
                 test_pose_cfg["batch_size"] = 1  # in case this was edited for analysis.
 
                 # Create folder structure to store results.
-                evaluationfolder = os.path.join(
-                    cfg["project_path"],
-                    str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+                evaluationfolder = Path(cfg["project_path"]) / str(
+                    auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
                 )
                 auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
@@ -754,11 +707,9 @@ def evaluate_network(
                     scale = test_pose_cfg["global_scale"]
                     Data = (
                         pd.read_hdf(
-                            os.path.join(
-                                cfg["project_path"],
-                                str(trainingsetfolder),
-                                "CollectedData_" + cfg["scorer"] + ".h5",
-                            )
+                            Path(cfg["project_path"])
+                            / str(trainingsetfolder)
+                            / ("CollectedData_" + cfg["scorer"] + ".h5")
                         )
                         * scale
                     )
@@ -770,8 +721,8 @@ def evaluate_network(
                 # Compute predictions over images
                 ##################################################
                 for snapshot_name in snapshot_names:
-                    test_pose_cfg["init_weights"] = os.path.join(
-                        str(modelfolder), "train", snapshot_name
+                    test_pose_cfg["init_weights"] = str(
+                        Path(modelfolder) / "train" / snapshot_name
                     )  # setting weights to corresponding snapshot.
                     training_iterations = int(snapshot_name.split("-")[-1])
 
@@ -807,7 +758,7 @@ def evaluate_network(
                         print("Running evaluation ...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image = imread(
-                                os.path.join(cfg["project_path"], *imagename),
+                                Path(cfg["project_path"]).joinpath(*imagename),
                                 mode="skimage",
                             )
                             if scale != 1:
@@ -907,10 +858,7 @@ def evaluate_network(
 
                         if plotting:
                             print("Plotting...")
-                            foldername = os.path.join(
-                                str(evaluationfolder),
-                                "LabeledImages_" + DLCscorer + "_" + snapshot_name,
-                            )
+                            foldername = Path(evaluationfolder) / ("LabeledImages_" + DLCscorer + "_" + snapshot_name)
                             auxiliaryfunctions.attempt_to_make_folder(foldername)
                             Plotting(
                                 cfg,
@@ -928,11 +876,8 @@ def evaluate_network(
                         conversioncode.guarantee_multiindex_rows(DataMachine)
                         if plotting:
                             DataCombined = pd.concat([Data.T, DataMachine.T], axis=0, sort=False).T
-                            foldername = os.path.join(
-                                str(evaluationfolder),
-                                "LabeledImages_" + DLCscorer + "_" + snapshot_name,
-                            )
-                            if not os.path.exists(foldername):
+                            foldername = Path(evaluationfolder) / ("LabeledImages_" + DLCscorer + "_" + snapshot_name)
+                            if not Path(foldername).exists():
                                 print(
                                     "Plotting..."
                                     "(warning, scale might be inconsistent in comparison "
@@ -986,8 +931,8 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
         "Test error with p-cutoff",
     ]
     df = pd.DataFrame(final_result, columns=col_names)
-    output_path = os.path.join(str(evaluationfolder), DLCscorer + "-results.csv")
-    if os.path.exists(output_path):
+    output_path = Path(evaluationfolder) / (DLCscorer + "-results.csv")
+    if Path(output_path).exists():
         temp = pd.read_csv(output_path, index_col=0)
         df = pd.concat((temp, df)).reset_index(drop=True)
 
@@ -996,8 +941,8 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
     ## Also storing one "large" table with results:
     # note: evaluationfolder.parents[0] to get common folder above all shuffle evaluations.
     df = pd.DataFrame(final_result, columns=col_names)
-    output_path = os.path.join(str(Path(evaluationfolder).parents[0]), "CombinedEvaluation-results.csv")
-    if os.path.exists(output_path):
+    output_path = Path(evaluationfolder).parents[0] / "CombinedEvaluation-results.csv"
+    if Path(output_path).exists():
         temp = pd.read_csv(output_path, index_col=0)
         df = pd.concat((temp, df)).reset_index(drop=True)
 
@@ -1010,7 +955,8 @@ def get_available_requested_snapshots(
 ) -> list[str]:
     """Intersects the requested snapshot names with the available snapshots.
 
-    Returns: snapshot names
+    Returns:
+        list[str]: Snapshot names.
     """
     snapshot_names = []
     missing_snapshots = []
