@@ -123,6 +123,11 @@ def with_tensorflow_fallback(
         def wrapper(*args, **kwargs):
             unified = _positionals_as_kwargs(sig, args, kwargs)
 
+            # Normalize renamed params in unified so routing sees canonical names
+            for old, new in (renamed_params or {}).items():
+                if old in unified and new not in unified:
+                    unified[new] = unified.pop(old)
+
             if when is not None:
                 # Custom condition routing (e.g. modelzoo functions)
                 route_to_tf = when(unified)
