@@ -18,11 +18,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import yaml
 from PIL import Image
 
 import deeplabcut.generate_training_dataset.metadata as metadata
-from deeplabcut.core.config import ProjectConfig, read_config, write_config
+from deeplabcut.core.config import ProjectConfig, get_yaml_loader, read_config, write_config
 from deeplabcut.core.engine import Engine, get_available_aug_methods, get_project_engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
@@ -340,7 +339,7 @@ def ParseYaml(configfile: str | Path):
     docs = []
     for raw_doc in raw.split("\n---"):
         try:
-            docs.append(yaml.load(raw_doc, Loader=yaml.SafeLoader))
+            docs.append(get_yaml_loader().load(raw_doc))
         except SyntaxError:
             docs.append(raw_doc)
     return docs
@@ -365,8 +364,7 @@ def MakeTrain_pose_yaml(
         docs[0][key] = itemstochange[key]
 
     if save:
-        with open(saveasconfigfile, "w") as f:
-            yaml.dump(docs[0], f)
+        write_config(saveasconfigfile, docs[0])
 
     return docs[0]
 
@@ -395,8 +393,7 @@ def MakeTest_pose_yaml(
         dict_test["locref_smooth"] = locref_smooth
 
     dict_test["scoremap_dir"] = "test"
-    with open(saveasfile, "w") as f:
-        yaml.dump(dict_test, f)
+    write_config(saveasfile, dict_test)
 
 
 def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
