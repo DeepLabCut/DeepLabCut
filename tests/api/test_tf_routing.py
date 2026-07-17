@@ -371,7 +371,7 @@ def test_with_tensorflow_fallback_when_routes_to_tf_if_predicate_true():
     tf_impl = MagicMock(return_value="tensorflow")
 
     @tf_routing.with_tensorflow_fallback(
-        when=lambda *a, **kw: kw.get("model_name") == "dlcrnet",
+        when=lambda params: params.get("model_name") == "dlcrnet",
         tensorflow_module="deeplabcut.tensorflow_compat.superanimal_inference",
         tensorflow_name="video_inference_superanimal_tf",
     )
@@ -395,7 +395,7 @@ def test_with_tensorflow_fallback_when_routes_to_pt_if_predicate_false():
     pytorch_fn = MagicMock(return_value="pytorch")
 
     @tf_routing.with_tensorflow_fallback(
-        when=lambda *a, **kw: kw.get("model_name") == "dlcrnet",
+        when=lambda params: params.get("model_name") == "dlcrnet",
         dropped_params=["scale_list"],
     )
     def canonical_fn(*args, **kwargs):
@@ -411,13 +411,11 @@ def test_with_tensorflow_fallback_when_routes_to_pt_if_predicate_false():
 def test_with_tensorflow_fallback_when_receives_args_and_kwargs():
     tf_impl = MagicMock(return_value="tensorflow")
 
-    captured_args = []
-    captured_kwargs = {}
+    captured_params = {}
 
-    def predicate(*a, **kw):
-        captured_args.append(a)
-        captured_kwargs.update(kw)
-        return kw.get("force_tf", False)
+    def predicate(params):
+        captured_params.update(params)
+        return params.get("force_tf", False)
 
     @tf_routing.with_tensorflow_fallback(when=predicate)
     def canonical_fn(*args, **kwargs):
@@ -429,8 +427,7 @@ def test_with_tensorflow_fallback_when_receives_args_and_kwargs():
     ):
         canonical_fn("arg1", "arg2", force_tf=True, extra="val")
 
-    assert captured_args == [("arg1", "arg2")]
-    assert captured_kwargs == {"force_tf": True, "extra": "val"}
+    assert captured_params == {"force_tf": True, "extra": "val"}
     tf_impl.assert_called_once()
 
 
@@ -438,7 +435,7 @@ def test_with_tensorflow_fallback_when_takes_precedence_over_engine():
     tf_impl = MagicMock(return_value="tensorflow")
 
     @tf_routing.with_tensorflow_fallback(
-        when=lambda *a, **kw: kw.get("model_name") == "dlcrnet",
+        when=lambda params: params.get("model_name") == "dlcrnet",
     )
     def canonical_fn(*args, **kwargs):
         return "pytorch"
@@ -460,7 +457,7 @@ def test_with_tensorflow_fallback_when_without_tensorflow_module_defaults():
     tf_impl = MagicMock(return_value="tensorflow")
 
     @tf_routing.with_tensorflow_fallback(
-        when=lambda *a, **kw: True,
+        when=lambda params: True,
     )
     def canonical_fn(*args, **kwargs):
         return "pytorch"

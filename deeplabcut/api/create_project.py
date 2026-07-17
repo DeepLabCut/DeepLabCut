@@ -22,7 +22,7 @@ from deeplabcut.core.engine import Engine
 
 
 @with_tensorflow_fallback(
-    when=lambda *a, **kw: kw.get("engine") == Engine.TF,
+    when=lambda params: params.get("engine") == Engine.TF,
     tensorflow_module="deeplabcut.tensorflow_compat.create_project",
     tensorflow_name="_tf_create_pretrained_project",
 )
