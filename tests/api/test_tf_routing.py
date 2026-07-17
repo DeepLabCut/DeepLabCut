@@ -527,12 +527,8 @@ def test_with_tensorflow_fallback_when_matches_positional_and_keyword():
 
     assert result_pos == "tensorflow"
 
-    with (
-        patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl),
-        pytest.warns(DLCDeprecationWarning),
-    ):
-        # Positional with non-matching model_name
-        result_no = canonical_fn("v.mp4", "hrnet_w32")
+    # Positional with non-matching model_name — routes to PT, no deprecation warning
+    result_no = canonical_fn("v.mp4", "hrnet_w32")
 
     assert result_no == "pytorch"
 
