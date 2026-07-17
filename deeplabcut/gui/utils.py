@@ -40,7 +40,7 @@ class Worker(QtCore.QObject):
     def run(self):
         try:
             self._execute()
-        except Exception as exc:
+        except BaseException as exc:
             # Marshal the exception to the GUI thread instead of crashing or
             # silently killing the worker thread.
             self.error.emit(exc)
