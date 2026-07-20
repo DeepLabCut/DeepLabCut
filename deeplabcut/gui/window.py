@@ -83,6 +83,16 @@ WINDOW_RESIZE_FACTOR = 0.8
 DEFAULT_MINIMUM_WIDTH, DEFAULT_MINIMUM_HEIGHT = 800, 600
 
 
+def _is_pose_config_validation_error(error: ValidationError) -> bool:
+    """Return True if *error* was raised by a PoseConfig model."""
+    try:
+        from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig as _PoseConfig
+
+        return error.model is _PoseConfig
+    except (ImportError, RuntimeError):
+        return False
+
+
 class ConfigErrorAction(Enum):
     """Recovery action selected after a configuration error."""
 
@@ -1044,7 +1054,7 @@ class MainWindow(QMainWindow):
         the user fixes the file and re-runs the action.
         """
         if config_path is None:
-            if isinstance(error, ValidationError) and error.title == "PoseConfig":
+            if isinstance(error, ValidationError) and _is_pose_config_validation_error(error):
                 config_path = self.pose_cfg_path
             else:
                 config_path = self.config_path
