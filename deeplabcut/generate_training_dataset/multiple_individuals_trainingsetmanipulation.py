@@ -19,21 +19,17 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 
-import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
 from deeplabcut.core.config import ProjectConfig
-from deeplabcut.core.engine import Engine
+from deeplabcut.core.engine import Engine, get_project_engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
-    auxfun_models,
     auxfun_multianimal,
     auxiliaryfunctions,
 )
 
 from .trainingsetmanipulation import (
     MakeInference_yaml,
-    MakeTest_pose_yaml,
-    MakeTrain_pose_yaml,
     SplitTrials,
     merge_annotateddatasets,
     pad_train_test_indices,
@@ -300,7 +296,7 @@ def create_multianimaltraining_dataset(
 
     # load the engine to use to create the shuffle
     if engine is None:
-        engine = compat.get_project_engine(cfg)
+        engine = get_project_engine(cfg)
 
     if not (any(net in net_type for net in ("resnet", "eff", "dlc", "mob")) or engine == Engine.PYTORCH):
         raise ValueError(f"Unsupported network {net_type} for engine {engine}.")
@@ -355,12 +351,16 @@ def create_multianimaltraining_dataset(
 
     # Loading the encoder (if necessary downloading from TF)
     dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
-    defaultconfigfile = dlcparent_path / "pose_cfg.yaml"
+    defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
 
     if engine == Engine.PYTORCH:
         model_path = dlcparent_path
     else:
-        model_path = auxfun_models.check_for_weights(net_type, dlcparent_path)
+        from deeplabcut.tensorflow_compat.dataset_management.create_single_animal import (
+            _tf_get_model_path,
+        )
+
+        model_path = _tf_get_model_path(net_type, dlcparent_path)
 
     Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
@@ -462,73 +462,29 @@ def create_multianimaltraining_dataset(
             path_inference_config = str(Path(cfg["project_path"]) / modelfoldername / "test" / "inference_cfg.yaml")
 
             if engine == Engine.TF:
-                jointnames = [str(bpt) for bpt in multianimalbodyparts]
-                jointnames.extend([str(bpt) for bpt in uniquebodyparts])
-                items2change = {
-                    "dataset": datafilename,
-                    "engine": engine.aliases[0],
-                    "metadataset": metadatafilename,
-                    "num_joints": len(multianimalbodyparts) + len(uniquebodyparts),  # cfg["uniquebodyparts"]),
-                    "all_joints": [
-                        [i] for i in range(len(multianimalbodyparts) + len(uniquebodyparts))
-                    ],  # cfg["uniquebodyparts"]))],
-                    "all_joints_names": jointnames,
-                    "init_weights": str(model_path),
-                    "project_path": str(cfg["project_path"]),
-                    "net_type": net_type,
-                    "multi_stage": multi_stage,
-                    "pairwise_loss_weight": 0.1,
-                    "pafwidth": 20,
-                    "partaffinityfield_graph": partaffinityfield_graph,
-                    "partaffinityfield_predict": partaffinityfield_predict,
-                    "weigh_only_present_joints": False,
-                    "num_limbs": len(partaffinityfield_graph),
-                    "dataset_type": dataset_type,
-                    "optimizer": "adam",
-                    "batch_size": 8,
-                    "multi_step": [[1e-4, 7500], [5 * 1e-5, 12000], [1e-5, 200000]],
-                    "save_iters": 10000,
-                    "display_iters": 500,
-                    "num_idchannel": (len(cfg["individuals"]) if cfg.get("identity", False) else 0),
-                    "crop_size": list(crop_size),
-                    "crop_sampling": crop_sampling,
-                }
-
-                trainingdata = MakeTrain_pose_yaml(
-                    items2change,
-                    path_train_config,
-                    defaultconfigfile,
-                    save=(engine == Engine.TF),
+                from deeplabcut.tensorflow_compat.dataset_management.create_multi_animal import (
+                    _tf_create_multianimal_pose_config_files,
                 )
-                keys2save = [
-                    "dataset",
-                    "num_joints",
-                    "all_joints",
-                    "all_joints_names",
-                    "net_type",
-                    "multi_stage",
-                    "init_weights",
-                    "global_scale",
-                    "location_refinement",
-                    "locref_stdev",
-                    "dataset_type",
-                    "partaffinityfield_predict",
-                    "pairwise_predict",
-                    "partaffinityfield_graph",
-                    "num_limbs",
-                    "dataset_type",
-                    "num_idchannel",
-                ]
 
-                MakeTest_pose_yaml(
-                    trainingdata,
-                    keys2save,
-                    path_test_config,
-                    nmsradius=5.0,
-                    minconfidence=0.01,
-                    sigma=1,
-                    locref_smooth=False,
-                )  # setting important def. values for inference
+                _tf_create_multianimal_pose_config_files(
+                    datafilename=datafilename,
+                    metadatafilename=metadatafilename,
+                    multianimalbodyparts=multianimalbodyparts,
+                    uniquebodyparts=uniquebodyparts,
+                    model_path=model_path,
+                    project_path=str(cfg["project_path"]),
+                    net_type=net_type,
+                    multi_stage=multi_stage,
+                    partaffinityfield_graph=partaffinityfield_graph,
+                    partaffinityfield_predict=partaffinityfield_predict,
+                    dataset_type=dataset_type,
+                    crop_size=crop_size,
+                    crop_sampling=crop_sampling,
+                    cfg=cfg,
+                    path_train_config=path_train_config,
+                    defaultconfigfile=defaultconfigfile,
+                    path_test_config=path_test_config,
+                )
             elif engine == Engine.PYTORCH:
                 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
                     make_pytorch_pose_config,

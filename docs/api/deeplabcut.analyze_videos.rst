@@ -1,1 +1,1 @@
-.. autofunction:: deeplabcut.compat.analyze_videos
+.. autofunction:: deeplabcut.analyze_videos

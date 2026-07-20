@@ -18,16 +18,13 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import yaml
 from PIL import Image
 
-import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
-from deeplabcut.core.config import ProjectConfig, read_config, write_config
-from deeplabcut.core.engine import Engine
+from deeplabcut.core.config import ProjectConfig, get_yaml_loader, read_config, write_config
+from deeplabcut.core.engine import Engine, get_available_aug_methods, get_project_engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
-    auxfun_models,
     auxfun_multianimal,
     auxiliaryfunctions,
     conversioncode,
@@ -342,7 +339,7 @@ def ParseYaml(configfile: str | Path):
     docs = []
     for raw_doc in raw.split("\n---"):
         try:
-            docs.append(yaml.load(raw_doc, Loader=yaml.SafeLoader))
+            docs.append(get_yaml_loader().load(raw_doc))
         except SyntaxError:
             docs.append(raw_doc)
     return docs
@@ -934,7 +931,7 @@ def create_training_dataset(
         engine (Engine, optional): Whether to create a pose config for a Tensorflow or
             PyTorch model. Defaults to the value specified in the project configuration
             file. If no engine is specified for the project, defaults to
-            ``deeplabcut.compat.DEFAULT_ENGINE``.
+            ``deeplabcut.core.DEFAULT_ENGINE``.
 
         ctd_conditions (int | str | Path | tuple[int, str] | tuple[int, int] | None,
             optional): If using a conditional-top-down (CTD) net_type, this argument
@@ -1033,7 +1030,7 @@ def create_training_dataset(
         scorer = cfg["scorer"]
         project_path = cfg["project_path"]
         if engine is None:
-            engine = compat.get_project_engine(cfg)
+            engine = get_project_engine(cfg)
 
         # Create path for training sets & store data there
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
@@ -1071,7 +1068,7 @@ def create_training_dataset(
                 top_down = True
                 net_type = net_type[len("top_down_") :]
 
-        augmenters = compat.get_available_aug_methods(engine)
+        augmenters = get_available_aug_methods(engine)
         default_augmenter = augmenters[0]
         if augmenter_type is None:
             augmenter_type = cfg.get("default_augmenter", default_augmenter)
@@ -1116,11 +1113,14 @@ def create_training_dataset(
             defaultconfigfile = dlcparent_path / "pose_cfg.yaml"
         elif posecfg_template:
             defaultconfigfile = posecfg_template
-
         if engine == Engine.PYTORCH:
             model_path = dlcparent_path
         else:
-            model_path = auxfun_models.check_for_weights(net_type, dlcparent_path)
+            from deeplabcut.tensorflow_compat.dataset_management.create_single_animal import (
+                _tf_get_model_path,
+            )
+
+            model_path = _tf_get_model_path(net_type, dlcparent_path)
 
         Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
@@ -1154,11 +1154,18 @@ def create_training_dataset(
         for trainFraction, shuffle, (trainIndices, testIndices) in splits:
             if len(trainIndices) > 0:
                 if userfeedback:
-                    trainposeconfigfile, _, _ = compat.return_train_network_path(
+                    if engine == Engine.TF:
+                        from deeplabcut.pose_estimation_tensorflow.training import (
+                            return_train_network_path,
+                        )
+                    else:
+                        from deeplabcut.pose_estimation_pytorch.apis.utils import (
+                            return_train_network_path,
+                        )
+                    trainposeconfigfile, _, _ = return_train_network_path(
                         cfg_path,
                         shuffle=shuffle,
                         trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
-                        engine=engine,
                     )
                     if trainposeconfigfile.is_file():
                         askuser = input(
@@ -1223,62 +1230,24 @@ def create_training_dataset(
 
                 path_train_config = str(Path(cfg["project_path"]) / modelfoldername / "train" / engine.pose_cfg_name)
                 path_test_config = str(Path(cfg["project_path"]) / modelfoldername / "test" / "pose_cfg.yaml")
+
                 if engine == Engine.TF:
-                    if weight_init is not None:
-                        raise ValueError(
-                            "Weight initialization is not supported for TensorFlow engine. "
-                            "Pretrained weights are automatically downloaded."
-                        )
-                    items2change = {
-                        "dataset": datafilename,
-                        "engine": engine.aliases[0],
-                        "metadataset": metadatafilename,
-                        "num_joints": len(bodyparts),
-                        "all_joints": [[i] for i in range(len(bodyparts))],
-                        "all_joints_names": [str(bpt) for bpt in bodyparts],
-                        "init_weights": model_path,
-                        "project_path": str(cfg["project_path"]),
-                        "net_type": net_type,
-                        "dataset_type": augmenter_type,
-                    }
-
-                    items2drop = {}
-                    if augmenter_type == "scalecrop":
-                        # these values are dropped as scalecrop
-                        # doesn't have rotation implemented
-                        items2drop = {"rotation": 0, "rotratio": 0.0}
-                    # Also drop maDLC smart cropping augmentation parameters
-                    for key in [
-                        "pre_resize",
-                        "crop_size",
-                        "max_shift",
-                        "crop_sampling",
-                    ]:
-                        items2drop[key] = None
-
-                    trainingdata = MakeTrain_pose_yaml(
-                        items2change,
-                        path_train_config,
-                        defaultconfigfile,
-                        items2drop,
-                        save=(engine == Engine.TF),
+                    from deeplabcut.tensorflow_compat.dataset_management.create_single_animal import (
+                        _tf_create_pose_config_files,
                     )
 
-                    keys2save = [
-                        "dataset",
-                        "num_joints",
-                        "all_joints",
-                        "all_joints_names",
-                        "net_type",
-                        "init_weights",
-                        "global_scale",
-                        "location_refinement",
-                        "locref_stdev",
-                    ]
-                    MakeTest_pose_yaml(trainingdata, keys2save, path_test_config)
-                    print(
-                        "The training dataset is successfully created. Use the function"
-                        "'train_network' to start training. Happy training!"
+                    _tf_create_pose_config_files(
+                        datafilename=datafilename,
+                        metadatafilename=metadatafilename,
+                        bodyparts=bodyparts,
+                        model_path=model_path,
+                        project_path=str(cfg["project_path"]),
+                        net_type=net_type,
+                        augmenter_type=augmenter_type,
+                        path_train_config=path_train_config,
+                        defaultconfigfile=defaultconfigfile,
+                        path_test_config=path_test_config,
+                        weight_init=weight_init,
                     )
                 elif engine == Engine.PYTORCH:
                     from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
@@ -1674,7 +1643,7 @@ def create_training_dataset_from_existing_split(
         engine: Whether to create a pose config for a Tensorflow or PyTorch model.
             Defaults to the value specified in the project configuration file. If no
             engine is specified for the project, defaults to
-            ``deeplabcut.compat.DEFAULT_ENGINE``.
+            ``deeplabcut.core.engine.DEFAULT_ENGINE``.
 
         ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None, default = None,
             If using a conditional-top-down (CTD) net_type, this argument should be

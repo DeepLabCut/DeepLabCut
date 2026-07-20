@@ -34,7 +34,7 @@ from PySide6.QtWidgets import (
 
 import deeplabcut
 from deeplabcut import __version__ as DLC_VERSION
-from deeplabcut import auxiliaryfunctions, compat
+from deeplabcut import auxiliaryfunctions
 from deeplabcut.core.debug import install_debug_recorder
 from deeplabcut.core.engine import Engine
 from deeplabcut.gui import components
@@ -222,6 +222,24 @@ class MainWindow(QMainWindow):
                 msg.setWindowIcon(icon)
                 msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
                 msg.exec_()
+                return
+            else:
+                msg = QtWidgets.QMessageBox()
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setText("TensorFlow support is deprecated.")
+                msg.setInformativeText(
+                    "TensorFlow support will be removed in a future release.\n\n"
+                    "Your project config and annotated data are fully compatible with PyTorch. "
+                    "We recommend switching to the PyTorch engine.\n\n"
+                    "See the docs for more information:\n"
+                    "https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html"
+                )
+                msg.setWindowTitle("TensorFlow Deprecated")
+                msg.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+                msg.button(QtWidgets.QMessageBox.Ok).setText("Continue with TensorFlow")
+                msg.button(QtWidgets.QMessageBox.Cancel).setText("Switch to PyTorch")
+                if msg.exec_() == QtWidgets.QMessageBox.Cancel:
+                    return
 
         self._engine = e
         self.engine_change.emit(e)
@@ -255,7 +273,7 @@ class MainWindow(QMainWindow):
     def pose_cfg_path(self) -> Path:
         try:
             return Path(
-                compat.return_train_network_path(
+                deeplabcut.return_train_network_path(
                     self.config_path,
                     shuffle=int(self.shuffle_value),
                     trainingsetindex=int(self.trainingset_index),
@@ -269,7 +287,7 @@ class MainWindow(QMainWindow):
     def models_folder(self) -> Path:
         try:
             return Path(
-                compat.return_train_network_path(
+                deeplabcut.return_train_network_path(
                     self.config_path,
                     shuffle=int(self.shuffle_value),
                     trainingsetindex=int(self.trainingset_index),

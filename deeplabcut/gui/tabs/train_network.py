@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
 
-import deeplabcut.compat as compat
+from deeplabcut.api.pose_estimation import train_network
 from deeplabcut.core.engine import Engine
 from deeplabcut.gui.components import (
     DefaultTab,
@@ -135,7 +135,7 @@ class TrainNetwork(DefaultTab):
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
         layout = QtWidgets.QVBoxLayout()
-        label = QtWidgets.QLabel(compat.train_network.__doc__, self)
+        label = QtWidgets.QLabel(train_network.__doc__, self)
         scroll = QtWidgets.QScrollArea()
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -236,7 +236,7 @@ class TrainNetwork(DefaultTab):
             if detector_to_start_training_from is not None:
                 kwargs["detector_path"] = detector_to_start_training_from
 
-        compat.train_network(config_path, shuffle, **kwargs)
+        train_network(config_path, shuffle, **kwargs)
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText("The network is now trained and ready to evaluate.")
