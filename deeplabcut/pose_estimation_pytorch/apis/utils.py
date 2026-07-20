@@ -29,8 +29,8 @@ from torchvision.models.detection import (
 from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import deprecated
 from deeplabcut.core.engine import Engine
+from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import ConditionsModelConfig
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
-from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import (
     build_dlc_dataframe_columns,
@@ -809,7 +809,7 @@ def get_pose_inference_runner(
     max_individuals: int | None = None,
     transform: A.BaseCompose | None = None,
     dynamic: DynamicCropper | None = None,
-    cond_provider: CondFromModel | None = None,
+    cond_provider: ConditionsModelConfig | None = None,
     ctd_tracking: bool | CTDTrackingConfig = False,
     inference_cfg: InferenceConfig | dict | None = None,
 ) -> PoseInferenceRunner:
@@ -827,8 +827,10 @@ def get_pose_inference_runner(
             cropping should not be used. Should only be used when creating inference
             runners for video pose estimation with batch size 1. For top-down pose
             estimation models, a `TopDownDynamicCropper` must be used.
-        cond_provider: Only for CTD models. If None, the CondProvider is created from
-            the pytorch_cfg.
+        cond_provider: Only for CTD models. A resolved ``ConditionsModelConfig`` for
+            the BU model used to generate conditions. Resolve shuffle / dict inputs
+            via ``ConditionsModelConfig.resolve_from_conditions()`` before calling
+            this function. File configs are not valid for live inference.
         ctd_tracking: Only for CTD models. Conditional top-down models can be used
             to directly track individuals. Poses from frame T are given as conditions
             for frame T+1. This also means a BU model is only needed to "initialize" the
