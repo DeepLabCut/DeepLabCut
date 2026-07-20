@@ -72,7 +72,8 @@ gui = [
   "pyside6; platform_system!='Linux' or platform_machine!='x86_64'",
   # Avoid 6.10.0 only on Linux x86_64 (fails for older glib versions)
   "pyside6<6.10; platform_system=='Linux' and platform_machine=='x86_64'",
-  "qdarkstyle==3.1",
+  "qdarkstyle==3.1; platform_system=='Linux' and platform_machine=='x86_64'",
+  "qdarkstyle>=3.1; platform_system!='Linux' or platform_machine!='x86_64'",
 ]
 openvino = [ "openvino-dev==2022.1" ]
 docs = [
