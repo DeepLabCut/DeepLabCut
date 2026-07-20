@@ -309,7 +309,7 @@ class MainWindow(QMainWindow):
     def video_type(self, ext):
         self.videotype = ext
         self.video_type_.emit(ext)
-        self.logger.info(f"Video type set to {self.video_type}")
+        self.logger.debug(f"Video type set to {self.video_type}")
 
     @property
     def video_files(self):
@@ -600,7 +600,7 @@ class MainWindow(QMainWindow):
         """
         self.files.clear()  # Reset the set to be empty
         self.video_files_.emit(self.files)  # Emit the empty set
-        self.logger.info("All video files have been cleared.")
+        self.logger.debug("All video files have been cleared.")
 
     def window_set(self):
         WINDOW_RESIZE_FACTOR = 0.8

@@ -74,7 +74,8 @@ class TrainNetwork(DefaultTab):
             self.resume_from_snapshot_label.show()
             self.snapshot_selection_widget.show()
             # Display detector snapshot selection widget only if in Top-Down mode
-            if self._shuffle_display.pose_cfg.get("method", "").lower() == "td":
+            pose_cfg = self._shuffle_display.pose_cfg or {}
+            if str(pose_cfg.get("method") or "").lower() == "td":
                 self.detector_snapshot_selection_widget.show()
             else:
                 self.detector_snapshot_selection_widget.hide()
