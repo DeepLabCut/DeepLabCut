@@ -215,7 +215,15 @@ def test_assembler_with_unique_bodypart(real_assemblies_montblanc, test_data_dir
     assemblies_gt = np.concatenate(
         [ass.xy for assemblies in real_assemblies_montblanc[0].values() for ass in assemblies]
     )
-    np.testing.assert_equal(assemblies, assemblies_gt)
+
+    # Individuals are interchangeable in multi-animal assembly, so the order of
+    # equally-scored assemblies within a frame is arbitrary and depends on sort
+    # tie-breaking, which changed in NumPy 2.0. Compare the two point sets in a
+    # canonical, order-independent order (lexsort keeps NaN rows aligned).
+    def _canonical(a):
+        return a[np.lexsort((a[:, 1], a[:, 0]))]
+
+    np.testing.assert_equal(_canonical(assemblies), _canonical(assemblies_gt))
 
 
 def test_assembler_with_identity(tmpdir_factory, real_assemblies, test_data_dir):
