@@ -181,7 +181,8 @@ def _calc_separability(
     if metric == "jeffries":
         sep = np.sqrt(2 * (1 - np.sum(np.sqrt(hist_left * hist_right))))  # Jeffries-Matusita distance
     else:
-        sep = np.trapz(np.cumsum(hist_left), tpr)
+        # np.trapezoid requires NumPy 2.0+; drop the np.trapz fallback once NumPy 1 is unsupported
+        sep = (np.trapezoid if hasattr(np, "trapezoid") else np.trapz)(np.cumsum(hist_left), tpr)
     if max_sensitivity:
         threshold = bins[max(1, np.argmax(tpr > 0))]
     else:
