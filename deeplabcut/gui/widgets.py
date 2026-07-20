@@ -10,6 +10,7 @@
 #
 import ast
 import os
+from pathlib import Path
 from queue import Queue
 
 import napari
@@ -89,8 +90,8 @@ class DragDropListView(QtWidgets.QListView):
             state = QtCore.Qt.Unchecked
         return state, n_checked
 
-    def add_item(self, path):
-        item = QStandardItem(path)
+    def add_item(self, path: str | Path):
+        item = QStandardItem(os.fspath(Path(path).absolute()))
         item.setCheckable(True)
         item.setCheckState(QtCore.Qt.Checked)
         self.model.appendRow(item)
@@ -106,14 +107,13 @@ class DragDropListView(QtWidgets.QListView):
 
     def dropEvent(self, event):
         for url in event.mimeData().urls():
-            path = url.toLocalFile()
-            if os.path.isfile(path):
+            path = Path(url.toLocalFile())
+            if path.is_file():
                 self.add_item(path)
-            elif os.path.isdir(path):
-                for root, _, files in os.walk(path):
-                    for file in files:
-                        if not file.startswith("."):
-                            self.add_item(os.path.join(root, file))
+            elif path.is_dir():
+                for child in path.rglob("*"):
+                    if child.is_file() and not child.name.startswith("."):
+                        self.add_item(child)
 
 
 class ItemSelectionFrame(QtWidgets.QFrame):
@@ -275,7 +275,7 @@ class ContextMenu(QtWidgets.QMenu):
         creator.created.connect(self.parent.insert)
 
     def fix_path(self):
-        self.current_item.setText(1, os.path.split(self.parent.filename)[0])
+        self.current_item.setText(1, os.fspath(Path(self.parent.filename).parent))
 
 
 class DictViewer(QtWidgets.QWidget):
@@ -353,7 +353,7 @@ class DictViewer(QtWidgets.QWidget):
             pass
         except SyntaxError:
             # Slashes also raise the error, but no need to print anything since it is then likely to be a path
-            if os.path.sep not in val:
+            if "/" not in val and "\\" not in val:
                 print("Consider removing leading zeros or spaces in the string.")
         return val
 
@@ -427,22 +427,23 @@ class DictViewer(QtWidgets.QWidget):
 
 
 class ConfigEditor(QtWidgets.QDialog):
-    def __init__(self, config, parent=None):
+    def __init__(self, config_path: str | Path, parent=None):
         super().__init__(parent)
-        self.config = config
-        if config.endswith("config.yaml") and not config.endswith("pytorch_config.yaml"):
+        self.config_path = Path(config_path).absolute()
+        config_name = self.config_path.name
+        if config_name == "config.yaml":
             self.read_func = auxiliaryfunctions.read_config
             self.write_func = auxiliaryfunctions.write_config
         else:
             self.read_func = auxiliaryfunctions.read_plainconfig
             self.write_func = auxiliaryfunctions.write_plainconfig
-        self.cfg = self.read_func(config)
+        self.cfg = self.read_func(self.config_path)
         self.parent = parent
         self.setWindowTitle("Configuration Editor")
         if parent is not None:
             self.setMinimumWidth(parent.screen_width // 2)
             self.setMinimumHeight(parent.screen_height // 2)
-        self.viewer = DictViewer(self.cfg, config, self)
+        self.viewer = DictViewer(self.cfg, self.config_path, self)
 
         self.save_button = QtWidgets.QPushButton("Save", self)
         self.save_button.setDefault(True)
@@ -462,7 +463,7 @@ class ConfigEditor(QtWidgets.QDialog):
             self.close()
 
     def accept(self):
-        self.write_func(self.config, self.cfg)
+        self.write_func(self.config_path, self.cfg)
         super().accept()
 
 

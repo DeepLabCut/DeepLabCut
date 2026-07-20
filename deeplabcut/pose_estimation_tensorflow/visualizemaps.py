@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 from skimage.transform import resize
@@ -31,37 +32,36 @@ def extract_maps(
 ):
     """Extracts the scoremap, locref, partaffinityfields (if available).
 
-    Returns a dictionary indexed by: trainingsetfraction, snapshotindex, and imageindex
-    for those keys, each item contains: (image,scmap,locref,paf,bpt names,partaffinity graph,
-    imagename, True/False if this image was in trainingset)
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        shuffle (integer): Integer specifying shuffle index of the training dataset. Defaults to 0.
+        trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use. By default the first
+            (note that TrainingFraction is a list in config.yaml).
+            This variable can also be set to "all". Defaults to 0.
+        gputouse (int, optional): GPU index (see nvidia-smi). Use None if no GPU.
+            Defaults to None.
+        rescale (bool, optional): Evaluate the model at the 'global_scale' variable
+            (as set in the test/pose_config.yaml file for a particular project).
+            I.e. every image will be resized according to that scale
+            and prediction will be compared to the resized ground truth.
+            The error will be reported in pixels at rescaled to the *original* size.
+            I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
+            on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
+            The evaluation images are also shown for the original size! Defaults to False.
+        Indices (list, optional): Image indices for which to extract maps. Defaults to None.
+        modelprefix (str, optional): Directory containing the deeplabcut models to use.
+            Defaults to "".
 
-    shuffle: integer
-        integers specifying shuffle index of the training dataset. The default is 0.
+    Returns:
+        dict: Dictionary indexed by trainingsetfraction, snapshotindex, and imageindex;
+            each item contains (image, scmap, locref, paf, bpt names, partaffinity graph,
+            imagename, True/False if this image was in trainingset).
 
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first
-        (note that TrainingFraction is a list in config.yaml).
-        This variable can also be set to "all".
+    Examples:
+        If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0:
 
-    rescale: bool, default False
-        Evaluate the model at the 'global_scale' variable
-        (as set in the test/pose_config.yaml file for a particular project).
-        I.e. every image will be resized according to that scale
-        and prediction will be compared to the resized ground truth.
-        The error will be reported in pixels at rescaled to the *original* size.
-        I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
-        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
-        The evaluation images are also shown for the original size!
-
-    Examples
-    --------
-    If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
-    >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
+            deeplabcut.extract_maps(configfile, 0, Indices=[0, 103])
     """
-    from pathlib import Path
 
     import numpy as np
     import pandas as pd
@@ -83,7 +83,7 @@ def extract_maps(
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
     #    tf.logging.set_verbosity(tf.logging.WARN)
 
-    start_path = os.getcwd()
+    start_path = Path.cwd()
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
 
@@ -105,16 +105,10 @@ def extract_maps(
 
     # Loading human annotatated data
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
-    Data = pd.read_hdf(
-        os.path.join(
-            cfg["project_path"],
-            str(trainingsetfolder),
-            "CollectedData_" + cfg["scorer"] + ".h5",
-        )
-    )
+    Data = pd.read_hdf(Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5"))
 
     # Make folder for evaluation
-    auxiliaryfunctions.attempt_to_make_folder(str(Path(cfg["project_path"]) / "evaluation-results"))
+    auxiliaryfunctions.attempt_to_make_folder(Path(cfg["project_path"]) / "evaluation-results")
 
     Maps = {}
     for trainFraction in TrainingFractions:
@@ -126,9 +120,8 @@ def extract_maps(
             trainingsetfolder, trainFraction, shuffle, cfg
         )
 
-        modelfolder = os.path.join(
-            cfg["project_path"],
-            str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+        modelfolder = Path(cfg["project_path"]) / str(
+            auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
         )
         path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
         # Load meta data
@@ -137,7 +130,7 @@ def extract_maps(
             trainIndices,
             testIndices,
             trainFraction,
-        ) = auxiliaryfunctions.load_metadata(os.path.join(cfg["project_path"], metadatafn))
+        ) = auxiliaryfunctions.load_metadata(Path(cfg["project_path"]) / metadatafn)
         try:
             dlc_cfg = load_config(str(path_test_config))
         except FileNotFoundError as e:
@@ -149,9 +142,8 @@ def extract_maps(
         dlc_cfg["batch_size"] = 1  # in case this was edited for analysis.
 
         # Create folder structure to store results.
-        evaluationfolder = os.path.join(
-            cfg["project_path"],
-            str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+        evaluationfolder = Path(cfg["project_path"]) / str(
+            auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
         )
         auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
@@ -175,12 +167,10 @@ def extract_maps(
         bptnames = [dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))]
 
         for snapindex in snapindices:
-            dlc_cfg["init_weights"] = os.path.join(
-                str(modelfolder), "train", Snapshots[snapindex]
+            dlc_cfg["init_weights"] = str(
+                Path(modelfolder) / "train" / Snapshots[snapindex]
             )  # setting weights to corresponding snapshot.
-            (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[
-                -1
-            ]  # read how many training siterations that corresponds to.
+            Path(dlc_cfg["init_weights"]).name.split("-")[-1]  # read how many training siterations that corresponds to.
 
             # Name for deeplabcut net (based on its parameters)
             # DLCscorer,DLCscorerlegacy =
@@ -204,7 +194,7 @@ def extract_maps(
 
             DATA = {}
             for imageindex, imagename in tqdm(Indices):
-                image = imread(os.path.join(cfg["project_path"], *imagename), mode="skimage")
+                image = imread(Path(cfg["project_path"]).joinpath(*imagename), mode="skimage")
 
                 if scale != 1:
                     image = imresize(image, scale)
@@ -277,46 +267,41 @@ def extract_save_all_maps(
     modelprefix="",
     dest_folder=None,
 ):
-    """
-    Extracts the scoremap, location refinement field and part affinity field prediction of the model. The maps
-    will be rescaled to the size of the input image and stored in the corresponding model folder in /evaluation-results.
+    """Extract scoremap, location refinement field and part affinity field predictions.
 
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Maps are rescaled to the size of the input image and stored in the corresponding
+    model folder in /evaluation-results.
 
-    shuffle: integer
-        integers specifying shuffle index of the training dataset. The default is 1.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        shuffle (integer): Integer specifying shuffle index of the training dataset. Defaults to 1.
+        trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use.
+            By default the first (note that TrainingFraction is a list in config.yaml).
+            This variable can also be set to "all". Defaults to 0.
+        comparisonbodyparts (list of bodyparts): Average error for those body parts only
+            (subset of all body parts). Defaults to "all".
+        extract_paf (bool, optional): Extract part affinity fields by default.
+            Note that turning it off will make the function much faster. Defaults to True.
+        all_paf_in_one (bool, optional): By default, all part affinity fields are displayed on a single frame.
+            If false, individual fields are shown on separate frames. Defaults to True.
+        gputouse (int, optional): GPU index (see nvidia-smi). Use None if no GPU.
+            Defaults to None.
+        rescale (bool, optional): Evaluate at global_scale from pose_config.yaml.
+            Defaults to False.
+        Indices (list, optional): Image indices for which to compute scmap/locref/paf.
+            Defaults to None.
+        modelprefix (str, optional): Directory containing the deeplabcut models to use.
+            Defaults to "".
+        dest_folder (string, optional): Destination folder for saved maps. Defaults to None.
 
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use.
-        By default the first (note that TrainingFraction is a list in config.yaml).
-        This variable can also be set to "all".
+    Examples:
+        Calculated maps for images 0, 1 and 33.
 
-    comparisonbodyparts: list of bodyparts, Default is "all".
-        The average error will be computed for those body parts only (Has to be a subset of the body parts).
-
-    extract_paf : bool
-        Extract part affinity fields by default.
-        Note that turning it off will make the function much faster.
-
-    all_paf_in_one : bool
-        By default, all part affinity fields are displayed on a single frame.
-        If false, individual fields are shown on separate frames.
-
-    Indices: default None
-        For which images shall the scmap/locref and paf be computed? Give a list of images
-
-    nplots_per_row: int, optional (default=None)
-        Number of plots per row in grid plots. By default, calculated to approximate a squared grid of plots
-
-    Examples
-    --------
-    Calculated maps for images 0, 1 and 33.
-    >>> deeplabcut.extract_save_all_maps('/analysis/project/reaching-task/config.yaml', shuffle=1,Indices=[0,1,33])
+            deeplabcut.extract_save_all_maps(
+                "/analysis/project/reaching-task/config.yaml", shuffle=1, Indices=[0, 1, 33]
+            )
 
     """
-
     from tqdm import tqdm
 
     from deeplabcut.utils.auxiliaryfunctions import (
@@ -334,14 +319,14 @@ def extract_save_all_maps(
     print("Saving plots...")
     for frac, values in data.items():
         if not dest_folder:
-            dest_folder = os.path.join(
-                cfg["project_path"],
-                str(get_evaluation_folder(frac, shuffle, cfg, modelprefix=modelprefix)),
-                "maps",
+            dest_folder = (
+                Path(cfg["project_path"])
+                / str(get_evaluation_folder(frac, shuffle, cfg, modelprefix=modelprefix))
+                / "maps"
             )
         attempt_to_make_folder(dest_folder)
         filepath = "{imname}_{map}_{label}_{shuffle}_{frac}_{snap}.png"
-        dest_path = os.path.join(dest_folder, filepath)
+        dest_path = str(Path(dest_folder) / filepath)
         for snap, maps in values.items():
             for imagenr in tqdm(maps):
                 (

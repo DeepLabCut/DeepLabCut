@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -24,7 +24,8 @@ from deeplabcut.modelzoo.generalized_data_converter.datasets.utils import (
 
 class SingleDLCPoseDataset(BaseDLCPoseDataset):
     """The philosophy is to assume the dataset is already created so this class is not
-    responsible for creating training dataset."""
+    responsible for creating training dataset.
+    """
 
     def __init__(self, proj_root, dataset_name, shuffle=1, modelprefix=""):
         super().__init__(proj_root, dataset_name, shuffle=shuffle, modelprefix=modelprefix)
@@ -108,9 +109,9 @@ class SingleDLCPoseDataset(BaseDLCPoseDataset):
             # I think width and height are important
 
             if isinstance(file_name, tuple):
-                image_path = os.path.join(self.proj_root, *list(file_name))
+                image_path = str(Path(self.proj_root).joinpath(*file_name))
             else:
-                image_path = os.path.join(self.proj_root, file_name)
+                image_path = str(Path(self.proj_root) / file_name)
 
             _, height, width = read_image_shape_fast(image_path)
 

@@ -72,13 +72,23 @@ gui = [
   "pyside6; platform_system!='Linux' or platform_machine!='x86_64'",
   # Avoid 6.10.0 only on Linux x86_64 (fails for older glib versions)
   "pyside6<6.10; platform_system=='Linux' and platform_machine=='x86_64'",
-  "qdarkstyle==3.1",
+  "qdarkstyle==3.1; platform_system=='Linux' and platform_machine=='x86_64'",
+  "qdarkstyle>=3.1; platform_system!='Linux' or platform_machine!='x86_64'",
 ]
 openvino = [ "openvino-dev==2022.1" ]
 docs = [
   "jupyter-book==1.0.4.post1",
-  "numpydoc",
   "sphinxcontrib-mermaid",
+]
+dev-docs = [
+  "black>=24",
+  "mike>=2.1",
+  "mkdocs>=1.6",
+  "mkdocs-api-autonav>=0.1",
+  "mkdocs-autorefs>=1.2",
+  "mkdocs-jupyter>=0.25",
+  "mkdocs-material[imaging]>=9.5",
+  "mkdocstrings[python]>=0.27",
 ]
 fmpose3d = [ "fmpose3d>=0.0.8" ]
 # Use only one of [tf, tf-cu11, tf-cu12, tf-latest]. Do not combine extras.
@@ -189,6 +199,8 @@ torch-backend = "auto"
 target-version = "py310"
 line-length = 120
 fix = true
+[tool.ruff.format]
+docstring-code-format = true
 [tool.ruff.lint]
 select = [ "E", "F", "B", "I", "UP", "PIE" ]
 ignore = [ "E741", "B007" ]
@@ -202,6 +214,14 @@ ignore = [ "E741", "B007" ]
 "*.ipynb" = [ "E402" ]
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+# Config for the docformatter pre-commit hook (currently disabled in favour of ruff).
+# Re-enable the hook in .pre-commit-config.yaml when large-scale docstring
+# reformatting is needed.
+[tool.docformatter]
+wrap-descriptions = 88
+wrap-summaries = 88
+black = true
 
 [tool.pyproject-fmt]
 max_supported_python = "3.12"
@@ -217,3 +237,8 @@ markers = [
   "functional: functional/integration-style tests",
   "deprecated: tests for deprecated APIs kept for backward-compatibility",
 ]
+
+[tool.mdformat]
+# Preserve prose line breaks; avoid spurious diffs from reflowing paragraphs.
+wrap = "no"
+end_of_line = "lf"

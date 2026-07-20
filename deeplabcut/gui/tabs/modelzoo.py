@@ -8,7 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 import webbrowser
 from functools import partial
 from pathlib import Path
@@ -16,11 +15,10 @@ from pathlib import Path
 import dlclibrary
 from PySide6 import QtWidgets
 from PySide6.QtCore import QRegularExpression, QSize, Qt, QTimer, Signal, Slot
-from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
+from PySide6.QtGui import QRegularExpressionValidator
 
 import deeplabcut
 from deeplabcut.core.engine import Engine
-from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.components import (
     DefaultTab,
     VideoSelectionWidget,
@@ -29,6 +27,7 @@ from deeplabcut.gui.components import (
     set_combo_items,
     set_layout_contents_visible,
 )
+from deeplabcut.gui.gui_assets import icon_from_resource, pixmap_from_resource
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import ClickableLabel
 from deeplabcut.pose_estimation_pytorch.apis.utils import TORCHVISION_DETECTORS
@@ -213,7 +212,7 @@ class ModelZoo(DefaultTab):
         )
         self.loc_line.setReadOnly(True)
         action = self.loc_line.addAction(
-            QIcon(os.path.join(BASE_DIR, "assets", "icons", "open2.png")),
+            icon_from_resource("icons", "open2.png"),
             QtWidgets.QLineEdit.TrailingPosition,
         )
         action.triggered.connect(self.select_folder)
@@ -251,7 +250,7 @@ class ModelZoo(DefaultTab):
         validator.validationChanged.connect(self._handle_validation_change)
         self.scales_line.setValidator(validator)
         tooltip_label = QtWidgets.QLabel()
-        tooltip_label.setPixmap(QPixmap(os.path.join(BASE_DIR, "assets", "icons", "help2.png")).scaledToWidth(30))
+        tooltip_label.setPixmap(pixmap_from_resource("icons", "help2.png").scaledToWidth(30))
         tooltip_label.setToolTip(
             "Approximate animal sizes in pixels, for spatial pyramid search. If left "
             "blank, defaults to video height +/- 50 pixels"
@@ -269,7 +268,7 @@ class ModelZoo(DefaultTab):
         self.adapt_checkbox.setStyleSheet("font-weight: bold; font-size: 16px; padding: 6px 12px;")
         # Add help button
         adapt_help_btn = QtWidgets.QToolButton()
-        adapt_help_btn.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", "help2.png")))
+        adapt_help_btn.setIcon(icon_from_resource("icons", "help2.png"))
         adapt_help_btn.setIconSize(QSize(24, 24))
         adapt_help_btn.setToolTip("What is video adaptation?")
 
@@ -387,7 +386,9 @@ class ModelZoo(DefaultTab):
                 self._update_adaptation_detector_visibility(self.model_combo.currentText())
 
     def select_folder(self):
-        dirname = QtWidgets.QFileDialog.getExistingDirectory(self, "Please select a folder", self.root.project_folder)
+        dirname = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Please select a folder", str(self.root.project_folder)
+        )
         if not dirname:
             return
 

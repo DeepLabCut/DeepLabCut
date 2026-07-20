@@ -12,7 +12,7 @@
 
 import numpy as np
 import tensorflow as tf
-from scipy.ndimage import measurements
+from scipy.ndimage import center_of_mass, label
 from skimage.feature import peak_local_max
 
 
@@ -38,8 +38,9 @@ def extract_cnn_output(outputs_np, cfg):
 
 
 def extract_cnn_outputmulti(outputs_np, cfg):
-    """extract locref + scmap from network
-    Dimensions: image batch x imagedim1 x imagedim2 x bodypart"""
+    """Extract locref + scmap from network
+    Dimensions: image batch x imagedim1 x imagedim2 x bodypart
+    """
     scmap = outputs_np[0]
     if cfg["location_refinement"]:
         locref = outputs_np[1]
@@ -262,8 +263,8 @@ def find_local_maxima(scmap, radius, threshold):
     peak_idx = peak_local_max(scmap, min_distance=radius, threshold_abs=threshold, exclude_border=False)
     grid = np.zeros_like(scmap, dtype=bool)
     grid[tuple(peak_idx.T)] = True
-    labels = measurements.label(grid)[0]
-    xy = measurements.center_of_mass(grid, labels, range(1, np.max(labels) + 1))
+    labels = label(grid)[0]
+    xy = center_of_mass(grid, labels, range(1, np.max(labels) + 1))
     return np.asarray(xy, dtype=int).reshape((-1, 2))
 
 

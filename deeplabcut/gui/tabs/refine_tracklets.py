@@ -8,7 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 from pathlib import Path
 
 from PySide6 import QtWidgets
@@ -201,7 +200,7 @@ class RefineTracklets(DefaultTab):
 
     def create_tracks(self):
         deeplabcut.stitch_tracklets(
-            self.root.config,
+            self.root.config_path,
             self.files,
             video_extensions=self.video_selection_widget.videotype_widget.currentText(),
             shuffle=self.shuffle.value(),
@@ -215,7 +214,7 @@ class RefineTracklets(DefaultTab):
 
         videotype = self.video_selection_widget.videotype_widget.currentText()
         deeplabcut.filterpredictions(
-            self.root.config,
+            self.root.config_path,
             self.files,
             video_extensions=videotype,
             shuffle=self.shuffle.value(),
@@ -235,7 +234,7 @@ class RefineTracklets(DefaultTab):
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         result = msg.exec_()
         if result == QtWidgets.QMessageBox.Yes:
-            deeplabcut.merge_datasets(self.root.config, forceiterate=None)
+            deeplabcut.merge_datasets(self.root.config_path, forceiterate=None)
             self.viz.export_to_training_data()
 
     def refine_tracks(self):
@@ -248,11 +247,11 @@ class RefineTracklets(DefaultTab):
         video = list(self.files)[0]
         track_method = cfg.get("default_track_method", "ellipse")
         method = trackingutils.TRACK_METHODS[track_method]
-        dest = str(Path(video).parents[0])
+        dest = Path(video).parents[0]
         vname = Path(video).stem
-        datafile = os.path.join(dest, vname + DLCscorer + f"{method}.h5")
+        datafile = str(dest / (vname + DLCscorer + f"{method}.h5"))
         self.manager, self.viz = deeplabcut.refine_tracklets(
-            self.root.config,
+            self.root.config_path,
             datafile,
             video,
             min_swap_len=self.swap_length_widget.value(),

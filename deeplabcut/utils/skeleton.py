@@ -19,8 +19,8 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import logging
-import os
 import warnings
+from pathlib import Path
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -53,11 +53,10 @@ class SkeletonBuilder:
         self._ax = None
         self.df = None
         found = False
-        root = os.path.join(self.cfg["project_path"], "labeled-data")
-        for dir_ in os.listdir(root):
-            folder = os.path.join(root, dir_)
-            if os.path.isdir(folder) and not any(folder.endswith(s) for s in ("cropped", "labeled")):
-                self.df = pd.read_hdf(os.path.join(folder, f"CollectedData_{self.cfg['scorer']}.h5"))
+        root = Path(self.cfg["project_path"]) / "labeled-data"
+        for folder in root.iterdir():
+            if folder.is_dir() and not any(folder.name.endswith(s) for s in ("cropped", "labeled")):
+                self.df = pd.read_hdf(folder / f"CollectedData_{self.cfg['scorer']}.h5")
                 self.df = drop_likelihood_columns(self.df)
                 row, col = self.pick_labeled_frame()
                 if "individuals" in self.df.columns.names:
@@ -82,7 +81,7 @@ class SkeletonBuilder:
         if isinstance(row, str):
             sep = "/" if "/" in row else "\\"
             row = row.split(sep)
-        self.image = io.imread(os.path.join(self.cfg["project_path"], *row))
+        self.image = io.imread(Path(self.cfg["project_path"]).joinpath(*row))
         self.inds = set()
         self.segs = set()
         # Draw the skeleton if already existent

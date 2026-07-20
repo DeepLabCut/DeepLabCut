@@ -130,11 +130,12 @@ def mobilenet(
         prediction_fn- what prediction function to use.
         reuse-: whether to reuse variables (if reuse set to true, scope
         must be given).
+
     Returns:
       logits/endpoints pair
 
     Raises:
-      ValueError: On invalid arguments
+      ValueError: If arguments are invalid.
     """
     if conv_defs is None:
         conv_defs = V2_DEF

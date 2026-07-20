@@ -19,32 +19,32 @@ Licensed under GNU Lesser General Public License v3.0
 
 """
 
-import os
+import logging
 import sys
 
 import PySide6.QtWidgets as QtWidgets
 import qdarkstyle
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QPixmap
 
-from deeplabcut.gui import BASE_DIR
+from deeplabcut.gui.gui_assets import get_style_qss, icon_from_resource, pixmap_from_resource
+
+logger = logging.getLogger(__name__)
 
 
 def launch_dlc():
     app = QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(QIcon(os.path.join(BASE_DIR, "assets", "logo.png")))
+    app.setWindowIcon(icon_from_resource("logo.png"))
     screen_size = app.screens()[0].size()
-    pixmap = QPixmap(os.path.join(BASE_DIR, "assets", "welcome.png")).scaledToWidth(
-        int(0.7 * screen_size.width()), Qt.SmoothTransformation
-    )
+    pixmap = pixmap_from_resource("welcome.png").scaledToWidth(int(0.7 * screen_size.width()), Qt.SmoothTransformation)
     splash = QtWidgets.QSplashScreen(pixmap)
     splash.show()
 
-    stylefile = os.path.join(BASE_DIR, "style.qss")
-    with open(stylefile) as f:
-        app.setStyleSheet(f.read())
-
-    dark_stylesheet = qdarkstyle.load_stylesheet_pyside2()
+    app.setStyleSheet(get_style_qss())  # this gets overridden immediately?
+    try:
+        dark_stylesheet = qdarkstyle.load_stylesheet_pyside6()
+    except Exception as e:
+        logger.warning(f"Could not load qdarkstyle stylesheet for PySide6: {e}. Falling back to PySide2 stylesheet.")
+        dark_stylesheet = qdarkstyle.load_stylesheet_pyside2()
     app.setStyleSheet(dark_stylesheet)
 
     # Set up a logger and add an stdout handler.

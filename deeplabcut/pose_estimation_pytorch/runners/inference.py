@@ -288,7 +288,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         data: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict],
     ) -> None:
         """Prepares inputs for an image and adds them to the data ready to be
-        processed."""
+        processed.
+        """
         if isinstance(data, (str, Path, np.ndarray)):
             inputs, context = data, {}
         else:
@@ -519,7 +520,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         bu_runner: A runner for the BU model to run inference with. If no BU runner is
             given, conditions must be given in the context for the data. Otherwise an
             error will be raised during inference.
-        tracking: Whether to track using the CTD model. If
+        ctd_tracking: Whether to track using the CTD model. If
     """
 
     def __init__(
@@ -664,7 +665,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
 
         # Extract the conditions
         conds = predictions["bodyparts"][..., :3]
-        pred_mask = ~np.all(np.any(conds <= 0 | np.isnan(conds), axis=2), axis=1)
+        pred_mask = ~np.all(np.any((conds <= 0) | np.isnan(conds), axis=2), axis=1)
         if np.sum(pred_mask) > 0:
             conds = conds[pred_mask]
         else:
@@ -801,11 +802,12 @@ class CTDInferenceRunner(PoseInferenceRunner):
         else:
             self._prev_pose = None
             self._idx_to_id = None
-            self._idx_ages = None
+            self._ctd_track_ages = None
 
     def _merge_conditions(self, bu_cond: np.ndarray) -> np.ndarray:
         """Merges conditions made by a BU model with existing conditions from CTD
-        tracking."""
+        tracking.
+        """
         # prepare the BU conditions for matching
         bu_cond = bu_cond.copy()[:, :, :3]
         # mask low-quality keypoints

@@ -122,7 +122,7 @@ class ExtractOutlierFrames(DefaultTab):
         self.root.logger.info(f"Using {algorithm.upper()} algorithm for frame extraction")
 
     def extract_outlier_frames(self):
-        config = self.root.config
+        config_path = self.root.config_path
         shuffle = self.root.shuffle_value
         videos = self.files
         videotype = self.video_selection_widget.videotype_widget.currentText()
@@ -133,7 +133,7 @@ class ExtractOutlierFrames(DefaultTab):
 
         self.root.logger.debug(
             f"""Running extract outlier frames with options:
-        config: {config},
+        config_path: {config_path},
         shuffle: {shuffle},
         videos: {videos},
         video_extensions: {videotype},
@@ -142,7 +142,7 @@ class ExtractOutlierFrames(DefaultTab):
         """
         )
         deeplabcut.extract_outlier_frames(
-            config=config,
+            config=config_path,
             videos=videos,
             video_extensions=videotype,
             shuffle=shuffle,
@@ -166,4 +166,4 @@ class ExtractOutlierFrames(DefaultTab):
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         result = msg.exec_()
         if result == QtWidgets.QMessageBox.Yes:
-            deeplabcut.merge_datasets(self.root.config, forceiterate=None)
+            deeplabcut.merge_datasets(self.root.config_path, forceiterate=None)
