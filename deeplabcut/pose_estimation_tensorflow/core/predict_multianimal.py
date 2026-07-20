@@ -120,7 +120,8 @@ def compute_edge_costs(
         xy[..., 1],
         edge_inds.reshape((-1, 1)),
     ]
-    integ = np.trapz(y, xy[..., ::-1], axis=1)
+    # np.trapezoid requires NumPy 2.0+; drop the np.trapz fallback once NumPy 1 is unsupported
+    integ = (np.trapezoid if hasattr(np, "trapezoid") else np.trapz)(y, xy[..., ::-1], axis=1)
     affinities = np.linalg.norm(integ, axis=1).astype(np.float32)
     # unit_vecs = vecs / lengths[:, np.newaxis]
     # affinities = np.squeeze(y @ np.expand_dims(unit_vecs, axis=2)).sum(axis=1)
