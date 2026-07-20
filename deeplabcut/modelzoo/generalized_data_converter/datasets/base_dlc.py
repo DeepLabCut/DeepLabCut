@@ -32,7 +32,7 @@ class BaseDLCPoseDataset(BasePoseDataset):
         self.proj_root = proj_root
 
         if modelprefix:
-            config_file = Path(self.proj_root) / (modelprefix + "_config.yaml")
+            config_file = Path(self.proj_root) / f"{modelprefix}_config.yaml"
         else:
             config_file = Path(self.proj_root) / "config.yaml"
 

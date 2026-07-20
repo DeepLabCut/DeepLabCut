@@ -134,9 +134,9 @@ def attempt_to_make_folder(foldername, recursive=False):
         return
 
     if recursive:
-        foldername.mkdir(parents=True)
+        foldername.mkdir(parents=True, exist_ok=True)
     else:
-        foldername.mkdir()
+        foldername.mkdir(exist_ok=True, parents=True)
 
 
 def read_pickle(filename):
@@ -642,7 +642,7 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):
         stem = Path(file).stem.replace("_filtered", "")
-        starts_by_scorer = file.startswith((videoname + scorer, videoname + scorer_legacy))
+        starts_by_scorer = Path(file).name.startswith((videoname + scorer, videoname + scorer_legacy))
         if tracker:
             matches_tracker = stem.endswith(tracker)
         else:

@@ -282,7 +282,7 @@ def convert2_maDLC(config: str | Path, userfeedback=True, forceindividual=None):
 
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
             fn = folder / ("CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(str(fn) + ".h5")
+            Data = pd.read_hdf(fn.with_suffix(".h5"))
             conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
@@ -341,13 +341,13 @@ def convert2_maDLC(config: str | Path, userfeedback=True, forceindividual=None):
                     dataFrame = pd.concat([dataFrame, frame], axis=1)
 
             Data.to_hdf(
-                fn + "singleanimal.h5",
+                fn.with_name(fn.name + "singleanimal.h5"),
                 key="df_with_missing",
             )
-            Data.to_csv(fn + "singleanimal.csv")
+            Data.to_csv(fn.with_name(fn.name + "singleanimal.csv"))
 
-            dataFrame.to_hdf(fn + ".h5", key="df_with_missing")
-            dataFrame.to_csv(fn + ".csv")
+            dataFrame.to_hdf(fn.with_suffix(".h5"), key="df_with_missing")
+            dataFrame.to_csv(fn.with_suffix(".csv"))
 
 
 def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
@@ -370,7 +370,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
 
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
             fn = folder / ("CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(str(fn) + ".h5")
+            Data = pd.read_hdf(fn.with_suffix(".h5"))
             conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
@@ -413,16 +413,16 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
                 Data.to_hdf(
-                    fn + "multianimal.h5",
+                    fn.with_name(fn.name + "multianimal.h5"),
                     key="df_with_missing",
                 )
-                Data.to_csv(fn + "multianimal.csv")
+                Data.to_csv(fn.with_name(fn.name + "multianimal.csv"))
 
                 DataFrame.to_hdf(
-                    fn + ".h5",
+                    fn.with_suffix(".h5"),
                     key="df_with_missing",
                 )
-                DataFrame.to_csv(fn + ".csv")
+                DataFrame.to_csv(fn.with_suffix(".csv"))
             elif target is None or target == "multi":
                 print("This is a single animal data set, converting to multi...", folder)
                 for prfxindex, prefix in enumerate(prefixes):
@@ -500,16 +500,16 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
                 Data.to_hdf(
-                    fn + "singleanimal.h5",
+                    fn.with_name(fn.name + "singleanimal.h5"),
                     key="df_with_missing",
                 )
-                Data.to_csv(fn + "singleanimal.csv")
+                Data.to_csv(fn.with_name(fn.name + "singleanimal.csv"))
 
                 DataFrame.to_hdf(
-                    fn + ".h5",
+                    fn.with_suffix(".h5"),
                     key="df_with_missing",
                 )
-                DataFrame.to_csv(fn + ".csv")
+                DataFrame.to_csv(fn.with_suffix(".csv"))
 
 
 def form_default_inferencecfg(cfg):
