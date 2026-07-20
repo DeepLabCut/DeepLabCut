@@ -354,8 +354,3 @@ def guarantee_multiindex_rows(df):
         df.index = df.index.set_levels(df.index.levels[1].astype(str), level=1)
     except AttributeError:
         pass
-
-
-def robust_split_path(s):
-    sep = "/" if "/" in s else "\\"
-    return tuple(s.split(sep))

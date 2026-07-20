@@ -28,7 +28,6 @@ from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import BasePoseDat
 from deeplabcut.pose_estimation_tensorflow.datasets.utils import Batch, DataItem
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoReader, imread
-from deeplabcut.utils.conversioncode import robust_split_path
 
 
 @PoseDatasetFactory.register("multi-animal-imgaug")
@@ -102,9 +101,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             item = DataItem()
             item.image_id = i
             im_path = sample["image"]
-            if isinstance(im_path, str):
-                im_path = robust_split_path(im_path)
-            item.im_path = str(Path(*im_path))
+            item.im_path = str(Path(*im_path) if isinstance(im_path, list) else Path(im_path))
             item.im_size = sample["size"]
             if "joints" in sample.keys():
                 Joints = sample["joints"]

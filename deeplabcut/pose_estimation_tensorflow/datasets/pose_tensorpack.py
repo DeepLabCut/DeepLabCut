@@ -44,8 +44,6 @@ from tensorpack.dataflow.imgaug.transform import CropTransform
 from tensorpack.dataflow.parallel import MultiProcessRunner, MultiProcessRunnerZMQ
 from tensorpack.utils.utils import get_rng
 
-from deeplabcut.utils.conversioncode import robust_split_path
-
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
 from .utils import Batch, data_to_input
@@ -116,11 +114,8 @@ class Pose(RNGDataFlow):
             item.image_id = i
             base = str(self.cfg["project_path"])
             im_path = sample[0][0]
-            if isinstance(im_path, str):
-                im_path = robust_split_path(im_path)
-            else:
-                im_path = [s.strip() for s in im_path]
-            item.im_path = str(Path(base).joinpath(*im_path))
+            im_path = Path(*im_path) if isinstance(im_path, list) else Path(im_path)
+            item.im_path = str(Path(base) / im_path)
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]
