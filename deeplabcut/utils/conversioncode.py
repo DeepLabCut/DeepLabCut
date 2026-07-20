@@ -343,11 +343,9 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
 def guarantee_multiindex_rows(df):
     # Make paths platform-agnostic if they are not already
     if not isinstance(df.index, pd.MultiIndex):  # Backwards compatibility
-        path = df.index[0]
         try:
-            sep = "/" if "/" in path else "\\"
-            splits = tuple(df.index.str.split(sep))
-            df.index = pd.MultiIndex.from_tuples(splits)
+            splits = df.index.str.replace("\\", "/").str.split("/")
+            df.index = pd.MultiIndex.from_tuples([tuple(s) for s in splits])
         except TypeError:  #  Ignore numerical index of frame indices
             pass
 
