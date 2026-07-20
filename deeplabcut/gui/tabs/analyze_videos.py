@@ -13,7 +13,7 @@ from functools import partial
 from pathlib import Path
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 
 import deeplabcut
 from deeplabcut.core.config import ProjectConfig
@@ -53,6 +53,11 @@ class AnalyzeVideosOptions:
 class AnalyzeVideos(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super().__init__(root, parent, h1_description)
+
+        self._reload_timer = QTimer(self)
+        self._reload_timer.setSingleShot(True)
+        self._reload_timer.setInterval(0)
+        self._reload_timer.timeout.connect(self.root.reload_project_config)
 
         self._set_page()
 
@@ -265,7 +270,9 @@ class AnalyzeVideos(DefaultTab):
     def edit_config_file(self):
         if not self.root.config_path:
             return
-        editor = ConfigEditor(self.root.config_path)
+        config = self.root.config_path
+        editor = ConfigEditor(config, parent=self.root)
+        editor.accepted.connect(self._reload_timer.start)
         editor.show()
 
     def _collect_options(self) -> AnalyzeVideosOptions:
@@ -441,6 +448,7 @@ class AnalyzeVideos(DefaultTab):
         func = partial(self._run_pipeline, options, batches)
 
         self.worker, self.thread = move_to_separate_thread(func)
+        self.worker.error.connect(self.root.show_task_error)
         self.worker.finished.connect(lambda: self.analyze_videos_btn.setEnabled(True))
         self.worker.finished.connect(lambda: self.root._progress_bar.hide())
         self.thread.start()

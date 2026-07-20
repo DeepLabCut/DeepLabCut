@@ -15,6 +15,21 @@ from typing import Any
 
 from pydantic import ValidationError
 
+#: Exceptions that indicate a configuration could not be read or validated.
+CONFIG_LOAD_ERRORS = (
+    ValidationError,
+    FileNotFoundError,
+    PermissionError,
+    OSError,
+    TypeError,
+    ValueError,
+)
+
+_CUSTOM_MESSAGES: dict[str, str] = {
+    "extra_forbidden": "This setting is not supported by the installed DeepLabCut version.",
+    "missing": "This required setting is missing.",
+}
+
 
 @dataclass(frozen=True)
 class ConfigErrorReport:
@@ -71,15 +86,10 @@ def format_config_error(
         for detail in error.errors(include_url=False):
             location = _format_location(tuple(detail.get("loc", ())))
             error_type = detail.get("type")
-            message = detail.get(
-                "msg",
-                "Invalid value",
+            message = _CUSTOM_MESSAGES.get(
+                error_type,
+                detail.get("msg", "Invalid value"),
             )
-
-            if error_type == "extra_forbidden":
-                message = "This setting is not supported by the installed DeepLabCut version."
-            elif error_type == "missing":
-                message = "This required setting is missing."
 
             entry = f"• {location}: {message}"
 

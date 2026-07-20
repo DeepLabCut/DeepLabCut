@@ -432,7 +432,7 @@ class ConfigEditor(QtWidgets.QDialog):
         self.config_path = Path(config_path).absolute()
         config_name = self.config_path.name
         if config_name == "config.yaml":
-            self.read_func = auxiliaryfunctions.read_config
+            self.read_func = auxiliaryfunctions.read_plainconfig
             self.write_func = auxiliaryfunctions.write_config
         else:
             self.read_func = auxiliaryfunctions.read_plainconfig
