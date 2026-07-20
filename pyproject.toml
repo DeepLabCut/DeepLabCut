@@ -160,8 +160,10 @@ dev = [
   "pre-commit",
   "pytest",
   "pytest-cov",
-  "pytest-qt",
   "ruff",
+]
+gui-dev = [
+  "pytest-qt",
 ]
 
 [tool.setuptools]
