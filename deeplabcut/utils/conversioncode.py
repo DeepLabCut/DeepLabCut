@@ -18,6 +18,7 @@ from tqdm import tqdm
 
 import deeplabcut as dlc
 from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 SUPPORTED_FILETYPES = "csv", "nwb"
 
@@ -207,8 +208,7 @@ def adapt_labeled_data_to_new_project(
     convertcsv2h5(config_path, userfeedback=userfeedback)
 
 
-# TODO: @deruyter92 2026-05-20: this function still uses grab_files_in_folder instead
-# of collect_video_paths and videotype instead of video_extensions.
+# TODO: @deruyter92 2026-05-20: this function uses videotype instead of video_extensions.
 def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos=False):
     """By default the output poses (when running analyze_videos) are stored as
     MultiIndex Pandas Array, which contains the name of the network, body part name, (x,
@@ -234,18 +234,17 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
-            h5_files = list(auxiliaryfunctions.grab_files_in_folder(Path(videos[0]).parent, "h5", relative=False))
+            h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5")
         else:
             h5_files = []
     else:
-        h5_files = list(auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False))
-        videos = auxiliaryfunctions.grab_files_in_folder(video_folder, videotype, relative=False)
+        h5_files = collect_video_paths(video_folder, extensions=".h5")
+        videos = collect_video_paths(video_folder, extensions=videotype)
 
     _convert_h5_files_to("csv", None, h5_files, videos)
 
 
-# TODO: @deruyter92 2026-05-20: this function still uses grab_files_in_folder instead
-# of collect_video_paths and videotype instead of video_extensions.
+# TODO: @deruyter92 2026-05-20: this function uses videotype instead of video_extensions.
 def analyze_videos_converth5_to_nwb(
     config: str | Path,
     video_folder: str | Path,
@@ -272,12 +271,12 @@ def analyze_videos_converth5_to_nwb(
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
-            h5_files = list(auxiliaryfunctions.grab_files_in_folder(Path(videos[0]).parent, "h5", relative=False))
+            h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5")
         else:
             h5_files = []
     else:
-        h5_files = list(auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False))
-        videos = auxiliaryfunctions.grab_files_in_folder(video_folder, videotype, relative=False)
+        h5_files = collect_video_paths(video_folder, extensions=".h5")
+        videos = collect_video_paths(video_folder, extensions=videotype)
 
     _convert_h5_files_to("nwb", config, h5_files, videos)
 
@@ -297,18 +296,18 @@ def _convert_h5_files_to(filetype, config, h5_files, videos):
             raise ImportError("The package `dlc2nwb` is missing. Please run `pip install dlc2nwb`.") from e
 
     for video in videos:
-        if "_labeled" in video:
+        if "_labeled" in video.name:
             continue
-        vname = Path(video).stem
+        vname = video.stem
         for file in h5_files:
-            if vname in file:
-                scorer = file.split(vname)[1].split(".h5")[0]
+            if vname in file.name:
+                scorer = file.stem.removeprefix(vname)
                 if "DLC" in scorer or "DeepCut" in scorer:
                     print("Found output file for scorer:", scorer)
                     print(f"Converting {file}...")
                     if filetype == "csv":
                         df = pd.read_hdf(file)
-                        df.to_csv(file.replace(".h5", ".csv"))
+                        df.to_csv(file.with_suffix(".csv"))
                     else:
                         convert_h5_to_nwb(config, file)
 
@@ -323,10 +322,7 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
     """
     AnnotationData = []
     data_path = Path(cfg["project_path"], "labeled-data")
-    annotationfolders = []
-    for elem in auxiliaryfunctions.grab_files_in_folder(data_path, relative=False):
-        if Path(elem).is_dir():
-            annotationfolders.append(elem)
+    annotationfolders = [d for d in data_path.iterdir() if d.is_dir()]
     print("The following folders were found:", annotationfolders)
     for folder in annotationfolders:
         filename = str(Path(folder) / ("CollectedData_" + cfg["scorer"] + ".h5"))

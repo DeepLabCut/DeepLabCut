@@ -169,12 +169,13 @@ def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv
     """Save predicted data as h5 file and metadata as pickle file; created by
     predict_videos.py.
     """
+    dataname = Path(dataname)
     DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
     if save_as_csv:
         print("Saving csv poses!")
-        DataMachine.to_csv(dataname.split(".h5")[0] + ".csv")
+        DataMachine.to_csv(dataname.with_suffix(".csv"))
     DataMachine.to_hdf(dataname, key="df_with_missing", format="table", mode="w")
-    with Path(dataname.split(".h5")[0] + "_meta.pickle").open("wb") as f:
+    with dataname.with_name(dataname.stem + "_meta.pickle").open("wb") as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
@@ -202,8 +203,7 @@ def load_metadata(metadatafile: str | Path):
         return trainingdata_details, trainIndices, testIndices, testFraction_data
 
 
-# TODO: @deruyter92 2026-05-20: this function could be updated to match the
-# signature of collect_video_paths, allowing for multiple extensions.
+@deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.1")
 def grab_files_in_folder(folder, ext="", relative=True):
     """Return the paths of files with extension *ext* present in *folder*."""
     for file in Path(folder).iterdir():
@@ -559,20 +559,20 @@ def check_if_post_processing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="
 
 
 def check_if_not_analyzed(destfolder, vname, DLCscorer, DLCscorerlegacy, flag="video"):
-    h5files = list(grab_files_in_folder(destfolder, "h5", relative=False))
+    h5files = collect_video_paths(destfolder, extensions=".h5")
     if not len(h5files):
-        dataname = str(Path(destfolder) / (vname + DLCscorer + ".h5"))
+        dataname = Path(destfolder) / (vname + DLCscorer + ".h5")
         return True, dataname, DLCscorer
 
     # Iterate over data files and stop as soon as one matching the scorer is found
     for h5file in h5files:
-        if vname + DLCscorer in Path(h5file).stem:
+        if vname + DLCscorer in h5file.stem:
             if flag == "video":
                 print("Video already analyzed!", h5file)
             elif flag == "framestack":
                 print("Frames already analyzed!", h5file)
             return False, h5file, DLCscorer
-        elif vname + DLCscorerlegacy in Path(h5file).stem:
+        elif vname + DLCscorerlegacy in h5file.stem:
             if flag == "video":
                 print("Video already analyzed!", h5file)
             elif flag == "framestack":
@@ -580,7 +580,7 @@ def check_if_not_analyzed(destfolder, vname, DLCscorer, DLCscorerlegacy, flag="v
             return False, h5file, DLCscorerlegacy
 
     # If there was no match...
-    dataname = str(Path(destfolder) / (vname + DLCscorer + ".h5"))
+    dataname = Path(destfolder) / (vname + DLCscorer + ".h5")
     return True, dataname, DLCscorer
 
 
@@ -640,9 +640,9 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
     tracker = TRACK_METHODS.get(track_method, "")
 
     candidates = []
-    for file in grab_files_in_folder(folder, "h5"):
-        stem = Path(file).stem.replace("_filtered", "")
-        starts_by_scorer = Path(file).name.startswith((videoname + scorer, videoname + scorer_legacy))
+    for file in collect_video_paths(folder, extensions=".h5"):
+        stem = file.stem.replace("_filtered", "")
+        starts_by_scorer = file.name.startswith((videoname + scorer, videoname + scorer_legacy))
         if tracker:
             matches_tracker = stem.endswith(tracker)
         else:
@@ -650,9 +650,9 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
         if all(
             (
                 starts_by_scorer,
-                "skeleton" not in file,
+                "skeleton" not in file.name,
                 matches_tracker,
-                (filtered and "filtered" in file) or (not filtered and "filtered" not in file),
+                (filtered and "filtered" in file.name) or (not filtered and "filtered" not in file.name),
             )
         ):
             candidates.append(file)
@@ -670,7 +670,7 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
     n_candidates = len(candidates)
     if n_candidates > 1:  # This should not be happening anyway...
         print(f"{n_candidates} possible data files were found: {candidates}.\nPicking the first by default...")
-    filepath = str(Path(folder) / candidates[0])
+    filepath = str(candidates[0])
     scorer = scorer if scorer in filepath else scorer_legacy
     return filepath, scorer, suffix
 
