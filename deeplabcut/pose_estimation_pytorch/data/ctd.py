@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import json
 import pickle
-from abc import ABC, abstractmethod
 from pathlib import Path
 
 import numpy as np
@@ -23,77 +22,67 @@ from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
-class CondProvider(ABC):
-    """A class providing conditions for a CTD model."""
+def resolve_bu_shuffle(
+    config: str | Path,
+    shuffle: int,
+    trainset_index: int = 0,
+    modelprefix: str = "",
+    snapshot: str | None = None,
+    snapshot_index: int | None = None,
+) -> tuple[DLCLoader, Snapshot]:
+    """Resolves a DLC BU shuffle to a (loader, snapshot) pair.
 
-    @classmethod
-    @abstractmethod
-    def get_loader_and_snapshot(
-        cls,
-        config: str | Path,
-        shuffle: int,
-        trainset_index: int = 0,
-        modelprefix: str = "",
-        snapshot: str | None = None,
-        snapshot_index: int | None = None,
-    ) -> tuple[DLCLoader, Snapshot]:
-        """Creates a DLCLoader for the BU shuffle and the path to conditions snapshot.
+    Args:
+        config: Path to the DeepLabCut project config.
+        shuffle: The index of the shuffle for which to load data.
+        trainset_index: The index of the TrainingsetFraction for which to load data.
+        modelprefix: The modelprefix for the shuffle.
+        snapshot: The name of the snapshot to use. Takes priority over snapshot_index.
+        snapshot_index: The index of the snapshot to use. Defaults to -1 (last).
 
-        One of `snapshot` or `snapshot_index` must be provided.
+    Returns:
+        loader: The DLCLoader for the BU shuffle.
+        snapshot: The BU Snapshot to use for conditions.
 
-        Args:
-            config: Path to the DeepLabCut project config, or the project config itself
-            trainset_index: The index of the TrainingsetFraction for which to load data
-            shuffle: The index of the shuffle for which to load data.
-            modelprefix: The modelprefix for the shuffle.
-            snapshot: The name of the snapshot to use.
-            snapshot_index: The index of the snapshot to use. If `snapshot` is
-                provided, the `snapshot_index` is not used.
-
-        Returns:
-            loader: The DLCLoader for the BU shuffle.
-            snapshot: The BU Snapshot to use for conditions.
-
-        Raises:
-            ValueError: If the given shuffle is not for a BU model.
-        """
-        loader = DLCLoader(
-            config,
-            trainset_index=trainset_index,
-            shuffle=shuffle,
-            modelprefix=modelprefix,
+    Raises:
+        ValueError: If the given shuffle is not for a BU model.
+    """
+    loader = DLCLoader(
+        config,
+        trainset_index=trainset_index,
+        shuffle=shuffle,
+        modelprefix=modelprefix,
+    )
+    if loader.pose_task != Task.BOTTOM_UP:
+        raise ValueError(
+            "Conditions can only be loaded from shuffles for bottom-up models, but "
+            f"shuffle {shuffle} has task {loader.pose_task} (config={config}, "
+            f"trainset_index={trainset_index}, modelprefix={modelprefix})."
         )
-        if loader.pose_task != Task.BOTTOM_UP:
-            raise ValueError(
-                "Conditions can only be loaded from shuffles for bottom-up models, but "
-                f"shuffle {shuffle} has task {loader.pose_task} (config={config}, "
-                f"trainset_index={trainset_index}, modelprefix={modelprefix})."
-            )
 
-        if snapshot is not None:
-            snapshot_path = loader.model_folder / snapshot
-            if not snapshot_path.exists():
-                raise ValueError(f"Snapshot file {snapshot_path} does not exist.")
-            bu_snapshot = Snapshot.from_path(snapshot_path)
+    if snapshot is not None:
+        snapshot_path = loader.model_folder / snapshot
+        if not snapshot_path.exists():
+            raise ValueError(f"Snapshot file {snapshot_path} does not exist.")
+        bu_snapshot = Snapshot.from_path(snapshot_path)
+    else:
+        if snapshot_index is None:
+            snapshot_index = -1
 
-        else:
-            if snapshot_index is None:
-                snapshot_index = -1
+        snapshots = loader.snapshots()
+        if len(snapshots) == 0:
+            raise ValueError(f"No snapshots found for shuffle={shuffle} in {loader.model_folder}")
 
-            snapshots = loader.snapshots()
-            if len(snapshots) == 0:
-                raise ValueError(f"No snapshots found for shuffle={shuffle} in {loader.model_folder}")
+        if snapshot_index > len(snapshots):
+            snapshot_str = "\n".join([f"  {i}: {s.path.name}" for i, s in enumerate(snapshots)])
+            raise ValueError(f"Snapshot index {snapshot_index} is out of range. Existing snapshots: {snapshot_str}")
 
-            if snapshot_index > len(snapshots):
-                snapshot_str = "\n".join([f"  {i}: {s.path.name}" for i, s in enumerate(snapshots)])
-                raise ValueError(f"Snapshot index {snapshot_index} is out of range. Existing snapshots: {snapshot_str}")
+        bu_snapshot = snapshots[snapshot_index]
 
-            bu_snapshot = snapshots[snapshot_index]
-
-        return loader, bu_snapshot
+    return loader, bu_snapshot
 
 
-class CondFromFile(CondProvider):
+class CondFromFile:
     """A class providing conditions for a CTD model from a file.
 
     Args:
@@ -112,7 +101,7 @@ class CondFromFile(CondProvider):
     ) -> None:
         if filepath is None:
             # Load the conditions filepath from the Shuffle
-            bu_loader, bu_snapshot = self.get_loader_and_snapshot(**kwargs)
+            bu_loader, bu_snapshot = resolve_bu_shuffle(**kwargs)
             bu_scorer = bu_loader.scorer(bu_snapshot)
             filepath = bu_loader.evaluation_folder / f"{bu_scorer}.h5"
             if not filepath.exists():
@@ -128,25 +117,6 @@ class CondFromFile(CondProvider):
             raise ValueError(f"Conditions file {filepath} does not exist. Please check the given path.")
 
         self.filepath = filepath
-
-    @classmethod
-    def get_loader_and_snapshot(
-        cls,
-        config: str | Path,
-        shuffle: int,
-        trainset_index: int = 0,
-        modelprefix: str = "",
-        snapshot: str | None = None,
-        snapshot_index: int | None = None,
-    ) -> tuple[DLCLoader, Snapshot]:
-        return super().get_loader_and_snapshot(
-            config=config,
-            shuffle=shuffle,
-            trainset_index=trainset_index,
-            modelprefix=modelprefix,
-            snapshot=snapshot,
-            snapshot_index=snapshot_index,
-        )
 
     def load_conditions(
         self,
@@ -440,65 +410,3 @@ class CondFromFile(CondProvider):
 
             parsed.append(pose)
         return parsed
-
-
-class CondFromModel(CondProvider):
-    """A class providing conditions for a CTD model from a BU model.
-
-    Attributes:
-        config_path: (Path)
-            The path to the `pytorch_config.yaml` for the BU model to use as conditions.
-        snapshot_path: (Path)
-            The path to the BU snapshot to use to generate conditions for the CTD model.
-        scorer: str
-            The scorer name for the BU model. This can be used to look for files
-            containing conditions instead of recomputing them.
-
-    Args:
-        config_path: (Path)
-            The path to the `pytorch_config.yaml` for the BU model to use as conditions.
-        snapshot_path: (Path)
-            The path to the BU snapshot to use to generate conditions for the CTD model.
-        **kwargs: A `CondFromModel` instance can also be created from a DeepLabCut
-            shuffle. See examples for more information.
-    """
-
-    def __init__(
-        self,
-        config_path: str | Path | None = None,
-        snapshot_path: str | Path | None = None,
-        scorer: str | None = None,
-        **kwargs,
-    ) -> None:
-        if config_path is not None and snapshot_path is not None:
-            config_path = Path(config_path)
-            snapshot_path = Path(config_path)
-        elif "config" in kwargs and "shuffle" in kwargs:
-            bu_loader, snapshot = self.get_loader_and_snapshot(**kwargs)
-            config_path = bu_loader.model_config_path
-            snapshot_path = snapshot.path
-            if scorer is None:
-                scorer = bu_loader.scorer(snapshot)
-
-        self.config_path = config_path
-        self.snapshot_path = snapshot_path
-        self.scorer = scorer
-
-    @classmethod
-    def get_loader_and_snapshot(
-        cls,
-        config: str | Path,
-        shuffle: int,
-        trainset_index: int = 0,
-        modelprefix: str = "",
-        snapshot: str | None = None,
-        snapshot_index: int | None = None,
-    ) -> tuple[DLCLoader, Snapshot]:
-        return super().get_loader_and_snapshot(
-            config=config,
-            shuffle=shuffle,
-            trainset_index=trainset_index,
-            modelprefix=modelprefix,
-            snapshot=snapshot,
-            snapshot_index=snapshot_index,
-        )

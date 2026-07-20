@@ -15,59 +15,25 @@ from pathlib import Path
 import numpy as np
 
 import deeplabcut.pose_estimation_pytorch.data as data
-from deeplabcut.pose_estimation_pytorch.data.ctd import (
-    CondFromFile,
-    CondFromModel,
+from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
+    ConditionsConfig,
+    ConditionsFileConfig,
+    ConditionsModelConfig,
+    ConditionsShuffleConfig,
 )
+from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromFile
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
-def get_condition_provider(
-    condition_cfg: dict,
-    config: str | Path | None = None,
-) -> CondFromModel:
-    """Creates a CondFromModel conditions provider for a CTD model.
-
-    Args:
-        condition_cfg: The configuration for the condition provider. This is the
-            content of "inference": "conditions" in the pytorch_config
-        config: The path to the project config file, if the condition provider is
-            given as a snapshot from a DeepLabCut shuffle.
-
-    Returns:
-        The CondFromModel provider that can be used to generate conditions from a BU
-        model for a CTD model.
-    """
-    error_message = (
-        f"Misconfigured conditions in the pytorch_config: {condition_cfg}. Valid "
-        f"examples:\n" + _CONDITION_EXAMPLES_INFERENCE
-    )
-
-    if isinstance(condition_cfg, (str, Path)):
-        error_message = (
-            "To run inference with CTD models, you must specify the BU model you want to use to generate conditions.\n"
-        ) + error_message
-        raise ValueError(error_message)
-    # TODO @deruyter92: decide on typed / plain dict
-    elif not isinstance(condition_cfg, dict):
-        raise ValueError(error_message)
-
-    if config is not None:
-        condition_cfg["config"] = Path(config)
-
-    return CondFromModel(**condition_cfg)
-
-
 def get_conditions_provider_for_video(
-    cond_provider: CondFromModel,
+    cond_provider: ConditionsModelConfig,
     video: str | Path,
 ) -> CondFromFile | None:
-    """Tries to create a conditions loader.
+    """Tries to create a conditions loader from a pre-computed video predictions file.
 
     Args:
-        cond_provider: The CondFromModel condition provider that will be used. The
-            scorer must be set, or potential conditions files for the video cannot be
-            found.
+        cond_provider: The resolved ``ConditionsModelConfig``. The scorer must be
+            set, or pre-computed conditions files for the video cannot be found.
         video: The path to the video file for which to look for the conditions.
 
     Returns:
@@ -93,6 +59,16 @@ def get_conditions_provider_for_video(
 def load_conditions_for_evaluation(loader: data.Loader, images: list[str]) -> dict[str, np.ndarray]:
     """Loads the conditions needed to evaluate a CTD model.
 
+    Evaluation loads pre-computed BU predictions from disk via ``CondFromFile``.
+    Supported ``inference.conditions`` forms:
+
+    - ``ConditionsFileConfig`` / path string — load that predictions file
+    - ``ConditionsShuffleConfig`` / shuffle dict — resolve the BU shuffle's evaluation
+      ``.h5`` (project ``config.yaml`` is injected from the loader when missing)
+
+    ``ConditionsModelConfig`` is not valid here (that form is for live BU inference).
+    File-path conditions are evaluation-only and cannot be used with ``analyze_*``.
+
     Args:
         loader: The Loader for the CTD model to evaluate.
         images: A list of image paths to load conditions for.
@@ -108,33 +84,48 @@ def load_conditions_for_evaluation(loader: data.Loader, images: list[str]) -> di
 
     # prepare error message
     error_message = (
-        f"Misconfigured conditions in the pytorch_config: {condition_cfg}. Valid "
-        f"examples:\n" + _CONDITION_EXAMPLES_INFERENCE + _CONDITION_EXAMPLES_FROM_FILE
+        f"Misconfigured conditions in the pytorch_config: {condition_cfg}. "
+        f"Evaluation accepts file paths or shuffle refs (not a Model config). "
+        f"Valid examples:\n" + _CONDITION_EXAMPLES_SHUFFLE + _CONDITION_EXAMPLES_FROM_FILE
     )
 
-    if isinstance(condition_cfg, (str, Path)):
-        condition_filepath = Path(condition_cfg)
-        cond_provider = CondFromFile(filepath=condition_filepath)
-    # TODO @deruyter92: decide on typed / plain dict
-    elif isinstance(condition_cfg, dict):
-        if isinstance(loader, data.DLCLoader) and "config" not in condition_cfg:
-            condition_cfg["config"] = loader.project_root / "config.yaml"
+    try:
+        conditions = ConditionsConfig.build(condition_cfg)
+    except (TypeError, ValueError) as e:
+        raise ValueError(error_message) from e
 
-        cond_provider = CondFromFile(**condition_cfg)
+    if conditions is None:
+        raise ValueError(
+            "CTD evaluation requires conditions in the pytorch_config "
+            "(`inference.conditions`). Got None.\n" + error_message
+        )
+
+    if isinstance(conditions, ConditionsFileConfig):
+        cond_provider = CondFromFile(filepath=conditions.filepath)
+    elif isinstance(conditions, ConditionsShuffleConfig):
+        config = conditions.config
+        if config is None and isinstance(loader, data.DLCLoader):
+            config = loader.project_root / "config.yaml"
+        if config is None:
+            raise ValueError(
+                "Cannot load shuffle conditions for evaluation: no project config "
+                "available. Set 'config' in the shuffle conditions.\n" + error_message
+            )
+        cond_provider = CondFromFile(
+            config=config,
+            shuffle=conditions.shuffle,
+            trainset_index=conditions.trainset_index,
+            modelprefix=conditions.modelprefix,
+            snapshot=conditions.snapshot,
+            snapshot_index=conditions.snapshot_index,
+        )
     else:
         raise ValueError(error_message)
 
     return cond_provider.load_conditions(images, path_prefix=loader.image_root)
 
 
-_CONDITION_EXAMPLES_INFERENCE = """
-Example: Using a bottom-up model for conditions
-  ```
-  inference:
-    conditions:
-      config_path: /path/to/model-dir/pytorch_config.yaml
-      snapshot_path: /path/to/model-dir/snapshot-best-150.pth
-  ```
+_CONDITION_EXAMPLES_SHUFFLE = """
 Example: Loading the predictions for snapshot-250.pt of shuffle 1.
   ```
   inference:
