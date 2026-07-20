@@ -109,6 +109,7 @@ class MainWindow(QMainWindow):
         self.logger = logging.getLogger("deeplabcut.gui")
         self.console_logger = logging.getLogger("deeplabcut.gui.console")
 
+        self._config_monitor = None
         self.config_path: Path | None = None
         self.loaded = False
 
@@ -118,7 +119,6 @@ class MainWindow(QMainWindow):
         self.files: set[Path] = set()
 
         self._engine = Engine.PYTORCH
-        self._config_monitor = None
 
         # Update checks
         self._update_process = None
