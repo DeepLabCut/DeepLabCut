@@ -87,10 +87,10 @@ def _is_pose_config_validation_error(error: ValidationError) -> bool:
     """Return True if *error* was raised by a PoseConfig model."""
     try:
         from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig as _PoseConfig
-
-        return error.model is _PoseConfig
     except (ImportError, RuntimeError):
         return False
+
+    return getattr(error, "model", None) is _PoseConfig
 
 
 class ConfigErrorAction(Enum):
