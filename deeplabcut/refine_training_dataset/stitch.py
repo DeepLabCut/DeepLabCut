@@ -22,7 +22,6 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pandas as pd
-import scipy.linalg.interpolative as sli
 from networkx.algorithms.flow import preflow_push
 from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
@@ -384,13 +383,10 @@ class Tracklet:
         4/sqrt(3)
         """
         mat = self.to_hankelet()
-        if np.any(mat):  # check that the matrix contains non-zero entries
-            # nrows, ncols = mat.shape
-            # beta = nrows / ncols
-            # omega = 0.56 * beta ** 3 - 0.95 * beta ** 2 + 1.82 * beta + 1.43
-            _, s, _ = sli.svd(mat, min(10, min(mat.shape)))
-        else:
-            s = np.zeros(min(10, min(mat.shape)))
+        # nrows, ncols = mat.shape
+        # beta = nrows / ncols
+        # omega = 0.56 * beta ** 3 - 0.95 * beta ** 2 + 1.82 * beta + 1.43
+        s = np.linalg.svd(mat, compute_uv=False)[:10]
 
         # return np.argmin(s > omega * np.median(s))
         eigen = s**2
