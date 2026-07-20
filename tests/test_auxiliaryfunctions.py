@@ -17,7 +17,8 @@ from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
 
 
-def test_find_analyzed_data(tmpdir_factory):
+@pytest.mark.parametrize("path_type", [str, Path])
+def test_find_analyzed_data(tmpdir_factory, path_type):
     fake_folder = tmpdir_factory.mktemp("videos")
     SUPPORTED_VIDEOS = ["avi"]
     len(SUPPORTED_VIDEOS)
@@ -26,7 +27,7 @@ def test_find_analyzed_data(tmpdir_factory):
     WRONG_SCORER = "DLC_dlcrnetms5_multi_mouseApr11shuffle3_5"
 
     def _create_fake_file(filename):
-        path = str(fake_folder.join(filename))
+        path = Path(fake_folder) / filename
         with open(path, "w") as f:
             f.write("")
         return path
@@ -37,6 +38,8 @@ def test_find_analyzed_data(tmpdir_factory):
         _ = _create_fake_file(vname + SCORER + ".pickle")
         _ = _create_fake_file(vname + SCORER + ".h5")
 
+    # Test for both str and Path types (convert from tmpdir.LocalPath object)
+    fake_folder = path_type(fake_folder)
     for ind, ext in enumerate(SUPPORTED_VIDEOS):
         # test if existing models are found:
         assert auxiliaryfunctions.find_analyzed_data(fake_folder, "video" + str(ind), SCORER)
