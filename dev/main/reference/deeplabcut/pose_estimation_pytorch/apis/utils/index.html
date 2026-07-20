@@ -4986,6 +4986,8 @@
       
         
       
+        
+      
     
     
     
@@ -5038,6 +5040,34 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../config/ctd_conditions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>ctd_conditions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -17188,7 +17218,7 @@ single snapshot, with the desired index.</p>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">max_individuals</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">transform</span><span class="p">:</span> <span class="n">BaseCompose</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">dynamic</span><span class="p">:</span> <span class="n">DynamicCropper</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">cond_provider</span><span class="p">:</span> <span class="n">CondFromModel</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">cond_provider</span><span class="p">:</span> <span class="n">ConditionsModelConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">ctd_tracking</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">CTDTrackingConfig</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">inference_cfg</span><span class="p">:</span> <span class="n">InferenceConfig</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PoseInferenceRunner</span>
@@ -17331,12 +17361,14 @@ estimation models, a <code>TopDownDynamicCropper</code> must be used.</p>
 <h3 id="deeplabcut.pose_estimation_pytorch.apis.utils.get_pose_inference_runner(cond_provider)" class="doc doc-heading doc-heading-parameter">                  <code>cond_provider</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-internal" href="../../data/ctd/#deeplabcut.pose_estimation_pytorch.data.ctd.CondFromModel">CondFromModel</a> | None</code>
+                  <code><a class="autorefs autorefs-internal" href="../../config/ctd_conditions/#deeplabcut.pose_estimation_pytorch.config.ctd_conditions.ConditionsModelConfig">ConditionsModelConfig</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Only for CTD models. If None, the CondProvider is created from
-the pytorch_cfg.</p>
+                <p>Only for CTD models. A resolved <code>ConditionsModelConfig</code> for
+the BU model used to generate conditions. Resolve shuffle / dict inputs
+via <code>ConditionsModelConfig.resolve_from_conditions()</code> before calling
+this function. File configs are not valid for live inference.</p>
               </div>
             </td>
             <td>
@@ -17538,7 +17570,9 @@ inference config defined in the model_config</p>
 <span class="normal"><a href="#__codelineno-0-929">929</a></span>
 <span class="normal"><a href="#__codelineno-0-930">930</a></span>
 <span class="normal"><a href="#__codelineno-0-931">931</a></span>
-<span class="normal"><a href="#__codelineno-0-932">932</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-804"><a id="__codelineno-0-804" name="__codelineno-0-804"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_pose_inference_runner</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-932">932</a></span>
+<span class="normal"><a href="#__codelineno-0-933">933</a></span>
+<span class="normal"><a href="#__codelineno-0-934">934</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-804"><a id="__codelineno-0-804" name="__codelineno-0-804"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_pose_inference_runner</span><span class="p">(</span>
 </span><span id="__span-0-805"><a id="__codelineno-0-805" name="__codelineno-0-805"></a>    <span class="n">model_config</span><span class="p">:</span> <span class="n">PoseConfig</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
 </span><span id="__span-0-806"><a id="__codelineno-0-806" name="__codelineno-0-806"></a>    <span class="n">snapshot_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
 </span><span id="__span-0-807"><a id="__codelineno-0-807" name="__codelineno-0-807"></a>    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -17546,7 +17580,7 @@ inference config defined in the model_config</p>
 </span><span id="__span-0-809"><a id="__codelineno-0-809" name="__codelineno-0-809"></a>    <span class="n">max_individuals</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-810"><a id="__codelineno-0-810" name="__codelineno-0-810"></a>    <span class="n">transform</span><span class="p">:</span> <span class="n">A</span><span class="o">.</span><span class="n">BaseCompose</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-811"><a id="__codelineno-0-811" name="__codelineno-0-811"></a>    <span class="n">dynamic</span><span class="p">:</span> <span class="n">DynamicCropper</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-0-812"><a id="__codelineno-0-812" name="__codelineno-0-812"></a>    <span class="n">cond_provider</span><span class="p">:</span> <span class="n">CondFromModel</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-812"><a id="__codelineno-0-812" name="__codelineno-0-812"></a>    <span class="n">cond_provider</span><span class="p">:</span> <span class="n">ConditionsModelConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-813"><a id="__codelineno-0-813" name="__codelineno-0-813"></a>    <span class="n">ctd_tracking</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">CTDTrackingConfig</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 </span><span id="__span-0-814"><a id="__codelineno-0-814" name="__codelineno-0-814"></a>    <span class="n">inference_cfg</span><span class="p">:</span> <span class="n">InferenceConfig</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-815"><a id="__codelineno-0-815" name="__codelineno-0-815"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PoseInferenceRunner</span><span class="p">:</span>
@@ -17564,109 +17598,111 @@ inference config defined in the model_config</p>
 </span><span id="__span-0-827"><a id="__codelineno-0-827" name="__codelineno-0-827"></a><span class="sd">            cropping should not be used. Should only be used when creating inference</span>
 </span><span id="__span-0-828"><a id="__codelineno-0-828" name="__codelineno-0-828"></a><span class="sd">            runners for video pose estimation with batch size 1. For top-down pose</span>
 </span><span id="__span-0-829"><a id="__codelineno-0-829" name="__codelineno-0-829"></a><span class="sd">            estimation models, a `TopDownDynamicCropper` must be used.</span>
-</span><span id="__span-0-830"><a id="__codelineno-0-830" name="__codelineno-0-830"></a><span class="sd">        cond_provider: Only for CTD models. If None, the CondProvider is created from</span>
-</span><span id="__span-0-831"><a id="__codelineno-0-831" name="__codelineno-0-831"></a><span class="sd">            the pytorch_cfg.</span>
-</span><span id="__span-0-832"><a id="__codelineno-0-832" name="__codelineno-0-832"></a><span class="sd">        ctd_tracking: Only for CTD models. Conditional top-down models can be used</span>
-</span><span id="__span-0-833"><a id="__codelineno-0-833" name="__codelineno-0-833"></a><span class="sd">            to directly track individuals. Poses from frame T are given as conditions</span>
-</span><span id="__span-0-834"><a id="__codelineno-0-834" name="__codelineno-0-834"></a><span class="sd">            for frame T+1. This also means a BU model is only needed to &quot;initialize&quot; the</span>
-</span><span id="__span-0-835"><a id="__codelineno-0-835" name="__codelineno-0-835"></a><span class="sd">            pose in the first frame, and for the remaining frames only the CTD model is</span>
-</span><span id="__span-0-836"><a id="__codelineno-0-836" name="__codelineno-0-836"></a><span class="sd">            needed. To configure conditional pose tracking differently, you can pass a</span>
-</span><span id="__span-0-837"><a id="__codelineno-0-837" name="__codelineno-0-837"></a><span class="sd">            CTDTrackingConfig instance.</span>
-</span><span id="__span-0-838"><a id="__codelineno-0-838" name="__codelineno-0-838"></a><span class="sd">        inference_cfg: Configuration for the InferenceRunner. If None - uses the</span>
-</span><span id="__span-0-839"><a id="__codelineno-0-839" name="__codelineno-0-839"></a><span class="sd">            inference config defined in the model_config</span>
-</span><span id="__span-0-840"><a id="__codelineno-0-840" name="__codelineno-0-840"></a>
-</span><span id="__span-0-841"><a id="__codelineno-0-841" name="__codelineno-0-841"></a><span class="sd">    Returns:</span>
-</span><span id="__span-0-842"><a id="__codelineno-0-842" name="__codelineno-0-842"></a><span class="sd">        an inference runner for pose estimation</span>
-</span><span id="__span-0-843"><a id="__codelineno-0-843" name="__codelineno-0-843"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-844"><a id="__codelineno-0-844" name="__codelineno-0-844"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">PoseConfig</span><span class="o">.</span><span class="n">from_any</span><span class="p">(</span><span class="n">model_config</span><span class="p">)</span>
-</span><span id="__span-0-845"><a id="__codelineno-0-845" name="__codelineno-0-845"></a>    <span class="n">pose_task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">])</span>
-</span><span id="__span-0-846"><a id="__codelineno-0-846" name="__codelineno-0-846"></a>    <span class="n">metadata</span> <span class="o">=</span> <span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span>
-</span><span id="__span-0-847"><a id="__codelineno-0-847" name="__codelineno-0-847"></a>    <span class="n">num_bodyparts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;bodyparts&quot;</span><span class="p">])</span>
-</span><span id="__span-0-848"><a id="__codelineno-0-848" name="__codelineno-0-848"></a>    <span class="n">num_unique</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;unique_bodyparts&quot;</span><span class="p">])</span>
-</span><span id="__span-0-849"><a id="__codelineno-0-849" name="__codelineno-0-849"></a>    <span class="n">with_identity</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;with_identity&quot;</span><span class="p">])</span>
-</span><span id="__span-0-850"><a id="__codelineno-0-850" name="__codelineno-0-850"></a>    <span class="k">if</span> <span class="n">max_individuals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-851"><a id="__codelineno-0-851" name="__codelineno-0-851"></a>        <span class="n">max_individuals</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;individuals&quot;</span><span class="p">])</span>
-</span><span id="__span-0-852"><a id="__codelineno-0-852" name="__codelineno-0-852"></a>
-</span><span id="__span-0-853"><a id="__codelineno-0-853" name="__codelineno-0-853"></a>    <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-854"><a id="__codelineno-0-854" name="__codelineno-0-854"></a>        <span class="n">device</span> <span class="o">=</span> <span class="n">resolve_device</span><span class="p">(</span><span class="n">model_config</span><span class="p">)</span>
-</span><span id="__span-0-855"><a id="__codelineno-0-855" name="__codelineno-0-855"></a>
-</span><span id="__span-0-856"><a id="__codelineno-0-856" name="__codelineno-0-856"></a>    <span class="k">if</span> <span class="n">transform</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-857"><a id="__codelineno-0-857" name="__codelineno-0-857"></a>        <span class="n">transform</span> <span class="o">=</span> <span class="n">build_transforms</span><span class="p">(</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;inference&quot;</span><span class="p">])</span>
-</span><span id="__span-0-858"><a id="__codelineno-0-858" name="__codelineno-0-858"></a>
-</span><span id="__span-0-859"><a id="__codelineno-0-859" name="__codelineno-0-859"></a>    <span class="k">if</span> <span class="n">inference_cfg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-860"><a id="__codelineno-0-860" name="__codelineno-0-860"></a>        <span class="n">inference_cfg</span> <span class="o">=</span> <span class="n">model_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;inference&quot;</span><span class="p">)</span>
-</span><span id="__span-0-861"><a id="__codelineno-0-861" name="__codelineno-0-861"></a>
-</span><span id="__span-0-862"><a id="__codelineno-0-862" name="__codelineno-0-862"></a>    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span id="__span-0-863"><a id="__codelineno-0-863" name="__codelineno-0-863"></a>    <span class="k">if</span> <span class="n">pose_task</span> <span class="o">==</span> <span class="n">Task</span><span class="o">.</span><span class="n">BOTTOM_UP</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dynamic</span><span class="p">,</span> <span class="n">TopDownDynamicCropper</span><span class="p">):</span>
-</span><span id="__span-0-864"><a id="__codelineno-0-864" name="__codelineno-0-864"></a>        <span class="n">pose_preprocessor</span> <span class="o">=</span> <span class="n">build_bottom_up_preprocessor</span><span class="p">(</span>
-</span><span id="__span-0-865"><a id="__codelineno-0-865" name="__codelineno-0-865"></a>            <span class="n">color_mode</span><span class="o">=</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;colormode&quot;</span><span class="p">],</span>
-</span><span id="__span-0-866"><a id="__codelineno-0-866" name="__codelineno-0-866"></a>            <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
-</span><span id="__span-0-867"><a id="__codelineno-0-867" name="__codelineno-0-867"></a>        <span class="p">)</span>
-</span><span id="__span-0-868"><a id="__codelineno-0-868" name="__codelineno-0-868"></a>        <span class="n">pose_postprocessor</span> <span class="o">=</span> <span class="n">build_bottom_up_postprocessor</span><span class="p">(</span>
-</span><span id="__span-0-869"><a id="__codelineno-0-869" name="__codelineno-0-869"></a>            <span class="n">max_individuals</span><span class="o">=</span><span class="n">max_individuals</span><span class="p">,</span>
-</span><span id="__span-0-870"><a id="__codelineno-0-870" name="__codelineno-0-870"></a>            <span class="n">num_bodyparts</span><span class="o">=</span><span class="n">num_bodyparts</span><span class="p">,</span>
-</span><span id="__span-0-871"><a id="__codelineno-0-871" name="__codelineno-0-871"></a>            <span class="n">num_unique_bodyparts</span><span class="o">=</span><span class="n">num_unique</span><span class="p">,</span>
-</span><span id="__span-0-872"><a id="__codelineno-0-872" name="__codelineno-0-872"></a>            <span class="n">with_identity</span><span class="o">=</span><span class="n">with_identity</span><span class="p">,</span>
-</span><span id="__span-0-873"><a id="__codelineno-0-873" name="__codelineno-0-873"></a>        <span class="p">)</span>
-</span><span id="__span-0-874"><a id="__codelineno-0-874" name="__codelineno-0-874"></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="__span-0-875"><a id="__codelineno-0-875" name="__codelineno-0-875"></a>        <span class="c1"># TODO @deruyter92: This pattern should be refactored throughout the codebase</span>
-</span><span id="__span-0-876"><a id="__codelineno-0-876" name="__codelineno-0-876"></a>        <span class="c1"># it is reading a config value that is supposed to be missing / None.</span>
-</span><span id="__span-0-877"><a id="__codelineno-0-877" name="__codelineno-0-877"></a>        <span class="n">crop_cfg</span> <span class="o">=</span> <span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;inference&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;top_down_crop&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-</span><span id="__span-0-878"><a id="__codelineno-0-878" name="__codelineno-0-878"></a>        <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">crop_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;width&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">crop_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;height&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
-</span><span id="__span-0-879"><a id="__codelineno-0-879" name="__codelineno-0-879"></a>        <span class="n">margin</span> <span class="o">=</span> <span class="n">crop_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;margin&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-</span><span id="__span-0-880"><a id="__codelineno-0-880" name="__codelineno-0-880"></a>
-</span><span id="__span-0-881"><a id="__codelineno-0-881" name="__codelineno-0-881"></a>        <span class="k">if</span> <span class="n">pose_task</span> <span class="o">==</span> <span class="n">Task</span><span class="o">.</span><span class="n">COND_TOP_DOWN</span><span class="p">:</span>
-</span><span id="__span-0-882"><a id="__codelineno-0-882" name="__codelineno-0-882"></a>            <span class="k">if</span> <span class="n">cond_provider</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-883"><a id="__codelineno-0-883" name="__codelineno-0-883"></a>                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;bu_runner&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_pose_inference_runner</span><span class="p">(</span>
-</span><span id="__span-0-884"><a id="__codelineno-0-884" name="__codelineno-0-884"></a>                    <span class="n">model_config</span><span class="o">=</span><span class="n">PoseConfig</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="n">cond_provider</span><span class="o">.</span><span class="n">config_path</span><span class="p">),</span>
-</span><span id="__span-0-885"><a id="__codelineno-0-885" name="__codelineno-0-885"></a>                    <span class="n">snapshot_path</span><span class="o">=</span><span class="n">cond_provider</span><span class="o">.</span><span class="n">snapshot_path</span><span class="p">,</span>
-</span><span id="__span-0-886"><a id="__codelineno-0-886" name="__codelineno-0-886"></a>                    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-</span><span id="__span-0-887"><a id="__codelineno-0-887" name="__codelineno-0-887"></a>                    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
-</span><span id="__span-0-888"><a id="__codelineno-0-888" name="__codelineno-0-888"></a>                    <span class="n">max_individuals</span><span class="o">=</span><span class="n">max_individuals</span><span class="p">,</span>
-</span><span id="__span-0-889"><a id="__codelineno-0-889" name="__codelineno-0-889"></a>                <span class="p">)</span>
-</span><span id="__span-0-890"><a id="__codelineno-0-890" name="__codelineno-0-890"></a>
-</span><span id="__span-0-891"><a id="__codelineno-0-891" name="__codelineno-0-891"></a>            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ctd_tracking&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctd_tracking</span>
+</span><span id="__span-0-830"><a id="__codelineno-0-830" name="__codelineno-0-830"></a><span class="sd">        cond_provider: Only for CTD models. A resolved ``ConditionsModelConfig`` for</span>
+</span><span id="__span-0-831"><a id="__codelineno-0-831" name="__codelineno-0-831"></a><span class="sd">            the BU model used to generate conditions. Resolve shuffle / dict inputs</span>
+</span><span id="__span-0-832"><a id="__codelineno-0-832" name="__codelineno-0-832"></a><span class="sd">            via ``ConditionsModelConfig.resolve_from_conditions()`` before calling</span>
+</span><span id="__span-0-833"><a id="__codelineno-0-833" name="__codelineno-0-833"></a><span class="sd">            this function. File configs are not valid for live inference.</span>
+</span><span id="__span-0-834"><a id="__codelineno-0-834" name="__codelineno-0-834"></a><span class="sd">        ctd_tracking: Only for CTD models. Conditional top-down models can be used</span>
+</span><span id="__span-0-835"><a id="__codelineno-0-835" name="__codelineno-0-835"></a><span class="sd">            to directly track individuals. Poses from frame T are given as conditions</span>
+</span><span id="__span-0-836"><a id="__codelineno-0-836" name="__codelineno-0-836"></a><span class="sd">            for frame T+1. This also means a BU model is only needed to &quot;initialize&quot; the</span>
+</span><span id="__span-0-837"><a id="__codelineno-0-837" name="__codelineno-0-837"></a><span class="sd">            pose in the first frame, and for the remaining frames only the CTD model is</span>
+</span><span id="__span-0-838"><a id="__codelineno-0-838" name="__codelineno-0-838"></a><span class="sd">            needed. To configure conditional pose tracking differently, you can pass a</span>
+</span><span id="__span-0-839"><a id="__codelineno-0-839" name="__codelineno-0-839"></a><span class="sd">            CTDTrackingConfig instance.</span>
+</span><span id="__span-0-840"><a id="__codelineno-0-840" name="__codelineno-0-840"></a><span class="sd">        inference_cfg: Configuration for the InferenceRunner. If None - uses the</span>
+</span><span id="__span-0-841"><a id="__codelineno-0-841" name="__codelineno-0-841"></a><span class="sd">            inference config defined in the model_config</span>
+</span><span id="__span-0-842"><a id="__codelineno-0-842" name="__codelineno-0-842"></a>
+</span><span id="__span-0-843"><a id="__codelineno-0-843" name="__codelineno-0-843"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-844"><a id="__codelineno-0-844" name="__codelineno-0-844"></a><span class="sd">        an inference runner for pose estimation</span>
+</span><span id="__span-0-845"><a id="__codelineno-0-845" name="__codelineno-0-845"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-846"><a id="__codelineno-0-846" name="__codelineno-0-846"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">PoseConfig</span><span class="o">.</span><span class="n">from_any</span><span class="p">(</span><span class="n">model_config</span><span class="p">)</span>
+</span><span id="__span-0-847"><a id="__codelineno-0-847" name="__codelineno-0-847"></a>    <span class="n">pose_task</span> <span class="o">=</span> <span class="n">Task</span><span class="p">(</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">])</span>
+</span><span id="__span-0-848"><a id="__codelineno-0-848" name="__codelineno-0-848"></a>    <span class="n">metadata</span> <span class="o">=</span> <span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span>
+</span><span id="__span-0-849"><a id="__codelineno-0-849" name="__codelineno-0-849"></a>    <span class="n">num_bodyparts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;bodyparts&quot;</span><span class="p">])</span>
+</span><span id="__span-0-850"><a id="__codelineno-0-850" name="__codelineno-0-850"></a>    <span class="n">num_unique</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;unique_bodyparts&quot;</span><span class="p">])</span>
+</span><span id="__span-0-851"><a id="__codelineno-0-851" name="__codelineno-0-851"></a>    <span class="n">with_identity</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;with_identity&quot;</span><span class="p">])</span>
+</span><span id="__span-0-852"><a id="__codelineno-0-852" name="__codelineno-0-852"></a>    <span class="k">if</span> <span class="n">max_individuals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-853"><a id="__codelineno-0-853" name="__codelineno-0-853"></a>        <span class="n">max_individuals</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;individuals&quot;</span><span class="p">])</span>
+</span><span id="__span-0-854"><a id="__codelineno-0-854" name="__codelineno-0-854"></a>
+</span><span id="__span-0-855"><a id="__codelineno-0-855" name="__codelineno-0-855"></a>    <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-856"><a id="__codelineno-0-856" name="__codelineno-0-856"></a>        <span class="n">device</span> <span class="o">=</span> <span class="n">resolve_device</span><span class="p">(</span><span class="n">model_config</span><span class="p">)</span>
+</span><span id="__span-0-857"><a id="__codelineno-0-857" name="__codelineno-0-857"></a>
+</span><span id="__span-0-858"><a id="__codelineno-0-858" name="__codelineno-0-858"></a>    <span class="k">if</span> <span class="n">transform</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-859"><a id="__codelineno-0-859" name="__codelineno-0-859"></a>        <span class="n">transform</span> <span class="o">=</span> <span class="n">build_transforms</span><span class="p">(</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;inference&quot;</span><span class="p">])</span>
+</span><span id="__span-0-860"><a id="__codelineno-0-860" name="__codelineno-0-860"></a>
+</span><span id="__span-0-861"><a id="__codelineno-0-861" name="__codelineno-0-861"></a>    <span class="k">if</span> <span class="n">inference_cfg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-862"><a id="__codelineno-0-862" name="__codelineno-0-862"></a>        <span class="n">inference_cfg</span> <span class="o">=</span> <span class="n">model_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;inference&quot;</span><span class="p">)</span>
+</span><span id="__span-0-863"><a id="__codelineno-0-863" name="__codelineno-0-863"></a>
+</span><span id="__span-0-864"><a id="__codelineno-0-864" name="__codelineno-0-864"></a>    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span id="__span-0-865"><a id="__codelineno-0-865" name="__codelineno-0-865"></a>    <span class="k">if</span> <span class="n">pose_task</span> <span class="o">==</span> <span class="n">Task</span><span class="o">.</span><span class="n">BOTTOM_UP</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dynamic</span><span class="p">,</span> <span class="n">TopDownDynamicCropper</span><span class="p">):</span>
+</span><span id="__span-0-866"><a id="__codelineno-0-866" name="__codelineno-0-866"></a>        <span class="n">pose_preprocessor</span> <span class="o">=</span> <span class="n">build_bottom_up_preprocessor</span><span class="p">(</span>
+</span><span id="__span-0-867"><a id="__codelineno-0-867" name="__codelineno-0-867"></a>            <span class="n">color_mode</span><span class="o">=</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;colormode&quot;</span><span class="p">],</span>
+</span><span id="__span-0-868"><a id="__codelineno-0-868" name="__codelineno-0-868"></a>            <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+</span><span id="__span-0-869"><a id="__codelineno-0-869" name="__codelineno-0-869"></a>        <span class="p">)</span>
+</span><span id="__span-0-870"><a id="__codelineno-0-870" name="__codelineno-0-870"></a>        <span class="n">pose_postprocessor</span> <span class="o">=</span> <span class="n">build_bottom_up_postprocessor</span><span class="p">(</span>
+</span><span id="__span-0-871"><a id="__codelineno-0-871" name="__codelineno-0-871"></a>            <span class="n">max_individuals</span><span class="o">=</span><span class="n">max_individuals</span><span class="p">,</span>
+</span><span id="__span-0-872"><a id="__codelineno-0-872" name="__codelineno-0-872"></a>            <span class="n">num_bodyparts</span><span class="o">=</span><span class="n">num_bodyparts</span><span class="p">,</span>
+</span><span id="__span-0-873"><a id="__codelineno-0-873" name="__codelineno-0-873"></a>            <span class="n">num_unique_bodyparts</span><span class="o">=</span><span class="n">num_unique</span><span class="p">,</span>
+</span><span id="__span-0-874"><a id="__codelineno-0-874" name="__codelineno-0-874"></a>            <span class="n">with_identity</span><span class="o">=</span><span class="n">with_identity</span><span class="p">,</span>
+</span><span id="__span-0-875"><a id="__codelineno-0-875" name="__codelineno-0-875"></a>        <span class="p">)</span>
+</span><span id="__span-0-876"><a id="__codelineno-0-876" name="__codelineno-0-876"></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-0-877"><a id="__codelineno-0-877" name="__codelineno-0-877"></a>        <span class="c1"># TODO @deruyter92: This pattern should be refactored throughout the codebase</span>
+</span><span id="__span-0-878"><a id="__codelineno-0-878" name="__codelineno-0-878"></a>        <span class="c1"># it is reading a config value that is supposed to be missing / None.</span>
+</span><span id="__span-0-879"><a id="__codelineno-0-879" name="__codelineno-0-879"></a>        <span class="n">crop_cfg</span> <span class="o">=</span> <span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;inference&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;top_down_crop&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+</span><span id="__span-0-880"><a id="__codelineno-0-880" name="__codelineno-0-880"></a>        <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">crop_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;width&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">crop_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;height&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+</span><span id="__span-0-881"><a id="__codelineno-0-881" name="__codelineno-0-881"></a>        <span class="n">margin</span> <span class="o">=</span> <span class="n">crop_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;margin&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-0-882"><a id="__codelineno-0-882" name="__codelineno-0-882"></a>
+</span><span id="__span-0-883"><a id="__codelineno-0-883" name="__codelineno-0-883"></a>        <span class="k">if</span> <span class="n">pose_task</span> <span class="o">==</span> <span class="n">Task</span><span class="o">.</span><span class="n">COND_TOP_DOWN</span><span class="p">:</span>
+</span><span id="__span-0-884"><a id="__codelineno-0-884" name="__codelineno-0-884"></a>            <span class="k">if</span> <span class="n">cond_provider</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-885"><a id="__codelineno-0-885" name="__codelineno-0-885"></a>                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;bu_runner&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_pose_inference_runner</span><span class="p">(</span>
+</span><span id="__span-0-886"><a id="__codelineno-0-886" name="__codelineno-0-886"></a>                    <span class="n">model_config</span><span class="o">=</span><span class="n">PoseConfig</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="n">cond_provider</span><span class="o">.</span><span class="n">config_path</span><span class="p">),</span>
+</span><span id="__span-0-887"><a id="__codelineno-0-887" name="__codelineno-0-887"></a>                    <span class="n">snapshot_path</span><span class="o">=</span><span class="n">cond_provider</span><span class="o">.</span><span class="n">snapshot_path</span><span class="p">,</span>
+</span><span id="__span-0-888"><a id="__codelineno-0-888" name="__codelineno-0-888"></a>                    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-889"><a id="__codelineno-0-889" name="__codelineno-0-889"></a>                    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+</span><span id="__span-0-890"><a id="__codelineno-0-890" name="__codelineno-0-890"></a>                    <span class="n">max_individuals</span><span class="o">=</span><span class="n">max_individuals</span><span class="p">,</span>
+</span><span id="__span-0-891"><a id="__codelineno-0-891" name="__codelineno-0-891"></a>                <span class="p">)</span>
 </span><span id="__span-0-892"><a id="__codelineno-0-892" name="__codelineno-0-892"></a>
-</span><span id="__span-0-893"><a id="__codelineno-0-893" name="__codelineno-0-893"></a>            <span class="n">pose_preprocessor</span> <span class="o">=</span> <span class="n">build_conditional_top_down_preprocessor</span><span class="p">(</span>
-</span><span id="__span-0-894"><a id="__codelineno-0-894" name="__codelineno-0-894"></a>                <span class="n">color_mode</span><span class="o">=</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;colormode&quot;</span><span class="p">],</span>
-</span><span id="__span-0-895"><a id="__codelineno-0-895" name="__codelineno-0-895"></a>                <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
-</span><span id="__span-0-896"><a id="__codelineno-0-896" name="__codelineno-0-896"></a>                <span class="n">bbox_margin</span><span class="o">=</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bbox_margin&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
-</span><span id="__span-0-897"><a id="__codelineno-0-897" name="__codelineno-0-897"></a>                <span class="n">top_down_crop_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
-</span><span id="__span-0-898"><a id="__codelineno-0-898" name="__codelineno-0-898"></a>                <span class="n">top_down_crop_margin</span><span class="o">=</span><span class="n">margin</span><span class="p">,</span>
-</span><span id="__span-0-899"><a id="__codelineno-0-899" name="__codelineno-0-899"></a>                <span class="n">top_down_crop_with_context</span><span class="o">=</span><span class="n">crop_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;crop_with_context&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
-</span><span id="__span-0-900"><a id="__codelineno-0-900" name="__codelineno-0-900"></a>            <span class="p">)</span>
-</span><span id="__span-0-901"><a id="__codelineno-0-901" name="__codelineno-0-901"></a>        <span class="k">else</span><span class="p">:</span>  <span class="c1"># Top-Down</span>
-</span><span id="__span-0-902"><a id="__codelineno-0-902" name="__codelineno-0-902"></a>            <span class="n">pose_preprocessor</span> <span class="o">=</span> <span class="n">build_top_down_preprocessor</span><span class="p">(</span>
-</span><span id="__span-0-903"><a id="__codelineno-0-903" name="__codelineno-0-903"></a>                <span class="n">color_mode</span><span class="o">=</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;colormode&quot;</span><span class="p">],</span>
-</span><span id="__span-0-904"><a id="__codelineno-0-904" name="__codelineno-0-904"></a>                <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
-</span><span id="__span-0-905"><a id="__codelineno-0-905" name="__codelineno-0-905"></a>                <span class="n">top_down_crop_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
-</span><span id="__span-0-906"><a id="__codelineno-0-906" name="__codelineno-0-906"></a>                <span class="n">top_down_crop_margin</span><span class="o">=</span><span class="n">margin</span><span class="p">,</span>
-</span><span id="__span-0-907"><a id="__codelineno-0-907" name="__codelineno-0-907"></a>                <span class="n">top_down_crop_with_context</span><span class="o">=</span><span class="n">crop_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;crop_with_context&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
-</span><span id="__span-0-908"><a id="__codelineno-0-908" name="__codelineno-0-908"></a>            <span class="p">)</span>
-</span><span id="__span-0-909"><a id="__codelineno-0-909" name="__codelineno-0-909"></a>
-</span><span id="__span-0-910"><a id="__codelineno-0-910" name="__codelineno-0-910"></a>        <span class="n">pose_postprocessor</span> <span class="o">=</span> <span class="n">build_top_down_postprocessor</span><span class="p">(</span>
-</span><span id="__span-0-911"><a id="__codelineno-0-911" name="__codelineno-0-911"></a>            <span class="n">max_individuals</span><span class="o">=</span><span class="n">max_individuals</span><span class="p">,</span>
-</span><span id="__span-0-912"><a id="__codelineno-0-912" name="__codelineno-0-912"></a>            <span class="n">num_bodyparts</span><span class="o">=</span><span class="n">num_bodyparts</span><span class="p">,</span>
-</span><span id="__span-0-913"><a id="__codelineno-0-913" name="__codelineno-0-913"></a>            <span class="n">num_unique_bodyparts</span><span class="o">=</span><span class="n">num_unique</span><span class="p">,</span>
-</span><span id="__span-0-914"><a id="__codelineno-0-914" name="__codelineno-0-914"></a>        <span class="p">)</span>
-</span><span id="__span-0-915"><a id="__codelineno-0-915" name="__codelineno-0-915"></a>
-</span><span id="__span-0-916"><a id="__codelineno-0-916" name="__codelineno-0-916"></a>    <span class="n">runner</span> <span class="o">=</span> <span class="n">build_inference_runner</span><span class="p">(</span>
-</span><span id="__span-0-917"><a id="__codelineno-0-917" name="__codelineno-0-917"></a>        <span class="n">task</span><span class="o">=</span><span class="n">pose_task</span><span class="p">,</span>
-</span><span id="__span-0-918"><a id="__codelineno-0-918" name="__codelineno-0-918"></a>        <span class="n">model</span><span class="o">=</span><span class="n">PoseModel</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]),</span>
-</span><span id="__span-0-919"><a id="__codelineno-0-919" name="__codelineno-0-919"></a>        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
-</span><span id="__span-0-920"><a id="__codelineno-0-920" name="__codelineno-0-920"></a>        <span class="n">snapshot_path</span><span class="o">=</span><span class="n">snapshot_path</span><span class="p">,</span>
-</span><span id="__span-0-921"><a id="__codelineno-0-921" name="__codelineno-0-921"></a>        <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
-</span><span id="__span-0-922"><a id="__codelineno-0-922" name="__codelineno-0-922"></a>        <span class="n">preprocessor</span><span class="o">=</span><span class="n">pose_preprocessor</span><span class="p">,</span>
-</span><span id="__span-0-923"><a id="__codelineno-0-923" name="__codelineno-0-923"></a>        <span class="n">postprocessor</span><span class="o">=</span><span class="n">pose_postprocessor</span><span class="p">,</span>
-</span><span id="__span-0-924"><a id="__codelineno-0-924" name="__codelineno-0-924"></a>        <span class="n">dynamic</span><span class="o">=</span><span class="n">dynamic</span><span class="p">,</span>
-</span><span id="__span-0-925"><a id="__codelineno-0-925" name="__codelineno-0-925"></a>        <span class="n">load_weights_only</span><span class="o">=</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;runner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;load_weights_only&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-</span><span id="__span-0-926"><a id="__codelineno-0-926" name="__codelineno-0-926"></a>        <span class="n">inference_cfg</span><span class="o">=</span><span class="n">inference_cfg</span><span class="p">,</span>
-</span><span id="__span-0-927"><a id="__codelineno-0-927" name="__codelineno-0-927"></a>        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-</span><span id="__span-0-928"><a id="__codelineno-0-928" name="__codelineno-0-928"></a>    <span class="p">)</span>
-</span><span id="__span-0-929"><a id="__codelineno-0-929" name="__codelineno-0-929"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="n">PoseInferenceRunner</span><span class="p">):</span>
-</span><span id="__span-0-930"><a id="__codelineno-0-930" name="__codelineno-0-930"></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to build PoseInferenceRunner for </span><span class="si">{</span><span class="n">model_config</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-0-931"><a id="__codelineno-0-931" name="__codelineno-0-931"></a>
-</span><span id="__span-0-932"><a id="__codelineno-0-932" name="__codelineno-0-932"></a>    <span class="k">return</span> <span class="n">runner</span>
+</span><span id="__span-0-893"><a id="__codelineno-0-893" name="__codelineno-0-893"></a>            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ctd_tracking&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctd_tracking</span>
+</span><span id="__span-0-894"><a id="__codelineno-0-894" name="__codelineno-0-894"></a>
+</span><span id="__span-0-895"><a id="__codelineno-0-895" name="__codelineno-0-895"></a>            <span class="n">pose_preprocessor</span> <span class="o">=</span> <span class="n">build_conditional_top_down_preprocessor</span><span class="p">(</span>
+</span><span id="__span-0-896"><a id="__codelineno-0-896" name="__codelineno-0-896"></a>                <span class="n">color_mode</span><span class="o">=</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;colormode&quot;</span><span class="p">],</span>
+</span><span id="__span-0-897"><a id="__codelineno-0-897" name="__codelineno-0-897"></a>                <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+</span><span id="__span-0-898"><a id="__codelineno-0-898" name="__codelineno-0-898"></a>                <span class="n">bbox_margin</span><span class="o">=</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bbox_margin&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+</span><span id="__span-0-899"><a id="__codelineno-0-899" name="__codelineno-0-899"></a>                <span class="n">top_down_crop_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
+</span><span id="__span-0-900"><a id="__codelineno-0-900" name="__codelineno-0-900"></a>                <span class="n">top_down_crop_margin</span><span class="o">=</span><span class="n">margin</span><span class="p">,</span>
+</span><span id="__span-0-901"><a id="__codelineno-0-901" name="__codelineno-0-901"></a>                <span class="n">top_down_crop_with_context</span><span class="o">=</span><span class="n">crop_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;crop_with_context&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+</span><span id="__span-0-902"><a id="__codelineno-0-902" name="__codelineno-0-902"></a>            <span class="p">)</span>
+</span><span id="__span-0-903"><a id="__codelineno-0-903" name="__codelineno-0-903"></a>        <span class="k">else</span><span class="p">:</span>  <span class="c1"># Top-Down</span>
+</span><span id="__span-0-904"><a id="__codelineno-0-904" name="__codelineno-0-904"></a>            <span class="n">pose_preprocessor</span> <span class="o">=</span> <span class="n">build_top_down_preprocessor</span><span class="p">(</span>
+</span><span id="__span-0-905"><a id="__codelineno-0-905" name="__codelineno-0-905"></a>                <span class="n">color_mode</span><span class="o">=</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;colormode&quot;</span><span class="p">],</span>
+</span><span id="__span-0-906"><a id="__codelineno-0-906" name="__codelineno-0-906"></a>                <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+</span><span id="__span-0-907"><a id="__codelineno-0-907" name="__codelineno-0-907"></a>                <span class="n">top_down_crop_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
+</span><span id="__span-0-908"><a id="__codelineno-0-908" name="__codelineno-0-908"></a>                <span class="n">top_down_crop_margin</span><span class="o">=</span><span class="n">margin</span><span class="p">,</span>
+</span><span id="__span-0-909"><a id="__codelineno-0-909" name="__codelineno-0-909"></a>                <span class="n">top_down_crop_with_context</span><span class="o">=</span><span class="n">crop_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;crop_with_context&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+</span><span id="__span-0-910"><a id="__codelineno-0-910" name="__codelineno-0-910"></a>            <span class="p">)</span>
+</span><span id="__span-0-911"><a id="__codelineno-0-911" name="__codelineno-0-911"></a>
+</span><span id="__span-0-912"><a id="__codelineno-0-912" name="__codelineno-0-912"></a>        <span class="n">pose_postprocessor</span> <span class="o">=</span> <span class="n">build_top_down_postprocessor</span><span class="p">(</span>
+</span><span id="__span-0-913"><a id="__codelineno-0-913" name="__codelineno-0-913"></a>            <span class="n">max_individuals</span><span class="o">=</span><span class="n">max_individuals</span><span class="p">,</span>
+</span><span id="__span-0-914"><a id="__codelineno-0-914" name="__codelineno-0-914"></a>            <span class="n">num_bodyparts</span><span class="o">=</span><span class="n">num_bodyparts</span><span class="p">,</span>
+</span><span id="__span-0-915"><a id="__codelineno-0-915" name="__codelineno-0-915"></a>            <span class="n">num_unique_bodyparts</span><span class="o">=</span><span class="n">num_unique</span><span class="p">,</span>
+</span><span id="__span-0-916"><a id="__codelineno-0-916" name="__codelineno-0-916"></a>        <span class="p">)</span>
+</span><span id="__span-0-917"><a id="__codelineno-0-917" name="__codelineno-0-917"></a>
+</span><span id="__span-0-918"><a id="__codelineno-0-918" name="__codelineno-0-918"></a>    <span class="n">runner</span> <span class="o">=</span> <span class="n">build_inference_runner</span><span class="p">(</span>
+</span><span id="__span-0-919"><a id="__codelineno-0-919" name="__codelineno-0-919"></a>        <span class="n">task</span><span class="o">=</span><span class="n">pose_task</span><span class="p">,</span>
+</span><span id="__span-0-920"><a id="__codelineno-0-920" name="__codelineno-0-920"></a>        <span class="n">model</span><span class="o">=</span><span class="n">PoseModel</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]),</span>
+</span><span id="__span-0-921"><a id="__codelineno-0-921" name="__codelineno-0-921"></a>        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+</span><span id="__span-0-922"><a id="__codelineno-0-922" name="__codelineno-0-922"></a>        <span class="n">snapshot_path</span><span class="o">=</span><span class="n">snapshot_path</span><span class="p">,</span>
+</span><span id="__span-0-923"><a id="__codelineno-0-923" name="__codelineno-0-923"></a>        <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+</span><span id="__span-0-924"><a id="__codelineno-0-924" name="__codelineno-0-924"></a>        <span class="n">preprocessor</span><span class="o">=</span><span class="n">pose_preprocessor</span><span class="p">,</span>
+</span><span id="__span-0-925"><a id="__codelineno-0-925" name="__codelineno-0-925"></a>        <span class="n">postprocessor</span><span class="o">=</span><span class="n">pose_postprocessor</span><span class="p">,</span>
+</span><span id="__span-0-926"><a id="__codelineno-0-926" name="__codelineno-0-926"></a>        <span class="n">dynamic</span><span class="o">=</span><span class="n">dynamic</span><span class="p">,</span>
+</span><span id="__span-0-927"><a id="__codelineno-0-927" name="__codelineno-0-927"></a>        <span class="n">load_weights_only</span><span class="o">=</span><span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;runner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;load_weights_only&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+</span><span id="__span-0-928"><a id="__codelineno-0-928" name="__codelineno-0-928"></a>        <span class="n">inference_cfg</span><span class="o">=</span><span class="n">inference_cfg</span><span class="p">,</span>
+</span><span id="__span-0-929"><a id="__codelineno-0-929" name="__codelineno-0-929"></a>        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+</span><span id="__span-0-930"><a id="__codelineno-0-930" name="__codelineno-0-930"></a>    <span class="p">)</span>
+</span><span id="__span-0-931"><a id="__codelineno-0-931" name="__codelineno-0-931"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="n">PoseInferenceRunner</span><span class="p">):</span>
+</span><span id="__span-0-932"><a id="__codelineno-0-932" name="__codelineno-0-932"></a>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to build PoseInferenceRunner for </span><span class="si">{</span><span class="n">model_config</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-0-933"><a id="__codelineno-0-933" name="__codelineno-0-933"></a>
+</span><span id="__span-0-934"><a id="__codelineno-0-934" name="__codelineno-0-934"></a>    <span class="k">return</span> <span class="n">runner</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
