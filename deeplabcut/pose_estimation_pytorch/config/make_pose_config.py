@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-@deprecated(replacement="pose_estimation_pytorch.config.TestConfig.build", since="3.1")
+@deprecated(replacement="pose_estimation_pytorch.config.TestConfig.build", since="3.0.1")
 def make_pytorch_test_config(
     model_config: PoseConfig | dict | str | Path,
     test_config_path: str | Path,
@@ -49,7 +49,7 @@ def make_pytorch_test_config(
     return TestConfig.build(model_config, test_config_path=test_config_path, save=save)
 
 
-@deprecated(replacement="pose_estimation_pytorch.config.PoseConfig.build", since="3.1")
+@deprecated(replacement="pose_estimation_pytorch.config.PoseConfig.build", since="3.0.1")
 def make_pytorch_pose_config(
     project_config: ProjectConfig | dict | Path | str,
     pose_config_path: str | Path,
@@ -74,7 +74,7 @@ def make_pytorch_pose_config(
     )
 
 
-@deprecated(replacement="pose_estimation_pytorch.config.PoseMetadata", since="3.1")
+@deprecated(replacement="pose_estimation_pytorch.config.PoseMetadata", since="3.0.1")
 def make_basic_project_config(
     dataset_path: Path | str,
     bodyparts: list[str],
