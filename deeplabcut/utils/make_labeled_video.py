@@ -1261,7 +1261,7 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
     from tqdm import tqdm
 
     if not Path(destfolder).is_dir():
-        Path(destfolder).mkdir()
+        Path(destfolder).mkdir(exist_ok=True, parents=True)
 
     vid = VideoWriter(video)
     nframes = len(vid)

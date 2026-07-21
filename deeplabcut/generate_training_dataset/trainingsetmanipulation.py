@@ -301,7 +301,7 @@ def check_labels(
         Labels = ["+", ".", "x"]
     cfg = read_config(config)
     videos = cfg["video_sets"].keys()
-    video_names = [_robust_path_split(video)[1] for video in videos]
+    video_names = [Path(video).stem for video in videos]
 
     folders = [Path(cfg["project_path"]) / "labeled-data" / Path(i) for i in video_names]
     print("Creating images with labels by {}.".format(cfg["scorer"]))
@@ -408,20 +408,6 @@ def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
     return docs[0]
 
 
-def _robust_path_split(path):
-    sep = "\\" if "\\" in path else "/"
-    splits = path.rsplit(sep, 1)
-    if len(splits) == 1:
-        parent = "."
-        file = splits[0]
-    elif len(splits) == 2:
-        parent, file = splits
-    else:
-        raise (f"Unknown filepath split for path {path}")
-    filename, ext = Path(file).stem, Path(file).suffix
-    return parent, filename, ext
-
-
 def parse_video_filenames(videos: list[str]) -> list[str]:
     """Parses the names of all videos listed in a project's ``config.yaml`` file.
 
@@ -446,7 +432,7 @@ def parse_video_filenames(videos: list[str]) -> list[str]:
     filenames = []
     filename_to_videos = {}
     for video in videos:
-        _, filename, _ = _robust_path_split(video)
+        filename = Path(video).stem
         videos_with_filename = filename_to_videos.get(filename, [])
         if len(videos_with_filename) == 0:
             filenames.append(filename)

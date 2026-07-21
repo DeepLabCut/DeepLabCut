@@ -834,7 +834,7 @@ def _validate_destfolder(destfolder: str | None) -> None:
         output_folder = Path(destfolder)
         if not output_folder.exists():
             print(f"Creating the output folder {output_folder}")
-            output_folder.mkdir(parents=True)
+            output_folder.mkdir(parents=True, exist_ok=True)
 
         assert Path(output_folder).is_dir(), f"Output folder must be a directory: you passed '{output_folder}'"
 
