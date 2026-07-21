@@ -455,6 +455,7 @@ class ModelZoo(DefaultTab):
                     **kwargs,
                 )
                 self.worker, self.thread = move_to_separate_thread(func)
+                self.worker.error.connect(self.root.show_task_error)
                 self.worker.finished.connect(self.signal_analysis_complete)
                 self.thread.start()
             else:

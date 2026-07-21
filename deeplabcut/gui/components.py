@@ -229,6 +229,11 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
         # Number of selected videos text
         self.selected_videos_text = QtWidgets.QLabel("")
+        self.selected_videos_text.setWordWrap(True)
+        self.selected_videos_text.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
 
         # Clear video selection
         self.clear_videos = QtWidgets.QPushButton("Clear selection")
@@ -633,19 +638,33 @@ class DefaultTab(QtWidgets.QWidget):
     def __init__(
         self,
         root: QtWidgets.QMainWindow,
-        parent: QtWidgets.QWidget = None,
+        parent: QtWidgets.QWidget | None = None,
         h1_description: str = "",
     ):
         super().__init__(parent)
 
         self.parent = parent
         self.root = root
-
         self.h1_description = h1_description
 
-        self.main_layout = QtWidgets.QVBoxLayout()
+        outer_layout = QtWidgets.QVBoxLayout(self)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.scroll_area = QtWidgets.QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+
+        self.content_widget = QtWidgets.QWidget()
+        self.content_widget.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
+
+        self.main_layout = QtWidgets.QVBoxLayout(self.content_widget)
         self.main_layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        self.setLayout(self.main_layout)
+
+        self.scroll_area.setWidget(self.content_widget)
+        outer_layout.addWidget(self.scroll_area)
 
         self._init_default_layout()
 

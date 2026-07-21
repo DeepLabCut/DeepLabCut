@@ -162,6 +162,9 @@ dev = [
   "pytest-cov",
   "ruff",
 ]
+gui-dev = [
+  "pytest-qt",
+]
 
 [tool.setuptools]
 include-package-data = false

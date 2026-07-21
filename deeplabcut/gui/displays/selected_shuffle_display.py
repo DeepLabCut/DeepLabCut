@@ -16,6 +16,8 @@ from pathlib import Path
 
 import PySide6.QtCore as QtCore
 from PySide6 import QtWidgets
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QSizePolicy
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
@@ -24,7 +26,7 @@ from deeplabcut.utils import auxiliaryfunctions
 class SelectedShuffleDisplay(QtWidgets.QWidget):
     """A widget displaying information about the selected shuffle."""
 
-    pose_cfg_signal = QtCore.Signal(dict)
+    pose_cfg_signal = QtCore.Signal(object)
 
     def __init__(self, root, row_margin: int = 25):
         super().__init__()
@@ -86,7 +88,7 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
             return
 
         if not pose_cfg_path.exists():
-            self._set_text_error(f"The model configuration file {pose_cfg_path} was not created")
+            self._set_text_error(f"The model configuration file:\n\n{pose_cfg_path}\n\nwas not created")
             return
 
         self._read_pose_config(pose_cfg_path)
@@ -111,9 +113,18 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
         self._label.setText(text)
 
     def _set_text_error(self, error: str) -> None:
+        self._label.setWordWrap(True)
+        self._label.setTextFormat(Qt.PlainText)
+        self._label.setSizePolicy(
+            QSizePolicy.Policy.Minimum,
+            QSizePolicy.Policy.Expanding,
+        )
+        self._label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse | Qt.TextInteractionFlag.TextSelectableByKeyboard
+        )
+
         self._label.setText(error)
-        style = f"margin: 0px 0px {self._row_margin}px 0px; color: orange;"
-        self._label.setStyleSheet(style)
+        self._label.setStyleSheet(f"margin: 0 0 {self._row_margin}px 0; color: orange;")
         self.pose_cfg = None
 
     def _read_pose_config(self, pose_cfg_path: Path) -> None:
@@ -121,5 +132,8 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
 
         self._engine = Engine.PYTORCH if "pytorch" in pose_cfg_path.stem.lower() else Engine.TF
         self._net_type = pose_cfg.get("net_type", "UNKNOWN")
-        self._is_top_down = self._engine == Engine.PYTORCH and pose_cfg.get("method").lower() == "td"
+
+        method = pose_cfg.get("method")
+        self._is_top_down = self._engine == Engine.PYTORCH and isinstance(method, str) and method.lower() == "td"
+
         self.pose_cfg = pose_cfg
