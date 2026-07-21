@@ -33,7 +33,7 @@ class DataItem:
 def _normalize_image_path(im_path: np.ndarray | list | tuple | Path | str) -> str:
     """Convert a raw image path from .mat or pickle format to a string."""
     if isinstance(im_path, np.ndarray):
-        im_path = [str(x) for x in im_path.flatten()]
+        im_path = [str(x).strip() for x in im_path.flatten()]
     im_path = Path(*im_path) if isinstance(im_path, (list, tuple)) else Path(im_path)
     return str(im_path)
 
