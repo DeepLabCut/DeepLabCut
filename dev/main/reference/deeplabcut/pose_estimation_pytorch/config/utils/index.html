@@ -14273,7 +14273,7 @@ given to the method</p>
 <span class="normal"><a href="#__codelineno-0-123">123</a></span>
 <span class="normal"><a href="#__codelineno-0-124">124</a></span>
 <span class="normal"><a href="#__codelineno-0-125">125</a></span>
-<span class="normal"><a href="#__codelineno-0-126">126</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-121"><a id="__codelineno-0-121" name="__codelineno-0-121"></a><span class="nd">@deprecated</span><span class="p">(</span><span class="n">replacement</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="s2">&quot;3.1&quot;</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-126">126</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-121"><a id="__codelineno-0-121" name="__codelineno-0-121"></a><span class="nd">@deprecated</span><span class="p">(</span><span class="n">replacement</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="s2">&quot;3.0.1&quot;</span><span class="p">)</span>
 </span><span id="__span-0-122"><a id="__codelineno-0-122" name="__codelineno-0-122"></a><span class="k">def</span><span class="w"> </span><span class="nf">update_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">updates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">copy_original</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 </span><span id="__span-0-123"><a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Deprecated helper for updating config dictionaries.&quot;&quot;&quot;</span>
 </span><span id="__span-0-124"><a id="__codelineno-0-124" name="__codelineno-0-124"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.pose_estimation_pytorch.config.make_pose_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">_update_config</span>
@@ -14299,7 +14299,7 @@ given to the method</p>
     <div class="doc doc-contents ">
 
         <p>Deprecated helper for updating config dictionaries using dot notation.
-<code>DLCBaseConfig.set_nested</code> (new in 3.1) can be used instead (not identical).</p>
+<code>DLCBaseConfig.set_nested</code> (new in 3.0.1) can be used instead (not identical).</p>
 <p>Updates items in the configuration file using dot notation for nested keys</p>
 <p>The configuration dict should only be composed of primitive Python types
 (dict, list and values). This is the case when reading the file using
@@ -14437,10 +14437,10 @@ e.g. {"device": "cuda", "runner.gpus": [0,1]}</p>
 <span class="normal"><a href="#__codelineno-0-168">168</a></span>
 <span class="normal"><a href="#__codelineno-0-169">169</a></span>
 <span class="normal"><a href="#__codelineno-0-170">170</a></span>
-<span class="normal"><a href="#__codelineno-0-171">171</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="nd">@deprecated</span><span class="p">(</span><span class="n">replacement</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="s2">&quot;3.1&quot;</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-171">171</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="nd">@deprecated</span><span class="p">(</span><span class="n">replacement</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="s2">&quot;3.0.1&quot;</span><span class="p">)</span>
 </span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a><span class="k">def</span><span class="w"> </span><span class="nf">update_config_by_dotpath</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">updates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">copy_original</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 </span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Deprecated helper for updating config dictionaries using dot notation.</span>
-</span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a><span class="sd">    ``DLCBaseConfig.set_nested`` (new in 3.1) can be used instead (not identical).</span>
+</span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a><span class="sd">    ``DLCBaseConfig.set_nested`` (new in 3.0.1) can be used instead (not identical).</span>
 </span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>
 </span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a><span class="sd">    Updates items in the configuration file using dot notation for nested keys</span>
 </span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a>
