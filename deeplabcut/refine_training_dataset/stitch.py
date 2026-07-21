@@ -670,12 +670,18 @@ class TrackletStitcher:
             # Preflow push seems to work slightly better than shortest
             # augmentation path..., and is more computationally efficient.
             paths = []
-            for path in nx.node_disjoint_paths(self.G, "source", "sink", preflow_push, self.n_tracks):
-                temp = set()
-                for node in path[1:-1]:
-                    self.G.remove_node(node)
-                    temp.add(self._mapping_inv[node])
-                paths.append(list(temp))
+            try:
+                for path in nx.node_disjoint_paths(self.G, "source", "sink", preflow_push, self.n_tracks):
+                    temp = set()
+                    for node in path[1:-1]:
+                        self.G.remove_node(node)
+                        temp.add(self._mapping_inv[node])
+                    paths.append(list(temp))
+            except nx.exception.NetworkXNoPath:
+                warnings.warn(
+                    "Could not find disjoint paths connecting all tracklets. Continuing with partial results.",
+                    stacklevel=2,
+                )
             incomplete_tracks = self.n_tracks - len(paths)
             remaining_nodes = set(self._mapping_inv[node] for node in self.G if node not in ("source", "sink"))
             if len(remaining_nodes) > 0:
@@ -709,8 +715,17 @@ class TrackletStitcher:
                     self.build_graph(list(remaining_nodes), max_gap=np.inf)
                     self.G.nodes["source"]["demand"] = -incomplete_tracks
                     self.G.nodes["sink"]["demand"] = incomplete_tracks
-                    _, self.flow = nx.capacity_scaling(self.G)
-                    paths += self.reconstruct_paths()
+                    try:
+                        _, self.flow = nx.capacity_scaling(self.G)
+                        paths += self.reconstruct_paths()
+                    except nx.exception.NetworkXUnfeasible:
+                        warnings.warn(
+                            "The fallback flow problem is also infeasible. "
+                            f"Could not reconstruct {incomplete_tracks} "
+                            f"remaining tracks from {len(remaining_nodes)} "
+                            f"remaining tracklets.",
+                            stacklevel=2,
+                        )
             self.paths = paths
             if len(self.paths) != self.n_tracks:
                 warnings.warn(f"Only {len(self.paths)} tracks could be reconstructed.", stacklevel=2)
