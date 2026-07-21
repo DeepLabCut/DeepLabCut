@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from enum import Enum
+from pathlib import Path
 
 import numpy as np
 
@@ -26,6 +27,15 @@ class Batch(Enum):
 
 class DataItem:
     pass
+
+
+# NOTE @deruyter92 2026-07-21: the TensorFlow branch is deprecated soon, and excluded from the migration to pathlib
+def _normalize_image_path(im_path: np.ndarray | list | tuple | Path | str) -> str:
+    """Convert a raw image path from .mat or pickle format to a string."""
+    if isinstance(im_path, np.ndarray):
+        im_path = [str(x) for x in im_path.flatten()]
+    im_path = Path(*im_path) if isinstance(im_path, (list, tuple)) else Path(im_path)
+    return str(im_path)
 
 
 def data_to_input(data):

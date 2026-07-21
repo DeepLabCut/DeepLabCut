@@ -25,7 +25,7 @@ from deeplabcut.generate_training_dataset import read_image_shape_fast
 from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 from deeplabcut.pose_estimation_tensorflow.datasets.factory import PoseDatasetFactory
 from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import BasePoseDataset
-from deeplabcut.pose_estimation_tensorflow.datasets.utils import Batch, DataItem
+from deeplabcut.pose_estimation_tensorflow.datasets.utils import Batch, DataItem, _normalize_image_path
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoReader, imread
 
@@ -100,8 +100,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             sample = pickledata[i]  # mlab[0, i]
             item = DataItem()
             item.image_id = i
-            im_path = sample["image"]
-            item.im_path = str(Path(*im_path) if isinstance(im_path, list) else Path(im_path))
+            item.im_path: str = _normalize_image_path(sample["image"])
             item.im_size = sample["size"]
             if "joints" in sample.keys():
                 Joints = sample["joints"]

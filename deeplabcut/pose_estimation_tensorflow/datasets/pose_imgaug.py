@@ -27,7 +27,7 @@ from deeplabcut.utils.auxfun_videos import imread
 
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
-from .utils import Batch, DataItem
+from .utils import Batch, DataItem, _normalize_image_path
 
 
 @PoseDatasetFactory.register("default")
@@ -92,10 +92,7 @@ class ImgaugPoseDataset(BasePoseDataset):
 
                 item = DataItem()
                 item.image_id = i
-                im_path = sample[0][0]
-                if isinstance(im_path, np.ndarray):
-                    im_path = [str(x) for x in im_path.flatten()]
-                item.im_path = str(Path(*im_path) if isinstance(im_path, list) else Path(im_path))
+                item.im_path: str = _normalize_image_path(sample[0][0])
                 item.im_size = sample[1][0]
                 if len(sample) >= 3:
                     joints = sample[2][0][0]
@@ -125,10 +122,7 @@ class ImgaugPoseDataset(BasePoseDataset):
                 sample = pickledata[i]  # mlab[0, i]
                 item = DataItem()
                 item.image_id = i
-                im_path = sample["image"]
-                if isinstance(im_path, np.ndarray):
-                    im_path = [str(x) for x in im_path.flatten()]
-                item.im_path = str(Path(*im_path))  # [0][0]
+                item.im_path: str = _normalize_image_path(sample["image"])  # [0][0]
                 item.im_size = sample["size"]  # sample[1][0]
                 if len(sample) >= 3:
                     item.num_animals = len(sample["joints"])
