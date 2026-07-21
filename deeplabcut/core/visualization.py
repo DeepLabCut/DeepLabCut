@@ -17,6 +17,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+from deeplabcut.utils.matplotlib_future_mode import get_colormap
+
 
 def form_figure(nx, ny) -> tuple[plt.Figure, plt.Axes]:
     """Forms a figure on which to plot images."""
@@ -222,7 +224,7 @@ def generate_model_output_plots(
         if paf_all_in_one:
             inds = [elem[0] for elem in edge_list]
             n_inds = len(inds)
-            cmap = plt.cm.get_cmap(paf_colormap, n_inds)
+            cmap = get_colormap(paf_colormap, n_inds)
             colors = cmap(range(n_inds))
             fig3, _ = visualize_paf(image, paf[:, :, inds], colors=colors)
             fig3.savefig(output_folder / _filename("paf"))

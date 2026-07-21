@@ -18,6 +18,7 @@ from deeplabcut.modelzoo.generalized_data_converter.datasets.materialize import 
     SingleDLC_config,
 )
 from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.matplotlib_future_mode import get_colormap
 
 
 def threshold_kpts(config_path, h5path, threshold_mean=0.9, threshold_min=0.1):
@@ -257,9 +258,7 @@ def customized_colormap(config_path):
     bodyparts = cfg["multianimalbodyparts"]
     n_bodyparts = len(cfg["multianimalbodyparts"])
 
-    import matplotlib.pyplot as plt
-
-    cmap = plt.cm.get_cmap("rainbow", n_bodyparts)
+    cmap = get_colormap("rainbow", n_bodyparts)
 
     colors = [cmap(i) for i in range(n_bodyparts)]
 
