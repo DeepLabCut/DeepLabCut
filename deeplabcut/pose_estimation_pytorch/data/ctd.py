@@ -240,9 +240,7 @@ class CondFromFile(CondProvider):
         def _parse_row(df_row) -> np.ndarray:
             # Row to numpy and reshape. copy=True: under pandas 3 CoW,
             # to_numpy() may return a read-only view.
-            pose = df_row.to_numpy(copy=True).reshape(
-                (num_conditions, num_bodyparts, 3)
-            )
+            pose = df_row.to_numpy(copy=True).reshape((num_conditions, num_bodyparts, 3))
 
             # Remove missing data
             missing_keypoints = np.any(np.isnan(pose) | (pose < 0), axis=2)

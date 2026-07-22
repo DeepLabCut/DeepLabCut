@@ -327,12 +327,8 @@ def triangulate(
             ### Assign nan to [X,Y] of low likelihood predictions ###
             # Convert the data to a np array to easily mask out the low likelihood predictions
             # copy=True: under pandas 3 CoW, to_numpy() may be read-only.
-            data_cam1_tmp = dataFrame_camera1_undistort.to_numpy(copy=True).reshape(
-                (num_frames, -1, 3)
-            )
-            data_cam2_tmp = dataFrame_camera2_undistort.to_numpy(copy=True).reshape(
-                (num_frames, -1, 3)
-            )
+            data_cam1_tmp = dataFrame_camera1_undistort.to_numpy(copy=True).reshape((num_frames, -1, 3))
+            data_cam2_tmp = dataFrame_camera2_undistort.to_numpy(copy=True).reshape((num_frames, -1, 3))
             # Assign [X,Y] = nan to low likelihood predictions
             data_cam1_tmp[data_cam1_tmp[..., 2] < pcutoff, :2] = np.nan
             data_cam2_tmp[data_cam2_tmp[..., 2] < pcutoff, :2] = np.nan
