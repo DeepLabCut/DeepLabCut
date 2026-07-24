@@ -221,8 +221,9 @@ class TrackletManager:
         self.filename = filename
         df = pd.read_hdf(filename)
 
-        # Fill existing gaps
-        data = df.to_numpy()
+        # Fill existing gaps. copy=True: under pandas 3 CoW, to_numpy() may
+        # return a read-only view that cannot be mutated in place.
+        data = df.to_numpy(copy=True)
         mask = ~df.columns.get_level_values(level="coords").str.contains("likelihood")
         xy = data[:, mask]
         prob = data[:, ~mask]
