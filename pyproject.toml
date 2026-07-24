@@ -37,7 +37,6 @@ dependencies = [
   "h5py>=3.15.1; platform_system=='Darwin'",
   "huggingface-hub>=0.23",
   "imageio-ffmpeg",
-  "imgaug>=0.4",
   "matplotlib>=3.3,<3.9,!=3.7,!=3.7.1",
   "networkx>=2.6",
   "numba>=0.54",
@@ -93,6 +92,7 @@ dev-docs = [
 fmpose3d = [ "fmpose3d>=0.0.8" ]
 # Use only one of [tf, tf-cu11, tf-cu12, tf-latest]. Do not combine extras.
 tf = [
+  "imgaug>=0.4",
   "protobuf<7",
   "tensorflow>=2.12,<2.16; python_version<'3.12'",
   "tensorflow>=2.16.1,<2.18; python_version>='3.12'",
@@ -105,6 +105,7 @@ tf = [
   "tf-slim>=1.1",
 ]
 tf-cu11 = [
+  "imgaug>=0.4",
   "protobuf<7",
   "tensorflow==2.14",
   "tensorflow-io-gcs-filesystem==0.31; platform_system=='Windows'",
@@ -116,6 +117,7 @@ tf-cu11 = [
   "torchvision<0.16",
 ]
 tf-cu12 = [
+  "imgaug>=0.4",
   "protobuf<7",
   "tensorflow==2.18",
   "tensorflow-metal==1.2; platform_system=='Darwin'",
@@ -126,6 +128,7 @@ tf-cu12 = [
   "torchvision<0.26",
 ]
 tf-latest = [
+  "imgaug>=0.4",
   "protobuf<7",
   "tensorflow>=2.18",
   "tensorflow-metal>=1.2; platform_system=='Darwin'",
@@ -135,6 +138,7 @@ tf-latest = [
 ]
 # apple_mchips is kept for older systems, prefer [tf] in new projects.
 apple_mchips = [
+  "imgaug>=0.4; platform_system=='Darwin'",
   "protobuf<7; platform_system=='Darwin'",
   "tensorflow>=2.12,<2.15; platform_system=='Darwin' and python_version<'3.12'",
   "tensorflow>=2.15,<2.18; platform_system=='Darwin' and python_version>='3.12'",
