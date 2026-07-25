@@ -135,7 +135,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
             item = DataItem()
             data = df.loc[imagename]
             # 3 for likelihood
-            kpts = data.to_numpy().reshape(-1, 3)
+            # copy=True: `kpts` is masked in place below (mask_kpts_below_thresh);
+            # under pandas 3 CoW a single-row float Series returns a read-only view.
+            kpts = data.to_numpy(copy=True).reshape(-1, 3)
             item.num_joints = kpts.shape[0]
             joint_ids = np.arange(item.num_joints)[..., np.newaxis]
             frame_name = "frame_" + str(int(imagename.split("frame")[1])) + ".png"
