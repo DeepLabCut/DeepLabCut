@@ -129,7 +129,6 @@ def split_separable_conv2d(
     Returns:
       output tesnor
     """
-
     with _v1_compatible_scope_naming(scope) as scope:
         dw_scope = scope + "depthwise"
         endpoints = endpoints if endpoints is not None else {}
@@ -238,7 +237,7 @@ def expanded_conv(
       Tensor of depth num_outputs
 
     Raises:
-      TypeError: on inval
+      TypeError: If arguments are invalid.
     """
     with (
         tf.compat.v1.variable_scope(scope, default_name="expanded_conv") as s,

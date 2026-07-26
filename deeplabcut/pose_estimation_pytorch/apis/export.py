@@ -52,10 +52,10 @@ def export_model(
             defined in the project ``config.yaml``.
         iteration: The project iteration (active learning loop) you wish to export. If
             None, the iteration listed in the project config file is used.
-        overwrite : bool, optional
+        overwrite: bool, optional
             If the model you wish to export has already been exported, whether to
             overwrite. default = False
-        wipe_paths : bool, optional
+        wipe_paths: bool, optional
             Removes the actual path of your project and the init_weights from the
             ``pytorch_config.yaml``.
         without_detector: bool, optional
@@ -70,12 +70,13 @@ def export_model(
 
     Examples:
         Export the last stored snapshot for model trained with shuffle 3:
-        >>> import deeplabcut
-        >>> deeplabcut.export_model(
-        >>>     "/analysis/project/reaching-task/config.yaml",
-        >>>     shuffle=3,
-        >>>     snapshotindex=-1,
-        >>> )
+
+            import deeplabcut
+            deeplabcut.export_model(
+                "/analysis/project/reaching-task/config.yaml",
+                shuffle=3,
+                snapshotindex=-1,
+            )
     """
     cfg = ProjectConfig.from_any(config)
     if iteration is not None:
@@ -146,7 +147,8 @@ def export_model(
 
 
 def get_export_folder_name(loader: dlc3_data.DLCLoader) -> str:
-    """
+    """Get the export folder name.
+
     Args:
         loader: The loader for the shuffle for which we want to export models.
 
@@ -164,7 +166,8 @@ def get_export_filename(
     snapshot: Snapshot,
     detector_snapshot: Snapshot | None = None,
 ) -> str:
-    """
+    """Get the export filename.
+
     Args:
         loader: The loader for the shuffle for which we want to export models.
         snapshot: The pose model snapshot to export.

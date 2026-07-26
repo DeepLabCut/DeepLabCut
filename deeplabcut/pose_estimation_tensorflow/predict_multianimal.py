@@ -109,7 +109,6 @@ def AnalyzeMultiAnimalVideo(
     use_shelve=False,
 ):
     """Helper function for analyzing a video with multiple individuals"""
-
     print("Starting to analyze % ", video)
     video = Path(video)
     destfolder = video.parent if destfolder is None else Path(destfolder)

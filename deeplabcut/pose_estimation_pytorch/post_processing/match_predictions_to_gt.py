@@ -25,7 +25,7 @@ def rmse_match_prediction_to_gt(pred_kpts: np.ndarray, gt_kpts: np.ndarray) -> n
     the potential missing animal.
 
     Raises:
-        ValueError: if `gt_kpts.shape != pred_kpts.shape`
+        ValueError: If `gt_kpts.shape != pred_kpts.shape`
 
     Args:
         pred_kpts: shape (num_predictions, num_keypoints, 3), ground truth keypoints for
@@ -104,11 +104,13 @@ def oks_match_prediction_to_gt(pred_kpts: np.array, gt_kpts: np.array, individua
             num_animals: Number of animals.
             num_keypoints: Number of keypoints.
             3: (x, y, score) coordinates of each keypoint.
-        gt_kpts: Ground truth keypoints for each animal. The shape of the array is (num_animals, num_keypoints(+1 if
-        with center), 2):
-            num_animals: Number of animals.
-            num_keypoints: Number of keypoints.
+        gt_kpts: Ground truth keypoints for each animal.
         individual_names: names of individuals
+
+    Note:
+      The shape of the ``gt_kpts`` array is:
+      * (num_animals, num_keypoints, 2) if not including the center.
+      * (num_animals, num_keypoints + 1, 2) if including the center.
 
     Returns:
         col_ind: Array of the individual indexes for prediction.
@@ -121,7 +123,6 @@ def oks_match_prediction_to_gt(pred_kpts: np.array, gt_kpts: np.array, individua
         output:
             col_ind = np.array([...])
     """
-
     num_animals, num_keypoints, _ = pred_kpts.shape
     if num_keypoints + 1 == gt_kpts.shape[1]:
         gt_kpts_without_ctr = gt_kpts[:, :-1, :].copy()

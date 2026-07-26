@@ -23,9 +23,11 @@ class HeatmapPredictor(BasePredictor):
     """Predictor class for pose estimation from heatmaps (and optionally locrefs).
 
     Args:
-        location_refinement: Enable location refinement.
-        locref_std: Standard deviation for location refinement.
-        apply_sigmoid: Apply sigmoid to heatmaps. Defaults to True.
+        apply_sigmoid (bool): Apply sigmoid to heatmaps. Defaults to True.
+        clip_scores (bool): If a sigmoid is not applied, this can be used to clip scores
+            for predicted keypoints to values in [0, 1].
+        location_refinement (bool): Enable location refinement.
+        locref_std (float): Standard deviation for location refinement.
 
     Returns:
         Regressed keypoints from heatmaps and locref_maps of baseline DLC model (ResNet + Deconv).
@@ -38,14 +40,6 @@ class HeatmapPredictor(BasePredictor):
         location_refinement: bool = True,
         locref_std: float = 7.2801,
     ):
-        """
-        Args:
-            apply_sigmoid: Apply sigmoid to heatmaps. Defaults to True.
-            clip_scores: If a sigmoid is not applied, this can be used to clip scores
-                for predicted keypoints to values in [0, 1].
-            location_refinement : Enable location refinement.
-            locref_std: Standard deviation for location refinement.
-        """
         super().__init__()
         self.apply_sigmoid = apply_sigmoid
         self.clip_scores = clip_scores
@@ -63,11 +57,13 @@ class HeatmapPredictor(BasePredictor):
         Returns:
             A dictionary containing a "poses" key with the output tensor as value.
 
-        Example:
-            >>> predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
-            >>> stride = 8
-            >>> output = {"heatmap": torch.rand(32, 17, 64, 64), "locref": torch.rand(32, 17, 64, 64)}
-            >>> poses = predictor.forward(stride, output)
+        Examples:
+            Assuming you have ``outputs`` (heatmaps and locrefs) and ``stride`` for pose predictions:
+
+                predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
+                stride = 8
+                output = {"heatmap": torch.rand(32, 17, 64, 64), "locref": torch.rand(32, 17, 64, 64)}
+                poses = predictor.forward(stride, output)
         """
         heatmaps = outputs["heatmap"]
         scale_factors = stride, stride
@@ -100,10 +96,12 @@ class HeatmapPredictor(BasePredictor):
         Returns:
             Y and X indices of the top values.
 
-        Example:
-            >>> predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
-            >>> heatmap = torch.rand(32, 17, 64, 64)
-            >>> Y, X = predictor.get_top_values(heatmap)
+        Examples:
+            Get the top values from a heatmap:
+
+                predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
+                heatmap = torch.rand(32, 17, 64, 64)
+                Y, X = predictor.get_top_values(heatmap)
         """
         batchsize, ny, nx, num_joints = heatmap.shape
         heatmap_flat = heatmap.reshape(batchsize, nx * ny, num_joints)
@@ -122,12 +120,14 @@ class HeatmapPredictor(BasePredictor):
         Returns:
             Pose predictions of the format: (batch_size, num_people = 1, num_joints, 3)
 
-        Example:
-            >>> predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
-            >>> heatmap = torch.rand(32, 64, 64, 17)
-            >>> locref = torch.rand(32, 64, 64, 17, 2)
-            >>> scale_factors = (0.5, 0.5)
-            >>> poses = predictor.get_pose_prediction(heatmap, locref, scale_factors)
+        Examples:
+            Get the pose prediction from a heatmap and locref:
+
+                predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
+                heatmap = torch.rand(32, 64, 64, 17)
+                locref = torch.rand(32, 64, 64, 17, 2)
+                scale_factors = (0.5, 0.5)
+                poses = predictor.get_pose_prediction(heatmap, locref, scale_factors)
         """
         y, x = self.get_top_values(heatmap)  # y, x: (batch_size, num_joints)
 

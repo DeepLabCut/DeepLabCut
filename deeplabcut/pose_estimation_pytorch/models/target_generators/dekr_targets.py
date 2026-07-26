@@ -49,6 +49,7 @@ class DEKRGenerator(BaseGenerator):
         """
         Given the annotations and predictions of your keypoints, this function returns the targets,
         a dictionary containing the heatmaps, locref_maps and locref_masks.
+
         Args:
             stride: the stride of the model
             outputs: output of each model head

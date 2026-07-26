@@ -66,12 +66,15 @@ class ResNet(BaseBackbone):
 
         Returns:
             torch.Tensor: Output tensor.
-        Example:
-            >>> import torch
-            >>> from deeplabcut.pose_estimation_pytorch.models.backbones import ResNet
-            >>> backbone = ResNet(model_name='resnet50', pretrained=False)
-            >>> x = torch.randn(1, 3, 256, 256)
-            >>> y = backbone(x)
+
+        Examples:
+            Create a ResNet50 backbone and forward a random tensor:
+
+                import torch
+                from deeplabcut.pose_estimation_pytorch.models.backbones import ResNet
+                backbone = ResNet(model_name="resnet50", pretrained=False)
+                x = torch.randn(1, 3, 256, 256)
+                y = backbone(x)
 
             Expected Output Shape:
                 If input size is (batch_size, 3, shape_x, shape_y), the output shape

@@ -31,24 +31,18 @@ import numpy as np
 import pandas as pd
 
 from deeplabcut.core.trackingutils import TRACK_METHODS
-from deeplabcut.generate_training_dataset import trainingsetmanipulation
 from deeplabcut.utils import auxiliaryfunctions, conversioncode
 
 
 def reorder_individuals_in_df(df: pd.DataFrame, order: list) -> pd.DataFrame:
     """Reorders data of df to match the order given in a list.
 
-    Parameters:
-    ----------
-    df: pd.DataFrame
-        Data from tracked .h5 file
-    order: list of str
-        Desired order of individuals
+    Args:
+        df (pd.DataFrame): Data from tracked .h5 file.
+        order (list of str): Desired order of individuals.
 
-    Return:
-    -------
-        df: pd.DataFrame
-            Reordered DataFrame
+    Returns:
+        pd.DataFrame: Reordered DataFrame.
     """
     columns = df.columns
     inds = df.index
@@ -91,7 +85,8 @@ def get_track_method(cfg, track_method=""):
 
 def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
     """Returns all individuals when set to 'all', otherwise all bpts that are in the
-    intersection of comparisonbodyparts and the actual bodyparts."""
+    intersection of comparisonbodyparts and the actual bodyparts.
+    """
     if "individuals" not in cfg:  # Not a multi-animal project...
         return [""]
     all_indivs = extractindividualsandbodyparts(cfg)[0]
@@ -192,27 +187,31 @@ def graph2names(cfg, partaffinityfield_graph):
 
 def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
     """Save predicted data as h5 file and metadata as pickle file; created by
-    predict_videos.py."""
-    data_path = dataname.split(".h5")[0] + suffix + ".pickle"
-    metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
+    predict_videos.py.
+    """
+    dataname = Path(dataname)
+    data_path = dataname.with_name(dataname.stem + suffix + ".pickle")
+    metadata_path = dataname.with_name(dataname.stem + "_meta.pickle")
 
-    with Path(data_path).open("wb") as f:
+    data_path.parent.mkdir(parents=True, exist_ok=True)
+    with data_path.open("wb") as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
-    with Path(metadata_path).open("wb") as f:
+    with metadata_path.open("wb") as f:
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
     return data_path, metadata_path
 
 
 def LoadFullMultiAnimalData(dataname):
-    """Save predicted data as h5 file and metadata as pickle file; created by
-    predict_videos.py."""
-    data_file = dataname.split(".h5")[0] + "_full.pickle"
+    """Load predicted data and metadata from pickle files created by predict_videos.py."""
+    dataname = Path(dataname)
+    data_file = dataname.with_name(dataname.stem + "_full.pickle")
+    metadata_file = dataname.with_name(dataname.stem + "_meta.pickle")
     try:
-        with Path(data_file).open("rb") as handle:
+        with data_file.open("rb") as handle:
             data = pickle.load(handle)
     except (pickle.UnpicklingError, FileNotFoundError):
         data = shelve.open(data_file, flag="r")
-    with Path(data_file.replace("_full.", "_meta.")).open("rb") as handle:
+    with metadata_file.open("rb") as handle:
         metadata = pickle.load(handle)
     return data, metadata
 
@@ -233,39 +232,33 @@ def returnlabelingdata(config):
 
 
 def convert2_maDLC(config: str | Path, userfeedback=True, forceindividual=None):
-    """
-    Converts single animal annotation file into a multianimal annotation file,
-    by introducing an individuals column with either the first individual
+    """Convert a single-animal annotation file into a multianimal annotation file.
+
+    Introduces an individuals column with either the first individual
     in individuals list in config.yaml or whatever is passed via "forceindividual".
 
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (str | Path): Full path of the config.yaml file as a string.
+        userfeedback (bool, optional): If false, all folders are processed without prompting.
+            If true, the user is asked for each folder whether to convert. Use this, e.g. if you have already labeled
+            some folders and want to convert data for new videos only.
+        forceindividual (str | None, optional): If a string is given, that value is used
+            in the individuals column. Defaults to None.
 
-    userfeedback: bool, optional
-            If this is set to false during automatic mode then frames for all videos are extracted. The user can set
-            this to true, which will result in a dialog,
-            where the user is asked for each video if (additional/any) frames from this video should be extracted. Use
-            this, e.g. if you have already labeled
-            some folders and want to extract data for new videos.
+    Examples:
+        Convert multianimalbodyparts under the 'first individual' in individuals list in
+        `config.yaml` and uniquebodyparts under 'single':
 
-    forceindividual: None default
-            If a string is given that is used in the individuals column.
+            deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml")
 
-    Examples
-    --------
-    Converts mulianimalbodyparts under the 'first individual' in individuals list in config.yaml
-    and uniquebodyparts under 'single'
-    >>> deeplabcut.convert2_maDLC('/socialrearing-task/config.yaml')
+        Convert multianimalbodyparts under the individual label mus17 and uniquebodyparts
+        under 'single':
 
-    --------
-    Converts mulianimalbodyparts under the individual label mus17 and uniquebodyparts under 'single'
-    >>> deeplabcut.convert2_maDLC('/socialrearing-task/config.yaml', forceindividual='mus17')
+            deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml", forceindividual="mus17")
     """
-
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
-    video_names = [trainingsetmanipulation._robust_path_split(i)[1] for i in videos]
+    video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(cfg)
@@ -292,7 +285,7 @@ def convert2_maDLC(config: str | Path, userfeedback=True, forceindividual=None):
 
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
             fn = folder / ("CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(str(fn) + ".h5")
+            Data = pd.read_hdf(fn.with_suffix(".h5"))
             conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
@@ -351,13 +344,13 @@ def convert2_maDLC(config: str | Path, userfeedback=True, forceindividual=None):
                     dataFrame = pd.concat([dataFrame, frame], axis=1)
 
             Data.to_hdf(
-                fn + "singleanimal.h5",
+                fn.with_name(fn.name + "singleanimal.h5"),
                 key="df_with_missing",
             )
-            Data.to_csv(fn + "singleanimal.csv")
+            Data.to_csv(fn.with_name(fn.name + "singleanimal.csv"))
 
-            dataFrame.to_hdf(fn + ".h5", key="df_with_missing")
-            dataFrame.to_csv(fn + ".csv")
+            dataFrame.to_hdf(fn.with_suffix(".h5"), key="df_with_missing")
+            dataFrame.to_csv(fn.with_suffix(".csv"))
 
 
 def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
@@ -380,7 +373,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
 
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
             fn = folder / ("CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(str(fn) + ".h5")
+            Data = pd.read_hdf(fn.with_suffix(".h5"))
             conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
@@ -423,16 +416,16 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
                 Data.to_hdf(
-                    fn + "multianimal.h5",
+                    fn.with_name(fn.name + "multianimal.h5"),
                     key="df_with_missing",
                 )
-                Data.to_csv(fn + "multianimal.csv")
+                Data.to_csv(fn.with_name(fn.name + "multianimal.csv"))
 
                 DataFrame.to_hdf(
-                    fn + ".h5",
+                    fn.with_suffix(".h5"),
                     key="df_with_missing",
                 )
-                DataFrame.to_csv(fn + ".csv")
+                DataFrame.to_csv(fn.with_suffix(".csv"))
             elif target is None or target == "multi":
                 print("This is a single animal data set, converting to multi...", folder)
                 for prfxindex, prefix in enumerate(prefixes):
@@ -510,16 +503,16 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
                 Data.to_hdf(
-                    fn + "singleanimal.h5",
+                    fn.with_name(fn.name + "singleanimal.h5"),
                     key="df_with_missing",
                 )
-                Data.to_csv(fn + "singleanimal.csv")
+                Data.to_csv(fn.with_name(fn.name + "singleanimal.csv"))
 
                 DataFrame.to_hdf(
-                    fn + ".h5",
+                    fn.with_suffix(".h5"),
                     key="df_with_missing",
                 )
-                DataFrame.to_csv(fn + ".csv")
+                DataFrame.to_csv(fn.with_suffix(".csv"))
 
 
 def form_default_inferencecfg(cfg):

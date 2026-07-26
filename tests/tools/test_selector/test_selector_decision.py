@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from tools import test_selector
+from tools.test_selector import decide, order_functional_scripts
 from tools.test_selector_config import (
     CATEGORY_RULES,
     CategoryRule,
@@ -339,3 +341,54 @@ def test_current_selected_paths_exist():
                 missing.append((rule.name, "script", path))
 
     assert missing == []
+
+
+def test_3d_script_includes_tensorflow_prerequisite():
+    scripts = order_functional_scripts({"examples/testscript_3d.py"})
+
+    assert scripts == [
+        "examples/testscript_tensorflow_single_animal.py",
+        "examples/testscript_3d.py",
+    ]
+
+
+def test_explicit_dependency_is_not_duplicated():
+    scripts = order_functional_scripts(
+        {
+            "examples/testscript_tensorflow_single_animal.py",
+            "examples/testscript_3d.py",
+        }
+    )
+
+    assert scripts == [
+        "examples/testscript_tensorflow_single_animal.py",
+        "examples/testscript_3d.py",
+    ]
+
+
+def test_functional_script_dependency_cycle(monkeypatch):
+    monkeypatch.setattr(
+        test_selector,
+        "FUNC_SCRIPT_DEPENDENCIES",
+        {
+            "a.py": ("b.py",),
+            "b.py": ("a.py",),
+        },
+    )
+
+    with pytest.raises(ValueError, match="Cyclic"):
+        order_functional_scripts({"a.py"})
+
+
+def test_3d_changes_select_scripts_in_dependency_order():
+    result = decide(["deeplabcut/pose_estimation_3d/plotting3D.py"])
+
+    assert result.functional_scripts == [
+        "examples/testscript_tensorflow_single_animal.py",
+        "examples/testscript_3d.py",
+    ]
+    assert (
+        "dependency:examples/testscript_3d.py"
+        in result.provenance.scripts["examples/testscript_tensorflow_single_animal.py"]
+    )
+    assert "3d_pose_estimation" in result.provenance.scripts["examples/testscript_3d.py"]

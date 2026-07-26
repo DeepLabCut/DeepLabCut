@@ -113,7 +113,6 @@ class StackedKeypointEncoder(BaseKeypointEncoder):
         Returns:
             the encoded keypoints
         """
-
         batch_size, _, _ = keypoints.shape
 
         kpts = keypoints.copy()
@@ -181,7 +180,6 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
         Returns:
             encoded keypoints with shape (batch_size, num_joints, height, width, 3)
         """
-
         batch_size, num_kpts, _ = keypoints.shape
 
         if not num_kpts == len(self.colors):

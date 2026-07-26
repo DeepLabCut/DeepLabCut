@@ -14,8 +14,10 @@ sphinx:
       - "venv/**"
       - "**/site-packages/**"
       - "**/_build/**"
+    napoleon_google_docstring: true
+    napoleon_numpy_docstring: false
   extra_extensions:
-    - numpydoc
+    - sphinx.ext.napoleon
     - sphinxcontrib.mermaid
 
 execute:

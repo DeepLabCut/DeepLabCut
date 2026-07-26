@@ -10,6 +10,10 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 PathPred = Callable[[str], bool]
 
+FUNC_SCRIPT_DEPENDENCIES: dict[str, tuple[str, ...]] = {
+    "examples/testscript_3d.py": ("examples/testscript_tensorflow_single_animal.py",),
+}
+
 
 def prefix(*values: str) -> PathPred:
     """Match if path starts with any of the given prefixes."""

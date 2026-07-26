@@ -89,7 +89,7 @@ def get_super_animal_snapshot_path(
     return model_path
 
 
-@deprecated(replacement="PoseConfig.build_for_superanimal_inference", since="3.1")
+@deprecated(replacement="PoseConfig.build_for_superanimal_inference", since="3.0.1")
 def load_super_animal_config(
     super_animal: str,
     model_name: str,
@@ -119,7 +119,7 @@ def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
         The path to the downloaded snapshot.
 
     Raises:
-        RuntimeError if the model fails to download.
+        RuntimeError: If the model fails to download.
     """
     snapshot_dir = get_snapshot_folder_path()
     model_name = f"{dataset}_{model_name}"

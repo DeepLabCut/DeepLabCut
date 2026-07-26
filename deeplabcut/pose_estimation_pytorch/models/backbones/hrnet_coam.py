@@ -57,7 +57,6 @@ class HRNetCoAM(HRNet):
             img_size: The (height, width) size of the input images.
             num_joints: Number of joints in the dataset.
         """
-
         super().__init__(model_name=base_model_name, pretrained=pretrained, **kwargs)
 
         self.coam_modules = coam_modules
@@ -165,7 +164,6 @@ class HRNetCoAM(HRNet):
         Returns:
             the feature map
         """
-
         # create conditional heatmap
         if isinstance(cond_kpts, torch.Tensor):
             cond_kpts = cond_kpts.detach().numpy()

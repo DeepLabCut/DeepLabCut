@@ -108,7 +108,6 @@ def get_simcc_maximum(
         - vals (np.ndarray): values of maximum heatmap responses in shape
             (K,) or (N, K)
     """
-
     assert isinstance(simcc_x, np.ndarray), "simcc_x should be numpy.ndarray"
     assert isinstance(simcc_y, np.ndarray), "simcc_y should be numpy.ndarray"
     assert simcc_x.ndim == 2 or simcc_x.ndim == 3, f"Invalid shape {simcc_x.shape}"

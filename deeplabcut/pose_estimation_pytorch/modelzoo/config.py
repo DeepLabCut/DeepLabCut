@@ -140,7 +140,7 @@ def build_superanimal_finetune_config(
     return model_cfg
 
 
-@deprecated(replacement="PoseConfig.build_for_superanimal_finetune", since="3.1")
+@deprecated(replacement="PoseConfig.build_for_superanimal_finetune", since="3.0.1")
 def make_super_animal_finetune_config(
     weight_init: WeightInitialization,
     project_config: dict,

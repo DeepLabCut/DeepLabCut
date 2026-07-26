@@ -90,6 +90,11 @@ parts:
       - file: docs/benchmark
       - file: docs/recipes/TechHardware
 
+  - caption: Development
+    chapters:
+      - title: Developer Documentation
+        url: https://deeplabcut.github.io/DeepLabCut/dev/
+
   - caption: Additional guides (Recipes)
     chapters:
       - file: docs/recipes/index

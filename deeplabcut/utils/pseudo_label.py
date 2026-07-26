@@ -367,7 +367,6 @@ def dlc3predictions_2_annotation_from_video(
     bbox: []
 
     """
-
     category_id = 1  # the default for superanimal. But it might be changed
 
     images = []
@@ -416,7 +415,7 @@ def dlc3predictions_2_annotation_from_video(
     assert len(predictions) == len(image_paths)
     imageid2annotations = defaultdict(list)
     for image_id, (prediction, image_path) in enumerate(zip(predictions, image_paths, strict=False)):
-        image_obj = cv2.imread(image_path)
+        image_obj = cv2.imread(str(image_path))
         height, width, channels = image_obj.shape
         imagename = Path(image_path).name
         image = {

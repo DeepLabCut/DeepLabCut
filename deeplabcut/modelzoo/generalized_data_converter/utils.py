@@ -57,7 +57,6 @@ def create_dummy_config_file_from_h5(
     proj_root, reference_h5, taskname="dummytask", scorer="dummyscorer", date="March30"
 ):
     """Assuming at least labeled-data folder is there."""
-
     cfg_template = SingleDLC_config()
 
     df = pd.read_hdf(reference_h5)
@@ -97,7 +96,6 @@ def create_dummy_config_file_from_pickle(
     date="March30",
 ):
     """Assuming at least labeled-data folder is there."""
-
     cfg_template = SingleDLC_config()
 
     with Path(reference_pickle).open("rb") as f:

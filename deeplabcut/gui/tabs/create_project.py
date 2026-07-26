@@ -25,6 +25,7 @@ from deeplabcut.gui.tabs.docs import (
 )
 from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame
 from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 class DynamicTextList(QtWidgets.QWidget):
@@ -434,12 +435,9 @@ class ProjectCreator(QtWidgets.QDialog):
             if not folder:
                 return
 
-            for video in auxiliaryfunctions.grab_files_in_folder(
-                folder,
-                relative=False,
-            ):
-                if Path(video).suffix[1:].lower() in DLCParams.VIDEOTYPES[1:]:
-                    self.video_frame.fancy_list.add_item(video)
+            for video in collect_video_paths(folder):
+                if video.suffix[1:].lower() in DLCParams.VIDEOTYPES[1:]:
+                    self.video_frame.fancy_list.add_item(str(video))
 
     def finalize_project(self):
         fields = [self.proj_line, self.exp_line]

@@ -18,38 +18,34 @@ from tqdm import tqdm
 
 import deeplabcut as dlc
 from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 SUPPORTED_FILETYPES = "csv", "nwb"
 
 
 def convertcsv2h5(config: str | Path, userfeedback=True, scorer=None):
-    """
-    Convert (image) annotation files in folder labeled-data from csv to h5.
-    This function allows the user to manually edit the csv
+    """Convert annotation files in labeled-data from csv to h5.
+
+    Allows the user to manually edit the csv
     (e.g. to correct the scorer name and then convert it into hdf format).
     WARNING: conversion might corrupt the data.
 
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (str | Path): Full path of the config.yaml file as a string.
+        userfeedback (bool, optional): If true the user will be asked specifically
+            for each folder in labeled-data if the containing csv shall be converted to hdf format.
+        scorer (string, optional): If a string is given, then the scorer/annotator
+            in all csv and hdf files that are changed, will be overwritten with this name.
 
-    userfeedback: bool, optional
-        If true the user will be asked specifically
-        for each folder in labeled-data if the containing csv shall be converted to hdf format.
+    Examples:
+        Convert csv annotation files for reaching-task project into hdf:
 
-    scorer: string, optional
-        If a string is given, then the scorer/annotator
-        in all csv and hdf files that are changed, will be overwritten with this name.
+            deeplabcut.convertcsv2h5("/analysis/project/reaching-task/config.yaml")
 
-    Examples
-    --------
-    Convert csv annotation files for reaching-task project into hdf.
-    >>> deeplabcut.convertcsv2h5('/analysis/project/reaching-task/config.yaml')
+        Convert csv annotation files for reaching-task project into hdf while changing
+        the scorer/annotator in all annotation files to Albert:
 
-    --------
-    Convert csv annotation files for reaching-task project into hdf
-    while changing the scorer/annotator in all annotation files to Albert!
-    >>> deeplabcut.convertcsv2h5('/analysis/project/reaching-task/config.yaml',scorer='Albert')
-    --------
+            deeplabcut.convertcsv2h5("/analysis/project/reaching-task/config.yaml", scorer="Albert")
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
@@ -100,20 +96,15 @@ def adapt_labeled_data_to_new_project(
     under the labeled-data folder and with the same configuration as all deeplabcut
     projects.
 
-    Parameters
-    ----------
-    config_path : str
-        The path to the config.yaml file.
-    remove_old_bodyparts : bool (default = False)
-        If True, the old bodyparts that are not in the new project will be removed from the dataframe.
-    other_scorer : bool (default = False)
-        If True, the labels will be converted to the new scorer.
-    userfeedback : bool (default = True)
-        If true the user will be asked specifically
-        for each folder in labeled-data if the containing csv
-        shall be converted to hdf format.
+    Args:
+        config_path (str): The path to the config.yaml file.
+        remove_old_bodyparts (bool): If True, old bodyparts not in the new project are
+            removed from the dataframe. Defaults to False.
+        other_scorer (bool): If True, the labels will be converted to the new scorer. Defaults to False.
+        userfeedback (bool): If true the user will be asked specifically
+            for each folder in labeled-data if the containing csv
+            shall be converted to hdf format. Defaults to True.
     """
-
     # Load the config file
     cfg = dlc.auxiliaryfunctions.read_config(config_path)
 
@@ -217,49 +208,43 @@ def adapt_labeled_data_to_new_project(
     convertcsv2h5(config_path, userfeedback=userfeedback)
 
 
-# TODO: @deruyter92 2026-05-20: this function still uses grab_files_in_folder instead
-# of collect_video_paths and videotype instead of video_extensions.
+# TODO: @deruyter92 2026-05-20: this function uses videotype instead of video_extensions.
 def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos=False):
     """By default the output poses (when running analyze_videos) are stored as
     MultiIndex Pandas Array, which contains the name of the network, body part name, (x,
-    y) label position \n in pixels, and the likelihood for each frame per body part.
-    These arrays are stored in an efficient Hierarchical Data Format (HDF) \n in the
+    y) label position in pixels, and the likelihood for each frame per body part.
+    These arrays are stored in an efficient Hierarchical Data Format (HDF) in the
     same directory, where the video is stored. This functions converts hdf (h5) files to
     the comma-separated values format (.csv), which in turn can be imported in many
     programs, such as MATLAB, R, Prism, etc.
 
-    Parameters
-    ----------
+    Args:
+        video_folder (string): Absolute path of a folder containing videos and the corresponding h5 data files.
+        videotype (string, optional): Only videos with this extension are screened. Defaults to .mp4.
 
-    video_folder : string
-        Absolute path of a folder containing videos and the corresponding h5 data files.
+    Examples:
+        Converts all pose-output files belonging to mp4 videos in the folder
+        '/media/alex/experimentaldata/cheetahvideos' to csv files:
 
-    videotype: string, optional (default=.mp4)
-        Only videos with this extension are screened.
-
-    Examples
-    --------
-
-    Converts all pose-output files belonging to mp4 videos
-    in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files.
-    deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
+            deeplabcut.analyze_videos_converth5_to_csv(
+                "/media/alex/experimentaldata/cheetahvideos",
+                ".mp4",
+            )
     """
-
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
-            h5_files = list(auxiliaryfunctions.grab_files_in_folder(Path(videos[0]).parent, "h5", relative=False))
+            h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5")
         else:
             h5_files = []
     else:
-        h5_files = list(auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False))
-        videos = auxiliaryfunctions.grab_files_in_folder(video_folder, videotype, relative=False)
+        h5_files = collect_video_paths(video_folder, extensions=".h5")
+        videos = collect_video_paths(video_folder, extensions=videotype)
 
     _convert_h5_files_to("csv", None, h5_files, videos)
 
 
-# TODO: @deruyter92 2026-05-20: this function still uses grab_files_in_folder instead
-# of collect_video_paths and videotype instead of video_extensions.
+# TODO: @deruyter92 2026-05-20: this function uses videotype instead of video_extensions.
 def analyze_videos_converth5_to_nwb(
     config: str | Path,
     video_folder: str | Path,
@@ -268,33 +253,30 @@ def analyze_videos_converth5_to_nwb(
 ):
     """Convert all h5 output data files in `video_folder` to NWB format.
 
-    Parameters
-    ----------
-    config : string
-        Absolute path to the project YAML config file.
+    Args:
+        config (string): Absolute path to the project YAML config file.
+        video_folder (string): Absolute path of a folder containing videos and the corresponding h5 data files.
+        videotype (string, optional): Only videos with this extension are screened. Defaults to .mp4.
 
-    video_folder : string
-        Absolute path of a folder containing videos and the corresponding h5 data files.
+    Examples:
+        Converts all pose-output files belonging to mp4 videos in the folder
+        '/media/alex/experimentaldata/cheetahvideos' to NWB files:
 
-    videotype: string, optional (default=.mp4)
-        Only videos with this extension are screened.
-
-    Examples
-    --------
-
-    Converts all pose-output files belonging to mp4 videos in the folder
-    '/media/alex/experimentaldata/cheetahvideos' to csv files.
-    deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
+            deeplabcut.analyze_videos_converth5_to_nwb(
+                config,
+                "/media/alex/experimentaldata/cheetahvideos",
+                ".mp4",
+            )
     """
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
-            h5_files = list(auxiliaryfunctions.grab_files_in_folder(Path(videos[0]).parent, "h5", relative=False))
+            h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5")
         else:
             h5_files = []
     else:
-        h5_files = list(auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False))
-        videos = auxiliaryfunctions.grab_files_in_folder(video_folder, videotype, relative=False)
+        h5_files = collect_video_paths(video_folder, extensions=".h5")
+        videos = collect_video_paths(video_folder, extensions=videotype)
 
     _convert_h5_files_to("nwb", config, h5_files, videos)
 
@@ -314,18 +296,18 @@ def _convert_h5_files_to(filetype, config, h5_files, videos):
             raise ImportError("The package `dlc2nwb` is missing. Please run `pip install dlc2nwb`.") from e
 
     for video in videos:
-        if "_labeled" in video:
+        if "_labeled" in video.name:
             continue
-        vname = Path(video).stem
+        vname = video.stem
         for file in h5_files:
-            if vname in file:
-                scorer = file.split(vname)[1].split(".h5")[0]
+            if vname in file.name:
+                scorer = file.stem.removeprefix(vname)
                 if "DLC" in scorer or "DeepCut" in scorer:
                     print("Found output file for scorer:", scorer)
                     print(f"Converting {file}...")
                     if filetype == "csv":
                         df = pd.read_hdf(file)
-                        df.to_csv(file.replace(".h5", ".csv"))
+                        df.to_csv(file.with_suffix(".csv"))
                     else:
                         convert_h5_to_nwb(config, file)
 
@@ -338,13 +320,9 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
 
     This function gets them directly by looping over all folders in labeled-data
     """
-
     AnnotationData = []
     data_path = Path(cfg["project_path"], "labeled-data")
-    annotationfolders = []
-    for elem in auxiliaryfunctions.grab_files_in_folder(data_path, relative=False):
-        if Path(elem).is_dir():
-            annotationfolders.append(elem)
+    annotationfolders = [d for d in data_path.iterdir() if d.is_dir()]
     print("The following folders were found:", annotationfolders)
     for folder in annotationfolders:
         filename = str(Path(folder) / ("CollectedData_" + cfg["scorer"] + ".h5"))
@@ -361,11 +339,9 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
 def guarantee_multiindex_rows(df):
     # Make paths platform-agnostic if they are not already
     if not isinstance(df.index, pd.MultiIndex):  # Backwards compatibility
-        path = df.index[0]
         try:
-            sep = "/" if "/" in path else "\\"
-            splits = tuple(df.index.str.split(sep))
-            df.index = pd.MultiIndex.from_tuples(splits)
+            splits = df.index.str.replace("\\", "/").str.split("/")
+            df.index = pd.MultiIndex.from_tuples([tuple(s) for s in splits])
         except TypeError:  #  Ignore numerical index of frame indices
             pass
 
@@ -374,8 +350,3 @@ def guarantee_multiindex_rows(df):
         df.index = df.index.set_levels(df.index.levels[1].astype(str), level=1)
     except AttributeError:
         pass
-
-
-def robust_split_path(s):
-    sep = "/" if "/" in s else "\\"
-    return tuple(s.split(sep))

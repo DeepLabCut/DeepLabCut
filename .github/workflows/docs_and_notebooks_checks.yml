@@ -1,4 +1,4 @@
-name: Docs & notebooks freshness and formatting checks
+name: Docs / Docs & notebooks freshness and formatting checks
 
 on:
   pull_request:

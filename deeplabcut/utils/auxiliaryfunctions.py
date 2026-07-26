@@ -86,7 +86,8 @@ write_config_3d_template = core_config.write_config_3d_template
 
 
 def get_bodyparts(cfg: dict) -> list[str]:
-    """
+    """Get the bodyparts.
+
     Args:
         cfg: a project configuration file
 
@@ -104,7 +105,8 @@ def get_bodyparts(cfg: dict) -> list[str]:
 
 
 def get_unique_bodyparts(cfg: dict) -> list[str]:
-    """
+    """Get the unique bodyparts.
+
     Args:
         cfg: a project configuration file
 
@@ -132,9 +134,9 @@ def attempt_to_make_folder(foldername, recursive=False):
         return
 
     if recursive:
-        foldername.mkdir(parents=True)
+        foldername.mkdir(parents=True, exist_ok=True)
     else:
-        foldername.mkdir()
+        foldername.mkdir(exist_ok=True, parents=True)
 
 
 def read_pickle(filename):
@@ -165,13 +167,15 @@ def get_list_of_videos(
 
 def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv):
     """Save predicted data as h5 file and metadata as pickle file; created by
-    predict_videos.py."""
+    predict_videos.py.
+    """
+    dataname = Path(dataname)
     DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
     if save_as_csv:
         print("Saving csv poses!")
-        DataMachine.to_csv(dataname.split(".h5")[0] + ".csv")
+        DataMachine.to_csv(dataname.with_suffix(".csv"))
     DataMachine.to_hdf(dataname, key="df_with_missing", format="table", mode="w")
-    with Path(dataname.split(".h5")[0] + "_meta.pickle").open("wb") as f:
+    with dataname.with_name(dataname.stem + "_meta.pickle").open("wb") as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
@@ -199,8 +203,7 @@ def load_metadata(metadatafile: str | Path):
         return trainingdata_details, trainIndices, testIndices, testFraction_data
 
 
-# TODO: @deruyter92 2026-05-20: this function could be updated to match the
-# signature of collect_video_paths, allowing for multiple extensions.
+@deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.1")
 def grab_files_in_folder(folder, ext="", relative=True):
     """Return the paths of files with extension *ext* present in *folder*."""
     for file in Path(folder).iterdir():
@@ -251,7 +254,8 @@ def filter_files_by_patterns(
 @deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
 def get_video_list(filename, videopath, videtype):
     """Get list of videos in a path (if filetype == all), otherwise just a specific
-    file."""
+    file.
+    """
     videos = list(grab_files_in_folder(videopath, videtype))
     if filename == "all":
         return videos
@@ -297,7 +301,8 @@ def get_model_folder(
     modelprefix: str = "",
     engine: Engine = Engine.TF,
 ) -> Path:
-    """
+    """Get the model folder.
+
     Args:
         trainFraction: the training fraction (as defined in the project configuration)
             for which to get the model folder
@@ -327,7 +332,8 @@ def get_evaluation_folder(
     engine: Engine | None = None,
     modelprefix: str = "",
 ) -> Path:
-    """
+    """Get the evaluation folder.
+
     Args:
         trainFraction: the training fraction (as defined in the project configuration)
             for which to get the evaluation folder
@@ -372,7 +378,7 @@ def get_snapshots_from_folder(train_folder: Path) -> list[str]:
     increasing training iterations.
 
     Raises:
-        FileNotFoundError: if no snapshot_names are found in the train_folder.
+        FileNotFoundError: If no snapshot_names are found in the train_folder.
     """
     snapshot_names = [file.stem for file in train_folder.iterdir() if "index" in file.name]
 
@@ -396,7 +402,8 @@ def get_deeplabcut_path() -> Path:
 
 def intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts):
     """Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that
-    are in the intersection of comparisonbodyparts and the actual bodyparts."""
+    are in the intersection of comparisonbodyparts and the actual bodyparts.
+    """
     # if "MULTI!" in allbpts:
     if cfg["multianimalproject"]:
         allbpts = cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
@@ -435,13 +442,17 @@ def get_scorer_name(
     **kwargs,
 ):
     """Extract the scorer/network name for a particular shuffle, training fraction, etc.
-    If the engine is not specified, determines which to use from
-    kwargs: additional arguments.
-        For torch-based shuffles, can be used to specify:
+
+    If the engine is not specified, determines which to use from the project
+    configuration.
+
+    Args:
+        **kwargs: Additional arguments. For torch-based shuffles, can be used to specify:
             - snapshot_index
             - detector_snapshot_index
 
-    Returns tuple of DLCscorer, DLCscorerlegacy (old naming convention)
+    Returns:
+        tuple: DLCscorer and DLCscorerlegacy (old naming convention).
     """
     if engine is None:
         from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
@@ -548,20 +559,20 @@ def check_if_post_processing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="
 
 
 def check_if_not_analyzed(destfolder, vname, DLCscorer, DLCscorerlegacy, flag="video"):
-    h5files = list(grab_files_in_folder(destfolder, "h5", relative=False))
+    h5files = collect_video_paths(destfolder, extensions=".h5")
     if not len(h5files):
-        dataname = str(Path(destfolder) / (vname + DLCscorer + ".h5"))
+        dataname = Path(destfolder) / (vname + DLCscorer + ".h5")
         return True, dataname, DLCscorer
 
     # Iterate over data files and stop as soon as one matching the scorer is found
     for h5file in h5files:
-        if vname + DLCscorer in Path(h5file).stem:
+        if vname + DLCscorer in h5file.stem:
             if flag == "video":
                 print("Video already analyzed!", h5file)
             elif flag == "framestack":
                 print("Frames already analyzed!", h5file)
             return False, h5file, DLCscorer
-        elif vname + DLCscorerlegacy in Path(h5file).stem:
+        elif vname + DLCscorerlegacy in h5file.stem:
             if flag == "video":
                 print("Video already analyzed!", h5file)
             elif flag == "framestack":
@@ -569,7 +580,7 @@ def check_if_not_analyzed(destfolder, vname, DLCscorer, DLCscorerlegacy, flag="v
             return False, h5file, DLCscorerlegacy
 
     # If there was no match...
-    dataname = str(Path(destfolder) / (vname + DLCscorer + ".h5"))
+    dataname = Path(destfolder) / (vname + DLCscorer + ".h5")
     return True, dataname, DLCscorer
 
 
@@ -602,7 +613,6 @@ def find_video_full_data(folder, videoname, scorer):
 
 def find_video_metadata(folder, videoname: str, scorer: str):
     """For backward compatibility, let us search the substring 'meta'."""
-
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     meta_files = filter_files_by_patterns(
         folder=folder,
@@ -625,15 +635,14 @@ def load_video_full_data(folder, videoname, scorer):
 
 def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, track_method=""):
     """Find potential data files from the hints given to the function."""
-
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     suffix = "_filtered" if filtered else ""
     tracker = TRACK_METHODS.get(track_method, "")
 
     candidates = []
-    for file in grab_files_in_folder(folder, "h5"):
-        stem = Path(file).stem.replace("_filtered", "")
-        starts_by_scorer = file.startswith((videoname + scorer, videoname + scorer_legacy))
+    for file in collect_video_paths(folder, extensions=".h5"):
+        stem = file.stem.replace("_filtered", "")
+        starts_by_scorer = file.name.startswith((videoname + scorer, videoname + scorer_legacy))
         if tracker:
             matches_tracker = stem.endswith(tracker)
         else:
@@ -641,9 +650,9 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
         if all(
             (
                 starts_by_scorer,
-                "skeleton" not in file,
+                "skeleton" not in file.name,
                 matches_tracker,
-                (filtered and "filtered" in file) or (not filtered and "filtered" not in file),
+                (filtered and "filtered" in file.name) or (not filtered and "filtered" not in file.name),
             )
         ):
             candidates.append(file)
@@ -661,7 +670,7 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
     n_candidates = len(candidates)
     if n_candidates > 1:  # This should not be happening anyway...
         print(f"{n_candidates} possible data files were found: {candidates}.\nPicking the first by default...")
-    filepath = str(Path(folder) / candidates[0])
+    filepath = str(candidates[0])
     scorer = scorer if scorer in filepath else scorer_legacy
     return filepath, scorer, suffix
 

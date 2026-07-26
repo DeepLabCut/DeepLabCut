@@ -25,21 +25,16 @@ def load_demo_data(
     """Loads the demo data -- subset from trail-tracking data in Mathis et al. 2018.
     When loading, it sets paths correctly to run this project on your system.
 
-    Parameter
-      ----------
-      config : string
-          Full path of the config.yaml file of the provided demo dataset as a string.
+    Args:
+        config (str | Path): Full path of the config.yaml file of the provided demo
+            dataset.
+        createtrainingset (bool): Boolean variable indicating if a training set shall be
+            created.
+        engine (Engine): The Engine to create the training set for if a training set
+            shall be created.
 
-      createtrainingset : bool
-          Boolean variable indicating if a training set shall be created.
-
-      engine: Engine
-          The Engine to create the training set for if a training set shall be created.
-
-      Example
-      --------
-      >>> deeplabcut.load_demo_data('config.yaml')
-      --------
+    Examples:
+            deeplabcut.load_demo_data("config.yaml")
     """
     config = Path(config).absolute()
 
@@ -56,7 +51,6 @@ def transform_data(config: Path) -> None:
     """
     config = Path(config).absolute()
     project_path = config.parent
-
     cfg = auxiliaryfunctions.read_config(config)
     cfg["project_path"] = project_path
     if "Reaching" in project_path.parts:

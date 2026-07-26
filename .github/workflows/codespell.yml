@@ -1,5 +1,5 @@
 ---
-name: Codespell
+name: Code / Codespell
 
 on:
   push:

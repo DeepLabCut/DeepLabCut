@@ -983,104 +983,73 @@ def stitch_tracklets(
     """Stitch sparse tracklets into full tracks via a graph-based, minimum-cost flow
     optimization problem.
 
-    Parameters
-    ----------
-    config_path : str or Path
-        Path to the main project config.yaml file.
+    Args:
+        config_path (str | Path): Path to the main project config.yaml file.
+        videos (list[str | Path]): Full paths to videos for analysis, or a directory where all videos
+            with the same extension are stored.
+        video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s). Defaults to None.
+        shuffle (int, optional): Shuffle index of the training dataset used for training the network. Defaults to 1.
+        trainingsetindex (int, optional): Which TrainingsetFraction to use. By default the
+            first (TrainingFraction is a list in config.yaml).
+        n_tracks (int, optional): Number of tracks to reconstruct. By default, taken as the number
+            of individuals defined in the config.yaml. Another number can be
+            passed if the number of animals in the video is different from
+            the number of animals the model was trained on.
+        animal_names (list, optional): If you want the names given to individuals in the labeled data file, you can
+            specify those names as a list here. If given and `n_tracks` is None, `n_tracks`
+            will be set to `len(animal_names)`. If `n_tracks` is not None, then it must be
+            equal to `len(animal_names)`. If it is not given, then `animal_names` will
+            be loaded from the `individuals` in the project config.yaml file.
+        min_length (int, optional): Tracklets less than `min_length` frames of length
+            are considered to be residuals; i.e., they do not participate
+            in building the graph and finding the solution to the
+            optimization problem, but are rather added last after
+            "almost-complete" tracks are formed. The higher the value,
+            the lesser the computational cost, but the higher the chance of
+            discarding relatively long and reliable tracklets that are
+            essential to solving the stitching task.
+            Default is 10, and must be 3 at least.
+        split_tracklets (bool, optional): By default, tracklets whose time indices are not consecutive integers
+            are split in shorter tracklets whose time continuity is guaranteed.
+            This is for example very powerful to get rid of tracking errors
+            (e.g., identity switches) which are often signaled by a missing
+            time frame at the moment they occur. Note though that for long
+            occlusions where tracker re-identification capability can be trusted,
+            setting `split_tracklets` to False is preferable.
+        prestitch_residuals (bool, optional): Residuals will by default be grouped together according to their
+            temporal proximity prior to being added back to the tracks.
+            This is done to improve robustness and simultaneously reduce complexity.
+        max_gap (int, optional): Maximal temporal gap to allow between a pair of tracklets.
+            This is automatically determined by the TrackletStitcher by default.
+        weight_func (callable, optional): Function accepting two tracklets as arguments and returning a scalar
+            that must be inversely proportional to the likelihood that the tracklets
+            belong to the same track; i.e., the higher the confidence that the
+            tracklets should be stitched together, the lower the returned value.
+        destfolder (string, optional): Destination folder for analysis data (default is the path of the
+            video). Note that for subsequent analysis this folder also needs to be passed.
+        track_method (string, optional): Tracker used to generate the pose estimation data.
+            For multiple animals, must be either 'box', 'skeleton', or 'ellipse'
+            and will be taken from the config.yaml file if none is given.
+        output_name (str, optional): Name of the output h5 file.
+            By default, tracks are automatically stored into the same directory
+            as the pickle file and with its name.
+        transformer_checkpoint (str, optional): Path to transformer checkpoint for re-ID
+            stitching. Defaults to "".
+        save_as_csv (bool, optional): Whether to write the tracks to a CSV file too (False by default).
+        kwargs (dict, optional): Additional arguments.
+            For torch-based shuffles, can be used to specify:
+                - snapshot_index
+                - detector_snapshot_index
 
-    videos : list[str] or list[Path]
-        Full paths to videos for analysis, or a path to the directory where all the
-        videos with same extension are stored.
-
-    video_extensions : str | Sequence[str] | None, optional, default=None
-        Controls how ``videos`` are filtered, based on file extension.
-        File paths and directory contents are treated differently:
-        - ``None`` (default): file paths are accepted as-is; directories are
-          scanned for files with a recognized video extension.
-        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
-          both file paths and directory contents are filtered by the given
-          extension(s).
-
-    shuffle: int, optional
-        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list
-        in config.yaml).
-
-    n_tracks : int, optional
-        Number of tracks to reconstruct. By default, taken as the number
-        of individuals defined in the config.yaml. Another number can be
-        passed if the number of animals in the video is different from
-        the number of animals the model was trained on.
-
-    animal_names: list, optional
-        If you want the names given to individuals in the labeled data file, you can
-        specify those names as a list here. If given and `n_tracks` is None, `n_tracks`
-        will be set to `len(animal_names)`. If `n_tracks` is not None, then it must be
-        equal to `len(animal_names)`. If it is not given, then `animal_names` will
-        be loaded from the `individuals` in the project config.yaml file.
-
-    min_length : int, optional
-        Tracklets less than `min_length` frames of length
-        are considered to be residuals; i.e., they do not participate
-        in building the graph and finding the solution to the
-        optimization problem, but are rather added last after
-        "almost-complete" tracks are formed. The higher the value,
-        the lesser the computational cost, but the higher the chance of
-        discarding relatively long and reliable tracklets that are
-        essential to solving the stitching task.
-        Default is 10, and must be 3 at least.
-
-    split_tracklets : bool, optional
-        By default, tracklets whose time indices are not consecutive integers
-        are split in shorter tracklets whose time continuity is guaranteed.
-        This is for example very powerful to get rid of tracking errors
-        (e.g., identity switches) which are often signaled by a missing
-        time frame at the moment they occur. Note though that for long
-        occlusions where tracker re-identification capability can be trusted,
-        setting `split_tracklets` to False is preferable.
-
-    prestitch_residuals : bool, optional
-        Residuals will by default be grouped together according to their
-        temporal proximity prior to being added back to the tracks.
-        This is done to improve robustness and simultaneously reduce complexity.
-
-    max_gap : int, optional
-        Maximal temporal gap to allow between a pair of tracklets.
-        This is automatically determined by the TrackletStitcher by default.
-
-    weight_func : callable, optional
-        Function accepting two tracklets as arguments and returning a scalar
-        that must be inversely proportional to the likelihood that the tracklets
-        belong to the same track; i.e., the higher the confidence that the
-        tracklets should be stitched together, the lower the returned value.
-
-    destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the
-        video). Note that for subsequent analysis this folder also needs to be passed.
-
-    track_method: string, optional
-         Specifies the tracker used to generate the pose estimation data.
-         For multiple animals, must be either 'box', 'skeleton', or 'ellipse'
-         and will be taken from the config.yaml file if none is given.
-
-    output_name : str, optional
-        Name of the output h5 file.
-        By default, tracks are automatically stored into the same directory
-        as the pickle file and with its name.
-
-    save_as_csv: bool, optional
-        Whether to write the tracks to a CSV file too (False by default).
-
-    kwargs: additional arguments.
-        For torch-based shuffles, can be used to specify:
-            - snapshot_index
-            - detector_snapshot_index
-
-    Returns
-    -------
-    A TrackletStitcher object
+    Returns:
+        TrackletStitcher: A TrackletStitcher object.
     """
     vids = collect_video_paths(videos, extensions=video_extensions)
     if not vids:

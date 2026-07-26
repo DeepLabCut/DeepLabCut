@@ -18,19 +18,14 @@ def return_train_network_path(config, shuffle=1, trainingsetindex=0, modelprefix
     """Returns the training and test pose config file names as well as the folder where
     the snapshot is.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        shuffle (int): Integer value specifying the shuffle index to select for training.
+        trainingsetindex (int, optional): Which TrainingsetFraction to use. By default the first
+            (TrainingFraction is a list in config.yaml). Defaults to 0.
 
-    shuffle: int
-        Integer value specifying the shuffle index to select for training.
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list
-        in config.yaml).
-
-    Returns the triple: trainposeconfigfile, testposeconfigfile, snapshotfolder
+    Returns:
+        tuple: trainposeconfigfile, testposeconfigfile, snapshotfolder.
     """
     from deeplabcut.utils import auxiliaryfunctions
 
@@ -63,87 +58,56 @@ def train_network(
 ):
     """Trains the network with the labels in the training dataset.
 
-        Parameters
-        ----------
-        config : string
-            Full path of the config.yaml file as a string.
-
-        shuffle: int, optional, default=1
-            Integer value specifying the shuffle index to select for training.
-
-        trainingsetindex: int, optional, default=0
-            Integer specifying which TrainingsetFraction to use.
-            Note that TrainingFraction is a list in config.yaml.
-
-        max_snapshots_to_keep: int or None
-            Sets how many snapshots are kept, i.e. states of the trained network. Every
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        shuffle (int, optional): Integer value specifying the shuffle index to select for training. Defaults to 1.
+        trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use.
+            Note that TrainingFraction is a list in config.yaml. Defaults to 0.
+        max_snapshots_to_keep (int or None): Sets how many snapshots are kept, i.e. states of the trained network. Every
             saving iteration many times a snapshot is stored, however only the last
             ``max_snapshots_to_keep`` many are kept! If you change this to None, then all
             are kept.
             See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
-
-        displayiters: optional, default=None
-            This variable is actually set in ``pose_config.yaml``. However, you can
+        display_iters (int, optional): This variable is actually set in ``pose_config.yaml``. However, you can
             overwrite it with this hack. Don't use this regularly, just if you are too lazy
             to dig out the ``pose_config.yaml`` file for the corresponding project. If
-            ``None``, the value from there is used, otherwise it is overwritten!
-
-        saveiters: optional, default=None
-            This variable is actually set in ``pose_config.yaml``. However, you can
+            ``None``, the value from there is used, otherwise it is overwritten! Defaults to None.
+        saveiters (int, optional): This variable is actually set in ``pose_config.yaml``. However, you can
             overwrite it with this hack. Don't use this regularly, just if you are too lazy
             to dig out the ``pose_config.yaml`` file for the corresponding project.
-            If ``None``, the value from there is used, otherwise it is overwritten!
-
-        maxiters: optional, default=None
-            This variable is actually set in ``pose_config.yaml``. However, you can
+            If ``None``, the value from there is used, otherwise it is overwritten! Defaults to None.
+        maxiters (int, optional): This variable is actually set in ``pose_config.yaml``. However, you can
             overwrite it with this hack. Don't use this regularly, just if you are too lazy
             to dig out the ``pose_config.yaml`` file for the corresponding project.
-            If ``None``, the value from there is used, otherwise it is overwritten!
-
-        allow_growth: bool, optional, default=True.
-            For some smaller GPUs the memory issues happen. If ``True``, the memory
+            If ``None``, the value from there is used, otherwise it is overwritten! Defaults to None.
+        allow_growth (bool, optional): For some smaller GPUs the memory issues happen. If ``True``, the memory
             allocator does not pre-allocate the entire specified GPU memory region, instead
             starting small and growing as needed.
-            See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2
-
-        gputouse: optional, default=None
-            Natural number indicating the number of your GPU (see number in nvidia-smi).
+            See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2. Defaults to True.
+        gputouse (int, optional): Natural number indicating the number of your GPU (see number in nvidia-smi).
             If you do not have a GPU put None.
-            See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+            See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries. Defaults to None.
+        autotune (bool, optional): Property of TensorFlow, somehow faster if ``False``
+            (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317). Defaults to False.
+        keepdeconvweights (bool, optional): Restores deconvolution layer (and backbone) weights when
+            training from a snapshot. Set to false if bodypart count changes. Defaults to True.
+        modelprefix (str, optional): Directory containing the deeplabcut models to use when evaluating the network.
+            By default, the models are assumed to exist in the project folder. Defaults to "".
+        superanimal_name (str, optional): Specified if transfer learning with superanimal is desired. Defaults to "".
+        superanimal_transfer_learning (bool, optional): If true, transfer learning (new decoding layer).
+            If false and superanimal_name is set, fine-tuning (reuse decoding layer). Defaults to False.
 
-        autotune: bool, optional, default=False
-            Property of TensorFlow, somehow faster if ``False``
-            (as Eldar found out, see https://github.com/tensorflow/tensorflow/issues/13317).
-
-        keepdeconvweights: bool, optional, default=True
-            Also restores the weights of the deconvolution layers (and the backbone) when
-            training from a snapshot. Note that if you change the number of bodyparts, you
-            need to set this to false for re-training.
-
-        modelprefix: str, optional, default=""
-            Directory containing the deeplabcut models to use when evaluating the network.
-            By default, the models are assumed to exist in the project folder.
-
-        superanimal_name: str, optional, default =""
-            Specified if transfer learning with superanimal is desired
-
-        superanimal_transfer_learning: bool, optional, default = False.
-            If set true, the training is transfer learning (new decoding layer). If set false,
-    and superanimal_name is True, then the training is fine-tuning (reusing the decoding layer)
-
-        Returns
-        -------
+    Returns:
         None
 
-        Examples
-        --------
+    Examples:
         To train the network for first shuffle of the training dataset
 
-        >>> deeplabcut.train_network('/analysis/project/reaching-task/config.yaml')
+            deeplabcut.train_network("/analysis/project/reaching-task/config.yaml")
 
         To train the network for second shuffle of the training dataset
 
-        >>> deeplabcut.train_network(
+            deeplabcut.train_network(
                 '/analysis/project/reaching-task/config.yaml',
                 shuffle=2,
                 keepdeconvweights=True,

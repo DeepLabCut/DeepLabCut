@@ -55,8 +55,8 @@ def compute_bbox_metrics(
         The bounding box mAP/mAR metrics in a dictionary.
 
     Raises:
-        ModuleNotFoundError: if ``pycocotools`` is not installed
-        ValueError: if there are mismatches in the keys of ground_truth and detections
+        ModuleNotFoundError: If ``pycocotools`` is not installed
+        ValueError: If there are mismatches in the keys of ground_truth and detections
     """
     if not with_pycocotools:
         raise ModuleNotFoundError("pycocotools not installed! can't compute bbox mAP")

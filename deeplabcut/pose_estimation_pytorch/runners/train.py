@@ -161,7 +161,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             mode: "train" or "eval". Defaults to "train".
 
         Raises:
-            ValueError: if mode is not in {"train", "eval"}
+            ValueError: If mode is not in {"train", "eval"}
 
         Returns:
             A dictionary containing the different losses for the step
@@ -410,7 +410,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             mode: `train` or `eval`. Defaults to "train".
 
         Raises:
-            ValueError: "Runner must be in train or eval mode, but {mode} was found."
+            ValueError: If the runner is not in train or eval mode.
 
         Returns:
             dict: {
@@ -558,7 +558,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
             mode: `train` or `eval`. Defaults to "train".
 
         Raises:
-            ValueError: "Runner must be in train or eval mode, but {mode} was found."
+            ValueError: If the runner is not in train or eval mode.
 
         Returns:
             dict: {

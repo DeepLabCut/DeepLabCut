@@ -1,0 +1,33 @@
+name: Docs / Build dev-docs
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: Python version used to build the dev docs.
+        required: false
+        default: "3.10"
+        type: string
+
+      config-file:
+        description: MkDocs config file.
+        required: false
+        default: "dev-docs/mkdocs.yml"
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up dev-docs environment
+        uses: ./.github/actions/setup-dev-docs
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Build dev-docs
+        run: mkdocs build -v -f ${{ inputs.config-file }}
