@@ -30,6 +30,8 @@ from deeplabcut.core.inferenceutils import (
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
+_trapz = getattr(np, "trapezoid", np.trapz)  # NumPy 2.0+ compat; drop once NumPy 1 unsupported
+
 
 def _set_up_evaluation(data):
     params = dict()
@@ -103,8 +105,7 @@ def calc_separability(
     if metric == "jeffries":
         sep = np.sqrt(2 * (1 - np.sum(np.sqrt(hist_left * hist_right))))  # Jeffries-Matusita distance
     else:
-        # np.trapezoid requires NumPy 2.0+; drop the np.trapz fallback once NumPy 1 is unsupported
-        sep = (np.trapezoid if hasattr(np, "trapezoid") else np.trapz)(np.cumsum(hist_left), tpr)
+        sep = _trapz(np.cumsum(hist_left), tpr)
     if max_sensitivity:
         threshold = bins[max(1, np.argmax(tpr > 0))]
     else:

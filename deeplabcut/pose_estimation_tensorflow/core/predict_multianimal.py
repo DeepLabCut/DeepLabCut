@@ -15,6 +15,8 @@ import tensorflow as tf
 from scipy.ndimage import measurements
 from skimage.feature import peak_local_max
 
+_trapz = getattr(np, "trapezoid", np.trapz)  # NumPy 2.0+ compat; drop once NumPy 1 unsupported
+
 
 def extract_cnn_output(outputs_np, cfg):
     """Extract locref, scmap and partaffinityfield from network."""
@@ -120,8 +122,7 @@ def compute_edge_costs(
         xy[..., 1],
         edge_inds.reshape((-1, 1)),
     ]
-    # np.trapezoid requires NumPy 2.0+; drop the np.trapz fallback once NumPy 1 is unsupported
-    integ = (np.trapezoid if hasattr(np, "trapezoid") else np.trapz)(y, xy[..., ::-1], axis=1)
+    integ = _trapz(y, xy[..., ::-1], axis=1)
     affinities = np.linalg.norm(integ, axis=1).astype(np.float32)
     # unit_vecs = vecs / lengths[:, np.newaxis]
     # affinities = np.squeeze(y @ np.expand_dims(unit_vecs, axis=2)).sum(axis=1)
