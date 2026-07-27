@@ -383,10 +383,13 @@ class Tracklet:
         4/sqrt(3)
         """
         mat = self.to_hankelet()
-        # nrows, ncols = mat.shape
-        # beta = nrows / ncols
-        # omega = 0.56 * beta ** 3 - 0.95 * beta ** 2 + 1.82 * beta + 1.43
-        s = np.linalg.svd(mat, compute_uv=False)[:10]
+        if np.any(mat):
+            # nrows, ncols = mat.shape
+            # beta = nrows / ncols
+            # omega = 0.56 * beta ** 3 - 0.95 * beta ** 2 + 1.82 * beta + 1.43
+            s = np.linalg.svd(mat, compute_uv=False)[:10]
+        else:
+            s = np.zeros(min(10, min(mat.shape)))
 
         # return np.argmin(s > omega * np.median(s))
         eigen = s**2
