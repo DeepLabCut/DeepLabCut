@@ -23,7 +23,7 @@ import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.models.predictors as predictors
 import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
-from deeplabcut.core.crossvalutils import find_closest_neighbors
+from deeplabcut.core.crossvalutils import calc_separability, find_closest_neighbors
 from deeplabcut.pose_estimation_pytorch.models import PoseModel
 from deeplabcut.pose_estimation_pytorch.models.predictors.paf_predictor import Graph
 
@@ -162,34 +162,6 @@ def benchmark_paf_graphs(
     return results
 
 
-def _calc_separability(
-    vals_left: np.ndarray,
-    vals_right: np.ndarray,
-    n_bins: int = 101,
-    metric: str = "jeffries",
-    max_sensitivity: bool = False,
-) -> tuple[float, float]:
-    if metric not in ("jeffries", "auc"):
-        raise ValueError("`metric` should be either 'jeffries' or 'auc'.")
-
-    bins = np.linspace(0, 1, n_bins)
-    hist_left = np.histogram(vals_left, bins=bins)[0]
-    hist_left = hist_left / hist_left.sum()
-    hist_right = np.histogram(vals_right, bins=bins)[0]
-    hist_right = hist_right / hist_right.sum()
-    tpr = np.cumsum(hist_right)
-    if metric == "jeffries":
-        sep = np.sqrt(2 * (1 - np.sum(np.sqrt(hist_left * hist_right))))  # Jeffries-Matusita distance
-    else:
-        # np.trapezoid requires NumPy 2.0+; drop the np.trapz fallback once NumPy 1 is unsupported
-        sep = (np.trapezoid if hasattr(np, "trapezoid") else np.trapz)(np.cumsum(hist_left), tpr)
-    if max_sensitivity:
-        threshold = bins[max(1, np.argmax(tpr > 0))]
-    else:
-        threshold = bins[np.argmin(1 - np.cumsum(hist_left) + tpr)]
-    return sep, threshold
-
-
 @torch.no_grad()
 def compute_within_between_paf_costs(
     model: PoseModel,
@@ -264,7 +236,7 @@ def get_n_best_paf_graphs(
     existing_edges = list(set(k for k, v in within_train.items() if v))
 
     scores, _ = zip(
-        *[_calc_separability(between_train[n], within_train[n], metric=metric) for n in existing_edges], strict=False
+        *[calc_separability(between_train[n], within_train[n], metric=metric) for n in existing_edges], strict=False
     )
 
     # Find minimal skeleton
