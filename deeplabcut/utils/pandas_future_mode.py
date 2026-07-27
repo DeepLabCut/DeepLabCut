@@ -23,7 +23,7 @@ def configure_pandas_future_if_enabled() -> None:
         raise RuntimeError(f"pandas future mode requires pandas 2.3.x, got {pd.__version__}")
 
     pd.options.future.infer_string = True
-    pd.options.mode.copy_on_write = "warn"
+    pd.options.mode.copy_on_write = True
 
     print(
         f"pandas future mode enabled: pandas={pd.__version__}, "
