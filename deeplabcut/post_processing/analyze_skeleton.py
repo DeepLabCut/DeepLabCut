@@ -162,7 +162,7 @@ def analyzebone(bp1, bp2):
     bone_orientation = calc_angle_between_vectors_of_points_2d(bp1_pos.T, bp2_pos.T)
 
     # keep the smallest of the two likelihoods
-    likelihoods = np.vstack([bp2.likelihood.values, bp2.likelihood.values]).T
+    likelihoods = np.vstack([bp1.likelihood.values, bp2.likelihood.values]).T
     likelihood = np.min(likelihoods, 1)
 
     # Create dataframe and return
@@ -256,13 +256,14 @@ def analyzeskeleton(
     Videos = collect_video_paths(videos, extensions=video_extensions)
     for video in Videos:
         print(f"Processing {video}")
-        if destfolder is None:
-            destfolder = str(Path(video).parents[0])
+        videofolder = destfolder
+        if videofolder is None:
+            videofolder = str(Path(video).parents[0])
 
         vname = Path(video).stem
         try:
             df, filepath, scorer, _ = auxiliaryfunctions.load_analyzed_data(
-                destfolder, vname, DLCscorer, filtered, track_method
+                videofolder, vname, DLCscorer, filtered, track_method
             )
         except FileNotFoundError as e:
             print(e)

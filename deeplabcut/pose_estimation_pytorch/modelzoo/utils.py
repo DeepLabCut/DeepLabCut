@@ -89,7 +89,7 @@ def get_super_animal_snapshot_path(
     return model_path
 
 
-@deprecated(replacement="PoseConfig.build_for_superanimal_inference", since="3.1")
+@deprecated(replacement="PoseConfig.build_for_superanimal_inference", since="3.0.1")
 def load_super_animal_config(
     super_animal: str,
     model_name: str,

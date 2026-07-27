@@ -26,7 +26,7 @@ except ImportError:
 class OpenVINOSession:
     def __init__(self, cfg, device):
         self.core = Core()
-        self.xml_path = cfg["init_weights"] + ".xml"
+        self.xml_path = str(Path(cfg["init_weights"]).with_suffix(".xml"))
         self.device = device
 
         # Convert a frozen graph to OpenVINO IR format
@@ -37,7 +37,7 @@ class OpenVINOSession:
                     "--output_dir",
                     str(Path(cfg["init_weights"]).parent),
                     "--input_model",
-                    cfg["init_weights"] + ".pb",
+                    str(Path(cfg["init_weights"]).with_suffix(".pb")),
                     "--input_shape",
                     "[1, 747, 832, 3]",
                     "--extensions",
