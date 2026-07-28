@@ -28,6 +28,8 @@ from deeplabcut.utils.pandas_future_mode import (
 
 def _configure_cow_true(monkeypatch) -> None:
     """Configure pandas CoW via the DLC future-mode machinery."""
+    monkeypatch.setattr(pd.options.future, "infer_string", pd.options.future.infer_string)
+    monkeypatch.setattr(pd.options.mode, "copy_on_write", pd.options.mode.copy_on_write)
     monkeypatch.setenv("DLC_PANDAS_FUTURE", "1")
     configure_pandas_future_if_enabled()
 
