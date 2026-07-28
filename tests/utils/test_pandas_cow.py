@@ -67,7 +67,7 @@ def test_future_mode_sets_cow_true(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "label, extract",
+    "extract",
     [
         pytest.param(
             lambda df: df.to_numpy().reshape((len(df), -1, 3)),
