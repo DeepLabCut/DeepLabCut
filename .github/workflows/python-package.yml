@@ -22,6 +22,14 @@ on:
         required: false
         type: boolean
         default: false
+      pip_overrides:
+        required: false
+        type: string
+        default: ""
+      continue_on_error:
+        required: false
+        type: boolean
+        default: false
 
   workflow_dispatch:
     inputs:
@@ -46,6 +54,16 @@ on:
         default: "[]"
       full_suite:
         description: "Run full pytest and default functional suite"
+        required: false
+        type: boolean
+        default: false
+      pip_overrides:
+        description: "Comma-separated pip specs to force-install after normal deps (e.g. numpy>=2)"
+        required: false
+        type: string
+        default: ""
+      continue_on_error:
+        description: "Allow test steps to fail without marking the job as failed"
         required: false
         type: boolean
         default: false
@@ -103,6 +121,16 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install dependency-groups
           python -m pip install --no-cache-dir -e ".${{ matrix.extras }}" --group dev
+
+      - name: Force-install upgrade packages
+        if: ${{ matrix.pip_overrides != '' }}
+        shell: bash -el {0}
+        run: |
+          IFS=',' read -ra pkgs <<< "${{ matrix.pip_overrides }}"
+          for pkg in "${pkgs[@]}"; do
+            echo "Force-installing: $pkg"
+            python -m pip install --no-cache-dir --upgrade "$pkg"
+          done
 
       - name: Install ffmpeg (Linux/macOS)
         if: runner.os != 'Windows'
@@ -179,6 +207,7 @@ jobs:
           ffprobe -version
 
       - name: Run pytest
+        continue-on-error: ${{ inputs.continue_on_error }}
         shell: bash -el {0}
         env:
           FULL_SUITE: ${{ inputs.full_suite }}
@@ -207,6 +236,7 @@ jobs:
           PY
 
       - name: Run functional scripts
+        continue-on-error: ${{ inputs.continue_on_error }}
         shell: bash -el {0}
         env:
           FULL_SUITE: ${{ inputs.full_suite }}
