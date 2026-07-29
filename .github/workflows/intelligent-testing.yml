@@ -142,6 +142,30 @@ jobs:
         }
       full_suite: true
 
+  canary-tests:
+    name: Canary lane (dependency upgrades)
+    needs: intelligent-test-selection
+    if: needs.intelligent-test-selection.outputs.run_full == 'true'
+    uses: ./.github/workflows/python-package.yml
+    with:
+      concurrency_key: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || '' }}
+      matrix_json: >-
+        {
+          "include": [
+            {"os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"numpy>=2"},
+            {"os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"pandas>=3"},
+            {"os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"albumentations>=2"}
+          ]
+        }
+      full_suite: false
+      pytest_paths_json: '["tests"]'
+      functional_scripts_json: >-
+        [
+          "examples/testscript_pytorch_single_animal.py",
+          "examples/testscript_pytorch_multi_animal.py"
+        ]
+      continue_on_error: true
+
   tf-install-smoke-test:
     name: TensorFlow install smoke test
     needs: intelligent-test-selection
