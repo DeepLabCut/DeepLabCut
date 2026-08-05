@@ -74,6 +74,49 @@ class COCOLoader(Loader):
         if self.test_json_filename:
             self.test_json = self.load_json(self.project_root, self.test_json_filename)
 
+        self._validate_against_model_cfg()
+
+    def _validate_against_model_cfg(self) -> None:
+        """Checks that the COCO annotations are compatible with `model_cfg.metadata`.
+        `model_cfg.metadata` is authoritative for `bodyparts` and `individuals`
+        (the pose model is built with these parameters, and the COCO JSON should match).
+
+        Raises:
+            ValueError: If an image has more individuals than `model_cfg` supports, or
+                if the annotated bodyparts don't match `model_cfg.metadata.bodyparts`.
+        """
+        meta = self.model_cfg.metadata
+        bodyparts = list(meta.bodyparts)
+
+        for name, coco_json in (("train", self.train_json), ("test", self.test_json)):
+            if coco_json is None:
+                continue
+
+            json_bodyparts = list(coco_json["categories"][0]["keypoints"])
+            if json_bodyparts != bodyparts:
+                raise ValueError(
+                    f"The bodyparts in {self.train_json_filename if name == 'train' else self.test_json_filename} "
+                    f"({json_bodyparts}) don't match model_cfg.metadata.bodyparts ({bodyparts}). The order must "
+                    "match exactly, as it determines which keypoint index is associated with which bodypart name."
+                )
+
+            observed = self._max_individuals_in_json(coco_json)
+            if observed > meta.num_individuals:
+                raise ValueError(
+                    f"{self.train_json_filename if name == 'train' else self.test_json_filename} has an image "
+                    f"with {observed} individuals, but model_cfg only supports {meta.num_individuals} "
+                    f"(metadata.individuals={list(meta.individuals)}). Rebuild the model config with "
+                    f"max_individuals >= {observed} before training/evaluating on this dataset."
+                )
+
+    @staticmethod
+    def _max_individuals_in_json(coco_json: dict) -> int:
+        """Returns the max number of annotations on any single image in a COCO dict."""
+        img_to_annotations = map_id_to_annotations(coco_json.get("annotations") or [])
+        if not img_to_annotations:
+            return 0
+        return max(len(ann_ids) for ann_ids in img_to_annotations.values())
+
     def get_dataset_parameters(self) -> PoseDatasetParameters:
         """Retrieves dataset parameters based on the instance's configuration.
 
@@ -81,7 +124,9 @@ class COCOLoader(Loader):
             An instance of the PoseDatasetParameters with the parameters set.
         """
         if self._dataset_parameters is None:
-            num_individuals, bodyparts = self.get_project_parameters(self.train_json)
+            meta = self.model_cfg.metadata
+            bodyparts = meta.bodyparts
+            individuals = meta.individuals
 
             crop_cfg = self.model_cfg.select("data.train.top_down_crop") or {}
             crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
@@ -94,8 +139,8 @@ class COCOLoader(Loader):
 
             self._dataset_parameters = PoseDatasetParameters(
                 bodyparts=bodyparts,
-                unique_bpts=[],
-                individuals=[f"individual{i}" for i in range(num_individuals)],
+                unique_bpts=meta.unique_bodyparts,
+                individuals=individuals,
                 with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
                 color_mode=self.model_cfg.get("color_mode", "RGB"),
                 ctd_bbox_margin=ctd_bbox_margin,
@@ -301,7 +346,6 @@ class COCOLoader(Loader):
     def get_project_parameters(train_json: dict) -> tuple[int, list[str]]:
         """
         Loads the parameters for the project from the train json file
-        TODO: Should this compute the number also using the test json?
 
         Args:
             train_json: the json dictionary containing the data for training
