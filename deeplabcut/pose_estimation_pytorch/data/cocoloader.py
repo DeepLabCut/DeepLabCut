@@ -343,27 +343,43 @@ class COCOLoader(Loader):
         return data
 
     @staticmethod
-    def get_project_parameters(train_json: dict) -> tuple[int, list[str]]:
-        """
-        Loads the parameters for the project from the train json file
+    def get_project_parameters(
+        train_json: dict,
+        test_json: dict | None = None,
+    ) -> tuple[int, list[str]]:
+        """Suggests parameters for a project, given its COCO-format JSON annotation(s).
+
+        Use this to pick `bodyparts`/`max_individuals` when building a `PoseConfig` for
+        a new COCO project (e.g. before calling `make_pytorch_pose_config`). Once a
+        model config exists, it becomes authoritative for the dataset (see
+        `COCOLoader.get_dataset_parameters`) - this helper is only meant to bootstrap
+        it from the data.
 
         Args:
             train_json: the json dictionary containing the data for training
+            test_json: the json dictionary containing the data for testing/evaluation,
+                if any. Passing this ensures the suggested number of individuals also
+                covers the test set, so a model trained with it doesn't fail during
+                evaluation because a test image has more individuals than train ever did.
 
         Returns:
-            int: the maximum number of individuals in a single image
+            int: the maximum number of individuals in a single image, across train
+                (and test, if given)
             list[str]: the name of keypoints annotated in this project
+
+        Raises:
+            ValueError: If the train JSON contains no images.
         """
-        # TODO: Check that there's a single category
+        train_json = COCOLoader.validate_categories(train_json)
         bodyparts = train_json["categories"][0]["keypoints"]
 
-        img_to_annotations = map_id_to_annotations(train_json["annotations"])
-        if len(img_to_annotations) == 0:
+        num_individuals = COCOLoader._max_individuals_in_json(train_json)
+        if num_individuals == 0:
             raise ValueError(f"No images found in the dataset: {train_json}!")
-        elif len(img_to_annotations) == 1:
-            num_individuals = len(list(img_to_annotations.values())[0])
-        else:
-            num_individuals = max(*[len(a_ids) for a_ids in img_to_annotations.values()])
+
+        if test_json is not None:
+            test_json = COCOLoader.validate_categories(test_json)
+            num_individuals = max(num_individuals, COCOLoader._max_individuals_in_json(test_json))
 
         return num_individuals, bodyparts
 

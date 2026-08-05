@@ -198,3 +198,54 @@ def test_loader_ok_without_test_json(tmp_path: Path):
 
     params = loader.get_dataset_parameters()
     assert params.max_num_animals == 2
+
+
+def test_get_project_parameters_train_only():
+    train = _coco_dict("train.png", image_id=1, n_individuals=3)
+    num_individuals, bodyparts = COCOLoader.get_project_parameters(train)
+    assert num_individuals == 3
+    assert list(bodyparts) == BODYPARTS
+
+
+def test_get_project_parameters_considers_test_json():
+    # see https://github.com/DeepLabCut/DeepLabCut/issues/3432
+    train = _coco_dict("train.png", image_id=1, n_individuals=3)
+    test = _coco_dict("test.png", image_id=2, n_individuals=4)
+
+    num_individuals, bodyparts = COCOLoader.get_project_parameters(train)
+    assert num_individuals == 3
+
+    num_individuals, bodyparts = COCOLoader.get_project_parameters(train, test)
+    assert num_individuals == 4
+    assert list(bodyparts) == BODYPARTS
+
+
+def test_get_project_parameters_raises_on_empty_train_json():
+    empty = _coco_dict("a.png", image_id=1, n_individuals=0)
+    with pytest.raises(ValueError, match="No images found"):
+        COCOLoader.get_project_parameters(empty)
+
+
+def test_get_project_parameters_warns_on_multiple_categories():
+    train = _coco_dict("train.png", image_id=1, n_individuals=2)
+    train["categories"].append({"id": 2, "name": "other", "keypoints": ["eye"], "skeleton": []})
+
+    with pytest.warns(UserWarning, match="more than 1 category"):
+        num_individuals, bodyparts = COCOLoader.get_project_parameters(train)
+
+    assert num_individuals == 2
+    assert list(bodyparts) == BODYPARTS
+
+
+def test_get_project_parameters_warns_on_multiple_categories_in_test_json():
+    # The same category validation/normalization applied to train.json must also be
+    # applied to test.json, not skipped just because we don't read its bodyparts.
+    train = _coco_dict("train.png", image_id=1, n_individuals=2)
+    test = _coco_dict("test.png", image_id=2, n_individuals=2)
+    test["categories"].append({"id": 2, "name": "other", "keypoints": ["eye"], "skeleton": []})
+
+    with pytest.warns(UserWarning, match="more than 1 category"):
+        num_individuals, bodyparts = COCOLoader.get_project_parameters(train, test)
+
+    assert num_individuals == 2
+    assert list(bodyparts) == BODYPARTS
