@@ -131,8 +131,8 @@ jobs:
           # contain commas to combine constraints, e.g. "numpy>=2,<3".
           read -ra pkgs <<< "${{ matrix.pip_overrides }}"
           for pkg in "${pkgs[@]}"; do
-            echo "Force-installing: $pkg"
-            python -m pip install --no-cache-dir --upgrade "$pkg"
+            echo "Force-installing (--no-deps): $pkg"
+            python -m pip install --no-cache-dir --upgrade --no-deps "$pkg"
           done
 
       - name: Install ffmpeg (Linux/macOS)
