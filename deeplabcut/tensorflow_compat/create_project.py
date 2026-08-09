@@ -24,7 +24,6 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
     download_huggingface_model,
 )
 
-import deeplabcut
 from deeplabcut.core.config import ProjectConfig, write_config
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import (
@@ -87,6 +86,8 @@ def _tf_create_pretrained_project(
     as ``create_pretrained_project_tensorflow`` in
     ``deeplabcut.create_project.modelzoo``.
     """
+    import deeplabcut
+
     if not model:
         model = "full_human"
 
