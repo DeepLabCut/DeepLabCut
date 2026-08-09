@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import inspect
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -37,6 +38,41 @@ from deeplabcut.core.engine import Engine
 )
 def test_normalize_gputouse(gputouse, expected):
     assert tf_routing._normalize_gputouse(gputouse) == expected
+
+
+# ---------------------------------------------------------------------------
+# _positionals_as_kwargs
+# ---------------------------------------------------------------------------
+
+
+def test_positionals_as_kwargs_binds_positional_to_names():
+    sig = inspect.signature(lambda a, b, c=3: None)
+    result = tf_routing._positionals_as_kwargs(sig, (1, 2), {"c": 5})
+    assert result == {"a": 1, "b": 2, "c": 5}
+
+
+def test_positionals_as_kwargs_all_keyword():
+    sig = inspect.signature(lambda a, b=2: None)
+    result = tf_routing._positionals_as_kwargs(sig, (), {"a": 1})
+    assert result == {"a": 1}
+
+
+def test_positionals_as_kwargs_too_many_positionals():
+    sig = inspect.signature(lambda a, b: None)
+    with pytest.raises(TypeError, match="too many positional"):
+        tf_routing._positionals_as_kwargs(sig, (1, 2, 3), {})
+
+
+def test_positionals_as_kwargs_duplicate_kwarg():
+    sig = inspect.signature(lambda a, b: None)
+    with pytest.raises(TypeError, match="multiple values"):
+        tf_routing._positionals_as_kwargs(sig, (1,), {"a": 1})
+
+
+def test_positionals_as_kwargs_var_positional_allows_extra():
+    sig = inspect.signature(lambda a, *args: None)
+    result = tf_routing._positionals_as_kwargs(sig, (1, 2, 3), {})
+    assert result == {"a": 1}
 
 
 # ---------------------------------------------------------------------------
