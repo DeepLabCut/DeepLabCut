@@ -86,6 +86,7 @@ def deprecated(
     since: str | None = None,
     removed_in: str | None = None,
     stacklevel: int = 2,
+    name: str | None = None,
 ) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Mark a function as deprecated.
 
@@ -97,12 +98,13 @@ def deprecated(
         stacklevel: Stack level for the warning.  Default is 2, which points to the
             caller of the deprecated function.  Increase this if you wrap calls in
             an extra legacy wrapper function that you don't want to be blamed for the deprecation.
+        name: Name to report in the warning message. Defaults to ``__qualname__``.
     """
 
     def decorator(fn: Callable[P, R]) -> Callable[P, R]:
         info = DeprecationInfo(
             kind="callable",
-            target=fn.__qualname__,
+            target=name or fn.__qualname__,
             replacement=replacement,
             since=since,
             removed_in=removed_in,

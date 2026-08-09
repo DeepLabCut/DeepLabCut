@@ -68,6 +68,7 @@ def unregister_colormap(name: str) -> None:
     replacement="matplotlib.colormaps",
     since=DLC_MATPLOTLIB_LEGACY_DEPRECATED_SINCE,
     stacklevel=3,
+    name="get_colormap_names",
 )
 def _legacy_get_colormap_names() -> list[str]:
     """Return registered colormap names using the legacy API."""
@@ -78,6 +79,7 @@ def _legacy_get_colormap_names() -> list[str]:
     replacement="matplotlib.colormaps.register",
     since=DLC_MATPLOTLIB_LEGACY_DEPRECATED_SINCE,
     stacklevel=3,
+    name="register_colormap",
 )
 def _legacy_register_colormap(
     cmap: Colormap,
@@ -97,6 +99,7 @@ def _legacy_register_colormap(
     replacement="matplotlib.colormaps.unregister",
     since=DLC_MATPLOTLIB_LEGACY_DEPRECATED_SINCE,
     stacklevel=3,
+    name="unregister_colormap",
 )
 def _legacy_unregister_colormap(name: str) -> None:
     """Unregister a colormap using the legacy Matplotlib API."""
