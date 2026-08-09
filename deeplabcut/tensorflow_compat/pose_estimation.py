@@ -339,7 +339,6 @@ def evaluate_network(
     snapshots_to_evaluate: list[str] | None = None,
     pcutoff: float | list[float] | dict[str, float] | None = None,
     engine: Engine | None = None,
-    **torch_kwargs,
 ):
     """Evaluates the network.
 
@@ -415,14 +414,6 @@ def evaluate_network(
         The default behavior loads the engine for the shuffle from the metadata. You can
         overwrite this by passing the engine as an argument, but this should generally
         not be done.
-
-    torch_kwargs:
-        You can add any keyword arguments for the deeplabcut.pose_estimation_pytorch
-        evaluate_network function here. These arguments are passed to the downstream
-        function. Available parameters are `snapshotindex`, which overrides the
-        `snapshotindex` parameter in the project configuration file. For top-down models
-        the `detector_snapshot_index` parameter can override the index of the detector
-        to use for evaluation in the project configuration file.
 
     Returns
     -------
@@ -595,7 +586,6 @@ def analyze_videos(
     identity_only: bool = False,
     use_openvino: str | None = None,
     engine: Engine | None = None,
-    **torch_kwargs,
 ):
     """Makes prediction based on a trained network.
 
@@ -746,10 +736,6 @@ def analyze_videos(
         The default behavior loads the engine for the shuffle from the metadata. You can
         overwrite this by passing the engine as an argument, but this should generally
         not be done.
-
-    torch_kwargs:
-        Any extra parameters to pass to the PyTorch API, such as ``device`` which can
-        be used to specify the CUDA device to use for training.
 
     Returns
     -------
@@ -978,7 +964,6 @@ def analyze_images(
     pcutoff: float | None = None,
     bbox_pcutoff: float | None = None,
     plot_skeleton: bool = False,
-    **torch_kwargs,
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
     """Analyzes images with a DeepLabCut model and stores the output in an H5 file.
 
@@ -1065,9 +1050,6 @@ def analyze_images(
     plot_skeleton: bool, default=False
         If a skeleton is defined in the project's config.yaml, whether
         to plot the skeleton connecting the predicted bodyparts on the images.
-
-    torch_kwargs:
-        Any extra parameters to pass to the PyTorch API, such as ``ctd_conditions``
 
     Returns
     -------
