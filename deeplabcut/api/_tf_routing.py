@@ -97,10 +97,16 @@ def with_tensorflow_fallback(
         renamed_params (dict[str, str] | None): Optional mapping from old TF parameter names to the new canonical
             PyTorch names. A warning will be emitted and the value is passed under the new canonical name. If both the
             old and new names are specified, raises a TypeError.
+            Note: applied **only on the PyTorch path**. The TF compat functions in ``tensorflow_compat/`` maintain their
+            own legacy parameter names and are not affected by this mapping.)
         dropped_params (list[str] | None): TF-only parameters that are silently removed before calling the canonical
             (PyTorch) function. A warning is emitted when they are dropped.
-        normalize_gputouse (bool): resolve the old TF ``gputouse`` parameter to the new canonical PyTorch ``device``
-            parameter. Raises a TypeError if both are specified.
+            Note: applied **only on the PyTorch path**. The TF compat functions accept these parameters natively.
+        normalize_gputouse (bool): Resolve the old TF ``gputouse`` parameter to the new canonical PyTorch ``device``
+            parameter. Raises a TypeError if both are specified. Equivalent to ``renamed_params={"gputouse": "device"}``
+            with the additional normalization of legacy formats (``int``, ``"gpu:0"``) to ``"cuda:X"``.
+            Note: applied **only on the PyTorch path**. When ``True``, setting ``gputouse`` in ``dropped_params`` is
+            redundant (``normalize_gputouse`` always renames ``gputouse`` to ``device`` first).
         when (Callable | None): A callable ``(*args, **kwargs) -> bool`` that determines whether to route to the
             TensorFlow fallback.  When ``None`` (the default), the engine is resolved from shuffle metadata via
             ``_resolve_engine``.  Supply a custom callable for engine-less routing (e.g. modelzoo functions).
@@ -113,6 +119,10 @@ def with_tensorflow_fallback(
 
         The original ``*args`` / ``**kwargs`` (minus ``engine``) are forwarded downstream. Parameter renames such as
         ``displayiters`` → ``display_iters`` stay on ``@renamed_parameter`` / the TF backend, not in this router.
+
+        Legacy cleanup (``renamed_params``, ``dropped_params``, ``normalize_gputouse``) is applied only when the
+        PyTorch path is taken. The TF path forwards arguments as-is so the TF compat functions receive their
+        native parameter names.
     """
 
     def decorator(fn):

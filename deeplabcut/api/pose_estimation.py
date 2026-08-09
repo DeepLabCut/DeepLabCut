@@ -35,7 +35,6 @@ from deeplabcut.core.deprecation import deprecated, renamed_parameter
     normalize_gputouse=True,
     dropped_params=[
         "allow_growth",
-        "gputouse",
         "autotune",
         "superanimal_name",
         "superanimal_transfer_learning",
