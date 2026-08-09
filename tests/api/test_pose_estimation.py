@@ -10,13 +10,22 @@
 #
 """Tests that each public API function in deeplabcut/api/pose_estimation.py
 routes to the correct downstream PyTorch implementation with the correct
-parameters.
+parameters, and that TF-engine projects correctly dispatch to the TensorFlow
+compatibility stubs.
 
-Each test:
+PT-path tests:
   1. Patches ``_resolve_engine`` to return ``Engine.PYTORCH`` (avoids filesystem access).
   2. Patches the downstream PyTorch function.
   3. Calls the public API wrapper.
   4. Asserts the downstream was called exactly once with the expected arguments.
+
+TF-path tests:
+  1. Patches ``_resolve_engine`` to return ``Engine.TF``.
+  2. Patches ``_get_tensorflow_impl`` to return a mock TF compat stub.
+  3. Calls the public API wrapper.
+  4. Asserts the TF compat was called with the correct (raw) arguments — engine
+     stripped, but TF-specific params (e.g. ``gputouse``, ``rescale``,
+     ``cfg_path``, ``Indices``) passed through unchanged.
 """
 
 from __future__ import annotations
@@ -30,7 +39,9 @@ from deeplabcut.core.deprecation import DLCDeprecationWarning
 from deeplabcut.core.engine import Engine
 
 _PYTORCH = Engine.PYTORCH
+_TF = Engine.TF
 _RESOLVE = "deeplabcut.api._tf_routing._resolve_engine"
+_GET_TF_IMPL = "deeplabcut.api._tf_routing._get_tensorflow_impl"
 
 
 # ---------------------------------------------------------------------------
@@ -410,6 +421,216 @@ def test_extract_save_all_maps_routes_to_pytorch_impl(_):
         detector_snapshot_index=None,
         dest_folder=None,
     )
+
+
+# ---------------------------------------------------------------------------
+# TensorFlow-engine dispatch tests
+# ---------------------------------------------------------------------------
+# These tests verify that when _resolve_engine returns Engine.TF, the
+# @with_tensorflow_fallback decorator:
+#   - imports the correct function from tensorflow_compat/
+#   - calls it with the original positional and keyword arguments (unchanged)
+#   - strips ``engine`` from kwargs before forwarding
+#   - does NOT apply renamed_params, dropped_params, or normalize_gputouse
+#     (those are PT-path-only)
+
+
+@patch(_RESOLVE, return_value=_TF)
+def test_train_network_routes_to_tensorflow_compat(_):
+    tf_impl = MagicMock(return_value=None)
+
+    with (
+        patch(_GET_TF_IMPL, return_value=tf_impl) as get_impl,
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        from deeplabcut.api.pose_estimation import train_network
+
+        train_network("cfg.yaml", shuffle=2, trainingsetindex=1, gputouse=0)
+
+    get_impl.assert_called_once_with("train_network", module=None)
+    tf_impl.assert_called_once_with("cfg.yaml", shuffle=2, trainingsetindex=1, gputouse=0)
+
+
+@patch(_RESOLVE, return_value=_TF)
+def test_evaluate_network_routes_to_tensorflow_compat(_):
+    tf_impl = MagicMock(return_value=None)
+
+    with (
+        patch(_GET_TF_IMPL, return_value=tf_impl) as get_impl,
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        from deeplabcut.api.pose_estimation import evaluate_network
+
+        evaluate_network("cfg.yaml", shuffles=(1, 2), plotting=True, gputouse=0)
+
+    get_impl.assert_called_once_with("evaluate_network", module=None)
+    tf_impl.assert_called_once_with("cfg.yaml", shuffles=(1, 2), plotting=True, gputouse=0)
+
+
+@patch(_RESOLVE, return_value=_TF)
+def test_analyze_videos_routes_to_tensorflow_compat(_):
+    tf_impl = MagicMock(return_value="scorer")
+
+    with (
+        patch(_GET_TF_IMPL, return_value=tf_impl) as get_impl,
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        from deeplabcut.api.pose_estimation import analyze_videos
+
+        analyze_videos("cfg.yaml", ["video.mp4"], save_as_csv=True, destfolder="/out")
+
+    get_impl.assert_called_once_with("analyze_videos", module=None)
+    tf_impl.assert_called_once_with(
+        "cfg.yaml",
+        ["video.mp4"],
+        save_as_csv=True,
+        destfolder="/out",
+    )
+
+
+@patch(_RESOLVE, return_value=_TF)
+def test_analyze_images_routes_to_tensorflow_compat(_):
+    """TF path faithfully routes to the NotImplementedError stub."""
+    tf_impl = MagicMock(side_effect=NotImplementedError("analyze_images is not implemented for the TensorFlow engine."))
+
+    with (
+        patch(_GET_TF_IMPL, return_value=tf_impl) as get_impl,
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        from deeplabcut.api.pose_estimation import analyze_images
+
+        with pytest.raises(NotImplementedError, match="analyze_images"):
+            analyze_images("cfg.yaml", "images/", shuffle=3)
+
+    get_impl.assert_called_once_with("analyze_images", module=None)
+    tf_impl.assert_called_once_with("cfg.yaml", "images/", shuffle=3)
+
+
+@patch(_RESOLVE, return_value=_TF)
+def test_create_tracking_dataset_routes_to_tensorflow_compat(_):
+    tf_impl = MagicMock(return_value="scorer")
+
+    with (
+        patch(_GET_TF_IMPL, return_value=tf_impl) as get_impl,
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        from deeplabcut.api.pose_estimation import create_tracking_dataset
+
+        create_tracking_dataset("cfg.yaml", ["video.mp4"], track_method="box")
+
+    get_impl.assert_called_once_with("create_tracking_dataset", module=None)
+    tf_impl.assert_called_once_with("cfg.yaml", ["video.mp4"], track_method="box")
+
+
+@patch(_RESOLVE, return_value=_TF)
+def test_convert_detections2tracklets_routes_to_tensorflow_compat(_):
+    tf_impl = MagicMock(return_value=None)
+
+    with (
+        patch(_GET_TF_IMPL, return_value=tf_impl) as get_impl,
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        from deeplabcut.api.pose_estimation import convert_detections2tracklets
+
+        convert_detections2tracklets("cfg.yaml", ["video.mp4"], track_method="box")
+
+    get_impl.assert_called_once_with("convert_detections2tracklets", module=None)
+    tf_impl.assert_called_once_with("cfg.yaml", ["video.mp4"], track_method="box")
+
+
+@patch(_RESOLVE, return_value=_TF)
+def test_extract_maps_routes_to_tensorflow_compat(_):
+    """TF path preserves legacy ``Indices`` parameter (not renamed to ``indices``)."""
+    tf_impl = MagicMock(return_value={})
+
+    with (
+        patch(_GET_TF_IMPL, return_value=tf_impl) as get_impl,
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        from deeplabcut.api.pose_estimation import extract_maps
+
+        extract_maps("cfg.yaml", shuffle=1, Indices=[0, 5])
+
+    get_impl.assert_called_once_with("extract_maps", module=None)
+    tf_impl.assert_called_once_with("cfg.yaml", shuffle=1, Indices=[0, 5])
+
+
+@patch(_RESOLVE, return_value=_TF)
+def test_extract_save_all_maps_routes_to_tensorflow_compat(_):
+    """TF path preserves legacy ``Indices`` / ``comparison_bodyparts`` naming."""
+    tf_impl = MagicMock(return_value=None)
+
+    with (
+        patch(_GET_TF_IMPL, return_value=tf_impl) as get_impl,
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        from deeplabcut.api.pose_estimation import extract_save_all_maps
+
+        extract_save_all_maps("cfg.yaml", shuffle=1, comparison_bodyparts=["nose"], Indices=[0, 1])
+
+    get_impl.assert_called_once_with("extract_save_all_maps", module=None)
+    tf_impl.assert_called_once_with(
+        "cfg.yaml",
+        shuffle=1,
+        comparison_bodyparts=["nose"],
+        Indices=[0, 1],
+    )
+
+
+@patch(_RESOLVE, return_value=_TF)
+def test_export_model_routes_to_tensorflow_compat(_):
+    """TF path uses ``cfg_path`` (not ``config``) — legacy naming."""
+    tf_impl = MagicMock(return_value=None)
+
+    with (
+        patch(_GET_TF_IMPL, return_value=tf_impl) as get_impl,
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        from deeplabcut.api.pose_estimation import export_model
+
+        export_model("cfg.yaml", shuffle=2, overwrite=True)
+
+    get_impl.assert_called_once_with("export_model", module=None)
+    # On the TF path, positional args pass through verbatim; cfg_path is the
+    # positional arg (as passed by the caller), not config.
+    assert tf_impl.call_args.args[0] == "cfg.yaml"
+    assert "config" not in tf_impl.call_args.kwargs
+    assert "cfg_path" not in tf_impl.call_args.kwargs
+    assert tf_impl.call_args.kwargs["shuffle"] == 2
+    assert tf_impl.call_args.kwargs["overwrite"] is True
+
+
+@patch(_RESOLVE, return_value=_TF)
+def test_analyze_time_lapse_frames_routes_to_tensorflow_compat(_):
+    """TF path preserves legacy ``frametype`` parameter."""
+    tf_impl = MagicMock(return_value={})
+
+    with (
+        patch(_GET_TF_IMPL, return_value=tf_impl) as get_impl,
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        from deeplabcut.api.pose_estimation import analyze_time_lapse_frames
+
+        analyze_time_lapse_frames("cfg.yaml", "dir/", frametype=".jpg", shuffle=2)
+
+    get_impl.assert_called_once_with("analyze_time_lapse_frames", module=None)
+    tf_impl.assert_called_once_with("cfg.yaml", "dir/", frametype=".jpg", shuffle=2)
+
+
+@patch(_RESOLVE, return_value=_TF)
+def test_tf_engine_stripped_before_calling_compat(_):
+    """``engine`` kwarg is removed before forwarding to the TF compat function."""
+    tf_impl = MagicMock(return_value=None)
+
+    with (
+        patch(_GET_TF_IMPL, return_value=tf_impl),
+        pytest.warns(DLCDeprecationWarning),
+    ):
+        from deeplabcut.api.pose_estimation import train_network
+
+        train_network("cfg.yaml", engine=Engine.TF)
+
+    assert "engine" not in tf_impl.call_args.kwargs
 
 
 # ---------------------------------------------------------------------------
