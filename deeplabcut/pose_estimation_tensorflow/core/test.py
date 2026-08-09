@@ -48,7 +48,7 @@ def test_net(visualise, cache_scoremaps):
             Path(out_dir).mkdir(parents=True)
 
     num_images = dataset.num_images
-    predictions = np.zeros((num_images,), dtype=np.object)
+    predictions = np.zeros((num_images,), dtype=object)
 
     for k in range(num_images):
         print(f"processing image {k}/{num_images - 1}")
