@@ -307,8 +307,9 @@ def read_config(
 
     Args:
         configname: Path to the project configuration file (config.yaml).
-        ignore_empty: Deprecated, has no effect. Empty/None values in config.yaml
-            fields are always treated as unset (see `ProjectConfig` validators).
+        ignore_empty: Deprecated, has no effect. Empty/None values for
+            non-optional config.yaml fields are always treated as unset; optional
+            fields retain their ``None`` values (see `ProjectConfig` validators).
 
     Returns:
         The project configuration as a ProjectConfig instance (supports dict-like access).
@@ -319,7 +320,8 @@ def read_config(
     if ignore_empty is not _IGNORE_EMPTY_UNSET:
         warnings.warn(
             "read_config(ignore_empty=...) is deprecated and no longer has any effect: "
-            "empty/None values for ProjectConfig fields are always treated as unset.",
+            "empty/None values for non-optional ProjectConfig fields are always treated "
+            "as unset; optional fields retain their None values.",
             DLCDeprecationWarning,
             stacklevel=2,
         )

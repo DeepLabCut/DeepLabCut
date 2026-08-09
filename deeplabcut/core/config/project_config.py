@@ -258,8 +258,7 @@ class ProjectConfig(DLCVersionedConfig):
                 logger.warning(
                     f"Found invalid empty/null/None value for `{name}` in the project "
                     "config. This is only supported for legacy compatibility. "
-                    f"Treating `{name}` as unset and using the field default "
-                    f"instead: {cls.model_fields[name].default}"
+                    f"Treating `{name}` as unset and using the field default instead."
                 )
                 data.pop(name)
 
