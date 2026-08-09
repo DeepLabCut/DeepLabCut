@@ -58,7 +58,7 @@ on:
         type: boolean
         default: false
       pip_overrides:
-        description: "Comma-separated pip specs to force-install after normal deps (e.g. numpy>=2)"
+        description: "Space-separated pip specs to force-install after normal deps (e.g. 'numpy>=2,<3' or 'numpy>=2,<3 pandas>=3')"
         required: false
         type: string
         default: ""
@@ -127,7 +127,9 @@ jobs:
         if: ${{ matrix.pip_overrides != '' }}
         shell: bash -el {0}
         run: |
-          IFS=',' read -ra pkgs <<< "${{ matrix.pip_overrides }}"
+          # Split on whitespace (not commas): pip version specs legitimately
+          # contain commas to combine constraints, e.g. "numpy>=2,<3".
+          read -ra pkgs <<< "${{ matrix.pip_overrides }}"
           for pkg in "${pkgs[@]}"; do
             echo "Force-installing: $pkg"
             python -m pip install --no-cache-dir --upgrade "$pkg"
