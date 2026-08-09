@@ -12,13 +12,14 @@
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
 
 import deeplabcut.core.visualization as visualization
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DLCDeprecationWarning, renamed_parameter
 from deeplabcut.core.engine import Engine
 
 
@@ -227,6 +228,37 @@ def train_network(
 
     if max_snapshots_to_keep is None:
         max_snapshots_to_keep = 5
+
+    _ignored = []
+    if epochs is not None:
+        _ignored.append("epochs")
+    if save_epochs is not None:
+        _ignored.append("save_epochs")
+    if device is not None:
+        _ignored.append("device")
+    if snapshot_path is not None:
+        _ignored.append("snapshot_path")
+    if detector_path is not None:
+        _ignored.append("detector_path")
+    if batch_size is not None:
+        _ignored.append("batch_size")
+    if detector_batch_size is not None:
+        _ignored.append("detector_batch_size")
+    if detector_epochs is not None:
+        _ignored.append("detector_epochs")
+    if detector_save_epochs is not None:
+        _ignored.append("detector_save_epochs")
+    if pytorch_cfg_updates is not None:
+        _ignored.append("pytorch_cfg_updates")
+    if _ignored:
+        warnings.warn(
+            f"The following parameters are PyTorch-only and are ignored for the "
+            f"TensorFlow engine: {', '.join(_ignored)}. "
+            f"Create a training dataset with a PyTorch model architecture to use "
+            f"them. See https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html",
+            DLCDeprecationWarning,
+            stacklevel=2,
+        )
 
     return _train_network(
         str(config),
@@ -1154,6 +1186,13 @@ def analyze_time_lapse_frames(
         analyze_time_lapse_frames as _analyze_time_lapse_frames,
     )
 
+    if device is not None:
+        warnings.warn(
+            "'device' is a PyTorch-only parameter and is ignored for the TensorFlow engine. Use 'gputouse' instead.",
+            DLCDeprecationWarning,
+            stacklevel=2,
+        )
+
     return _analyze_time_lapse_frames(
         config,
         directory,
@@ -1361,6 +1400,13 @@ def extract_maps(
     """
     from deeplabcut.pose_estimation_tensorflow import extract_maps as _extract_maps
 
+    if device is not None:
+        warnings.warn(
+            "'device' is a PyTorch-only parameter and is ignored for the TensorFlow engine. Use 'gputouse' instead.",
+            DLCDeprecationWarning,
+            stacklevel=2,
+        )
+
     return _extract_maps(
         config,
         shuffle=shuffle,
@@ -1513,6 +1559,21 @@ def extract_save_all_maps(
         extract_save_all_maps as _extract_save_all_maps,
     )
 
+    _ignored = []
+    if device is not None:
+        _ignored.append("device")
+    if snapshot_index is not None:
+        _ignored.append("snapshot_index")
+    if detector_snapshot_index is not None:
+        _ignored.append("detector_snapshot_index")
+    if _ignored:
+        warnings.warn(
+            f"The following parameters are PyTorch-only and are ignored for the "
+            f"TensorFlow engine: {', '.join(_ignored)}.",
+            DLCDeprecationWarning,
+            stacklevel=2,
+        )
+
     return _extract_save_all_maps(
         config,
         shuffle=shuffle,
@@ -1597,6 +1658,13 @@ def export_model(
     --------
     """
     from deeplabcut.pose_estimation_tensorflow import export_model as _export_model
+
+    if without_detector:
+        warnings.warn(
+            "'without_detector' is a PyTorch-only parameter and is ignored for the TensorFlow engine.",
+            DLCDeprecationWarning,
+            stacklevel=2,
+        )
 
     return _export_model(
         cfg_path=cfg_path,
