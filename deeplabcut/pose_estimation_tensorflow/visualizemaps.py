@@ -19,7 +19,7 @@ from deeplabcut.core.visualization import (
     visualize_paf,
     visualize_scoremaps,
 )
-from deeplabcut.utils.matplotlib_future_mode import get_colormap
+from deeplabcut.utils.matplotlib_compat import get_colormap
 
 
 def extract_maps(

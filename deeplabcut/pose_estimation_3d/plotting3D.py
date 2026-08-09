@@ -27,7 +27,7 @@ from deeplabcut.utils import (
     make_labeled_video,
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
-from deeplabcut.utils.matplotlib_future_mode import get_colormap
+from deeplabcut.utils.matplotlib_compat import get_colormap
 
 matplotlib_axes_logger.setLevel("ERROR")
 

@@ -33,7 +33,7 @@ from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.utils.matplotlib_future_mode import get_colormap
+from deeplabcut.utils.matplotlib_compat import get_colormap
 
 
 def create_labeled_images(

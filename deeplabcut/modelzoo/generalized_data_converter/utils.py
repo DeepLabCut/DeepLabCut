@@ -18,7 +18,7 @@ from deeplabcut.modelzoo.generalized_data_converter.datasets.materialize import 
     SingleDLC_config,
 )
 from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.utils.matplotlib_future_mode import get_colormap
+from deeplabcut.utils.matplotlib_compat import get_colormap
 
 
 def threshold_kpts(config_path, h5path, threshold_mean=0.9, threshold_min=0.1):
