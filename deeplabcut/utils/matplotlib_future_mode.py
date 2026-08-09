@@ -30,7 +30,7 @@ def get_colormap_names() -> list[str]:
     if hasattr(matplotlib, "colormaps"):
         return list(matplotlib.colormaps)
 
-    return list(plt.colormaps())
+    return _legacy_get_colormap_names()
 
 
 def register_colormap(
