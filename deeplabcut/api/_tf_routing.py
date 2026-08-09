@@ -16,7 +16,6 @@ import functools
 import inspect
 import warnings
 from collections.abc import Callable
-from functools import lru_cache
 from importlib import import_module
 
 from deeplabcut.core.deprecation import DLCDeprecationWarning
@@ -25,7 +24,6 @@ from deeplabcut.core.engine import Engine
 _TF_MODULE = "deeplabcut.tensorflow_compat"
 
 
-@lru_cache
 def _get_tensorflow_impl(name: str, module: str | None = None):
     mod = import_module(module or _TF_MODULE)
     return getattr(mod, name)
