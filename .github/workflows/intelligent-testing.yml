@@ -154,7 +154,8 @@ jobs:
           "include": [
             {"os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"numpy>=2"},
             {"os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"pandas>=3"},
-            {"os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"albumentations>=2"}
+            {"os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"albumentations>=2"},
+            {"os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"matplotlib>=3.9"}
           ]
         }
       full_suite: false
