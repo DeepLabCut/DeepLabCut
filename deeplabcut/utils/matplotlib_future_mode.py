@@ -14,7 +14,7 @@ from matplotlib.colors import Colormap
 
 from deeplabcut.core.deprecation import deprecated
 
-DLC_MATPLOTLIB_LEGACY_DEPRECATED_SINCE = "3.0.1"  # FIXME @C-Achard which one do we want?
+DLC_MATPLOTLIB_LEGACY_DEPRECATED_SINCE = "3.0.2"
 
 
 def get_colormap(
