@@ -31,7 +31,6 @@ import numpy as np
 import pandas as pd
 
 from deeplabcut.core.trackingutils import TRACK_METHODS
-from deeplabcut.generate_training_dataset import trainingsetmanipulation
 from deeplabcut.utils import auxiliaryfunctions, conversioncode
 
 
@@ -190,25 +189,29 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
     """Save predicted data as h5 file and metadata as pickle file; created by
     predict_videos.py.
     """
-    data_path = dataname.split(".h5")[0] + suffix + ".pickle"
-    metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
+    dataname = Path(dataname)
+    data_path = dataname.with_name(dataname.stem + suffix + ".pickle")
+    metadata_path = dataname.with_name(dataname.stem + "_meta.pickle")
 
-    with Path(data_path).open("wb") as f:
+    data_path.parent.mkdir(parents=True, exist_ok=True)
+    with data_path.open("wb") as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
-    with Path(metadata_path).open("wb") as f:
+    with metadata_path.open("wb") as f:
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
     return data_path, metadata_path
 
 
 def LoadFullMultiAnimalData(dataname):
     """Load predicted data and metadata from pickle files created by predict_videos.py."""
-    data_file = dataname.split(".h5")[0] + "_full.pickle"
+    dataname = Path(dataname)
+    data_file = dataname.with_name(dataname.stem + "_full.pickle")
+    metadata_file = dataname.with_name(dataname.stem + "_meta.pickle")
     try:
-        with Path(data_file).open("rb") as handle:
+        with data_file.open("rb") as handle:
             data = pickle.load(handle)
     except (pickle.UnpicklingError, FileNotFoundError):
         data = shelve.open(data_file, flag="r")
-    with Path(data_file.replace("_full.", "_meta.")).open("rb") as handle:
+    with metadata_file.open("rb") as handle:
         metadata = pickle.load(handle)
     return data, metadata
 
@@ -255,7 +258,7 @@ def convert2_maDLC(config: str | Path, userfeedback=True, forceindividual=None):
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
-    video_names = [trainingsetmanipulation._robust_path_split(i)[1] for i in videos]
+    video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(cfg)
@@ -282,7 +285,7 @@ def convert2_maDLC(config: str | Path, userfeedback=True, forceindividual=None):
 
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
             fn = folder / ("CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(str(fn) + ".h5")
+            Data = pd.read_hdf(fn.with_suffix(".h5"))
             conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
@@ -341,13 +344,13 @@ def convert2_maDLC(config: str | Path, userfeedback=True, forceindividual=None):
                     dataFrame = pd.concat([dataFrame, frame], axis=1)
 
             Data.to_hdf(
-                fn + "singleanimal.h5",
+                fn.with_name(fn.name + "singleanimal.h5"),
                 key="df_with_missing",
             )
-            Data.to_csv(fn + "singleanimal.csv")
+            Data.to_csv(fn.with_name(fn.name + "singleanimal.csv"))
 
-            dataFrame.to_hdf(fn + ".h5", key="df_with_missing")
-            dataFrame.to_csv(fn + ".csv")
+            dataFrame.to_hdf(fn.with_suffix(".h5"), key="df_with_missing")
+            dataFrame.to_csv(fn.with_suffix(".csv"))
 
 
 def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
@@ -370,7 +373,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
 
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
             fn = folder / ("CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(str(fn) + ".h5")
+            Data = pd.read_hdf(fn.with_suffix(".h5"))
             conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
@@ -413,16 +416,16 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
                 Data.to_hdf(
-                    fn + "multianimal.h5",
+                    fn.with_name(fn.name + "multianimal.h5"),
                     key="df_with_missing",
                 )
-                Data.to_csv(fn + "multianimal.csv")
+                Data.to_csv(fn.with_name(fn.name + "multianimal.csv"))
 
                 DataFrame.to_hdf(
-                    fn + ".h5",
+                    fn.with_suffix(".h5"),
                     key="df_with_missing",
                 )
-                DataFrame.to_csv(fn + ".csv")
+                DataFrame.to_csv(fn.with_suffix(".csv"))
             elif target is None or target == "multi":
                 print("This is a single animal data set, converting to multi...", folder)
                 for prfxindex, prefix in enumerate(prefixes):
@@ -500,16 +503,16 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
                 Data.to_hdf(
-                    fn + "singleanimal.h5",
+                    fn.with_name(fn.name + "singleanimal.h5"),
                     key="df_with_missing",
                 )
-                Data.to_csv(fn + "singleanimal.csv")
+                Data.to_csv(fn.with_name(fn.name + "singleanimal.csv"))
 
                 DataFrame.to_hdf(
-                    fn + ".h5",
+                    fn.with_suffix(".h5"),
                     key="df_with_missing",
                 )
-                DataFrame.to_csv(fn + ".csv")
+                DataFrame.to_csv(fn.with_suffix(".csv"))
 
 
 def form_default_inferencecfg(cfg):

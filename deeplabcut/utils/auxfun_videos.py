@@ -357,7 +357,7 @@ def imread(image_path, mode="skimage"):
         return img_as_ubyte(image)
 
     elif mode == "cv2":
-        return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)[..., ::-1]  # ~10% faster than using cv2.cvtColor
+        return cv2.imread(str(image_path), cv2.IMREAD_UNCHANGED)[..., ::-1]  # ~10% faster than using cv2.cvtColor
 
 
 # https://docs.opencv.org/3.4.0/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121

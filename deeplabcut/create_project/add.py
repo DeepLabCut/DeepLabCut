@@ -9,7 +9,13 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+import os
+import shutil
 from pathlib import Path
+
+from deeplabcut.generate_training_dataset import frame_extraction
+from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 def add_new_videos(
@@ -59,14 +65,6 @@ def add_new_videos(
                 coords=[[0, 100, 0, 200], [0, 100, 0, 250]],
             )
     """
-    import os
-    import shutil
-    from pathlib import Path
-
-    from ..generate_training_dataset import frame_extraction
-    from ..utils import auxiliaryfunctions
-    from ..utils.auxfun_videos import VideoReader
-
     config = Path(config).absolute()
 
     # Read the config file

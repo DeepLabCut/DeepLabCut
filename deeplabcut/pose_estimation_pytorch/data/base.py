@@ -47,7 +47,7 @@ class Loader(ABC):
             Returns a dictionary containing dataset parameters derived from the configuration.
     """
 
-    @renamed_parameter(old="model_config_path", new="model_config", since="3.1.0")
+    @renamed_parameter(old="model_config_path", new="model_config", since="3.0.1")
     def __init__(
         self,
         project_root: str | Path,
