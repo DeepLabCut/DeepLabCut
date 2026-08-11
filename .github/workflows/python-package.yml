@@ -126,14 +126,14 @@ jobs:
       - name: Force-install upgrade packages
         if: ${{ matrix.pip_overrides != '' }}
         shell: bash -el {0}
+        env:
+            PIP_OVERRIDES: ${{ matrix.pip_overrides }}
         run: |
-          # Split on whitespace (not commas): pip version specs legitimately
-          # contain commas to combine constraints, e.g. "numpy>=2,<3".
-          read -ra pkgs <<< "${{ matrix.pip_overrides }}"
-          for pkg in "${pkgs[@]}"; do
+            read -ra pkgs <<< "$PIP_OVERRIDES"
+            for pkg in "${pkgs[@]}"; do
             echo "Force-installing (--no-deps): $pkg"
             python -m pip install --no-cache-dir --upgrade --no-deps "$pkg"
-          done
+            done
 
       - name: Install ffmpeg (Linux/macOS)
         if: runner.os != 'Windows'
