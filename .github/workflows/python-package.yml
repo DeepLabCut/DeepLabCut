@@ -80,6 +80,8 @@ jobs:
     # Use a stable concurrency key only when one is explicitly provided
     # (e.g. PR/workflow_call/manual dedupe). Otherwise fall back to github.run_id
     # so pushes to main never cancel each other.
+    # Use matrix.id (not full pip_overrides) so canary cells that share os/python
+    # do not cancel each other.
     concurrency:
       group: >-
         tests-${{ github.workflow }}-
@@ -87,7 +89,7 @@ jobs:
             || github.event_name == 'workflow_dispatch' && inputs.concurrency_key
             || github.run_id }}-
         ${{ matrix.os }}-${{ matrix.python-version }}
-        ${{ (matrix.pip_overrides || inputs.pip_overrides) && format('-{0}', matrix.pip_overrides || inputs.pip_overrides) || '' }}
+        ${{ matrix.id && format('-{0}', matrix.id) || '' }}
       cancel-in-progress: true
 
     strategy:
