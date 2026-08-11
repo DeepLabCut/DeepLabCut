@@ -292,8 +292,10 @@ jobs:
           ${{ inputs.continue_on_error &&
               (steps.run_pytest.outcome == 'failure' || steps.run_functional_scripts.outcome == 'failure') }}
         shell: bash
+        env:
+            MATRIX_PIP_OVERRIDES: ${{ matrix.pip_overrides }}
         run: |
-          MATRIX_DESC="${{ matrix.os }}, py${{ matrix.python-version }}, pip_overrides='${{ matrix.pip_overrides }}'"
+          MATRIX_DESC="${{ matrix.os }}, py${{ matrix.python-version }}, pip_overrides='$MATRIX_PIP_OVERRIDES'"
           echo "::warning title=Non-blocking test failure::[$MATRIX_DESC] pytest=${{ steps.run_pytest.outcome }}, functional_scripts=${{ steps.run_functional_scripts.outcome }}. This job uses continue-on-error and will still report success overall, but the failure should be investigated."
           {
             echo "### :warning: Non-blocking test failure"
