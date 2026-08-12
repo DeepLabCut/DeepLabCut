@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 
 import deeplabcut.core.visualization as visualization
-from deeplabcut.core.deprecation import DLCDeprecationWarning, renamed_parameter
+from deeplabcut.core.deprecation import DeprecatedSince, DLCDeprecationWarning, renamed_parameter
 from deeplabcut.core.engine import Engine
 
 
@@ -28,9 +28,9 @@ def get_available_aug_methods() -> tuple[str, ...]:
     return "imgaug", "default", "deterministic", "scalecrop", "tensorpack"
 
 
-@renamed_parameter(old="maxiters", new="max_iters", since="3.0.0")
-@renamed_parameter(old="saveiters", new="save_iters", since="3.0.0")
-@renamed_parameter(old="displayiters", new="display_iters", since="3.0.0")
+@renamed_parameter(old="maxiters", new="max_iters", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="saveiters", new="save_iters", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="displayiters", new="display_iters", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def train_network(
     config: str | Path,
     shuffle: int = 1,
@@ -323,8 +323,8 @@ def return_train_network_path(
     )
 
 
-@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
-@renamed_parameter(old="Shuffles", new="shuffles", since="3.0.0")
+@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="Shuffles", new="shuffles", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def evaluate_network(
     config: str | Path,
     shuffles: Sequence[int] = (1,),
@@ -472,8 +472,8 @@ def evaluate_network(
     )
 
 
-@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
-@renamed_parameter(old="Snapindex", new="snapshotindex", since="3.0.0")
+@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="Snapindex", new="snapshotindex", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def return_evaluate_network_data(
     config: str,
     shuffle: int = 0,
@@ -559,8 +559,8 @@ def return_evaluate_network_data(
     )
 
 
-@renamed_parameter(old="batchsize", new="batch_size", since="3.0.0")
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="batchsize", new="batch_size", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def analyze_videos(
     config: str,
     videos: list[str],
@@ -833,8 +833,8 @@ def analyze_videos(
     )
 
 
-@renamed_parameter(old="batchsize", new="batch_size", since="3.0.0")
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="batchsize", new="batch_size", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def create_tracking_dataset(
     config: str,
     videos: list[str],
@@ -1187,7 +1187,7 @@ def analyze_time_lapse_frames(
     )
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def convert_detections2tracklets(
     config: str,
     videos: list[str],
@@ -1457,7 +1457,7 @@ def visualize_paf(
     return visualization.visualize_paf(image, paf, step=step, colors=colors)
 
 
-@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
+@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def extract_save_all_maps(
     config,
     shuffle: int = 1,

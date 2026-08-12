@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import distance
 
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
 
@@ -173,7 +173,7 @@ def analyzebone(bp1, bp2):
 
 
 # MAIN FUNC
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def analyzeskeleton(
     config: str | Path,
     videos: list[str | Path],

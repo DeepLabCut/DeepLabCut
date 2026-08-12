@@ -34,7 +34,7 @@ import numpy as np
 import pandas as pd
 
 from deeplabcut.core import crossvalutils
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
 from deeplabcut.utils.auxfun_videos import collect_video_paths
 
@@ -169,7 +169,7 @@ def PlottingResults(
 ##################################################
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def plot_trajectories(
     config: str | Path,
     videos: list[str | Path],
