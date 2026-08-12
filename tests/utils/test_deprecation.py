@@ -8,16 +8,15 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import re
 import warnings
+from pathlib import Path
 
 import pytest
 from packaging.version import Version
 
-from deeplabcut.core.deprecation import (
-    DLCDeprecationWarning,
-    deprecated,
-    renamed_parameter,
-)
+import deeplabcut
+from deeplabcut.core.deprecation import DeprecatedSince, DLCDeprecationWarning, deprecated, renamed_parameter
 
 # ---------------------------------------------------------------------------
 # @deprecated
@@ -289,3 +288,35 @@ def test_multiple_subsequent_renames_allowed():
     with pytest.warns(DLCDeprecationWarning):
         result = fn(older_name=2)
     assert result == 2
+
+
+# ---------------------------------------------------------------------------
+# Version constants
+# ---------------------------------------------------------------------------
+
+VERSION_LITERAL = re.compile(r"(?:since|removed_in)\s*=\s*[\"']")
+
+
+def test_version_constants_are_parseable():
+    constants = {name: value for name, value in vars(DeprecatedSince).items() if not name.startswith("_")}
+
+    assert constants
+    for version in constants.values():
+        Version(version)  # must not raise
+
+
+def test_markers_use_constants_instead_of_version_literals():
+    """The shipped package must not hard-code versions in deprecation markers."""
+    package_root = Path(deeplabcut.__file__).parent
+    # The decorators illustrate their own API with literal versions in docstrings.
+    exempt = {package_root / "core" / "deprecation.py"}
+
+    offenders = [
+        f"{path.relative_to(package_root)}:{lineno}"
+        for path in package_root.rglob("*.py")
+        if path not in exempt
+        for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1)
+        if VERSION_LITERAL.search(line)
+    ]
+
+    assert not offenders, "Use a DeprecatedSince constant instead of a version literal: " + ", ".join(offenders)
