@@ -26,7 +26,6 @@ from deeplabcut.gui.components import (
 )
 from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
 from deeplabcut.gui.gui_assets import icon_from_resource
-from deeplabcut.gui.widgets import ConfigEditor
 
 
 @dataclass
@@ -219,8 +218,7 @@ class TrainNetwork(DefaultTab):
         self.root.logger.info(f"{attribute.label} set to {value}")
 
     def open_posecfg_editor(self):
-        editor = ConfigEditor(self.root.pose_cfg_path)
-        editor.show()
+        self._open_config_editor(self.root.pose_cfg_path)
 
     def train_network(self):
         try:
