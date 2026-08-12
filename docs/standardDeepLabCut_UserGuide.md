@@ -234,14 +234,12 @@ Single Animal project configuration file glossary
 
 ###### API Docs
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.create_new_project.rst
+[View the `create_new_project` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/create_project/new/#deeplabcut.create_project.new.create_new_project)
 ```
-````
 
 #### (B) Configure the Project
 
@@ -370,14 +368,12 @@ Manual frame selection using the `extract_frames` GUI.
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.extract_frames.rst
+[View the `extract_frames` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/generate_training_dataset/frame_extraction/#deeplabcut.generate_training_dataset.frame_extraction.extract_frames)
 ```
-````
 
 ______________________________________________________________________
 
@@ -450,14 +446,12 @@ around, and click save again.
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.check_labels.rst
+[View the `check_labels` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/generate_training_dataset/trainingsetmanipulation/#deeplabcut.generate_training_dataset.trainingsetmanipulation.check_labels)
 ```
-````
 
 ______________________________________________________________________
 
@@ -584,32 +578,26 @@ deeplabcut.create_training_dataset_from_existing_split(
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset
+```{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.create_training_dataset.rst
+[View the `create_training_dataset` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/generate_training_dataset/trainingsetmanipulation/#deeplabcut.generate_training_dataset.trainingsetmanipulation.create_training_dataset)
 ```
-````
 
-````{admonition} Click the button to see API Docs for deeplabcut.create_training_model_comparison
+```{admonition} Click the button to see API Docs for deeplabcut.create_training_model_comparison
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.create_training_model_comparison.rst
+[View the `create_training_model_comparison` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/generate_training_dataset/trainingsetmanipulation/#deeplabcut.generate_training_dataset.trainingsetmanipulation.create_training_model_comparison)
 ```
-````
 
-````{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset_from_existing_split
+```{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset_from_existing_split
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.create_training_dataset_from_existing_split.rst
+[View the `create_training_dataset_from_existing_split` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/generate_training_dataset/trainingsetmanipulation/#deeplabcut.generate_training_dataset.trainingsetmanipulation.create_training_dataset_from_existing_split)
 ```
-````
 
 ______________________________________________________________________
 
@@ -736,14 +724,12 @@ Single-animal TensorFlow configuration file glossary
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs for train_network
+```{admonition} Click the button to see API Docs for train_network
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.train_network.rst
+[View the `train_network` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/pose_estimation/#deeplabcut.api.pose_estimation.train_network)
 ```
-````
 
 ______________________________________________________________________
 
@@ -833,14 +819,12 @@ you can drop `Indices` to run this on all training/testing images (this is slow!
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.evaluate_network.rst
+[View the `evaluate_network` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/pose_estimation/#deeplabcut.api.pose_estimation.evaluate_network)
 ```
-````
 
 ______________________________________________________________________
 
@@ -893,14 +877,12 @@ you wish to write to.
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.analyze_videos.rst
+[View the `analyze_videos` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/pose_estimation/#deeplabcut.api.pose_estimation.analyze_videos)
 ```
-````
 
 ##### Novel Video Analysis: extra features
 
@@ -988,14 +970,12 @@ Example output of `filterpredictions` applied to a video.
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.filterpredictions.rst
+[View the `filterpredictions` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/post_processing/#deeplabcut.api.post_processing.filterpredictions)
 ```
-````
 
 ______________________________________________________________________
 
@@ -1044,14 +1024,12 @@ Example `plot_trajectories` output: body part coordinates, likelihoods, and cons
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.plot_trajectories.rst
+[View the `plot_trajectories` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/utils/plotting/#deeplabcut.utils.plotting.plot_trajectories)
 ```
-````
 
 ______________________________________________________________________
 
@@ -1163,14 +1141,12 @@ This function has various other parameters, in particular the user can set the `
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.create_labeled_video.rst
+[View the `create_labeled_video` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/utils/make_labeled_video/#deeplabcut.utils.make_labeled_video.create_labeled_video)
 ```
-````
 
 ##### Extract "Skeleton" Features
 
@@ -1196,14 +1172,12 @@ deeplabcut.analyzeskeleton(
 
 ###### API Docs
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.analyzeskeleton.rst
+[View the `analyzeskeleton` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/post_processing/#deeplabcut.api.post_processing.analyzeskeleton)
 ```
-````
 
 ______________________________________________________________________
 
@@ -1279,14 +1253,12 @@ Once enough outlier frames are extracted the refinement GUI can be used to adjus
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.extract_outlier_frames.rst
+[View the `extract_outlier_frames` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/refine_training/#deeplabcut.api.refine_training.extract_outlier_frames)
 ```
-````
 
 ______________________________________________________________________
 
@@ -1346,25 +1318,21 @@ more data.
 
 ##### API Docs for deeplabcut.refine_labels
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.refine_labels.rst
+[View the `refine_labels` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/cli/#deeplabcut.cli.refine_labels)
 ```
-````
 
 ##### API Docs for deeplabcut.merge_datasets
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.merge_datasets.rst
+[View the `merge_datasets` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/refine_training/#deeplabcut.api.refine_training.merge_datasets)
 ```
-````
 
 ______________________________________________________________________
 
