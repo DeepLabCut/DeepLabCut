@@ -170,14 +170,12 @@ alt: Box 1 — multi-animal project configuration file parameter glossary
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.create_new_project.rst
+[View the `create_new_project` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/create_project/new/#deeplabcut.create_project.new.create_new_project)
 ```
-````
 
 #### (B) Configure the Project
 
@@ -314,14 +312,12 @@ The user can also look at the extracted frames and e.g. delete frames (from the
 directory) that are too similar before reloading the set and then manually annotating
 them. -->
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.extract_frames.rst
+[View the `extract_frames` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/generate_training_dataset/frame_extraction/#deeplabcut.generate_training_dataset.frame_extraction.extract_frames)
 ```
-````
 
 #### (D) Label Frames
 
@@ -409,14 +405,12 @@ Example `check_labels` output with annotations shown per individual.
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. `deeplabcut.label_frames`), move them around, and click save again.
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.check_labels.rst
+[View the `check_labels` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/generate_training_dataset/trainingsetmanipulation/#deeplabcut.generate_training_dataset.trainingsetmanipulation.check_labels)
 ```
-````
 
 ### Phase 3 — Training and evaluation
 
@@ -508,32 +502,26 @@ deeplabcut.create_training_dataset_from_existing_split(
 ```
 ````
 
-````{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset
+```{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.create_training_dataset.rst
+[View the `create_training_dataset` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/generate_training_dataset/trainingsetmanipulation/#deeplabcut.generate_training_dataset.trainingsetmanipulation.create_training_dataset)
 ```
-````
 
-````{admonition} Click the button to see API Docs for deeplabcut.create_training_model_comparison
+```{admonition} Click the button to see API Docs for deeplabcut.create_training_model_comparison
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.create_training_model_comparison.rst
+[View the `create_training_model_comparison` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/generate_training_dataset/trainingsetmanipulation/#deeplabcut.generate_training_dataset.trainingsetmanipulation.create_training_model_comparison)
 ```
-````
 
-````{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset_from_existing_split
+```{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset_from_existing_split
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.create_training_dataset_from_existing_split.rst
+[View the `create_training_dataset_from_existing_split` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/generate_training_dataset/trainingsetmanipulation/#deeplabcut.generate_training_dataset.trainingsetmanipulation.create_training_dataset_from_existing_split)
 ```
-````
 
 #### (G) Train The Network
 
@@ -647,14 +635,12 @@ time is correspondingly shorter.
 ```
 ````
 
-````{admonition} Click the button to see API Docs for train_network
+```{admonition} Click the button to see API Docs for train_network
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.train_network.rst
+[View the `train_network` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/pose_estimation/#deeplabcut.api.pose_estimation.train_network)
 ```
-````
 
 #### (H) Evaluate the Trained Network
 
@@ -765,14 +751,12 @@ and the points of interest are labeled accurately
 
 • consider labeling additional images and make another iteration of the training data set
 
-````{admonition} Click the button to see API Docs for evaluate_network
+```{admonition} Click the button to see API Docs for evaluate_network
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.evaluate_network.rst
+[View the `evaluate_network` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/pose_estimation/#deeplabcut.api.pose_estimation.evaluate_network)
 ```
-````
 
 **maDeepLabCut: (or on normal projects!)**
 
@@ -956,32 +940,26 @@ In such cases, file columns will default to dummy animal names (ind1, ind2, ...,
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs for analyze_videos
+```{admonition} Click the button to see API Docs for analyze_videos
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.analyze_videos.rst
+[View the `analyze_videos` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/pose_estimation/#deeplabcut.api.pose_estimation.analyze_videos)
 ```
-````
 
-````{admonition} Click the button to see API Docs for convert_detections2tracklets
+```{admonition} Click the button to see API Docs for convert_detections2tracklets
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.convert_detections2tracklets.rst
+[View the `convert_detections2tracklets` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/pose_estimation/#deeplabcut.api.pose_estimation.convert_detections2tracklets)
 ```
-````
 
-````{admonition} Click the button to see API Docs for stitch_tracklets
+```{admonition} Click the button to see API Docs for stitch_tracklets
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.stitch_tracklets.rst
+[View the `stitch_tracklets` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/refine_training/#deeplabcut.api.refine_training.stitch_tracklets)
 ```
-````
 
 ##### Using Unsupervised Identity Tracking:
 
@@ -1045,14 +1023,12 @@ deeplabcut.filterpredictions(config_path,['/fullpath/project/videos/reachingvide
 
 Note, this creates a file with the ending filtered.h5 that you can use for further analysis. This filtering step has many parameters, so please see the full docstring by typing: `deeplabcut.filterpredictions?`
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.filterpredictions.rst
+[View the `filterpredictions` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/post_processing/#deeplabcut.api.post_processing.filterpredictions)
 ```
-````
 
 #### (K) Plot Trajectories
 
@@ -1067,14 +1043,12 @@ You can determine a good `pcutoff` value by inspecting the likelihood plot produ
 deeplabcut.plot_trajectories(config_path, ['/fullpath/project/videos/reachingvideo1.avi'], filtered=True)
 ```
 
-````{admonition} Click the button to see API Docs for plot_trajectories
+```{admonition} Click the button to see API Docs for plot_trajectories
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.plot_trajectories.rst
+[View the `plot_trajectories` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/utils/plotting/#deeplabcut.utils.plotting.plot_trajectories)
 ```
-````
 
 #### (L) Create Labeled Videos
 
@@ -1092,14 +1066,12 @@ deeplabcut.create_labeled_video(
 )
 ```
 
-````{admonition} Click the button to see API Docs for create_labeled_video
+```{admonition} Click the button to see API Docs for create_labeled_video
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.create_labeled_video.rst
+[View the `create_labeled_video` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/utils/make_labeled_video/#deeplabcut.utils.make_labeled_video.create_labeled_video)
 ```
-````
 
 ### Phase 5 — Refinement (optional)
 
@@ -1171,14 +1143,12 @@ Once enough outlier frames are extracted the refinement GUI can be used to adjus
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.extract_outlier_frames.rst
+[View the `extract_outlier_frames` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/refine_training/#deeplabcut.api.refine_training.extract_outlier_frames)
 ```
-````
 
 ______________________________________________________________________
 
@@ -1238,25 +1208,21 @@ more data.
 
 ##### API Docs for deeplabcut.refine_labels
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.refine_labels.rst
+[View the `refine_labels` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/cli/#deeplabcut.cli.refine_labels)
 ```
-````
 
 ##### API Docs for deeplabcut.merge_datasets
 
-````{admonition} Click the button to see API Docs
+```{admonition} Click the button to see API Docs
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.merge_datasets.rst
+[View the `merge_datasets` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/refine_training/#deeplabcut.api.refine_training.merge_datasets)
 ```
-````
 
 ## Resources and further reading
 
