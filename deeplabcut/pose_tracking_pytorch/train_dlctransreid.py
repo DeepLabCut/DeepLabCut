@@ -20,7 +20,7 @@ from pathlib import Path
 
 import numpy as np
 
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
 from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 from .config import cfg
@@ -66,7 +66,7 @@ def split_train_test(npy_list, train_frac):
     return train_list, test_list
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def train_tracking_transformer(
     path_config_file,
     dlcscorer,

@@ -18,7 +18,7 @@ import pandas as pd
 from scipy import signal
 from scipy.interpolate import CubicSpline
 
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
 from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
@@ -61,7 +61,7 @@ def columnwise_spline_interp(data, max_gap=0):
     return temp
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def filterpredictions(
     config: str | Path,
     video: str | Path,
