@@ -15,10 +15,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def analyzeskeleton(
     config: str | Path,
     videos: list[str | Path],
@@ -100,7 +100,7 @@ def analyzeskeleton(
     )
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def filterpredictions(
     config: str | Path,
     video: str | Path,

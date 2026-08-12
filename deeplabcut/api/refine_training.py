@@ -15,7 +15,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
 
 
 def find_outliers_in_raw_data(
@@ -66,7 +66,7 @@ def find_outliers_in_raw_data(
     )
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def extract_outlier_frames(
     config: str | Path,
     videos: list[str | Path],
@@ -288,7 +288,7 @@ def merge_datasets(config: str | Path, forceiterate=None):
     return _merge_datasets(config=config, forceiterate=forceiterate)
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
 def stitch_tracklets(
     config_path: str | Path,
     videos: list[str | Path],
