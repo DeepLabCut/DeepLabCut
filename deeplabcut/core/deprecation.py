@@ -27,6 +27,39 @@ class DLCDeprecationWarning(DeprecationWarning):
     """Project-specific deprecation warning. Helps with filtering."""
 
 
+class DeprecatedSince:
+    """Version that introduced each round of deprecations.
+
+    Single source of truth for the versions used in deprecation markers:
+    ``@deprecated`` and ``@renamed_parameter`` take their ``since`` and
+    ``removed_in`` values from here, so retargeting a release is a one-line edit
+    rather than a codebase-wide search.
+
+    One constant per round of deprecations, named after the migration it belongs
+    to rather than after its version: rounds can share a version, and a round
+    that gets retargeted (as in the 3.1 -> 3.0.1 sweep) keeps its name. Each is
+    annotated with the pull request that introduced the round.
+    """
+
+    # #3332: videotype -> video_extensions, batchsize -> batch_size, Shuffles -> shuffles
+    PARAMETER_CONSISTENCY = "3.0.0"
+
+    # #3303: get_list_of_videos and friends -> deeplabcut.collect_video_paths
+    VIDEO_PATH_MIGRATION = "3.0.0"
+
+    # #3382: create_pretrained_human_project -> create_pretrained_project(model="full_human")
+    PRETRAINED_PROJECT_MIGRATION = "3.0.0"
+
+    # #3421: str path handling -> pathlib.Path, including grab_files_in_folder
+    PATHLIB_MIGRATION = "3.0.1"
+
+    # #3198: raw config dicts and their helpers -> validated config models
+    CONFIG_MODEL_MIGRATION = "3.0.1"
+
+    # #3382: analyze_time_lapse_frames -> analyze_images
+    IMAGE_ANALYSIS_MIGRATION = "3.1"
+
+
 class DeprecationInfo(BaseModel):
     model_config = ConfigDict(
         frozen=True,
@@ -91,8 +124,11 @@ def deprecated(
     Args:
         replacement: Fully-qualified name of the replacement callable, e.g.
             ``"deeplabcut.utils.auxfun_videos.list_videos_in_folder"``.
-        since: Version in which the function was deprecated.
-        removed_in: Version in which the function will be removed.
+        since: Version in which the function was deprecated. Pass a
+            ``DeprecatedSince`` constant rather than a literal, so the round can
+            be retargeted in one place.
+        removed_in: Version in which the function will be removed, likewise a
+            ``DeprecatedSince`` constant.
     """
 
     def decorator(fn: Callable[P, R]) -> Callable[P, R]:
@@ -128,7 +164,9 @@ def renamed_parameter(
     Args:
         old: The old parameter name that callers may still pass.
         new: The current parameter name the function actually accepts.
-        since: Version when the rename happened.
+        since: Version when the rename happened. Pass a ``DeprecatedSince``
+            constant rather than a literal, so the round can be retargeted in
+            one place.
 
     Rules:
         - ``new`` must be the name used in the function signature and all
