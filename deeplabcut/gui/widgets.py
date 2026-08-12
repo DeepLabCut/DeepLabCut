@@ -303,7 +303,7 @@ class DictViewer(QtWidgets.QWidget):
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.tree)
         layout2 = QtWidgets.QVBoxLayout()
-        layout2.addWidget(QtWidgets.QLabel(filename))
+        layout2.addWidget(QtWidgets.QLabel(os.fspath(filename)))
         layout2.addWidget(self.tree)
         self.setLayout(layout2)
 
