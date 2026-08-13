@@ -147,6 +147,7 @@ def make_multianimal_labeled_image(
             If Colormap is passed -> each bounding box will be colored into its own color from the colormap.
             If string is passed -> all bboxes will be of string's defined color.
             If None -> all bboxes will be colored into a default color.
+        color_offset: Index offset applied when selecting colors from the colormap.
 
     Returns:
         matplotlib Axes object with plotted labels and predictions.
@@ -620,7 +621,7 @@ def plot_evaluation_results(
                     coords_pred=unique_predictions[:, :, :2],
                     probs_pred=unique_predictions[:, :, 2:],
                     colors=colors,
-                    color_offset=bodyparts if mode == "bodypart" else 0,
+                    color_offset=bodyparts if mode == "bodypart" else individuals,
                     dotsize=dot_size,
                     alphavalue=alpha_value,
                     pcutoff=p_cutoff,
