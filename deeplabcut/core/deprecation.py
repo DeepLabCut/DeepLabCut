@@ -14,6 +14,7 @@ import functools
 import inspect
 import warnings
 from collections.abc import Callable
+from enum import Enum, unique
 from typing import Literal, ParamSpec, TypeVar
 
 from packaging.version import InvalidVersion, Version
@@ -27,58 +28,22 @@ class DLCDeprecationWarning(DeprecationWarning):
     """Project-specific deprecation warning. Helps with filtering."""
 
 
-class DeprecatedSince:
-    """Version that introduced each round of deprecations.
+class DeprecationRound(BaseModel):
+    """Description of a round of deprecations introduced together."""
 
-    Single source of truth for the versions used in deprecation markers:
-    ``@deprecated`` and ``@renamed_parameter`` take their ``since`` and
-    ``removed_in`` values from here, so retargeting a release is a one-line edit
-    rather than a codebase-wide search.
-
-    One constant per round of deprecations, named after the migration it belongs
-    to rather than after its version: rounds can share a version, and a round
-    that gets retargeted (as in the 3.1 -> 3.0.1 sweep) keeps its name. Each is
-    annotated with the pull request that introduced the round.
-    """
-
-    # #3332: videotype -> video_extensions, batchsize -> batch_size, Shuffles -> shuffles
-    PARAMETER_CONSISTENCY = "3.0.0"
-
-    # #3303: get_list_of_videos and friends -> deeplabcut.collect_video_paths
-    VIDEO_PATH_MIGRATION = "3.0.0"
-
-    # #3382: create_pretrained_human_project -> create_pretrained_project(model="full_human")
-    PRETRAINED_PROJECT_MIGRATION = "3.0.0"
-
-    # #3421: str path handling -> pathlib.Path, including grab_files_in_folder
-    PATHLIB_MIGRATION = "3.0.1"
-
-    # #3198: raw config dicts and their helpers -> validated config models
-    CONFIG_MODEL_MIGRATION = "3.0.1"
-
-    # #3382: analyze_time_lapse_frames -> analyze_images
-    IMAGE_ANALYSIS_MIGRATION = "3.1"
-
-
-class DeprecationInfo(BaseModel):
     model_config = ConfigDict(
         frozen=True,
         arbitrary_types_allowed=True,
     )
 
-    kind: Literal["callable", "parameter"]
-    target: str
-    replacement: str | None = None
-
-    since: Version | None = None
+    since: Version
     removed_in: Version | None = None
-
-    old_parameter: str | None = None
-    new_parameter: str | None = None
+    pull_request: int | None = None
+    summary: str | None = None
 
     @field_validator("since", "removed_in", mode="before")
     @classmethod
-    def _parse_version(cls, value):
+    def _coerce_version(cls, value):
         if value is None or isinstance(value, Version):
             return value
         try:
@@ -87,10 +52,90 @@ class DeprecationInfo(BaseModel):
             raise ValueError(f"Invalid version: {value!r}") from e
 
     @model_validator(mode="after")
-    def _validate_version_order(self) -> DeprecationInfo:
-        if self.since and self.removed_in and self.removed_in <= self.since:
+    def _validate_version_order(self) -> DeprecationRound:
+        if self.removed_in and self.removed_in <= self.since:
             raise ValueError(f"'removed_in' ({self.removed_in}) must be greater than 'since' ({self.since}).")
         return self
+
+    @property
+    def url(self) -> str | None:
+        if self.pull_request is None:
+            return None
+        return f"https://github.com/DeepLabCut/DeepLabCut/pull/{self.pull_request}"
+
+
+@unique
+class DeprecationRounds(Enum):
+    """Collection of all deprecation rounds used in the deprecation markers - single source of truth."""
+
+    PARAMETER_CONSISTENCY = DeprecationRound(
+        since="3.0.0",
+        pull_request=3332,
+        summary=(
+            "Apply consistent naming in parameters (spacing, casing, etc). "
+            "e.g. renamed videotype -> video_extensions, batchsize -> batch_size, "
+            "Shuffles -> shuffles"
+        ),
+    )
+
+    VIDEO_PATH_MIGRATION = DeprecationRound(
+        since="3.0.0",
+        pull_request=3303,
+        summary="Migrate get_list_of_videos and friends to deeplabcut.collect_video_paths",
+    )
+
+    PRETRAINED_PROJECT_MIGRATION = DeprecationRound(
+        since="3.0.0",
+        pull_request=3382,
+        summary='create_pretrained_human_project -> create_pretrained_project(model="full_human")',
+    )
+
+    PATHLIB_MIGRATION = DeprecationRound(
+        since="3.0.1",
+        pull_request=3421,
+        summary="Migrate str path handling to pathlib.Path, including grab_files_in_folder",
+    )
+
+    CONFIG_MODEL_MIGRATION = DeprecationRound(
+        since="3.0.1",
+        pull_request=3198,
+        summary="Migrate raw config dicts and their helpers to validated config models",
+    )
+
+    IMAGE_ANALYSIS_MIGRATION = DeprecationRound(
+        since="3.1",
+        pull_request=3382,
+        summary="analyze_time_lapse_frames -> analyze_images",
+    )
+
+
+class DeprecationInfo(BaseModel):
+    """Description for a single deprecation marker."""
+
+    model_config = ConfigDict(
+        frozen=True,
+        arbitrary_types_allowed=True,
+    )
+
+    kind: Literal["callable", "parameter"]
+    target: str
+    replacement: str | None = None
+    deprecation_round: DeprecationRounds | None = None
+
+    old_parameter: str | None = None
+    new_parameter: str | None = None
+
+    @property
+    def since(self) -> Version | None:
+        return self.deprecation_round.value.since if self.deprecation_round else None
+
+    @property
+    def removed_in(self) -> Version | None:
+        return self.deprecation_round.value.removed_in if self.deprecation_round else None
+
+    @property
+    def url(self) -> int | None:
+        return self.deprecation_round.value.url if self.deprecation_round else None
 
     def format_message(self) -> str:
         if self.kind == "callable":
@@ -101,6 +146,8 @@ class DeprecationInfo(BaseModel):
                 parts.append(f"Use {self.replacement} instead.")
             if self.removed_in:
                 parts.append(f"It will be removed in {self.removed_in}.")
+            if self.url:
+                parts.append(f"See {self.url} for more details.")
             return " ".join(parts)
 
         if self.kind == "parameter":
@@ -116,19 +163,14 @@ class DeprecationInfo(BaseModel):
 def deprecated(
     *,
     replacement: str | None = None,
-    since: str | None = None,
-    removed_in: str | None = None,
+    deprecation_round: DeprecationRounds | None = None,
 ) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Mark a function as deprecated.
 
     Args:
         replacement: Fully-qualified name of the replacement callable, e.g.
             ``"deeplabcut.utils.auxfun_videos.list_videos_in_folder"``.
-        since: Version in which the function was deprecated. Pass a
-            ``DeprecatedSince`` constant rather than a literal, so the round can
-            be retargeted in one place.
-        removed_in: Version in which the function will be removed, likewise a
-            ``DeprecatedSince`` constant.
+        deprecation_round: A ``DeprecationRounds`` member (add a new one there if needed).
     """
 
     def decorator(fn: Callable[P, R]) -> Callable[P, R]:
@@ -136,8 +178,7 @@ def deprecated(
             kind="callable",
             target=fn.__qualname__,
             replacement=replacement,
-            since=since,
-            removed_in=removed_in,
+            deprecation_round=deprecation_round,
         )
         message = info.format_message()
 
@@ -157,16 +198,14 @@ def renamed_parameter(
     *,
     old: str,
     new: str,
-    since: str | None = None,
+    deprecation_round: DeprecationRounds | None = None,
 ) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Support a renamed keyword argument while warning callers to update.
 
     Args:
         old: The old parameter name that callers may still pass.
         new: The current parameter name the function actually accepts.
-        since: Version when the rename happened. Pass a ``DeprecatedSince``
-            constant rather than a literal, so the round can be retargeted in
-            one place.
+        deprecation_round: A ``DeprecationRounds`` constant.
 
     Rules:
         - ``new`` must be the name used in the function signature and all
@@ -175,8 +214,8 @@ def renamed_parameter(
           is later renamed to ``C``, replace the ``A→B`` decorator with
           ``A→C`` directly rather than stacking a second decorator.
             Example:
-                @renamed_parameter(old="A", new="C", since="12.4.0")
-                @renamed_parameter(old="B", new="C", since="13.0.0")
+                @renamed_parameter(old="A", new="C", deprecation_round=DeprecationRounds.FIRST_RENAME)
+                @renamed_parameter(old="B", new="C", deprecation_round=DeprecationRounds.SECOND_RENAME)
                 def func(*, C: int):
                     print(f"C={C}")
         - Multiple independent renames on the same function (e.g.
@@ -220,7 +259,7 @@ def renamed_parameter(
         info = DeprecationInfo(
             kind="parameter",
             target=fn.__qualname__,
-            since=since,
+            deprecation_round=deprecation_round,
             old_parameter=old,
             new_parameter=new,
         )
