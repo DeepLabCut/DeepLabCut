@@ -497,11 +497,33 @@ def plot_evaluation_results(
         image_path = project_root / data_folder / video / image
         frame = auxfun_videos.imread(str(image_path), mode="skimage")
 
-        row_multi = row.loc[(slice(None), row.index.get_level_values("individuals") != "single")]
-        individuals = len(row_multi.index.get_level_values("individuals").unique())
-        bodyparts = len(row_multi.index.get_level_values("bodyparts").unique())
+        row_multi = row.loc[row.index.get_level_values("individuals") != "single"]
+
         df_gt = row_multi[scorer]
         df_predictions = row_multi[model_name]
+
+        gt_individuals = df_gt.index.get_level_values("individuals").unique()
+        pred_individuals = df_predictions.index.get_level_values("individuals").unique()
+
+        gt_bodyparts = df_gt.index.get_level_values("bodyparts").unique()
+        pred_bodyparts = df_predictions.index.get_level_values("bodyparts").unique()
+
+        if len(gt_individuals) != len(pred_individuals):
+            print(f"Warning: Individual count mismatch for {image}")
+            print(f"  Ground truth: {len(gt_individuals)} individuals")
+            print(f"  Predictions: {len(pred_individuals)} individuals")
+            print("  Skipping visualization for this image")
+            continue
+
+        if set(gt_bodyparts) != set(pred_bodyparts):
+            print(f"Warning: Bodypart mismatch for {image}")
+            print(f"  Ground truth: {list(gt_bodyparts)}")
+            print(f"  Predictions: {list(pred_bodyparts)}")
+            print("  Skipping visualization for this image")
+            continue
+
+        individuals = len(gt_individuals)
+        bodyparts = len(gt_bodyparts)
 
         # Shape (num_individuals, num_bodyparts, xy)
         try:
