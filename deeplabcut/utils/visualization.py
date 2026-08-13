@@ -124,6 +124,7 @@ def make_multianimal_labeled_image(
     bounding_boxes: tuple[np.ndarray, np.ndarray] | None = None,
     bboxes_cutoff: float = 0.6,
     bboxes_color: Colormap | str | None = None,
+    color_offset: int = 0,
 ) -> plt.Axes:
     """Plots groundtruth labels and predictions onto the matplotlib's axes, with the
     specified graphical parameters.
@@ -179,7 +180,7 @@ def make_multianimal_labeled_image(
             ax.add_patch(rectangle)
 
     for n, data in enumerate(zip(coords_truth, coords_pred, probs_pred, strict=False)):
-        color = colors(n)
+        color = colors(n + color_offset)
         coord_gt, coord_pred, prob_pred = data
 
         ax.plot(*coord_gt.T, labels[0], ms=dotsize, alpha=alphavalue, color=color)
@@ -610,14 +611,16 @@ def plot_evaluation_results(
                 bboxes_color=bboxes_color,
             )
             if plot_unique_for_row:
-                unique_predictions = unique_predictions.swapaxes(0, 1)
-                unique_ground_truth = unique_ground_truth.swapaxes(0, 1)
+                if mode == "bodypart":
+                    unique_predictions = unique_predictions.swapaxes(0, 1)
+                    unique_ground_truth = unique_ground_truth.swapaxes(0, 1)
                 ax = make_multianimal_labeled_image(
                     frame=frame,
                     coords_truth=unique_ground_truth,
                     coords_pred=unique_predictions[:, :, :2],
                     probs_pred=unique_predictions[:, :, 2:],
                     colors=colors,
+                    color_offset=bodyparts if mode == "bodypart" else 0,
                     dotsize=dot_size,
                     alphavalue=alpha_value,
                     pcutoff=p_cutoff,
