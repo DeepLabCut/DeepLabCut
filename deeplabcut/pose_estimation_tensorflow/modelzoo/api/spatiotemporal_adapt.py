@@ -11,7 +11,7 @@
 from collections.abc import Sequence
 from pathlib import Path
 
-from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.pose_estimation_tensorflow.modelzoo.api.superanimal_inference import (
     video_inference,
 )
@@ -25,7 +25,9 @@ from deeplabcut.utils.plotting import _plot_trajectories
 
 
 class SpatiotemporalAdaptation:
-    @renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+    @renamed_parameter(
+        old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY
+    )
     def __init__(
         self,
         video_path,

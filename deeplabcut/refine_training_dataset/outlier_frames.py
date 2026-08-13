@@ -23,7 +23,7 @@ import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
 from deeplabcut.core import inferenceutils
-from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.utils import (
     auxfun_multianimal,
     auxiliaryfunctions,
@@ -180,7 +180,7 @@ def _read_video_specific_cropping_margins(config: str | Path | dict, video_path:
     return x1, y1
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def extract_outlier_frames(
     config: str | Path,
     videos: list[str | Path],

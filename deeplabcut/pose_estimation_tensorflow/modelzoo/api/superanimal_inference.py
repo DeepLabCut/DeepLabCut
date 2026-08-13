@@ -20,7 +20,7 @@ import pandas as pd
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
-from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict as single_predict
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
@@ -241,7 +241,7 @@ def _video_inference(
     return PredicteData, nframes
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def video_inference(
     videos,
     project_name,

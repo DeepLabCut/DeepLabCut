@@ -30,7 +30,7 @@ from scipy.stats import mode
 from tqdm import trange
 
 import deeplabcut
-from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.core.trackingutils import (
     TRACK_METHODS,
     calc_iou,
@@ -958,7 +958,7 @@ class TrackletStitcher:
                 return path
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def stitch_tracklets(
     config_path: str | Path,
     videos: list[str | Path],

@@ -21,7 +21,7 @@ import torch
 from dlclibrary import download_huggingface_model
 
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
-from deeplabcut.core.deprecation import DeprecatedSince, deprecated
+from deeplabcut.core.deprecation import DeprecationRound, deprecated
 from deeplabcut.utils import auxiliaryfunctions
 
 # COCO category ID for the "person" class.
@@ -89,7 +89,9 @@ def get_super_animal_snapshot_path(
     return model_path
 
 
-@deprecated(replacement="PoseConfig.build_for_superanimal_inference", since=DeprecatedSince.CONFIG_MODEL_MIGRATION)
+@deprecated(
+    replacement="PoseConfig.build_for_superanimal_inference", deprecation_round=DeprecationRound.CONFIG_MODEL_MIGRATION
+)
 def load_super_animal_config(
     super_animal: str,
     model_name: str,

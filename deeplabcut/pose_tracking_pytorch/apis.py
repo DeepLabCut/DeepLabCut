@@ -11,10 +11,10 @@
 
 from collections.abc import Sequence
 
-from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def transformer_reID(
     config: str,
     videos: list[str],
