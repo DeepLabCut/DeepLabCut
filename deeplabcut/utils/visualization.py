@@ -35,6 +35,9 @@ from tqdm import trange
 
 from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
 
+PlotMode = Literal["bodypart", "individual"]
+BoundingBoxesColor = Colormap | str | None
+
 
 def get_cmap(n: int, name: str = "hsv") -> Colormap:
     """Get the cmap.
@@ -73,12 +76,12 @@ def make_labeled_image(
 
     if ax is None:
         if np.ndim(frame) > 2:  # color image!
-            h, w, numcolors = np.shape(frame)
+            h, w, _numcolors = np.shape(frame)
         else:
             h, w = np.shape(frame)
         _, ax = prepare_figure_axes(w, h, scaling)
     ax.imshow(frame, "gray")
-    for _scorerindex, loopscorer in enumerate(Scorers):
+    for loopscorer in Scorers:
         for bpindex, bp in enumerate(bodyparts):
             if np.isfinite(
                 DataCombined[loopscorer][bp]["y"].iloc[imagenr] + DataCombined[loopscorer][bp]["x"].iloc[imagenr]
@@ -262,6 +265,11 @@ def save_labeled_frame(
     dest_folder: Path,
     belongs_to_train: bool,
 ) -> None:
+    """Save the labeled frame to disk.
+
+    Note: folder creation is handled upstream.
+    This function assumes that the destination folder already exists.
+    """
     imagename = image_path.parts[-1]
     imfoldername = image_path.parts[-2]
     if belongs_to_train:
@@ -352,7 +360,7 @@ def make_labeled_images_from_dataframe(
             cmap = get_cmap(nindividuals, cfg["colormap"])
             colors = cmap(map_)
         except KeyError as e:
-            raise Exception("Coloring by individuals is only valid for multi-animal data") from e
+            raise ValueError("Coloring by individuals reqires an 'individuals' column level") from e
     else:
         raise ValueError("`color_by` must be either `bodypart` or `individual`.")
 
@@ -446,14 +454,14 @@ def plot_evaluation_results(
     output_folder: Path,
     in_train_set: bool,
     plot_unique_bodyparts: bool = False,
-    mode: Literal["bodypart", "individual"] = "bodypart",
+    mode: PlotMode = "bodypart",
     colormap: str = "rainbow",
     dot_size: int = 12,
     alpha_value: float = 0.7,
     p_cutoff: float = 0.6,
     bounding_boxes: dict | None = None,
     bboxes_cutoff: float = 0.6,
-    bounding_boxes_color: str = "auto",
+    bounding_boxes_color: BoundingBoxesColor = "auto",
 ) -> None:
     """Creates labeled images using the results of inference, and saves them to an
     output folder.
@@ -519,8 +527,14 @@ def plot_evaluation_results(
             print(f"  Predictions individual count: {len(pred_individuals)}")
             print("  Skipping visualization for this image")
             continue
+        elif len(gt_individuals) > 1 and list(gt_individuals) != list(pred_individuals):
+            print(f"Warning: Individual labels differ for {image}")
+            print(f"  Ground truth: {list(gt_individuals)}")
+            print(f"  Predictions: {list(pred_individuals)}")
+            print("  Skipping visualization for this image")
+            continue
 
-        if set(gt_bodyparts) != set(pred_bodyparts):
+        if list(gt_bodyparts) != list(pred_bodyparts):  # keep ordering of bodyparts
             print(f"Warning: Bodypart mismatch for {image}")
             print(f"  Ground truth: {list(gt_bodyparts)}")
             print(f"  Predictions: {list(pred_bodyparts)}")
@@ -565,67 +579,64 @@ def plot_evaluation_results(
                 plot_unique_for_row = False
 
         fig, ax = create_minimal_figure()
-        h, w, _ = np.shape(frame)
-        fig.set_size_inches(w / 100, h / 100)
-        ax.set_xlim(0, w)
-        ax.set_ylim(0, h)
-        ax.invert_yaxis()
+        try:
+            h, w, _ = np.shape(frame)
+            fig.set_size_inches(w / 100, h / 100)
+            ax.set_xlim(0, w)
+            ax.set_ylim(0, h)
+            ax.invert_yaxis()
 
-        if mode == "bodypart":
-            num_colors = bodyparts
-            if plot_unique_for_row:
-                num_colors += unique_bodyparts
-
-            colors = get_cmap(num_colors, name=colormap)
-            predictions = predictions.swapaxes(0, 1)
-            ground_truth = ground_truth.swapaxes(0, 1)
-        else:
-            colors = get_cmap(individuals + 1, name=colormap)
-
-        if bounding_boxes_color == "auto":
             if mode == "bodypart":
-                bboxes_color = None
-            elif mode == "individual":
-                bboxes_color = get_cmap(individuals + 1, name=colormap)
-            else:
-                raise ValueError(f"Invalid mode: {mode}")
-        else:
-            bboxes_color = bounding_boxes_color
+                num_colors = bodyparts
+                if plot_unique_for_row:
+                    num_colors += unique_bodyparts
 
-        ax = make_multianimal_labeled_image(
-            frame=frame,
-            coords_truth=ground_truth,
-            coords_pred=predictions[:, :, :2],
-            probs_pred=predictions[:, :, 2:],
-            colors=colors,
-            dotsize=dot_size,
-            alphavalue=alpha_value,
-            pcutoff=p_cutoff,
-            ax=ax,
-            bounding_boxes=bboxes,
-            bboxes_cutoff=bboxes_cutoff,
-            bboxes_color=bboxes_color,
-        )
-        if plot_unique_for_row:
-            unique_predictions = unique_predictions.swapaxes(0, 1)
-            unique_ground_truth = unique_ground_truth.swapaxes(0, 1)
+                colors = get_cmap(num_colors, name=colormap)
+                predictions = predictions.swapaxes(0, 1)
+                ground_truth = ground_truth.swapaxes(0, 1)
+            else:
+                colors = get_cmap(individuals + 1, name=colormap)
+
+            if bounding_boxes_color == "auto":
+                bboxes_color = None if mode == "bodypart" else get_cmap(individuals + 1, name=colormap)
+            else:
+                bboxes_color = bounding_boxes_color
+
             ax = make_multianimal_labeled_image(
                 frame=frame,
-                coords_truth=unique_ground_truth,
-                coords_pred=unique_predictions[:, :, :2],
-                probs_pred=unique_predictions[:, :, 2:],
+                coords_truth=ground_truth,
+                coords_pred=predictions[:, :, :2],
+                probs_pred=predictions[:, :, 2:],
                 colors=colors,
                 dotsize=dot_size,
                 alphavalue=alpha_value,
                 pcutoff=p_cutoff,
                 ax=ax,
+                bounding_boxes=bboxes,
+                bboxes_cutoff=bboxes_cutoff,
+                bboxes_color=bboxes_color,
             )
+            if plot_unique_for_row:
+                unique_predictions = unique_predictions.swapaxes(0, 1)
+                unique_ground_truth = unique_ground_truth.swapaxes(0, 1)
+                ax = make_multianimal_labeled_image(
+                    frame=frame,
+                    coords_truth=unique_ground_truth,
+                    coords_pred=unique_predictions[:, :, :2],
+                    probs_pred=unique_predictions[:, :, 2:],
+                    colors=colors,
+                    dotsize=dot_size,
+                    alphavalue=alpha_value,
+                    pcutoff=p_cutoff,
+                    ax=ax,
+                )
 
-        save_labeled_frame(
-            fig,
-            image_path,
-            output_folder,
-            belongs_to_train=in_train_set,
-        )
-        erase_artists(ax)
-        plt.close()
+            save_labeled_frame(
+                fig,
+                image_path,
+                output_folder,
+                belongs_to_train=in_train_set,
+            )
+            erase_artists(ax)
+        finally:
+            plt.close(fig)
