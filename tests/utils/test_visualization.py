@@ -38,6 +38,7 @@ def evaluation_dataframe_factory():
         bodyparts=("nose", "tail"),
         gt_bodyparts=None,
         pred_bodyparts=None,
+        unique_bodyparts=(),
         image="img001.png",
     ):
         if gt_bodyparts is None:
@@ -74,8 +75,37 @@ def evaluation_dataframe_factory():
                 "coords",
             ],
         )
+        unique_gt_columns = pd.MultiIndex.from_product(
+            [
+                [scorer],
+                ["single"],
+                unique_bodyparts,
+                ["x", "y"],
+            ],
+            names=[
+                "scorer",
+                "individuals",
+                "bodyparts",
+                "coords",
+            ],
+        )
 
-        columns = gt_columns.append(pred_columns)
+        unique_pred_columns = pd.MultiIndex.from_product(
+            [
+                [model_name],
+                ["single"],
+                unique_bodyparts,
+                ["x", "y", "likelihood"],
+            ],
+            names=[
+                "scorer",
+                "individuals",
+                "bodyparts",
+                "coords",
+            ],
+        )
+
+        columns = gt_columns.append(pred_columns).append(unique_gt_columns).append(unique_pred_columns)
 
         # Values only need to match the number of columns. Distinct values
         # make debugging and shape assertions easier.
@@ -115,6 +145,7 @@ def evaluation_dataframe_factory():
             "model_name": model_name,
             "gt_bodyparts": list(gt_bodyparts),
             "pred_bodyparts": list(pred_bodyparts),
+            "unique_bodyparts": list(unique_bodyparts),
         }
 
     return create
@@ -344,6 +375,61 @@ class TestPlotEvaluationResults:
             )
 
         mocked_evaluation_plotting["save_labeled_frame"].assert_not_called()
+
+    @pytest.mark.parametrize(
+        ("mode", "expected_shape", "expected_offset"),
+        [
+            ("bodypart", (2, 1, 2), 2),
+            ("individual", (1, 2, 2), 1),
+        ],
+    )
+    def test_arranges_unique_bodyparts_by_mode(
+        self,
+        tmp_path,
+        monkeypatch,
+        evaluation_dataframe_factory,
+        mocked_evaluation_plotting,
+        mode,
+        expected_shape,
+        expected_offset,
+    ):
+        data = evaluation_dataframe_factory(
+            unique_bodyparts=("center", "anchor"),
+        )
+
+        make_labeled_image = Mock(side_effect=lambda *, ax, **kwargs: ax)
+        monkeypatch.setattr(
+            visualization,
+            "make_multianimal_labeled_image",
+            make_labeled_image,
+        )
+
+        visualization.plot_evaluation_results(
+            df_combined=data["df_combined"],
+            project_root=tmp_path,
+            scorer=data["scorer"],
+            model_name=data["model_name"],
+            output_folder=tmp_path / "evaluation-results",
+            in_train_set=False,
+            plot_unique_bodyparts=True,
+            mode=mode,
+        )
+
+        # One call for regular body parts and one for unique body parts.
+        assert make_labeled_image.call_count == 2
+
+        unique_kwargs = make_labeled_image.call_args_list[1].kwargs
+
+        assert unique_kwargs["coords_truth"].shape == expected_shape
+        assert unique_kwargs["coords_pred"].shape == expected_shape
+        assert unique_kwargs["probs_pred"].shape == (
+            expected_shape[0],
+            expected_shape[1],
+            1,
+        )
+        assert unique_kwargs["color_offset"] == expected_offset
+
+        mocked_evaluation_plotting["save_labeled_frame"].assert_called_once()
 
 
 @pytest.mark.parametrize(
