@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 
 from deeplabcut.api._tf_routing import with_tensorflow_fallback
-from deeplabcut.core.deprecation import DeprecatedSince, deprecated, renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, deprecated, renamed_parameter
 
 
 @with_tensorflow_fallback(
@@ -43,7 +43,7 @@ from deeplabcut.core.deprecation import DeprecatedSince, deprecated, renamed_par
     ],
     renamed_params={"keepdeconvweights": "load_head_weights"},
 )
-@renamed_parameter(old="displayiters", new="display_iters", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="displayiters", new="display_iters", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def train_network(
     config: ProjectConfig | dict | Path | str,
     shuffle: int = 1,
@@ -167,8 +167,10 @@ def return_train_network_path(
 
 
 @with_tensorflow_fallback(normalize_gputouse=True, dropped_params=["rescale"])
-@renamed_parameter(old="Shuffles", new="shuffles", since=DeprecatedSince.PARAMETER_CONSISTENCY)
-@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="Shuffles", new="shuffles", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(
+    old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY
+)
 def evaluate_network(
     config: ProjectConfig | dict | Path | str,
     shuffles: Iterable[int] = (1,),
@@ -269,8 +271,10 @@ def evaluate_network(
 
 
 @with_tensorflow_fallback
-@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since=DeprecatedSince.PARAMETER_CONSISTENCY)
-@renamed_parameter(old="Snapindex", new="snapshotindex", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(
+    old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY
+)
+@renamed_parameter(old="Snapindex", new="snapshotindex", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def return_evaluate_network_data(
     config: ProjectConfig | dict | Path | str,
     shuffle: int = 0,
@@ -295,8 +299,8 @@ def return_evaluate_network_data(
         "use_openvino",
     ],
 )
-@renamed_parameter(old="batchsize", new="batch_size", since=DeprecatedSince.PARAMETER_CONSISTENCY)
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="batchsize", new="batch_size", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def analyze_videos(
     config: ProjectConfig | dict | Path | str,
     videos: str | list[str],
@@ -448,8 +452,8 @@ def analyze_videos(
 
 
 @with_tensorflow_fallback(normalize_gputouse=True, dropped_params=["TFGPUinference"])
-@renamed_parameter(old="batchsize", new="batch_size", since=DeprecatedSince.PARAMETER_CONSISTENCY)
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="batchsize", new="batch_size", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def create_tracking_dataset(
     config: ProjectConfig | dict | Path | str,
     videos: list[str] | list[Path],
@@ -600,7 +604,7 @@ def analyze_images(
     )
 
 
-@deprecated(replacement="deeplabcut.analyze_images", since=DeprecatedSince.IMAGE_ANALYSIS_MIGRATION)
+@deprecated(replacement="deeplabcut.analyze_images", deprecation_round=DeprecationRound.IMAGE_ANALYSIS_MIGRATION)
 @with_tensorflow_fallback(normalize_gputouse=True, dropped_params=["frametype"])
 def analyze_time_lapse_frames(
     config: ProjectConfig | dict | Path | str,
@@ -638,7 +642,7 @@ def analyze_time_lapse_frames(
 
 
 @with_tensorflow_fallback(normalize_gputouse=True)
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def convert_detections2tracklets(
     config: ProjectConfig | dict | Path | str,
     videos: str | list[str],
@@ -843,7 +847,9 @@ def visualize_paf(
 
 
 @with_tensorflow_fallback(normalize_gputouse=True, renamed_params={"Indices": "indices"})
-@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(
+    old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY
+)
 def extract_save_all_maps(
     config: ProjectConfig | dict | Path | str,
     shuffle: int = 1,

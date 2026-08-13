@@ -18,7 +18,7 @@ from pathlib import Path
 
 import torch
 
-from deeplabcut.core.deprecation import DeprecatedSince, deprecated, renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, deprecated, renamed_parameter
 from deeplabcut.modelzoo.utils import get_super_animal_scorer
 from deeplabcut.pose_estimation_pytorch.config import PoseConfig
 from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train
@@ -50,7 +50,7 @@ def get_checkpoint_epoch(checkpoint_path):
         return 0
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def _video_inference_superanimal_pytorch(
     videos: str | list,
     superanimal_name: str,

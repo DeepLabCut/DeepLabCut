@@ -22,7 +22,7 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
 
 import deeplabcut
 from deeplabcut.core.config import ProjectConfig
-from deeplabcut.core.deprecation import DeprecatedSince, deprecated, renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, deprecated, renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import (
     DataSplit,
@@ -46,9 +46,9 @@ Modeloptions = MODELOPTIONS
 
 @deprecated(
     replacement="deeplabcut.create_pretrained_project(..., model='full_human')",
-    since=DeprecatedSince.PRETRAINED_PROJECT_MIGRATION,
+    deprecation_round=DeprecationRound.PRETRAINED_PROJECT_MIGRATION,
 )
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def create_pretrained_human_project(
     project,
     experimenter,
@@ -77,7 +77,7 @@ def create_pretrained_human_project(
     )
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def create_pretrained_project(
     project: str,
     experimenter: str,

@@ -29,7 +29,7 @@ from pathlib import Path
 import pandas as pd
 
 from deeplabcut.core import config as core_config
-from deeplabcut.core.deprecation import DeprecatedSince, deprecated
+from deeplabcut.core.deprecation import DeprecationRound, deprecated
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxfun_multianimal
@@ -151,7 +151,7 @@ def write_pickle(filename, data):
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-@deprecated(replacement="deeplabcut.collect_video_paths", since=DeprecatedSince.VIDEO_PATH_MIGRATION)
+@deprecated(replacement="deeplabcut.collect_video_paths", deprecation_round=DeprecationRound.VIDEO_PATH_MIGRATION)
 def get_list_of_videos(
     videos: list[str] | str,
     videotype: str | Sequence[str] | None = SUPPORTED_VIDEOS,
@@ -203,7 +203,7 @@ def load_metadata(metadatafile: str | Path):
         return trainingdata_details, trainIndices, testIndices, testFraction_data
 
 
-@deprecated(replacement="deeplabcut.collect_video_paths", since=DeprecatedSince.PATHLIB_MIGRATION)
+@deprecated(replacement="deeplabcut.collect_video_paths", deprecation_round=DeprecationRound.PATHLIB_MIGRATION)
 def grab_files_in_folder(folder, ext="", relative=True):
     """Return the paths of files with extension *ext* present in *folder*."""
     for file in Path(folder).iterdir():
@@ -251,7 +251,7 @@ def filter_files_by_patterns(
     return matching_files
 
 
-@deprecated(replacement="deeplabcut.collect_video_paths", since=DeprecatedSince.VIDEO_PATH_MIGRATION)
+@deprecated(replacement="deeplabcut.collect_video_paths", deprecation_round=DeprecationRound.VIDEO_PATH_MIGRATION)
 def get_video_list(filename, videopath, videtype):
     """Get list of videos in a path (if filetype == all), otherwise just a specific
     file.
