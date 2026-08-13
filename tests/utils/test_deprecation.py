@@ -17,6 +17,7 @@ from packaging.version import Version
 
 import deeplabcut
 from deeplabcut.core.deprecation import (
+    DeprecationInfo,
     DeprecationRound,
     DeprecationRoundInfo,
     DLCDeprecationWarning,
@@ -306,6 +307,32 @@ def test_multiple_subsequent_renames_allowed():
     with pytest.warns(DLCDeprecationWarning):
         result = fn(older_name=2)
     assert result == 2
+
+
+# ---------------------------------------------------------------------------
+# DeprecationInfo
+# ---------------------------------------------------------------------------
+
+
+def test_callable_info_rejects_parameter_names():
+    with pytest.raises(ValueError, match="cannot specify parameter names"):
+        DeprecationInfo(kind="callable", target="func", old_parameter="old", new_parameter="new")
+
+
+def test_parameter_info_requires_both_parameter_names():
+    with pytest.raises(ValueError, match="require both"):
+        DeprecationInfo(kind="parameter", target="func", old_parameter="old")
+
+
+def test_parameter_info_rejects_replacement():
+    with pytest.raises(ValueError, match="cannot specify 'replacement'"):
+        DeprecationInfo(
+            kind="parameter",
+            target="func",
+            replacement="not valid",
+            old_parameter="old",
+            new_parameter="new",
+        )
 
 
 # ---------------------------------------------------------------------------
