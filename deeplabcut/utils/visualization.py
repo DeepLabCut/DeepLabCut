@@ -27,7 +27,7 @@ from tqdm import trange
 from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
 
 PlotMode = Literal["bodypart", "individual"]
-BoundingBoxesColor = Colormap | str | None
+BoundingBoxColor = Colormap | str | None
 
 
 def get_cmap(n: int, name: str = "hsv") -> Colormap:
@@ -66,10 +66,7 @@ def make_labeled_image(
     dotsize = cfg["dotsize"]  # =15
 
     if ax is None:
-        if np.ndim(frame) > 2:  # color image!
-            h, w, _numcolors = np.shape(frame)
-        else:
-            h, w = np.shape(frame)
+        h, w = np.shape(frame)[:2]
         _, ax = prepare_figure_axes(w, h, scaling)
     ax.imshow(frame, "gray")
     for loopscorer in Scorers:
@@ -156,7 +153,7 @@ def make_multianimal_labeled_image(
     if labels is None:
         labels = ["+", ".", "x"]
     if ax is None:
-        h, w, _ = np.shape(frame)
+        h, w = frame.shape[:2]
         _, ax = prepare_figure_axes(w, h)
     ax.imshow(frame, "gray")
 
@@ -351,7 +348,7 @@ def make_labeled_images_from_dataframe(
             cmap = get_cmap(nindividuals, cfg["colormap"])
             colors = cmap(map_)
         except KeyError as e:
-            raise ValueError("Coloring by individuals reqires an 'individuals' column level") from e
+            raise ValueError("Coloring by individuals requires an 'individuals' column level") from e
     else:
         raise ValueError("`color_by` must be either `bodypart` or `individual`.")
 
@@ -452,7 +449,7 @@ def plot_evaluation_results(
     p_cutoff: float = 0.6,
     bounding_boxes: dict | None = None,
     bboxes_cutoff: float = 0.6,
-    bounding_boxes_color: BoundingBoxesColor = "auto",
+    bounding_boxes_color: BoundingBoxColor = "auto",
 ) -> None:
     """Creates labeled images using the results of inference, and saves them to an
     output folder.
@@ -579,7 +576,7 @@ def plot_evaluation_results(
 
         fig, ax = create_minimal_figure()
         try:
-            h, w, _ = np.shape(frame)
+            h, w = frame.shape[:2]
             fig.set_size_inches(w / 100, h / 100)
             ax.set_xlim(0, w)
             ax.set_ylim(0, h)
