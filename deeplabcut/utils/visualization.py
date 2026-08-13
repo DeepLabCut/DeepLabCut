@@ -548,25 +548,28 @@ def plot_evaluation_results(
 
         if plot_unique_for_row:
             row_unique = row.loc[row.index.get_level_values("individuals") == "single"]
-            unique_gt = row_unique[scorer]
-            unique_pred = row_unique[model_name]
-
-            gt_unique_bodyparts = unique_gt.index.get_level_values("bodyparts").unique()
-            pred_unique_bodyparts = unique_pred.index.get_level_values("bodyparts").unique()
-
-            if list(gt_unique_bodyparts) != list(pred_unique_bodyparts):
-                print(f"Warning: Unique bodypart mismatch for {image}, skipping unique bodyparts")
+            if row_unique.empty:
                 plot_unique_for_row = False
             else:
-                unique_bodyparts = len(gt_unique_bodyparts)
+                unique_gt = row_unique[scorer]
+                unique_pred = row_unique[model_name]
 
-                try:
-                    unique_ground_truth = unique_gt.to_numpy().reshape((1, unique_bodyparts, 2))
-                    unique_predictions = unique_pred.to_numpy().reshape((1, unique_bodyparts, 3))
-                except ValueError:
-                    # Handle cases where unique bodyparts reshape fails
-                    print(f"Warning: Unique bodyparts reshape failed for {image}, skipping unique bodyparts")
+                gt_unique_bodyparts = unique_gt.index.get_level_values("bodyparts").unique()
+                pred_unique_bodyparts = unique_pred.index.get_level_values("bodyparts").unique()
+
+                if list(gt_unique_bodyparts) != list(pred_unique_bodyparts):
+                    print(f"Warning: Unique bodypart mismatch for {image}, skipping unique bodyparts")
                     plot_unique_for_row = False
+                else:
+                    unique_bodyparts = len(gt_unique_bodyparts)
+
+                    try:
+                        unique_ground_truth = unique_gt.to_numpy().reshape((1, unique_bodyparts, 2))
+                        unique_predictions = unique_pred.to_numpy().reshape((1, unique_bodyparts, 3))
+                    except ValueError:
+                        # Handle cases where unique bodyparts reshape fails
+                        print(f"Warning: Unique bodyparts reshape failed for {image}, skipping unique bodyparts")
+                        plot_unique_for_row = False
 
         fig, ax = create_minimal_figure()
         try:
