@@ -490,6 +490,7 @@ def plot_evaluation_results(
         raise ValueError(f"Invalid mode: {mode}. Must be one of 'bodypart' or 'individual'.")
 
     for row_index, row in df_combined.iterrows():
+        plot_unique_for_row = plot_unique_bodyparts
         if isinstance(row_index, str):
             image_rel_path = Path(row_index)
             data_folder = image_rel_path.parent.parent.name
@@ -549,7 +550,7 @@ def plot_evaluation_results(
 
         bboxes = bounding_boxes.get(row_index)
 
-        if plot_unique_bodyparts:
+        if plot_unique_for_row:
             row_unique = row.loc[(slice(None), row.index.get_level_values("individuals") == "single")]
             unique_individuals = 1
             unique_bodyparts = len(row_unique.index.get_level_values("bodyparts").unique())
@@ -561,7 +562,7 @@ def plot_evaluation_results(
             except ValueError:
                 # Handle cases where unique bodyparts reshape fails
                 print(f"Warning: Unique bodyparts reshape failed for {image}, skipping unique bodyparts")
-                plot_unique_bodyparts = False
+                plot_unique_for_row = False
 
         fig, ax = create_minimal_figure()
         h, w, _ = np.shape(frame)
@@ -572,7 +573,7 @@ def plot_evaluation_results(
 
         if mode == "bodypart":
             num_colors = bodyparts
-            if plot_unique_bodyparts:
+            if plot_unique_for_row:
                 num_colors += unique_bodyparts
 
             colors = get_cmap(num_colors, name=colormap)
@@ -605,7 +606,7 @@ def plot_evaluation_results(
             bboxes_cutoff=bboxes_cutoff,
             bboxes_color=bboxes_color,
         )
-        if plot_unique_bodyparts:
+        if plot_unique_for_row:
             unique_predictions = unique_predictions.swapaxes(0, 1)
             unique_ground_truth = unique_ground_truth.swapaxes(0, 1)
             ax = make_multianimal_labeled_image(
