@@ -17,7 +17,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from deeplabcut.api._tf_routing import with_tensorflow_fallback
-from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.core.engine import Engine
 
 
@@ -26,7 +26,7 @@ from deeplabcut.core.engine import Engine
     tensorflow_module="deeplabcut.tensorflow_compat.create_project",
     tensorflow_name="_tf_create_pretrained_project",
 )
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def create_pretrained_project(
     project: str,
     experimenter: str,

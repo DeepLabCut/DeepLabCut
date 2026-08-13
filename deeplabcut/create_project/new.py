@@ -18,12 +18,12 @@ from pathlib import Path
 from typing import Literal
 
 from deeplabcut import DEBUG
-from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils.auxfun_videos import VideoReader, collect_video_paths
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def create_new_project(
     project: str,
     experimenter: str,

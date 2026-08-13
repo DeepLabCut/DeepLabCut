@@ -45,7 +45,7 @@ from skimage.draw import disk, line_aa, rectangle_perimeter, set_color
 from skimage.util import img_as_ubyte
 from tqdm import trange
 
-from deeplabcut.core.deprecation import DeprecatedSince, renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.config import PoseConfig
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
@@ -390,7 +390,7 @@ def CreateVideoSlow(
     plt.switch_backend(prev_backend)
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def create_labeled_video(
     config: str | Path,
     videos: list[str | Path],
@@ -1071,7 +1071,7 @@ def create_video_with_keypoints_only(
     plt.switch_backend(prev_backend)
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since=DeprecatedSince.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def create_video_with_all_detections(
     config: str | Path,
     videos: list[str | Path],

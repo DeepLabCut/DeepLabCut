@@ -27,7 +27,7 @@ from torchvision.models.detection import (
 )
 
 from deeplabcut.core.config import ProjectConfig
-from deeplabcut.core.deprecation import DeprecatedSince, deprecated
+from deeplabcut.core.deprecation import DeprecationRound, deprecated
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import ConditionsModelConfig
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
@@ -305,7 +305,7 @@ def get_scorer_name(
     return f"DLC_{name}_{task}{date}shuffle{shuffle}_{snapshot_uid}"
 
 
-@deprecated(replacement="deeplabcut.collect_video_paths", since=DeprecatedSince.VIDEO_PATH_MIGRATION)
+@deprecated(replacement="deeplabcut.collect_video_paths", deprecation_round=DeprecationRound.VIDEO_PATH_MIGRATION)
 def list_videos_in_folder(
     data_path: str | Path | list[str | Path],
     video_type: str | Sequence[str] | None = SUPPORTED_VIDEOS,
