@@ -127,6 +127,18 @@ class DeprecationInfo(BaseModel):
     old_parameter: str | None = None
     new_parameter: str | None = None
 
+    @model_validator(mode="after")
+    def _validate_kind_fields(self) -> Self:
+        if self.kind == "callable":
+            if self.old_parameter is not None or self.new_parameter is not None:
+                raise ValueError("Callable deprecations cannot specify parameter names.")
+        elif self.kind == "parameter":
+            if not self.old_parameter or not self.new_parameter:
+                raise ValueError("Parameter deprecations require both 'old_parameter' and 'new_parameter'.")
+            if self.replacement is not None:
+                raise ValueError("Parameter deprecations cannot specify 'replacement'.")
+        return self
+
     @property
     def since(self) -> Version | None:
         return self.deprecation_round.value.since if self.deprecation_round else None
