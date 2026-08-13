@@ -18,7 +18,7 @@ import pytest
 from deeplabcut.utils import visualization
 
 
-@pytest.fixture(autospec=True)
+@pytest.fixture(autouse=True)
 def cleanup_figs():
     """Close all matplotlib figures after each test."""
     yield
