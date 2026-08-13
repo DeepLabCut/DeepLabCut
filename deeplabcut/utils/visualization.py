@@ -515,12 +515,6 @@ def plot_evaluation_results(
             print(f"  Predictions individual count: {len(pred_individuals)}")
             print("  Skipping visualization for this image")
             continue
-        elif len(gt_individuals) > 1 and list(gt_individuals) != list(pred_individuals):
-            print(f"Warning: Individual labels differ for {image}")
-            print(f"  Ground truth: {list(gt_individuals)}")
-            print(f"  Predictions: {list(pred_individuals)}")
-            print("  Skipping visualization for this image")
-            continue
 
         if list(gt_bodyparts) != list(pred_bodyparts):  # keep ordering of bodyparts
             print(f"Warning: Bodypart mismatch for {image}")
