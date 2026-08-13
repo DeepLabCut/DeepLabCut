@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import Literal
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -445,7 +446,7 @@ def plot_evaluation_results(
     output_folder: Path,
     in_train_set: bool,
     plot_unique_bodyparts: bool = False,
-    mode: str = "bodypart",
+    mode: Literal["bodypart", "individual"] = "bodypart",
     colormap: str = "rainbow",
     dot_size: int = 12,
     alpha_value: float = 0.7,
@@ -485,6 +486,9 @@ def plot_evaluation_results(
     if bounding_boxes is None:
         bounding_boxes = {}
 
+    if mode not in {"bodypart", "individual"}:
+        raise ValueError(f"Invalid mode: {mode}. Must be one of 'bodypart' or 'individual'.")
+
     for row_index, row in df_combined.iterrows():
         if isinstance(row_index, str):
             image_rel_path = Path(row_index)
@@ -510,8 +514,8 @@ def plot_evaluation_results(
 
         if len(gt_individuals) != len(pred_individuals):
             print(f"Warning: Individual count mismatch for {image}")
-            print(f"  Ground truth: {len(gt_individuals)} individuals")
-            print(f"  Predictions: {len(pred_individuals)} individuals")
+            print(f"  Ground truth individual count: {len(gt_individuals)}")
+            print(f"  Predictions individual count: {len(pred_individuals)}")
             print("  Skipping visualization for this image")
             continue
 
@@ -537,7 +541,7 @@ def plot_evaluation_results(
             expected_size_pred = individuals * bodyparts * 3
 
             print(f"Warning: DataFrame reshape failed for {image}")
-            print(f"  Expected: {individuals} individuals, {bodyparts} bodyparts")
+            print(f"  Expected: {individuals} individual(s), {bodyparts} bodypart(s)")
             print(f"  Ground truth: {actual_size_gt} elements (expected {expected_size_gt})")
             print(f"  Predictions: {actual_size_pred} elements (expected {expected_size_pred})")
             print("  Skipping visualization for this image")
@@ -574,10 +578,8 @@ def plot_evaluation_results(
             colors = get_cmap(num_colors, name=colormap)
             predictions = predictions.swapaxes(0, 1)
             ground_truth = ground_truth.swapaxes(0, 1)
-        elif mode == "individual":
-            colors = get_cmap(individuals + 1, name=colormap)
         else:
-            colors = []
+            colors = get_cmap(individuals + 1, name=colormap)
 
         if bounding_boxes_color == "auto":
             if mode == "bodypart":

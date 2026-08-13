@@ -8,6 +8,13 @@ import pytest
 from deeplabcut.utils import visualization
 
 
+@pytest.fixture(autospec=True)
+def cleanup_figs():
+    """Close all matplotlib figures after each test."""
+    yield
+    plt.close("all")
+
+
 @pytest.fixture
 def evaluation_dataframe_factory():
     """Build combined ground-truth and prediction evaluation data."""
@@ -234,8 +241,8 @@ class TestPlotEvaluationResults:
         output = capsys.readouterr().out
 
         assert "Individual count mismatch for img001.png" in output
-        assert "Ground truth: 1 individuals" in output
-        assert "Predictions: 2 individuals" in output
+        assert "Ground truth individual count: 1" in output
+        assert "Predictions individual count: 2" in output
 
         mocked_evaluation_plotting["save_labeled_frame"].assert_not_called()
 
