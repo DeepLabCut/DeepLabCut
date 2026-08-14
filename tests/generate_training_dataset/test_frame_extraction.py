@@ -3,9 +3,10 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from skimage import io
 
 from deeplabcut.generate_training_dataset.frame_extraction import _filter_config_videos, extract_frames
-from deeplabcut.utils import auxfun_videos, auxiliaryfunctions, frameselectiontools, io
+from deeplabcut.utils import auxfun_videos, auxiliaryfunctions, frameselectiontools
 
 
 def test_extract_frames_accepts_path_videos_list(tmp_path, monkeypatch):
