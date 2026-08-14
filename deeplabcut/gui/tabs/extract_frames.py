@@ -15,6 +15,7 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
 from deeplabcut.generate_training_dataset import extract_frames
+from deeplabcut.generate_training_dataset.frame_extraction import normalize_video_path
 from deeplabcut.gui.components import (
     DefaultTab,
     VideoSelectionWidget,
@@ -51,24 +52,32 @@ def select_cropping_area(config, videos=None):
     for video in videos:
         fc = FrameCropper(video)
         coords = fc.draw_bbox()
-        if coords:
-            temp = {
-                "crop": ", ".join(
-                    map(
-                        str,
-                        [
-                            int(coords[0]),
-                            int(coords[2]),
-                            int(coords[1]),
-                            int(coords[3]),
-                        ],
-                    )
+        if not coords:
+            continue
+
+        temp = {
+            "crop": ", ".join(
+                map(
+                    str,
+                    [
+                        int(coords[0]),
+                        int(coords[2]),
+                        int(coords[1]),
+                        int(coords[3]),
+                    ],
                 )
-            }
-            try:
-                cfg["video_sets"][video] = temp
-            except KeyError:
-                cfg["video_sets_original"][video] = temp
+            )
+        }
+
+        video_sets_name = "video_sets_original" if cfg.get("video_sets_original") else "video_sets"
+        video_sets = cfg[video_sets_name]
+
+        matching_keys = [key for key in video_sets if normalize_video_path(key) == normalize_video_path(video)]
+
+        if not matching_keys:
+            raise KeyError(f"Video is not present in the project configuration: {video}")
+
+        video_sets[matching_keys[0]] = temp
 
     auxiliaryfunctions.write_config(config, cfg)
     return cfg
@@ -222,7 +231,11 @@ class ExtractFrames(DefaultTab):
             cluster_color=False,
             slider_width=slider_width,
             userfeedback=False,
-            videos_list=self.video_selection_widget.files or None,
+            videos_list=(
+                [str(video) for video in self.video_selection_widget.files]
+                if self.video_selection_widget.files
+                else None
+            ),
         )
 
         self.worker, self.thread = move_to_separate_thread(func, capture_outputs=True)
