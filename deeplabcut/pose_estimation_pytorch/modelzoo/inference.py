@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import json
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -29,6 +30,8 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     raise_warning_if_called_directly,
 )
 from deeplabcut.utils.make_labeled_video import create_video
+
+logger = logging.getLogger(__name__)
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -170,6 +173,8 @@ def _video_inference_superanimal(
             pose_runner=pose_runner,
             detector_runner=detector_runner,
         )
+        if not predictions:
+            logger.warning(f"No pose predictions were made for video {video_path}. Were no individuals detected?")
 
         bbox_keys_in_predictions = {"bboxes", "bbox_scores"}
         bboxes_list = [
