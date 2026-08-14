@@ -458,7 +458,7 @@ def extract_frames(
         cfg = auxiliaryfunctions.read_config(config_file)
         print("Config file read successfully.")
 
-        videos = _filter_config_videos(sorted(cfg["video_sets"], videos_list))
+        videos = _filter_config_videos(sorted(cfg["video_sets"]), videos_list)
         if videos_list is not None and not videos:
             raise ValueError(
                 "None of the selected videos matched the videos in the project "
