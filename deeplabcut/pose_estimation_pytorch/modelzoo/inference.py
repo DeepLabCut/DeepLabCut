@@ -174,7 +174,7 @@ def _video_inference_superanimal(
             detector_runner=detector_runner,
         )
         if not predictions:
-            logger.warning(f"No pose predictions were made for video {video_path}. Were no individuals detected?")
+            raise RuntimeError(f"No pose predictions were made for video {video_path}. Were no individuals detected?")
 
         bbox_keys_in_predictions = {"bboxes", "bbox_scores"}
         bboxes_list = [
