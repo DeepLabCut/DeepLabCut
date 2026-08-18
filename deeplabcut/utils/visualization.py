@@ -228,10 +228,7 @@ def plot_and_save_labeled_frame(
     else:
         image_path = Path(cfg["project_path"]) / DataCombined.index[ind]
     frame = io.imread(os.fspath(image_path))
-    if np.ndim(frame) > 2:  # color image!
-        h, w, numcolors = np.shape(frame)
-    else:
-        h, w = np.shape(frame)
+    h, w = np.shape(frame)[:2]
     fig.set_size_inches(w / 100, h / 100)
     ax.set_xlim(0, w)
     ax.set_ylim(0, h)
