@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import Literal
@@ -28,6 +29,8 @@ from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
 
 PlotMode = Literal["bodypart", "individual"]
 BoundingBoxColor = Colormap | str | None
+
+logger = logging.getLogger(__name__)
 
 
 def get_cmap(n: int, name: str = "hsv") -> Colormap:
@@ -512,17 +515,21 @@ def plot_evaluation_results(
         pred_bodyparts = df_predictions.index.get_level_values("bodyparts").unique()
 
         if len(gt_individuals) != len(pred_individuals):
-            print(f"Warning: Individual count mismatch for {image}")
-            print(f"  Ground truth individual count: {len(gt_individuals)}")
-            print(f"  Predictions individual count: {len(pred_individuals)}")
-            print("  Skipping visualization for this image")
+            logger.warning(
+                f"Warning: Individual count mismatch for {image}\n"
+                f"  Ground truth individual count: {len(gt_individuals)}\n"
+                f"  Predictions individual count: {len(pred_individuals)}\n"
+                "  Skipping visualization for this image"
+            )
             continue
 
         if list(gt_bodyparts) != list(pred_bodyparts):  # keep ordering of bodyparts
-            print(f"Warning: Bodypart mismatch for {image}")
-            print(f"  Ground truth: {list(gt_bodyparts)}")
-            print(f"  Predictions: {list(pred_bodyparts)}")
-            print("  Skipping visualization for this image")
+            logger.warning(
+                f"Warning: Bodypart mismatch for {image}\n"
+                f"  Ground truth: {list(gt_bodyparts)}\n"
+                f"  Predictions: {list(pred_bodyparts)}\n"
+                "  Skipping visualization for this image"
+            )
             continue
 
         individuals = len(gt_individuals)
@@ -539,11 +546,13 @@ def plot_evaluation_results(
             expected_size_gt = individuals * bodyparts * 2
             expected_size_pred = individuals * bodyparts * 3
 
-            print(f"Warning: DataFrame reshape failed for {image}")
-            print(f"  Expected: {individuals} individual(s), {bodyparts} bodypart(s)")
-            print(f"  Ground truth: {actual_size_gt} elements (expected {expected_size_gt})")
-            print(f"  Predictions: {actual_size_pred} elements (expected {expected_size_pred})")
-            print("  Skipping visualization for this image")
+            logger.warning(
+                f"Warning: DataFrame reshape failed for {image}\n"
+                f"  Expected: {individuals} individual(s), {bodyparts} bodypart(s)\n"
+                f"  Ground truth: {actual_size_gt} elements (expected {expected_size_gt})\n"
+                f"  Predictions: {actual_size_pred} elements (expected {expected_size_pred})\n"
+                "  Skipping visualization for this image"
+            )
             continue
 
         bboxes = bounding_boxes.get(row_index)
@@ -560,7 +569,7 @@ def plot_evaluation_results(
                 pred_unique_bodyparts = unique_pred.index.get_level_values("bodyparts").unique()
 
                 if list(gt_unique_bodyparts) != list(pred_unique_bodyparts):
-                    print(f"Warning: Unique bodypart mismatch for {image}, skipping unique bodyparts")
+                    logger.warning(f"Warning: Unique bodypart mismatch for {image}, skipping unique bodyparts")
                     plot_unique_for_row = False
                 else:
                     unique_bodyparts = len(gt_unique_bodyparts)
@@ -570,7 +579,9 @@ def plot_evaluation_results(
                         unique_predictions = unique_pred.to_numpy().reshape((1, unique_bodyparts, 3))
                     except ValueError:
                         # Handle cases where unique bodyparts reshape fails
-                        print(f"Warning: Unique bodyparts reshape failed for {image}, skipping unique bodyparts")
+                        logger.warning(
+                            f"Warning: Unique bodyparts reshape failed for {image}, skipping unique bodyparts"
+                        )
                         plot_unique_for_row = False
 
         fig, ax = create_minimal_figure()
