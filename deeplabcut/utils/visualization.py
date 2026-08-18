@@ -315,128 +315,197 @@ def make_labeled_images_from_dataframe(
     """Write labeled frames to disk from a DataFrame.
 
     Args:
-        df (pd.DataFrame): DataFrame containing the labeled data. Typically, the
-            DataFrame is obtained through pandas.read_csv() or pandas.read_hdf().
+        df (pd.DataFrame): DataFrame containing the labeled data.
         cfg (dict): Project configuration.
-        destfolder (str or Path, optional): Destination folder into which images will be
-            stored. By default, same location as the labeled data. Note that the folder
-            will be created if it does not exist.
-        scale (float, optional): Up/downscale the output dimensions. By default, outputs
-            are of the same dimensions as the original images.
-        dpi (int, optional): Output resolution. 100 dpi by default.
-        keypoint (str, optional): Keypoint appearance. By default, keypoints are marked
-            by a + sign. Refer to https://matplotlib.org/3.2.1/api/markers_api.html for
-            a list of all possible options.
-        draw_skeleton (bool, optional): Whether to draw the animal skeleton as defined in
-            *cfg*. True by default.
-        color_by (str, optional): Color scheme of the keypoints. Must be either
-            'bodypart' or 'individual'. By default, keypoints are colored relative to
-            the bodypart they represent.
+        destfolder (str or Path, optional): Destination folder for labeled images.
+        scale (float, optional): Output dimension scaling factor.
+        dpi (int, optional): Output resolution.
+        keypoint (str, optional): Matplotlib marker used for keypoints.
+        draw_skeleton (bool, optional): Whether to draw the configured skeleton.
+        color_by (str, optional): Either "bodypart" or "individual".
     """
-    bodyparts = df.columns.get_level_values("bodyparts")
-    bodypart_names = bodyparts.unique()
-    nbodyparts = len(bodypart_names)
-    bodyparts = bodyparts[::2]
-    draw_skeleton = draw_skeleton and cfg["skeleton"]  # Only draw if a skeleton is defined
+    columns = df.columns
+    bodypart_columns = columns.get_level_values("bodyparts")
+    bodypart_names = bodypart_columns.unique()
+    bodyparts = bodypart_columns[::2]
 
+    colors = _get_labeled_image_colors(
+        columns=columns,
+        bodyparts=bodyparts,
+        bodypart_names=bodypart_names,
+        color_by=color_by,
+        colormap=cfg["colormap"],
+    )
+
+    should_draw_skeleton = bool(draw_skeleton and cfg["skeleton"])
+    ind_bones = _get_bone_indices(bodyparts, cfg["skeleton"]) if should_draw_skeleton else ()
+
+    images_list = [str(Path(cfg["project_path"]).joinpath(*index)) for index in df.index.tolist()]
+
+    # Preserve list.index() behavior by retaining the first occurrence.
+    image_indices = {}
+    for index, filename in enumerate(images_list):
+        image_indices.setdefault(filename, index)
+
+    destfolder = Path(images_list[0]).parent if destfolder is None else Path(destfolder)
+    tmpfolder = destfolder.parent / f"{destfolder.name}_labeled"
+    auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
+
+    images = io.imread_collection(images_list)
+    all_same_shape = _images_have_same_shape(images)
+
+    xy = df.values.reshape(df.shape[0], -1, 2)
+    segments = xy[:, ind_bones].swapaxes(1, 2)
+
+    marker_size = cfg["dotsize"]
+    alpha = cfg["alphavalue"]
+    skeleton_color = cfg["skeleton_color"]
+
+    def output_path(filename):
+        imagename = Path(filename).name
+        return tmpfolder / imagename.replace(".png", f"_{color_by}.png")
+
+    def save_figure(fig, filename):
+        fig.subplots_adjust(
+            left=0,
+            bottom=0,
+            right=1,
+            top=1,
+            wspace=0,
+            hspace=0,
+        )
+        fig.savefig(output_path(filename), dpi=dpi)
+
+    if all_same_shape:
+        h, w = images[0].shape[:2]
+        fig, ax = prepare_figure_axes(w, h, scale, dpi)
+
+        image_artist = ax.imshow(np.zeros((h, w)), "gray")
+        point_artists = [
+            ax.plot(
+                [],
+                [],
+                keypoint,
+                ms=marker_size,
+                alpha=alpha,
+                color=color,
+            )[0]
+            for color in colors
+        ]
+        skeleton_artist = LineCollection(
+            [],
+            colors=skeleton_color,
+            alpha=alpha,
+        )
+        ax.add_collection(skeleton_artist)
+
+        for i in trange(len(images)):
+            filename = images.files[i]
+            index = image_indices[filename]
+            image = images[i]
+
+            if image.ndim == 2 or image.shape[-1] == 1:
+                image = color.gray2rgb(image)
+
+            image_artist.set_data(image)
+
+            for artist, coord in zip(point_artists, xy[index], strict=False):
+                artist.set_data(*np.expand_dims(coord, axis=1))
+
+            if ind_bones:
+                skeleton_artist.set_segments(segments[index])
+
+            save_figure(fig, filename)
+
+        plt.close(fig)
+        return
+
+    for i in trange(len(images)):
+        filename = images.files[i]
+        index = image_indices[filename]
+        image = images[i]
+        h, w = image.shape[:2]
+
+        fig, ax = prepare_figure_axes(w, h, scale, dpi)
+        ax.imshow(image)
+
+        for coord, point_color in zip(xy[index], colors, strict=False):
+            ax.plot(
+                *coord,
+                keypoint,
+                ms=marker_size,
+                alpha=alpha,
+                color=point_color,
+            )
+
+        if ind_bones:
+            ax.add_collection(
+                LineCollection(
+                    segments[index],
+                    colors=skeleton_color,
+                    alpha=alpha,
+                )
+            )
+
+        save_figure(fig, filename)
+        plt.close(fig)
+
+
+def _get_labeled_image_colors(
+    columns,
+    bodyparts,
+    bodypart_names,
+    color_by,
+    colormap,
+):
+    """Return one color per keypoint column."""
     if color_by == "bodypart":
-        map_ = bodyparts.map(dict(zip(bodypart_names, range(nbodyparts), strict=False)))
-        cmap = get_cmap(nbodyparts, cfg["colormap"])
-        colors = cmap(map_)
+        names = bodypart_names
+        values = bodyparts
     elif color_by == "individual":
         try:
-            individuals = df.columns.get_level_values("individuals")
-            individual_names = individuals.unique().to_list()
-            nindividuals = len(individual_names)
-            individuals = individuals[::2]
-            map_ = individuals.map(dict(zip(individual_names, range(nindividuals), strict=False)))
-            cmap = get_cmap(nindividuals, cfg["colormap"])
-            colors = cmap(map_)
-        except KeyError as e:
-            raise ValueError("Coloring by individuals requires an 'individuals' column level") from e
+            individual_columns = columns.get_level_values("individuals")
+        except KeyError as exc:
+            raise ValueError("Coloring by individuals requires an 'individuals' column level") from exc
+
+        names = individual_columns.unique()
+        values = individual_columns[::2]
     else:
         raise ValueError("`color_by` must be either `bodypart` or `individual`.")
 
+    name_to_index = {name: index for index, name in enumerate(names)}
+    color_indices = values.map(name_to_index)
+    return get_cmap(len(names), colormap)(color_indices)
+
+
+def _get_bone_indices(bodyparts, skeleton):
+    """Return transposed endpoint indices for all configured bones."""
+    positions_by_bodypart = {}
+
+    for index, bodypart in enumerate(bodyparts):
+        positions_by_bodypart.setdefault(bodypart, []).append(index)
+
     bones = []
-    if draw_skeleton:
-        for bp1, bp2 in cfg["skeleton"]:
-            match1, match2 = [], []
-            for j, bp in enumerate(bodyparts):
-                if bp == bp1:
-                    match1.append(j)
-                elif bp == bp2:
-                    match2.append(j)
-            bones.extend(zip(match1, match2, strict=False))
-    ind_bones = tuple(zip(*bones, strict=False))
+    for bodypart1, bodypart2 in skeleton:
+        # Preserve the original if/elif behavior for identical endpoints.
+        if bodypart1 == bodypart2:
+            continue
 
-    images_list = [str(Path(cfg["project_path"]).joinpath(*tuple_)) for tuple_ in df.index.tolist()]
-    if destfolder is None:
-        destfolder = Path(images_list[0]).parent
-    else:
-        destfolder = Path(destfolder)
-    tmpfolder = destfolder.parent / (destfolder.name + "_labeled")
-    auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
-    ic = io.imread_collection(images_list)
-
-    h, w = ic[0].shape[:2]
-    all_same_shape = True
-    for array in ic[1:]:
-        if array.shape[:2] != (h, w):
-            all_same_shape = False
-            break
-
-    xy = df.values.reshape((df.shape[0], -1, 2))
-    segs = xy[:, ind_bones].swapaxes(1, 2)
-
-    s = cfg["dotsize"]
-    alpha = cfg["alphavalue"]
-    if all_same_shape:  # Very efficient, avoid re-drawing the whole plot
-        fig, ax = prepare_figure_axes(w, h, scale, dpi)
-        im = ax.imshow(np.zeros((h, w)), "gray")
-        pts = [ax.plot([], [], keypoint, ms=s, alpha=alpha, color=c)[0] for c in colors]
-        coll = LineCollection([], colors=cfg["skeleton_color"], alpha=alpha)
-        ax.add_collection(coll)
-        for i in trange(len(ic)):
-            filename = ic.files[i]
-            ind = images_list.index(filename)
-            coords = xy[ind]
-            img = ic[i]
-            if img.ndim == 2 or img.shape[-1] == 1:
-                img = color.gray2rgb(ic[i])
-            im.set_data(img)
-            for pt, coord in zip(pts, coords, strict=False):
-                pt.set_data(*np.expand_dims(coord, axis=1))
-            if ind_bones:
-                coll.set_segments(segs[ind])
-            imagename = Path(filename).name
-            fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-            fig.savefig(
-                tmpfolder / imagename.replace(".png", f"_{color_by}.png"),
-                dpi=dpi,
+        bones.extend(
+            zip(
+                positions_by_bodypart.get(bodypart1, ()),
+                positions_by_bodypart.get(bodypart2, ()),
+                strict=False,
             )
-        plt.close(fig)
+        )
 
-    else:  # Good old inelegant way
-        for i in trange(len(ic)):
-            filename = ic.files[i]
-            ind = images_list.index(filename)
-            coords = xy[ind]
-            image = ic[i]
-            h, w = image.shape[:2]
-            fig, ax = prepare_figure_axes(w, h, scale, dpi)
-            ax.imshow(image)
-            for coord, c in zip(coords, colors, strict=False):
-                ax.plot(*coord, keypoint, ms=s, alpha=alpha, color=c)
-            if ind_bones:
-                coll = LineCollection(segs[ind], colors=cfg["skeleton_color"], alpha=alpha)
-                ax.add_collection(coll)
-            imagename = Path(filename).name
-            fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-            fig.savefig(
-                tmpfolder / imagename.replace(".png", f"_{color_by}.png"),
-                dpi=dpi,
-            )
-            plt.close(fig)
+    return tuple(zip(*bones, strict=False))
+
+
+def _images_have_same_shape(images):
+    """Return whether all images have the same height and width."""
+    expected_shape = images[0].shape[:2]
+    return all(image.shape[:2] == expected_shape for image in images[1:])
 
 
 def plot_evaluation_results(
