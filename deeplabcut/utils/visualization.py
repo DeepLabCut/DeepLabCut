@@ -656,8 +656,8 @@ def plot_evaluation_results(
             h, w = frame.shape[:2]
             fig.set_size_inches(w / 100, h / 100)
             ax.set_xlim(0, w)
-            ax.set_ylim(0, h)
-            ax.invert_yaxis()
+            ax.set_ylim(h, 0)
+            # ax.invert_yaxis()
 
             if mode == "bodypart":
                 num_colors = bodyparts
