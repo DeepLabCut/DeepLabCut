@@ -359,8 +359,9 @@ def make_labeled_images_from_dataframe(
     skeleton_color = cfg["skeleton_color"]
 
     def output_path(filename):
-        imagename = Path(filename).name
-        return tmpfolder / imagename.replace(".png", f"_{color_by}.png")
+        stem = Path(filename).stem
+        out_name = f"{stem}_{color_by}.png"
+        return tmpfolder / out_name
 
     def save_figure(fig, filename):
         fig.subplots_adjust(
