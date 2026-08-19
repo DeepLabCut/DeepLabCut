@@ -8,10 +8,19 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
+import warnings
+
 from deeplabcut import cli
+from deeplabcut.core.deprecation import DLCDeprecationWarning
 
 
 def main():
+    warnings.warn(
+        "Running `python dlc.py ...` is deprecated. Use the `dlc` command "
+        "instead (e.g. `dlc train-network ...`), or `python -m deeplabcut.cli`.",
+        DLCDeprecationWarning,
+        stacklevel=2,
+    )
     cli.main()
 
 
