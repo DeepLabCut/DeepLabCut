@@ -17,6 +17,7 @@ or left at its ``DEFAULT``) is verified without running real DeepLabCut code.
 
 from __future__ import annotations
 
+import inspect
 from collections.abc import Callable
 from typing import Annotated
 
@@ -24,7 +25,9 @@ import pytest
 import typer
 from typer.testing import CliRunner
 
-from deeplabcut.cli import _parse_overrides, delegate_to_api
+import deeplabcut as dlc
+from deeplabcut import cli as cli_module
+from deeplabcut.cli import _optional_api_parameters, _parse_overrides, delegate_to_api
 
 runner = CliRunner()
 
@@ -172,3 +175,124 @@ def test_command_must_not_define_override_kwargs():
         @delegate_to_api(api_fn)
         def cmd(config: str, _override_kwargs=None) -> None:
             pass
+
+
+# ---------------------------------------------------------------------------
+# **kwargs passthrough
+# ---------------------------------------------------------------------------
+
+
+def test_set_unknown_param_allowed_when_delegate_accepts_kwargs():
+    calls: list[dict] = []
+
+    def api_fn(config: str, **kwargs) -> None:
+        calls.append({"config": config, **kwargs})
+
+    app = typer.Typer(no_args_is_help=True, pretty_exceptions_enable=False)
+
+    @delegate_to_api(api_fn)
+    def cmd(config: Annotated[str, typer.Argument()]) -> None:
+        pass
+
+    app.command("cmd")(cmd)
+
+    result = runner.invoke(
+        app,
+        ["config.yaml", "--set", "snapshot_index=-1", "--set", "detector_snapshot_index=0"],
+    )
+
+    assert result.exit_code == 0
+    assert calls == [{"config": "config.yaml", "snapshot_index": -1, "detector_snapshot_index": 0}]
+
+
+def test_set_conflict_with_exposed_option_rejected_even_with_kwargs():
+    def api_fn(config: str, **kwargs) -> None:
+        pass
+
+    app = typer.Typer(no_args_is_help=True, pretty_exceptions_enable=False)
+
+    @delegate_to_api(api_fn)
+    def cmd(config: Annotated[str, typer.Argument()]) -> None:
+        pass
+
+    app.command("cmd")(cmd)
+
+    result = runner.invoke(
+        app,
+        ["config.yaml", "--set", "config=other"],
+        standalone_mode=False,
+    )
+
+    assert result.exit_code == 1
+    assert isinstance(result.exception, typer.BadParameter)
+    assert "must not be supplied through --set" in str(result.exception)
+
+
+# ---------------------------------------------------------------------------
+# Conformance of the real CLI against the public API
+# ---------------------------------------------------------------------------
+
+# Command name -> public API function it delegates to. Keeping this explicit
+# means a newly added command fails the mapping test and must be reviewed.
+COMMAND_DELEGATES = {
+    "create-new-project": dlc.create_new_project,
+    "add-new-videos": dlc.add_new_videos,
+    "extract-frames": dlc.extract_frames,
+    "label-frames": dlc.label_frames,
+    "check-labels": dlc.check_labels,
+    "refine-labels": dlc.refine_labels,
+    "create-training-dataset": dlc.create_training_dataset,
+    "train-network": dlc.train_network,
+    "evaluate-network": dlc.evaluate_network,
+    "analyze-videos": dlc.analyze_videos,
+    "extract-outlier-frames": dlc.extract_outlier_frames,
+    "create-labeled-video": dlc.create_labeled_video,
+    "plot-trajectories": dlc.plot_trajectories,
+}
+
+
+def _command_callback(name: str) -> Callable[..., None]:
+    for info in cli_module.app.registered_commands:
+        if info.name == name:
+            return info.callback
+    raise KeyError(name)
+
+
+def test_all_registered_commands_are_mapped():
+    registered = {info.name for info in cli_module.app.registered_commands}
+    assert registered == set(COMMAND_DELEGATES)
+
+
+def test_cli_params_are_known_api_params():
+    for name, delegate in COMMAND_DELEGATES.items():
+        api_params = set(inspect.signature(delegate).parameters)
+        callback = _command_callback(name)
+        cli_params = inspect.signature(callback.__wrapped__).parameters
+        for param in cli_params:
+            assert param in api_params, f"{name}: CLI param {param!r} not in API signature"
+
+
+def test_required_api_params_are_exposed():
+    for name, delegate in COMMAND_DELEGATES.items():
+        api_sig = inspect.signature(delegate)
+        required = {
+            p.name
+            for p in api_sig.parameters.values()
+            if p.default is inspect.Parameter.empty
+            and p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+        }
+        callback = _command_callback(name)
+        cli_params = set(inspect.signature(callback.__wrapped__).parameters)
+        missing = required - cli_params
+        assert not missing, f"{name}: required API param(s) {sorted(missing)} not exposed"
+
+
+def test_removed_options_left_to_set():
+    analyze_cli = set(inspect.signature(_command_callback("analyze-videos").__wrapped__).parameters)
+    assert "robust_nframes" not in analyze_cli
+    assert "robust_nframes" in _optional_api_parameters(dlc.analyze_videos)
+
+    outlier_cli = set(inspect.signature(_command_callback("extract-outlier-frames").__wrapped__).parameters)
+    for param in ("ARdegree", "MAdegree"):
+        assert param not in outlier_cli
+        assert param in _optional_api_parameters(dlc.extract_outlier_frames)
