@@ -130,7 +130,7 @@ def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
     model_path = snapshot_dir / model_filename
 
     source_filename = MODEL_FILENAME_MAPPING.get(model_name, model_filename)
-    if model_filename + ".pt" == source_filename:
+    if model_filename == source_filename:
         rename_mapping = None
     else:
         rename_mapping = {source_filename: model_filename}
