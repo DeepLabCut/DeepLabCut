@@ -231,8 +231,24 @@ You can hover over the preview path to see the full path, and click to copy it t
 #### Encoding options
 
 - **Container** (e.g. `mp4`, `avi`, `mov`)
+
 - **Codec** (availability depends on OS and hardware)
+
 - **CRF** (quality/compression tradeoff; lower values = higher quality)
+
+- **Use faster encoding parameters**
+  Applies faster FFmpeg settings to supported codecs to reduce encoding overhead and help maintain recording throughput.
+
+  For `libx264` and `libx265`, this enables:
+
+  - `preset=ultrafast`
+  - `tune=zerolatency`
+
+  These settings can reduce encoding latency, but may produce larger video files for the selected quality level. Other codecs, including hardware encoders such as `h264_nvenc`, are left unchanged.
+
+  ```{note}
+  Please let us know if you would like to see additional codec options or presets added to the GUI.
+  ```
 
 #### Controls
 
