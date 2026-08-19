@@ -1,7 +1,8 @@
 ---
 deeplabcut:
-  last_metadata_updated: '2026-03-17'
+  last_metadata_updated: '2026-08-19'
   ignore: false
+  last_verified: '2026-08-19'
 ---
 
 (file:dlclivegui-timestamp-format)=
