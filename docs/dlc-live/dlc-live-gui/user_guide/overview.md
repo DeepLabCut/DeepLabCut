@@ -94,7 +94,9 @@ You can "undock" the control panel by dragging it by the title bar, allowing you
   - Add, enable, or disable cameras
   - Select backend and index
   - Adjust camera-specific properties
-  - Configure supported trigger roles
+    - Ajust exposure, gain, frame size, and frame rate
+    - Choose output format (color, grayscale, etc.)
+    - Configure supported trigger roles
   - Switch between single- and multi-camera setups
 
 ```{important}
@@ -117,55 +119,7 @@ even though preview and recording may include multiple cameras.
 
 #### Trigger settings
 
-For camera backends that expose triggering support, select a configured camera and choose **Trigger Settings…**.
-
-```{tip} When to use triggered cameras
-Triggering cameras can be useful if you need precise camera synchronization or need to coordinate with other devices.
-
-In principle, it makes a camera follow external signals rather than its own internal clock,
-ensuring much tighter synchronization between multiple cameras or other devices.
-```
-
-Trigger configuration is currently available for the **Basler** and **GenTL** backends.
-*The available fields remain **camera and driver-dependent**.*
-
-- **Off / Free-run**: Disable triggering and acquire frames continuously.
-- **External trigger**: Wait for hardware pulses on the selected input source.
-- **Master output**: Keep the camera free-running and configure an output signal for another camera or device.
-- **Follower**: Configure the camera as a synchronized input that follows an external trigger source. Similar to external trigger conceptually.
-
-The active-camera list shows the configured role, such as `[external]`, `[follower]`, or `[master]`.
-
-For **External trigger** and **Follower**, configure:
-
-- **Trigger selector**: Usually `FrameStart` for area-scan cameras.
-- **Trigger source**: Select `auto` or enter a camera-supported source such as `Line1` or `Line2`.
-- **Activation**: Choose the signal condition, such as `RisingEdge` or `FallingEdge`.
-- **Read timeout**: Maximum frame wait in seconds. The backend may use shorter individual waits to keep preview shutdown responsive.
-
-```{note}
-The read timeout is a maximum wait for a single frame.
-
-If the camera does not receive a valid trigger signal within this time, the backend ends the current wait and reports a timeout error.
-It does not disable the trigger configuration or permanently stop the camera.
-```
-
-For **Master output**, configure:
-
-- **Output line**: The camera output line, such as `Line2`.
-- **Output source**: The signal routed to that line, such as `ExposureActive`.
-- **GenTL strobe options**: Compatible GenTL cameras may additionally expose strobe polarity, operation, duration, and delay. A value of **Default** leaves duration or delay unset.
-
-```{important}
-The trigger dialog provides backend-specific suggestions, not a guarantee that the selected camera supports every displayed value.
-
-Enable **Strict mode** when missing or unsupported required trigger features should prevent the camera from opening.
-With strict mode disabled, the backend applies supported settings best-effort and may disable an unsupported trigger configuration.
-```
-
-```{tip}
-Start the camera preview after changing trigger settings to verify the configuration. An externally triggered camera may wait or time out until it receives a valid pulse.
-```
+See {ref}`sec:dlclivegui-trigger-settings` for details on configuring camera trigger roles and options.
 
 ______________________________________________________________________
 
@@ -260,11 +214,11 @@ You can hover over the preview path to see the full path, and click to copy it t
 
 - **Record video with overlays**
   Include pose predictions and/or bounding boxes directly in the recorded video.
-  :::\{danger}
+  ```{danger}
   This **cannot be easily undone** once the recording is saved.
 
   Use with caution if you want to preserve **raw footage** intact.
-  :::
+  ```
 
 ### About frame size mismatches
 
