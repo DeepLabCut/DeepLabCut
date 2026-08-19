@@ -94,7 +94,7 @@ You can "undock" the control panel by dragging it by the title bar, allowing you
   - Add, enable, or disable cameras
   - Select backend and index
   - Adjust camera-specific properties
-    - Ajust exposure, gain, frame size, and frame rate
+    - Adjust exposure, gain, frame size, and frame rate
     - Choose output format (color, grayscale, etc.)
     - Configure supported trigger roles
   - Switch between single- and multi-camera setups
