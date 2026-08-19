@@ -60,6 +60,7 @@ dependencies = [
   "torch>=2",
   "torchvision",
   "tqdm",
+  "typer>=0.12",
 ]
 [[project.authors]]
 name = "M-Lab of Adaptive Intelligence"
