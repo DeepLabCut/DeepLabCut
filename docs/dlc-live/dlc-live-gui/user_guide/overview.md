@@ -93,6 +93,7 @@ You can "undock" the control panel by dragging it by the title bar, allowing you
   - Add, enable, or disable cameras
   - Select backend and index
   - Adjust camera-specific properties
+  - Configure supported trigger roles
   - Switch between single- and multi-camera setups
 
 ```{important}
@@ -100,6 +101,7 @@ Depending on the system, backend and camera model,
 settings may vary widely between proper support, partial support, or no support at all.
 
 This is especially true for the generalist OpenCV backend, which may work well with some cameras but not others.
+Please open an issue or PR if you would like to see support for a specific camera or backend improved.
 ```
 
 - **Active**
@@ -112,14 +114,66 @@ In multi-camera mode, pose inference runs on **one selected camera at a time** (
 even though preview and recording may include multiple cameras.
 ```
 
+#### Trigger settings
+
+For camera backends that expose triggering support, select a configured camera and choose **Trigger Settings…**.
+
+```{tip} When to use triggered cameras
+Triggering cameras can be useful if you need precise camera synchronization or need to coordinate with other devices.
+
+In principle, it makes a camera follow external signals rather than its own internal clock,
+ensuring much tighter synchronization between multiple cameras or other devices.
+```
+
+Trigger configuration is currently available for the **Basler** and **GenTL** backends.
+*The available fields remain **camera and driver-dependent**.*
+
+- **Off / Free-run**: Disable triggering and acquire frames continuously.
+- **External trigger**: Wait for hardware pulses on the selected input source.
+- **Master output**: Keep the camera free-running and configure an output signal for another camera or device.
+- **Follower**: Configure the camera as a synchronized input that follows an external trigger source. Similar to external trigger conceptually.
+
+The active-camera list shows the configured role, such as `[external]`, `[follower]`, or `[master]`.
+
+For **External trigger** and **Follower**, configure:
+
+- **Trigger selector**: Usually `FrameStart` for area-scan cameras.
+- **Trigger source**: Select `auto` or enter a camera-supported source such as `Line1` or `Line2`.
+- **Activation**: Choose the signal condition, such as `RisingEdge` or `FallingEdge`.
+- **Read timeout**: Maximum frame wait in seconds. The backend may use shorter individual waits to keep preview shutdown responsive.
+
+```{note}
+The read timeout is a maximum wait for a single frame.
+
+If the camera does not receive a valid trigger signal within this time, the backend ends the current wait and reports a timeout error.
+It does not disable the trigger configuration or permanently stop the camera.
+```
+
+For **Master output**, configure:
+
+- **Output line**: The camera output line, such as `Line2`.
+- **Output source**: The signal routed to that line, such as `ExposureActive`.
+- **GenTL strobe options**: Compatible GenTL cameras may additionally expose strobe polarity, operation, duration, and delay. A value of **Default** leaves duration or delay unset.
+
+```{important}
+The trigger dialog provides backend-specific suggestions, not a guarantee that the selected camera supports every displayed value.
+
+Enable **Strict mode** when missing or unsupported required trigger features should prevent the camera from opening.
+With strict mode disabled, the backend applies supported settings best-effort and may disable an unsupported trigger configuration.
+```
+
+```{tip}
+Start the camera preview after changing trigger settings to verify the configuration. An externally triggered camera may wait or time out until it receives a valid pulse.
+```
+
 ______________________________________________________________________
 
 ### DLCLive settings
 
 ```{note}
-`DLCLive` stands for DeepLabCut Live, the real-time pose estimation engine that powers the inference capabilities of this application.
+`DLCLive` refers to DeepLabCut Live, the real-time pose estimation engine that powers the inference capabilities of this application.
 
-Find more information here if needed: {ref}`deeplabcut-live`.
+Find more information here: {ref}`deeplabcut-live`.
 ```
 
 **Purpose:** Configure and run pose inference on the live stream.
@@ -308,7 +362,7 @@ The GUI can restore settings across sessions using:
   - The last-saved configuration is automatically loaded on startup if available
 - Remembered paths (e.g. last-used model directory)
 
-On startup, the application attempts to **restore your last‑used settings** if saved,
+On startup, the application attempts to **restore your last-used settings** if saved,
 but you can always manually load and save configurations.
 
 ```{tip}
