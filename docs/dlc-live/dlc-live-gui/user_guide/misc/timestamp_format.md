@@ -29,7 +29,7 @@ recording_2025-10-23_143052.mp4_timestamps.json
 
 - Software timestamp records are added only after a frame is successfully written by the encoder.
   - It is therefore coupled **to the recording rather than inference or GUI display**.
-  - **It should not be interpreted as a model-side inference timestamp or a camera acquisition timestamp.**
+  - **It should not be interpreted as a model-side inference timestamp or a direct-from-camera acquisition timestamp.** It is recorded when the camera SDK supplies a frame to the GUI via the backend frame read.
 - Frames dropped before writing are not included in `frame_timestamps`.
 - Hardware timestamp availability may differ by backend, camera model, and driver.
 - The encoded video is written with a fixed input frame rate configured when recording starts.
@@ -174,7 +174,6 @@ from datetime import datetime
 with open("recording_2025-10-23_143052.mp4_timestamps.json", "r") as f:
     data = json.load(f)
 
-print(f"Schema: {data['schema_version']}")
 print(f"Video: {data['video_file']}")
 print(f"Total frames: {data['num_frames']}")
 print(f"Duration: {data['duration_seconds']:.6f} seconds")
