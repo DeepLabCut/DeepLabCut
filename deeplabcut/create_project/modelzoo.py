@@ -46,7 +46,7 @@ Modeloptions = MODELOPTIONS
 
 @deprecated(
     replacement="deeplabcut.create_pretrained_project(..., model='full_human')",
-    deprecation_round=DeprecationRound.PRETRAINED_PROJECT_MIGRATION,
+    deprecation_round=DeprecationRound.INIT_TF_DEPRECATION,
 )
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
 def create_pretrained_human_project(
