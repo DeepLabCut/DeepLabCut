@@ -17,6 +17,7 @@ import inspect
 import warnings
 from collections.abc import Callable
 from importlib import import_module
+from typing import Any
 
 from deeplabcut.core.deprecation import DLCDeprecationWarning
 from deeplabcut.core.engine import Engine
@@ -78,7 +79,7 @@ def with_tensorflow_fallback(
     renamed_params: dict[str, str] | None = None,
     dropped_params: list[str] | None = None,
     normalize_gputouse: bool = False,
-    when: Callable[..., bool] | None = None,
+    when: Callable[[dict[str, Any]], bool] | None = None,
     tensorflow_module: str | None = None,
 ) -> Callable:
     """Decorator for wrapping canonical PyTorch API functions, routing to a fallback TF function if required.
@@ -105,9 +106,11 @@ def with_tensorflow_fallback(
             with the additional normalization of legacy formats (``int``, ``"gpu:0"``) to ``"cuda:X"``.
             Note: applied **only on the PyTorch path**. When ``True``, setting ``gputouse`` in ``dropped_params`` is
             redundant (``normalize_gputouse`` always renames ``gputouse`` to ``device`` first).
-        when (Callable | None): A callable ``(*args, **kwargs) -> bool`` that determines whether to route to the
-            TensorFlow fallback.  When ``None`` (the default), the engine is resolved from shuffle metadata via
-            ``_resolve_engine``.  Supply a custom callable for engine-less routing (e.g. modelzoo functions).
+        when (Callable[[dict[str, Any]], bool] | None): A callable ``(kwargs: dict[str, Any]) -> bool`` that
+            determines whether to route to the TensorFlow fallback. It receives the bound keyword arguments of the
+            wrapped function (positionals mapped to their parameter names). When ``None`` (the default), the engine is
+            resolved from shuffle metadata via ``_resolve_engine``. Supply a custom callable for engine-less routing
+            (e.g. modelzoo functions).
         tensorflow_module (str | None): Override the module from which to import the TF fallback function. Defaults to
             ``"deeplabcut.tensorflow_compat"``.
 
