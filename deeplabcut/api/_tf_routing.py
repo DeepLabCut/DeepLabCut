@@ -161,6 +161,12 @@ def with_tensorflow_fallback(
         tf_name = tensorflow_name or fn.__name__
         sig = inspect.signature(fn)
 
+        # ``engine`` is a routing-only parameter that is consumed by this router
+        # it MUST be keyword-only to prevent leaking it to the delegate functions
+        engine_param = sig.parameters.get("engine")
+        if engine_param is not None and engine_param.kind is not inspect.Parameter.KEYWORD_ONLY:
+            raise TypeError(f"{fn.__qualname__}: 'engine' must be a keyword-only parameter")
+
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
             # Acquire all arguments as keyword arguments with canonical names for the TF routing decision
@@ -174,7 +180,6 @@ def with_tensorflow_fallback(
                 # Default: engine-based routing (from shuffle / config)
                 route_to_tf = _resolve_engine(unified) == Engine.TF
 
-            unified.pop("engine", None)
             kwargs.pop("engine", None)
 
             if route_to_tf:

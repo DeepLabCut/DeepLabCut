@@ -438,6 +438,14 @@ def test_with_tensorflow_fallback_strips_engine_before_calling_impl():
     tf_impl.assert_called_once_with("cfg.yaml")
 
 
+def test_with_tensorflow_fallback_rejects_positional_engine_parameter():
+    with pytest.raises(TypeError, match="must be a keyword-only parameter"):
+
+        @tf_routing.with_tensorflow_fallback
+        def canonical_fn(config: str, engine: Engine = Engine.PYTORCH):
+            return "pytorch"
+
+
 # ---------------------------------------------------------------------------
 # with_tensorflow_fallback — custom `when` predicate
 # ---------------------------------------------------------------------------
