@@ -15,11 +15,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 
 
 def find_outliers_in_raw_data(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     pickle_file: str | Path,
     video_file: str | Path,
     pcutoff=0.1,
@@ -32,7 +33,7 @@ def find_outliers_in_raw_data(
     animals.
 
     Args:
-        config (str | Path): Absolute path to the project config.yaml.
+        config (ProjectConfig | dict | Path | str): Absolute path to the project config.yaml.
         pickle_file (str | Path): Path to a *_full.pickle or *_assemblies.pickle.
         video_file (str | Path): Path to the corresponding video file for frame extraction.
         pcutoff (float, optional): Detection confidence threshold below which frames are
@@ -68,7 +69,7 @@ def find_outliers_in_raw_data(
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def extract_outlier_frames(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
@@ -102,7 +103,7 @@ def extract_outlier_frames(
     ``numframes2extract``.
 
     Args:
-        config (str | Path): Full path of the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file.
         videos (list[str | Path]): The full paths to videos for analysis or a path to the
             directory, where all the videos with same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -262,7 +263,7 @@ def extract_outlier_frames(
     )
 
 
-def merge_datasets(config: str | Path, forceiterate=None):
+def merge_datasets(config: ProjectConfig | dict | Path | str, forceiterate=None):
     """Merge the original training dataset with the newly refined data.
 
     Checks if the original training dataset can be merged with the newly refined
@@ -272,7 +273,7 @@ def merge_datasets(config: str | Path, forceiterate=None):
     If this is the case then the ``"iteration"`` variable is advanced by 1.
 
     Args:
-        config (str | Path): Full path of the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file.
         forceiterate (int or None, optional): If an integer is given the iteration
             variable is set to this value. This is only done if all datasets were
             labeled or refined. Defaults to None.
@@ -289,8 +290,9 @@ def merge_datasets(config: str | Path, forceiterate=None):
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="config_path", new="config", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def stitch_tracklets(
-    config_path: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
@@ -314,7 +316,7 @@ def stitch_tracklets(
     optimization problem.
 
     Args:
-        config_path (str | Path): Path to the main project config.yaml file.
+        config (ProjectConfig | dict | Path | str): Path to the main project config.yaml file.
         videos (list[str | Path]): Full paths to videos for analysis, or a directory where all videos
             with the same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -384,7 +386,7 @@ def stitch_tracklets(
     from deeplabcut.refine_training_dataset.stitch import stitch_tracklets as _stitch_tracklets
 
     return _stitch_tracklets(
-        config_path=config_path,
+        config=config,
         videos=videos,
         video_extensions=video_extensions,
         shuffle=shuffle,

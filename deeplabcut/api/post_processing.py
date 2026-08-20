@@ -15,12 +15,13 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def analyzeskeleton(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
@@ -38,7 +39,7 @@ def analyzeskeleton(
     The bone and skeleton information is defined in the config file.
 
     Args:
-        config (str | Path): Full path of the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file.
         videos (list[str | Path]): The full paths to videos for analysis or a path to the
             directory, where all the videos with same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -102,7 +103,7 @@ def analyzeskeleton(
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def filterpredictions(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     video: str | Path,
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
@@ -126,7 +127,7 @@ def filterpredictions(
     filter (default).
 
     Args:
-        config (str | Path): Full path of the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file.
         video (str | Path): Full path of the video to filter. Make sure that this video is
             already analyzed.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are

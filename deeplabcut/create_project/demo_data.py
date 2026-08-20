@@ -13,12 +13,13 @@ import os
 from pathlib import Path
 
 import deeplabcut
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 
 
 def load_demo_data(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     createtrainingset: bool = True,
     engine: Engine = Engine.PYTORCH,
 ):
@@ -26,7 +27,7 @@ def load_demo_data(
     When loading, it sets paths correctly to run this project on your system.
 
     Args:
-        config (str | Path): Full path of the config.yaml file of the provided demo
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file of the provided demo
             dataset.
         createtrainingset (bool): Boolean variable indicating if a training set shall be
             created.

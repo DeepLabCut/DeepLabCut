@@ -16,6 +16,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, auxiliaryfunctions_3d
 
@@ -24,7 +25,7 @@ from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, auxiliaryfu
 # other API (i.e. videotype: str -> video_extensions: str | Sequence[str] | None)
 # this requires updating get_camerawise_videos (matching `collect_video_paths`)
 def triangulate(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     video_path: str | Path | list[str | Path] | list[list[str | Path]],
     videotype="",
     filterpredictions=True,
@@ -39,7 +40,7 @@ def triangulate(
     Uses camera matrices from calibration.
 
     Args:
-        config (string): Full path of the config.yaml file as a string.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file as a string.
         video_path (string/list of list): Directory where videos are saved, or a list of video pairs,
             e.g. [['video1-camera-1.avi', 'video1-camera-2.avi']].
         videotype (string, optional): When ``video_path`` is a directory, only videos with this extension

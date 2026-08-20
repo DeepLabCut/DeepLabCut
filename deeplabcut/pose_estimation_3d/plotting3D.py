@@ -21,6 +21,7 @@ from matplotlib.collections import LineCollection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from tqdm import tqdm
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.utils import (
     auxiliaryfunctions,
     auxiliaryfunctions_3d,
@@ -56,7 +57,7 @@ def set_up_grid(figsize, xlim, ylim, zlim, view):
 # other API (i.e. videotype: str -> video_extensions: str | Sequence[str] | None)
 # this requires updating Get_list_of_triangulated_and_videoFiles.
 def create_labeled_video_3d(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     path: str | Path,
     videofolder=None,
     start=0,
@@ -76,7 +77,7 @@ def create_labeled_video_3d(
     """Create a video with two camera views and 3D reconstruction for selected frames.
 
     Args:
-        config (string): Full path of the config.yaml file as a string.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file as a string.
         path (list): Full paths to triangulated files for analysis, or a directory containing them.
         videofolder (string): Full path of the folder where videos are stored.
             Use when videos are not co-located with triangulation files.
