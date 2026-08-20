@@ -70,9 +70,9 @@ def test_positionals_as_kwargs_duplicate_kwarg():
 
 
 def test_positionals_as_kwargs_var_positional_allows_extra():
-    sig = inspect.signature(lambda a, *args: None)
+    sig = inspect.signature(lambda a, *varargs: None)
     result = tf_routing._positionals_as_kwargs(sig, (1, 2, 3), {})
-    assert result == {"a": 1}
+    assert result == {"a": 1, "varargs": (2, 3)}
 
 
 # ---------------------------------------------------------------------------
@@ -503,7 +503,7 @@ def test_with_tensorflow_fallback_when_receives_args_and_kwargs():
     ):
         canonical_fn("arg1", "arg2", force_tf=True, extra="val")
 
-    assert captured_params == {"force_tf": True, "extra": "val"}
+    assert captured_params == {"args": ("arg1", "arg2"), "force_tf": True, "extra": "val"}
     tf_impl.assert_called_once()
 
 
