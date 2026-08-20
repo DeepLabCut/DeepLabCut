@@ -34,6 +34,7 @@ from deeplabcut.core.engine import Engine
         ("cuda:0", "cuda:0"),
         ("gpu:1", "cuda:1"),
         ("cpu", "cpu"),
+        (None, None),
     ],
 )
 def test_normalize_gputouse(gputouse, expected):
