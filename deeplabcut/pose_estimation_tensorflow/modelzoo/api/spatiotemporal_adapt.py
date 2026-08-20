@@ -26,7 +26,7 @@ from deeplabcut.utils.plotting import _plot_trajectories
 
 class SpatiotemporalAdaptation:
     @renamed_parameter(
-        old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY
+        old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING
     )
     def __init__(
         self,

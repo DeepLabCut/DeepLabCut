@@ -66,7 +66,7 @@ def find_outliers_in_raw_data(
     )
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def extract_outlier_frames(
     config: str | Path,
     videos: list[str | Path],
@@ -288,7 +288,7 @@ def merge_datasets(config: str | Path, forceiterate=None):
     return _merge_datasets(config=config, forceiterate=forceiterate)
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def stitch_tracklets(
     config_path: str | Path,
     videos: list[str | Path],

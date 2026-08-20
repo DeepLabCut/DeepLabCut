@@ -169,7 +169,7 @@ def PlottingResults(
 ##################################################
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def plot_trajectories(
     config: str | Path,
     videos: list[str | Path],

@@ -50,7 +50,7 @@ def get_checkpoint_epoch(checkpoint_path):
         return 0
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def _video_inference_superanimal_pytorch(
     videos: str | list,
     superanimal_name: str,

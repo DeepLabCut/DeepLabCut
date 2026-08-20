@@ -180,7 +180,7 @@ def _read_video_specific_cropping_margins(config: str | Path | dict, video_path:
     return x1, y1
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def extract_outlier_frames(
     config: str | Path,
     videos: list[str | Path],

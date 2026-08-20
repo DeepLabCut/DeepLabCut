@@ -128,7 +128,7 @@ def extract_features_for_video(
     shelf_writer.close()
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def create_tracking_dataset(
     config: str | Path,
     videos: list[str] | list[Path],
