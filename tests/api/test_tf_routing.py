@@ -329,6 +329,18 @@ def test_with_tensorflow_fallback_routes_to_pytorch_fn():
     pytorch_fn.assert_called_once_with("cfg.yaml", shuffle=1, batch_size=8)
 
 
+def test_with_tensorflow_fallback_raises_when_both_old_and_new_given():
+    @tf_routing.with_tensorflow_fallback(renamed_params={"batchsize": "batch_size"})
+    def canonical_fn(*args, **kwargs):
+        return "pytorch"
+
+    with (
+        patch("deeplabcut.api._tf_routing._resolve_engine", return_value=Engine.PYTORCH),
+        pytest.raises(TypeError, match="Cannot specify both 'batchsize'"),
+    ):
+        canonical_fn("cfg.yaml", batchsize=8, batch_size=4)
+
+
 def test_with_tensorflow_fallback_routes_to_tensorflow_impl():
     tf_impl = MagicMock(return_value="tensorflow")
 

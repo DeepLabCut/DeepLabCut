@@ -136,7 +136,9 @@ def with_tensorflow_fallback(
 
             # Normalize renamed params in unified so routing sees canonical names
             for old, new in (renamed_params or {}).items():
-                if old in unified and new not in unified:
+                if old in unified:
+                    if new in unified:
+                        raise TypeError(f"Cannot specify both '{old}' (deprecated) and '{new}'. Use '{new}' only.")
                     unified[new] = unified.pop(old)
 
             if when is not None:
