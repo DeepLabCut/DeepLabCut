@@ -246,10 +246,10 @@ def _resolve_engine(unified_kwargs: dict) -> Engine:
     return engines.pop()
 
 
-def _normalize_gputouse(gputouse: str | int) -> str:
+def _normalize_gputouse(gputouse: str | int | None) -> str | None:
     if isinstance(gputouse, int):
         return f"cuda:{gputouse}"
-    if gputouse.startswith("cuda:"):
+    if gputouse is None or gputouse.startswith("cuda:"):
         return gputouse
     if gputouse.startswith("gpu:"):
         return gputouse.replace("gpu:", "cuda:")
