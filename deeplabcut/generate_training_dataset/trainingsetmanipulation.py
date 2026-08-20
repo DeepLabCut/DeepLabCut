@@ -917,7 +917,7 @@ def create_training_dataset(
         engine (Engine, optional): Whether to create a pose config for a Tensorflow or
             PyTorch model. Defaults to the value specified in the project configuration
             file. If no engine is specified for the project, defaults to
-            ``deeplabcut.core.DEFAULT_ENGINE``.
+            ``deeplabcut.core.engine.DEFAULT_ENGINE``.
 
         ctd_conditions (int | str | Path | tuple[int, str] | tuple[int, int] | None,
             optional): If using a conditional-top-down (CTD) net_type, this argument
