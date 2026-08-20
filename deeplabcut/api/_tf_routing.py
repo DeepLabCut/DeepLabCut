@@ -206,14 +206,14 @@ def with_tensorflow_fallback(
     return decorator
 
 
-def _shuffles_from_kwargs(kwargs: dict) -> list | tuple:
+def _shuffles_from_kwargs(kwargs: dict) -> list:
     """Return shuffle indices from kwargs, accepting legacy ``Shuffles``."""
     if "shuffles" in kwargs and "Shuffles" in kwargs:
         raise TypeError("Cannot specify both 'Shuffles' (deprecated) and 'shuffles'. Use 'shuffles' only.")
     if "shuffles" in kwargs:
-        return kwargs["shuffles"]
+        return list(kwargs["shuffles"])
     if "Shuffles" in kwargs:
-        return kwargs["Shuffles"]
+        return list(kwargs["Shuffles"])
     return [kwargs.get("shuffle", 1)]
 
 

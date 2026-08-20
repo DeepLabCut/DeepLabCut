@@ -280,6 +280,12 @@ def test_resolve_engine_rejects_both_shuffles_and_shuffles():
         tf_routing._resolve_engine({"config": "cfg.yaml", "shuffles": [1], "Shuffles": [2]})
 
 
+@pytest.mark.parametrize("shuffles", [[], (s for s in [])])
+def test_resolve_engine_raises_on_emplty_shuffles(shuffles):
+    with pytest.raises(ValueError, match="must contain at least one index"):
+        tf_routing._resolve_engine({"config": "cfg.yaml", "shuffles": shuffles})
+
+
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine")
 @patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 def test_resolve_engine_raises_when_shuffles_have_different_engines(mock_read_config, mock_get_shuffle_engine):
