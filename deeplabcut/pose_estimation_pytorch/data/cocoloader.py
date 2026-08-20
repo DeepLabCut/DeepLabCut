@@ -46,7 +46,7 @@ class COCOLoader(Loader):
     """
 
     @renamed_parameter(
-        old="model_config_path", new="model_config", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY
+        old="model_config_path", new="model_config", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING
     )
     def __init__(
         self,

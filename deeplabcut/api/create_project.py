@@ -26,7 +26,7 @@ from deeplabcut.core.engine import Engine
     tensorflow_module="deeplabcut.tensorflow_compat.create_project",
     tensorflow_name="_tf_create_pretrained_project",
 )
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def create_pretrained_project(
     project: str,
     experimenter: str,

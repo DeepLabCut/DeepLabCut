@@ -14,7 +14,7 @@ from collections.abc import Sequence
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def transformer_reID(
     config: str,
     videos: list[str],

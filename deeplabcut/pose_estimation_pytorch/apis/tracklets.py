@@ -34,7 +34,7 @@ from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
 from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def convert_detections2tracklets(
     config: str | Path,
     videos: str | list[str],

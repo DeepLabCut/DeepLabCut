@@ -61,7 +61,7 @@ def columnwise_spline_interp(data, max_gap=0):
     return temp
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def filterpredictions(
     config: str | Path,
     video: str | Path,

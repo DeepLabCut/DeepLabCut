@@ -241,7 +241,7 @@ def video_inference(
     return predictions
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def analyze_videos(
     config: str | Path,
     videos: str | Path | list[str | Path],

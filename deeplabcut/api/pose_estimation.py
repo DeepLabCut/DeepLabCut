@@ -43,7 +43,7 @@ from deeplabcut.core.deprecation import DeprecationRound, deprecated, renamed_pa
     ],
     renamed_params={"keepdeconvweights": "load_head_weights"},
 )
-@renamed_parameter(old="displayiters", new="display_iters", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="displayiters", new="display_iters", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def train_network(
     config: ProjectConfig | dict | Path | str,
     shuffle: int = 1,
@@ -167,9 +167,9 @@ def return_train_network_path(
 
 
 @with_tensorflow_fallback(normalize_gputouse=True, dropped_params=["rescale"])
-@renamed_parameter(old="Shuffles", new="shuffles", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="Shuffles", new="shuffles", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 @renamed_parameter(
-    old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY
+    old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING
 )
 def evaluate_network(
     config: ProjectConfig | dict | Path | str,
@@ -272,9 +272,9 @@ def evaluate_network(
 
 @with_tensorflow_fallback
 @renamed_parameter(
-    old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY
+    old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING
 )
-@renamed_parameter(old="Snapindex", new="snapshotindex", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="Snapindex", new="snapshotindex", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def return_evaluate_network_data(
     config: ProjectConfig | dict | Path | str,
     shuffle: int = 0,
@@ -299,8 +299,8 @@ def return_evaluate_network_data(
         "use_openvino",
     ],
 )
-@renamed_parameter(old="batchsize", new="batch_size", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="batchsize", new="batch_size", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def analyze_videos(
     config: ProjectConfig | dict | Path | str,
     videos: str | list[str],
@@ -452,8 +452,8 @@ def analyze_videos(
 
 
 @with_tensorflow_fallback(normalize_gputouse=True, dropped_params=["TFGPUinference"])
-@renamed_parameter(old="batchsize", new="batch_size", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="batchsize", new="batch_size", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def create_tracking_dataset(
     config: ProjectConfig | dict | Path | str,
     videos: list[str] | list[Path],
@@ -642,7 +642,7 @@ def analyze_time_lapse_frames(
 
 
 @with_tensorflow_fallback(normalize_gputouse=True)
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def convert_detections2tracklets(
     config: ProjectConfig | dict | Path | str,
     videos: str | list[str],
@@ -848,7 +848,7 @@ def visualize_paf(
 
 @with_tensorflow_fallback(normalize_gputouse=True, renamed_params={"Indices": "indices"})
 @renamed_parameter(
-    old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY
+    old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING
 )
 def extract_save_all_maps(
     config: ProjectConfig | dict | Path | str,

@@ -23,7 +23,7 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.utils.auxfun_videos import VideoReader, collect_video_paths
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def create_new_project(
     project: str,
     experimenter: str,
