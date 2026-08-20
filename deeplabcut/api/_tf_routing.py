@@ -77,26 +77,29 @@ def _apply_parameter_renames(
 def _positionals_as_kwargs(sig: inspect.Signature, args: tuple, kwargs: dict) -> dict:
     """Routing view: kwargs plus positionals mapped to parameter names.
 
+    Excess positionals captured by a variadic ``*args`` parameter are included
+    as a tuple under the variadic parameter's name (e.g. `args`).
+
     Does not validate unknown kwargs — legacy aliases are forwarded downstream
     and handled by ``@renamed_parameter`` / backend-specific logic.
     """
     unified = dict(kwargs)
-    params = [
-        p
-        for p in sig.parameters.values()
-        if p.kind
-        in (
-            inspect.Parameter.POSITIONAL_ONLY,
-            inspect.Parameter.POSITIONAL_OR_KEYWORD,
-        )
-    ]
-    has_var_positional = any(p.kind is inspect.Parameter.VAR_POSITIONAL for p in sig.parameters.values())
-    if len(args) > len(params) and not has_var_positional:
-        raise TypeError(f"too many positional arguments (expected at most {len(params)}, got {len(args)})")
-    for param, value in zip(params, args, strict=False):
+    positional = []
+    var_positional = None
+    for param in sig.parameters.values():
+        if param.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD):
+            positional.append(param)
+        elif param.kind is inspect.Parameter.VAR_POSITIONAL:
+            var_positional = param
+
+    if len(args) > len(positional) and var_positional is None:
+        raise TypeError(f"too many positional arguments (expected at most {len(positional)}, got {len(args)})")
+    for param, value in zip(positional, args, strict=False):
         if param.name in unified:
             raise TypeError(f"got multiple values for argument '{param.name}'")
         unified[param.name] = value
+    if var_positional is not None:
+        unified[var_positional.name] = args[len(positional) :]
     return unified
 
 
