@@ -23,7 +23,7 @@ import pytest
 import deeplabcut
 from deeplabcut.core.deprecation import DLCDeprecationWarning
 
-_PT = "deeplabcut.modelzoo.video_inference.video_inference_superanimal"
+_PT = "deeplabcut.modelzoo.video_inference._video_inference_superanimal_pytorch"
 _GET_TF = "deeplabcut.api._tf_routing._get_tensorflow_impl"
 
 

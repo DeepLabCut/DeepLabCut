@@ -9,15 +9,22 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Sequence
 from pathlib import Path
 
 from deeplabcut.api._tf_routing import with_tensorflow_fallback
 from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
+
+with (get_deeplabcut_path() / "modelzoo" / "models_to_framework.json").open() as _f:
+    _MODELS_TO_FRAMEWORK = json.load(_f)
+
+_TENSORFLOW_MODELS = frozenset(name for name, framework in _MODELS_TO_FRAMEWORK.items() if framework == "tensorflow")
 
 
 @with_tensorflow_fallback(
-    when=lambda params: params.get("model_name") == "dlcrnet",
+    when=lambda params: params.get("model_name") in _TENSORFLOW_MODELS,
     tensorflow_module="deeplabcut.tensorflow_compat.superanimal_inference",
     tensorflow_name="video_inference_superanimal_tf",
 )
@@ -230,7 +237,8 @@ def video_inference_superanimal(
     Examples:
         Using the module import path:
 
-            import deeplabcut.modelzoo.video_inference.video_inference_superanimal as video_inference_superanimal
+            import deeplabcut
+            video_inference_superanimal = deeplabcut.video_inference_superanimal
             video_inference_superanimal(
                 videos=["/mnt/md0/shaokai/DLCdev/3mice_video1_short.mp4"],
                 superanimal_name="superanimal_topviewmouse",
@@ -245,7 +253,7 @@ def video_inference_superanimal(
             )
         Using ``scale_list``:
 
-            from deeplabcut.modelzoo.video_inference import video_inference_superanimal
+            from deeplabcut import video_inference_superanimal
             videos = ["/path/to/my/video.mp4"]
             superanimal_name = "superanimal_topviewmouse"
             video_extensions = "mp4"
@@ -261,7 +269,7 @@ def video_inference_superanimal(
             )
     """
     from deeplabcut.modelzoo.video_inference import (
-        video_inference_superanimal as _video_inference_superanimal,
+        _video_inference_superanimal_pytorch as _video_inference_superanimal,
     )
 
     return _video_inference_superanimal(
