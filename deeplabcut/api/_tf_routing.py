@@ -46,6 +46,34 @@ def warn_deprecated_tensorflow():
     )
 
 
+def _apply_parameter_renames(
+    parameters: dict[str, Any],
+    renames: dict[str, str],
+    *,
+    warn: bool = False,
+    stacklevel: int = 4,
+) -> None:
+    """Rename deprecated keys in ``kwargs`` to their canonical names, in place.
+    Raises a ``TypeError`` when both the deprecated and canonical names are given.
+    Args:
+        parameters: Keyword-argument dict to mutate.
+        renames: Mapping of deprecated names to canonical names.
+        warn: If ``True``, emit a ``DLCDeprecationWarning`` for each rename.
+    """
+    for old, new in renames.items():
+        if old not in parameters:
+            continue
+        if new in parameters:
+            raise TypeError(f"Cannot specify both '{old}' (deprecated) and '{new}'. Use '{new}' only.")
+        parameters[new] = parameters.pop(old)
+        if warn:
+            warnings.warn(
+                f"'{old}' is deprecated; use {new}={parameters[new]!r} instead.",
+                DLCDeprecationWarning,
+                stacklevel=stacklevel,
+            )
+
+
 def _positionals_as_kwargs(sig: inspect.Signature, args: tuple, kwargs: dict) -> dict:
     """Routing view: kwargs plus positionals mapped to parameter names.
 
@@ -132,14 +160,9 @@ def with_tensorflow_fallback(
 
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
+            # Acquire all arguments as keyword arguments with canonical names for the TF routing decision
             unified = _positionals_as_kwargs(sig, args, kwargs)
-
-            # Normalize renamed params in unified so routing sees canonical names
-            for old, new in (renamed_params or {}).items():
-                if old in unified:
-                    if new in unified:
-                        raise TypeError(f"Cannot specify both '{old}' (deprecated) and '{new}'. Use '{new}' only.")
-                    unified[new] = unified.pop(old)
+            _apply_parameter_renames(unified, renames=renamed_params or {})
 
             if when is not None:
                 # Custom condition routing (e.g. modelzoo functions)
@@ -246,16 +269,7 @@ def _resolve_legacy_kwargs(
         effective_renames["gputouse"] = "device"
 
     # Rename deprecated parameters
-    for old, new in effective_renames.items():
-        if old in kwargs:
-            if new in kwargs:
-                raise TypeError(f"Cannot specify both '{old}' (deprecated) and '{new}'. Use '{new}' only.")
-            kwargs[new] = kwargs.pop(old)
-            warnings.warn(
-                f"'{old}' is deprecated; use {new}='{kwargs[new]}' instead.",
-                DLCDeprecationWarning,
-                stacklevel=3,
-            )
+    _apply_parameter_renames(kwargs, renames=effective_renames, warn=True)
 
     # Drop unused parameters
     for key in dropped_params:
