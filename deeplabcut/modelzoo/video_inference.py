@@ -18,7 +18,7 @@ from pathlib import Path
 
 import torch
 
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import deprecated, renamed_parameter
 from deeplabcut.modelzoo.utils import get_super_animal_scorer
 from deeplabcut.pose_estimation_pytorch.config import PoseConfig
 from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train
@@ -51,7 +51,7 @@ def get_checkpoint_epoch(checkpoint_path):
 
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
-def video_inference_superanimal(
+def _video_inference_superanimal_pytorch(
     videos: str | list,
     superanimal_name: str,
     model_name: str,
@@ -82,11 +82,8 @@ def video_inference_superanimal(
 ):
     """This function performs inference on videos using a pretrained SuperAnimal model.
 
-    IMPORTANT: Note that since we have both TensorFlow and PyTorch Engines, we will
-    route the engine based on the model you select:
-
-        * dlcrnet -> TensorFlow
-        * all others - > PyTorch
+    IMPORTANT: This is the PyTorch-only implementation. Prefer the public entry point
+    ``deeplabcut.video_inference_superanimal``.
 
     Args:
         videos (str or list): The path to the video or a list of paths to videos.
@@ -257,7 +254,8 @@ def video_inference_superanimal(
     Examples:
         Using the module import path:
 
-            import deeplabcut.modelzoo.video_inference.video_inference_superanimal as video_inference_superanimal
+            import deeplabcut
+            video_inference_superanimal = deeplabcut.video_inference_superanimal
             video_inference_superanimal(
                 videos=["/mnt/md0/shaokai/DLCdev/3mice_video1_short.mp4"],
                 superanimal_name="superanimal_topviewmouse",
@@ -272,7 +270,7 @@ def video_inference_superanimal(
             )
         Using ``scale_list``:
 
-            from deeplabcut.modelzoo.video_inference import video_inference_superanimal
+            from deeplabcut import video_inference_superanimal
             videos = ["/path/to/my/video.mp4"]
             superanimal_name = "superanimal_topviewmouse"
             video_extensions = "mp4"
@@ -564,3 +562,14 @@ def video_inference_superanimal(
         create_labeled_video=create_labeled_video,
         torchvision_detector_name=torchvision_detector_name,
     )
+
+
+# TODO @deruyter92 2026-08-20: Deprecation marker needs to be updated to the correct version and PR.
+@deprecated(since="9.9.9", replacement="deeplabcut.video_inference_superanimal")
+def video_inference_superanimal(*args, **kwargs):
+    """Deprecated alias for ``deeplabcut.video_inference_superanimal``.
+    Public API is moved to ``deeplabcut.api.modelzoo_inference`` + exported at the top level.
+    """
+    from deeplabcut.api.modelzoo_inference import video_inference_superanimal as _public_api
+
+    return _public_api(*args, **kwargs)
