@@ -26,8 +26,8 @@ from deeplabcut.core.deprecation import (
 )
 
 # Real rounds used by the tests below, so the suite exercises shipped data rather than
-# fixtures. IMAGE_ANALYSIS_MIGRATION is the only round with a scheduled removal.
-ROUND_WITH_REMOVAL = DeprecationRound.IMAGE_ANALYSIS_MIGRATION
+# fixtures. INIT_TF_DEPRECATION is the only round with a scheduled removal.
+ROUND_WITH_REMOVAL = DeprecationRound.INIT_TF_DEPRECATION
 ROUND_WITHOUT_REMOVAL = DeprecationRound.PARAMETER_CONSISTENCY
 
 # ---------------------------------------------------------------------------

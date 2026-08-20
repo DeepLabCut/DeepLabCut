@@ -85,12 +85,6 @@ class DeprecationRound(Enum):
         summary="Migrate get_list_of_videos and friends to deeplabcut.collect_video_paths",
     )
 
-    PRETRAINED_PROJECT_MIGRATION = DeprecationRoundInfo(
-        since="3.0.0",
-        pull_request=3382,
-        summary='create_pretrained_human_project -> create_pretrained_project(model="full_human")',
-    )
-
     PATHLIB_MIGRATION = DeprecationRoundInfo(
         since="3.0.1",
         pull_request=3421,
@@ -103,11 +97,15 @@ class DeprecationRound(Enum):
         summary="Migrate raw config dicts and their helpers to validated config models",
     )
 
-    IMAGE_ANALYSIS_MIGRATION = DeprecationRoundInfo(
+    INIT_TF_DEPRECATION = DeprecationRoundInfo(
         since="3.0.2",
         removed_in="3.1",
         pull_request=3382,
-        summary="analyze_time_lapse_frames -> analyze_images (TF-only)",
+        summary=(
+            "Deprecate the TensorFlow-only API in preparation for dropping TensorFlow. "
+            "e.g. create_pretrained_human_project -> create_pretrained_project(model='full_human'), "
+            "analyze_time_lapse_frames -> analyze_images"
+        ),
     )
 
 

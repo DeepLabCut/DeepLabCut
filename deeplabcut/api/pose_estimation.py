@@ -604,7 +604,7 @@ def analyze_images(
     )
 
 
-@deprecated(replacement="deeplabcut.analyze_images", deprecation_round=DeprecationRound.IMAGE_ANALYSIS_MIGRATION)
+@deprecated(replacement="deeplabcut.analyze_images", deprecation_round=DeprecationRound.INIT_TF_DEPRECATION)
 @with_tensorflow_fallback(normalize_gputouse=True, dropped_params=["frametype"])
 def analyze_time_lapse_frames(
     config: ProjectConfig | dict | Path | str,
