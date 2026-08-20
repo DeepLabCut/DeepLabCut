@@ -173,7 +173,7 @@ def analyzebone(bp1, bp2):
 
 
 # MAIN FUNC
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def analyzeskeleton(
     config: str | Path,
     videos: list[str | Path],

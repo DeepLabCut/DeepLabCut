@@ -390,7 +390,7 @@ def CreateVideoSlow(
     plt.switch_backend(prev_backend)
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def create_labeled_video(
     config: str | Path,
     videos: list[str | Path],
@@ -1069,7 +1069,7 @@ def create_video_with_keypoints_only(
     plt.switch_backend(prev_backend)
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def create_video_with_all_detections(
     config: str | Path,
     videos: list[str | Path],

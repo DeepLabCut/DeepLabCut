@@ -69,7 +69,7 @@ class DeprecationRoundInfo(BaseModel):
 class DeprecationRound(Enum):
     """Collection of all deprecation rounds used in the deprecation markers - single source of truth."""
 
-    PARAMETER_CONSISTENCY = DeprecationRoundInfo(
+    INIT_PARAMETER_ALIASING = DeprecationRoundInfo(
         since="3.0.0",
         pull_request=3332,
         summary=(

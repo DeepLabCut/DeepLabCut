@@ -66,7 +66,7 @@ def split_train_test(npy_list, train_frac):
     return train_list, test_list
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def train_tracking_transformer(
     path_config_file,
     dlcscorer,

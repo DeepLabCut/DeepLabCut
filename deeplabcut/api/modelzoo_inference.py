@@ -28,7 +28,7 @@ _TENSORFLOW_MODELS = frozenset(name for name, framework in _MODELS_TO_FRAMEWORK.
     tensorflow_module="deeplabcut.tensorflow_compat.superanimal_inference",
     tensorflow_name="video_inference_superanimal_tf",
 )
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def video_inference_superanimal(
     videos: str | list,
     superanimal_name: str,

@@ -48,7 +48,7 @@ Modeloptions = MODELOPTIONS
     replacement="deeplabcut.create_pretrained_project(..., model='full_human')",
     deprecation_round=DeprecationRound.INIT_TF_DEPRECATION,
 )
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def create_pretrained_human_project(
     project,
     experimenter,
@@ -77,7 +77,7 @@ def create_pretrained_human_project(
     )
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def create_pretrained_project(
     project: str,
     experimenter: str,

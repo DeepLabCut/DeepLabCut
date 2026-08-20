@@ -241,7 +241,7 @@ def _video_inference(
     return PredicteData, nframes
 
 
-@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_CONSISTENCY)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def video_inference(
     videos,
     project_name,
