@@ -13,13 +13,14 @@ import os
 import shutil
 from pathlib import Path
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.generate_training_dataset import frame_extraction
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 def add_new_videos(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     copy_videos=False,
     coords=None,
@@ -28,7 +29,7 @@ def add_new_videos(
     """Add new videos to the config file at any stage of the project.
 
     Args:
-        config (string): String containing the full path of the config file in the project.
+        config (ProjectConfig | dict | Path | str): String containing the full path of the config file in the project.
         videos (list): A list of strings containing the full paths of the videos to include in the project.
         copy_videos (bool, optional): If True, the videos will be copied to your
             project/videos directory. If False, symlinks of the videos are copied

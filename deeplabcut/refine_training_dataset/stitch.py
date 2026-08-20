@@ -959,8 +959,9 @@ class TrackletStitcher:
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="config_path", new="config", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def stitch_tracklets(
-    config_path: str | Path,
+    config: str | Path,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
@@ -984,7 +985,7 @@ def stitch_tracklets(
     optimization problem.
 
     Args:
-        config_path (str | Path): Path to the main project config.yaml file.
+        config (str | Path): Path to the main project config.yaml file.
         videos (list[str | Path]): Full paths to videos for analysis, or a directory where all videos
             with the same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -1056,7 +1057,7 @@ def stitch_tracklets(
         print("No video(s) found. Please check your path!")
         return
 
-    cfg = auxiliaryfunctions.read_config(config_path)
+    cfg = auxiliaryfunctions.read_config(config)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
     if track_method == "ctd":
         raise ValueError(

@@ -18,13 +18,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
 
 matplotlib_axes_logger.setLevel("ERROR")
 
 
 def calibrate_cameras(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     cbrow=8,
     cbcol=6,
     calibrate=False,
@@ -47,7 +48,7 @@ def calibrate_cameras(
     use the parameter ``calibrate=True`` to calibrate the cameras.
 
     Args:
-        config (str | Path): Full path of the config.yaml file as a string.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file as a string.
         cbrow (int): Integer specifying the number of rows in the calibration image.
         cbcol (int): Integer specifying the number of columns in the calibration image.
         calibrate (bool): If True, calibrate cameras with the current calibration images.
@@ -263,13 +264,13 @@ def calibrate_cameras(
         )
 
 
-def check_undistortion(config: str | Path, cbrow=8, cbcol=6, plot=True):
+def check_undistortion(config: ProjectConfig | dict | Path | str, cbrow=8, cbcol=6, plot=True):
     """Undistort calibration images and store them for visual inspection.
 
     Uses camera matrices from calibration to verify they are correct.
 
     Args:
-        config (str | Path): Full path of the config.yaml file as a string.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file as a string.
         cbrow (int): Number of rows in the calibration image.
         cbcol (int): Number of columns in the calibration image.
         plot (bool, optional): If True, save undistortion results as plots. Defaults to True.
