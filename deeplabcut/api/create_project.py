@@ -32,6 +32,7 @@ def create_pretrained_project(
     experimenter: str,
     videos: list[str],
     model: str | None = None,
+    *,
     working_directory: str | None = None,
     copy_videos: bool = False,
     video_extensions: str | Sequence[str] | None = None,
