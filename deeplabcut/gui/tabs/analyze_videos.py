@@ -400,8 +400,8 @@ class AnalyzeVideos(DefaultTab):
                 video=videos,
                 video_extensions=videotype,
                 shuffle=options.shuffle,
-                filtertype="median",
-                windowlength=5,
+                filter_type="median",
+                window_length=5,
                 save_as_csv=options.save_as_csv,
                 track_method=options.track_method,
             )

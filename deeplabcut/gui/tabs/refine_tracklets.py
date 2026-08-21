@@ -218,8 +218,8 @@ class RefineTracklets(DefaultTab):
             self.files,
             video_extensions=videotype,
             shuffle=self.shuffle.value(),
-            filtertype=self.filter_type_widget.currentText(),
-            windowlength=self.window_length_widget.value(),
+            filter_type=self.filter_type_widget.currentText(),
+            window_length=self.window_length_widget.value(),
             save_as_csv=True,
         )
 
@@ -234,7 +234,7 @@ class RefineTracklets(DefaultTab):
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         result = msg.exec_()
         if result == QtWidgets.QMessageBox.Yes:
-            deeplabcut.merge_datasets(self.root.config_path, forceiterate=None)
+            deeplabcut.merge_datasets(self.root.config_path, force_iterate=None)
             self.viz.export_to_training_data()
 
     def refine_tracks(self):

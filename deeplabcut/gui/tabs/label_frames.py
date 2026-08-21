@@ -135,7 +135,7 @@ class LabelFrames(DefaultTab):
             _ = launch_napari(folder)
 
     def check_labels(self):
-        check_labels(self.root.config_path, visualizeindividuals=self.root.is_multianimal)
+        check_labels(self.root.config_path, visualize_individuals=self.root.is_multianimal)
         labeled_images = (Path(self.root.config_path).parent / "labeled-data").rglob("*_labeled/*.png")
         _ = launch_napari(labeled_images, plugin="napari", stack=True)
 
