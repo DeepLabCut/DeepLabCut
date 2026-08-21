@@ -37,6 +37,7 @@ dependencies = [
   "h5py>=3.15.1; platform_system=='Darwin'",
   "huggingface-hub>=0.23",
   "imageio-ffmpeg",
+  "lazy-loader>=0.4",
   "matplotlib>=3.3,<3.9,!=3.7,!=3.7.1",
   "networkx>=2.6",
   "numba>=0.54",
@@ -173,7 +174,7 @@ gui-dev = [
 [tool.setuptools]
 include-package-data = false
 [tool.setuptools.package-data]
-"*" = [ "*.yaml", "*.yml", "*.json", "*.qss", "*.png", "*.md", "*.sh" ]
+"*" = [ "*.yaml", "*.yml", "*.json", "*.qss", "*.png", "*.md", "*.sh", "*.pyi", "py.typed" ]
 [tool.setuptools.packages.find]
 include = [ "deeplabcut*" ]
 exclude = [ "tests*", "docs*", "examples*" ]
@@ -219,6 +220,7 @@ ignore = [ "E741", "B007" ]
 "deeplabcut/pose_estimation_tensorflow/lib/inferenceutils.py" = [ "F403" ]
 "deeplabcut/pose_estimation_tensorflow/lib/trackingutils.py" = [ "F403" ]
 "*.ipynb" = [ "E402" ]
+"tests/typing/top_level_api.py" = [ "F821" ]
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
