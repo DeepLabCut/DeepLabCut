@@ -49,6 +49,10 @@ Modeloptions = MODELOPTIONS
     deprecation_round=DeprecationRound.INIT_TF_DEPRECATION,
 )
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(
+    old="createlabeledvideo", new="create_labeled_video", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(old="analyzevideo", new="analyze_video", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def create_pretrained_human_project(
     project,
     experimenter,
@@ -56,8 +60,8 @@ def create_pretrained_human_project(
     working_directory=None,
     copy_videos=False,
     video_extensions: str | Sequence[str] | None = None,
-    createlabeledvideo=True,
-    analyzevideo=True,
+    create_labeled_video=True,
+    analyze_video=True,
 ):
     """Creates a demo human project and analyzes a video with ResNet 101 weights pretrained on
     MPII Human Pose. This is from the DeeperCut paper by Insafutdinov et al. https://arxiv.org/abs/1605.03170
@@ -71,13 +75,18 @@ def create_pretrained_human_project(
         working_directory=working_directory,
         copy_videos=copy_videos,
         video_extensions=video_extensions,
-        createlabeledvideo=createlabeledvideo,
-        analyzevideo=analyzevideo,
+        create_labeled_video=create_labeled_video,
+        analyze_video=analyze_video,
         engine=Engine.TF,
     )
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="analyzevideo", new="analyze_video", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="createlabeledvideo", new="create_labeled_video", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(old="trainFraction", new="train_fraction", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def create_pretrained_project(
     project: str,
     experimenter: str,
@@ -86,10 +95,10 @@ def create_pretrained_project(
     working_directory: str | None = None,
     copy_videos: bool = False,
     video_extensions: str | Sequence[str] | None = None,
-    analyzevideo: bool = True,
+    analyze_video: bool = True,
     filtered: bool = True,
-    createlabeledvideo: bool = True,
-    trainFraction: float | None = None,
+    create_labeled_video: bool = True,
+    train_fraction: float | None = None,
     multi_animal: bool = False,
     individuals: list[str] | None = None,
     net_name: str | None = None,
@@ -119,15 +128,15 @@ def create_pretrained_project(
             Note: on Windows, True is necessary when not running in Administrator mode.
             The same applies whenever symlinks are disabled or unsupported.
             Defaults to False.
-        analyzevideo (bool, optional): If true, then the video is analyzed and a labeled
+        analyze_video (bool, optional): If true, then the video is analyzed and a labeled
             video is created. If false, then only the project will be created and the
             weights downloaded.
         filtered (bool, optional): Indicates if filtered pose data output should be
             plotted rather than frame-by-frame predictions. Filtered version can be
             calculated with deeplabcut.filterpredictions(). Defaults to True.
-        createlabeledvideo (bool, optional): Specifies if a labeled video needs to be
+        create_labeled_video (bool, optional): Specifies if a labeled video needs to be
             created. Defaults to True.
-        trainFraction (float | None, optional): Fraction that will be used in
+        train_fraction (float | None, optional): Fraction that will be used in
             dlc-model/trainingset folder name. If None - default value (0.95) from new
             projects will be used. Defaults to None.
         multi_animal (bool, optional): Specifies if the project is single or
@@ -175,10 +184,10 @@ def create_pretrained_project(
         working_directory=working_directory,
         copy_videos=copy_videos,
         video_extensions=video_extensions,
-        analyze_video=analyzevideo,
+        analyze_video=analyze_video,
         filtered=filtered,
-        create_labeled_video=createlabeledvideo,
-        train_fraction=trainFraction,
+        create_labeled_video=create_labeled_video,
+        train_fraction=train_fraction,
         multi_animal=multi_animal,
         individuals=individuals,
         net_name=net_name,

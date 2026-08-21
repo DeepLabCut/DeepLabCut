@@ -44,7 +44,7 @@ def convert_detections2tracklets(
     overwrite: bool = False,
     destfolder: str | Path | None = None,
     ignore_bodyparts: list[str] | None = None,
-    inferencecfg: dict | None = None,
+    inference_cfg: dict | None = None,
     modelprefix="",
     greedy: bool = False,  # TODO(niels): implement greedy assembly during video analysis
     calibrate: bool = False,  # TODO(niels): implement assembly calibration during video analysis
@@ -56,7 +56,6 @@ def convert_detections2tracklets(
 ):
     """TODO: Documentation, clean & remove code duplication (with analyze video)"""
     cfg = auxiliaryfunctions.read_config(config)
-    inference_cfg = inferencecfg
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":

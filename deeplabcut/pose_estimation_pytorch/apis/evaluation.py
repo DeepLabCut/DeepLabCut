@@ -656,7 +656,7 @@ def evaluate_network(
     config: str | Path,
     shuffles: Iterable[int] = (1,),
     trainingsetindex: int | str = 0,
-    snapshotindex: int | str | None = None,
+    snapshot_index: int | str | None = None,
     device: str | None = None,
     plotting: bool | str = False,
     show_errors: bool = True,
@@ -678,14 +678,14 @@ def evaluate_network(
         shuffles: Iterable of integers specifying the shuffle indices to evaluate.
         trainingsetindex: Integer specifying which training set fraction to use.
             Evaluates all fractions if set to "all"
-        snapshotindex: index (starting at 0) of the snapshot we want to load. To
+        snapshot_index: index (starting at 0) of the snapshot we want to load. To
             evaluate the last one, use -1. To evaluate all snapshots, use "all". For
             example if we have 3 models saved
                 - snapshot-0.pt
                 - snapshot-50.pt
                 - snapshot-100.pt
-            and we want to evaluate snapshot-50.pt, snapshotindex should be 1. If None,
-            the snapshotindex is loaded from the project configuration.
+            and we want to evaluate snapshot-50.pt, snapshot_index should be 1. If None,
+            the snapshot_index is loaded from the project configuration.
         device: the device to run evaluation on
         plotting: Plots the predictions on the train and test images. If provided it must
             be either ``True``, ``False``, ``"bodypart"``, or ``"individual"``. Setting
@@ -694,7 +694,7 @@ def evaluate_network(
         transform: transformation pipeline for evaluation
             ** Should normalise the data the same way it was normalised during training **
         snapshots_to_evaluate: List of snapshot names to evaluate (e.g. ["snapshot-50",
-            "snapshot-75"]). If defined, `snapshotindex` will be ignored.
+            "snapshot-75"]). If defined, `snapshot_index` will be ignored.
         comparison_bodyparts: A subset of the bodyparts for which to compute the
             evaluation metrics.
         per_keypoint_evaluation: Compute the train and test RMSE for each keypoint, and
@@ -744,8 +744,8 @@ def evaluate_network(
     else:
         raise ValueError(f"Invalid trainingsetindex: {trainingsetindex}")
 
-    if snapshotindex is None:
-        snapshotindex = cfg["snapshotindex"]
+    if snapshot_index is None:
+        snapshot_index = cfg["snapshotindex"]
 
     if detector_snapshot_index is None:
         detector_snapshot_index = cfg["detector_snapshotindex"]
@@ -765,7 +765,7 @@ def evaluate_network(
             loader.model_cfg["device"] = utils.resolve_device(loader.model_cfg)
 
             snapshots = get_model_snapshots(
-                snapshotindex,
+                snapshot_index,
                 model_folder=loader.model_folder,
                 task=loader.pose_task,
                 snapshot_filter=snapshots_to_evaluate,
@@ -999,14 +999,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str)
     parser.add_argument("--modelprefix", type=str, default="")
-    parser.add_argument("--snapshotindex", type=int, default=49)
+    parser.add_argument("--snapshot_index", type=int, default=49)
     parser.add_argument("--plotting", type=bool, default=False)
     parser.add_argument("--show_errors", type=bool, default=True)
     args = parser.parse_args()
     evaluate_network(
         config=args.config,
         modelprefix=args.modelprefix,
-        snapshotindex=args.snapshotindex,
+        snapshot_index=args.snapshot_index,
         plotting=args.plotting,
         show_errors=args.show_errors,
     )
