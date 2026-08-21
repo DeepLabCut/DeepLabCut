@@ -22,6 +22,7 @@ from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from tqdm import tqdm
 
 from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.utils import (
     auxiliaryfunctions,
     auxiliaryfunctions_3d,
@@ -53,17 +54,16 @@ def set_up_grid(figsize, xlim, ylim, zlim, view):
     return fig, axes1, axes2, axes3
 
 
-# TODO: @deruyter92 2026-05-20: the function signature could be updated to match
-# other API (i.e. videotype: str -> video_extensions: str | Sequence[str] | None)
-# this requires updating Get_list_of_triangulated_and_videoFiles.
+@renamed_parameter(old="videofolder", new="video_folder", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def create_labeled_video_3d(
     config: ProjectConfig | dict | Path | str,
     path: str | Path,
-    videofolder=None,
+    video_folder=None,
     start=0,
     end=None,
     trailpoints=0,
-    videotype="",
+    video_extensions="",
     view=(-113, -270),
     xlim=None,
     ylim=None,
@@ -79,7 +79,7 @@ def create_labeled_video_3d(
     Args:
         config (ProjectConfig | dict | Path | str): Full path of the config.yaml file as a string.
         path (list): Full paths to triangulated files for analysis, or a directory containing them.
-        videofolder (string): Full path of the folder where videos are stored.
+        video_folder (string): Full path of the folder where videos are stored.
             Use when videos are not co-located with triangulation files.
             Defaults to None (videos searched next to the triangulation file).
         start (int): Start frame index to select. Defaults to 0.
@@ -87,7 +87,7 @@ def create_labeled_video_3d(
             Defaults to None (all frames used).
         trailpoints (int): Number of previous frames whose body parts are plotted (history).
             Defaults to 0.
-        videotype (string, optional): When ``path`` is a directory, only videos with this extension are
+        video_extensions (string, optional): When ``path`` is a directory, only videos with this extension are
             analyzed. If unspecified, common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
         view (list): Elevation (z plane) and azimuth (x,y plane) angles for the 3D view.
         xlim (list): Limits for the 3D x-axis.
@@ -139,21 +139,21 @@ def create_labeled_video_3d(
         raise ValueError(f"Invalid color_by={color_by}")
 
     file_list = auxiliaryfunctions_3d.Get_list_of_triangulated_and_videoFiles(
-        path, videotype, scorer_3d, cam_names, videofolder
+        path, video_extensions, scorer_3d, cam_names, video_folder
     )
     print(file_list)
     if file_list == []:
         raise Exception(
             "No corresponding video file(s) found for the specified triangulated file or folder. "
             "Did you specify the video file type? If videos are stored in a different location, "
-            "please use the ``videofolder`` argument to specify their path."
+            "please use the ``video_folder`` argument to specify their path."
         )
 
     for file in file_list:
         path_h5_file = Path(file[0]).parents[0]
         triangulate_file = file[0]
-        # triangulated file is a list which is always sorted as [triangulated.h5,camera-1.videotype,camera-2.videotype]
-        # name for output video
+        # triangulated file is a list which is always sorted as
+        # [triangulated.h5,camera-1.video_extensions,camera-2.video_extensions] name for output video
         file_name = str(Path(triangulate_file).stem)
         videooutname = path_h5_file / (file_name + ".mp4")
         if videooutname.is_file():
@@ -163,8 +163,12 @@ def create_labeled_video_3d(
             pickle_file = triangulate_file.replace(string_to_remove, "_meta.pickle")
             metadata_ = auxiliaryfunctions_3d.LoadMetadata3d(pickle_file)
 
-            base_filename_cam1 = str(Path(file[1]).stem).split(videotype)[0]  # required for searching the filtered file
-            base_filename_cam2 = str(Path(file[2]).stem).split(videotype)[0]  # required for searching the filtered file
+            base_filename_cam1 = str(Path(file[1]).stem).split(video_extensions)[
+                0
+            ]  # required for searching the filtered file
+            base_filename_cam2 = str(Path(file[2]).stem).split(video_extensions)[
+                0
+            ]  # required for searching the filtered file
             cam1_view_video = file[1]
             cam2_view_video = file[2]
             cam1_scorer = metadata_["scorer_name"][cam_names[0]]

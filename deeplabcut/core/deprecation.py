@@ -108,6 +108,15 @@ class DeprecationRound(Enum):
         ),
     )
 
+    PARAMETER_ALIASING_302 = DeprecationRoundInfo(
+        since="3.0.2",
+        # pull_request=TBD,
+        summary=(
+            "Follow-up to INIT_PARAMETER_ALIASING round to streamline consistent naming of parameters in "
+            "version 3.0.2 release after initial TensorFlow deprecation."
+        ),
+    )
+
 
 class DeprecationInfo(BaseModel):
     """Description for a single deprecation marker."""
