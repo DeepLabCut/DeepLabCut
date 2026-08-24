@@ -15,6 +15,7 @@ This GUI is designed for **scientists and experimenters** who want to preview, r
 - {doc}`Installation <./quickstart/install>`
 - {doc}`Overview <./user_guide/overview>`
 - {doc}`Camera setup and backends <./user_guide/cameras_backends/camera_support>`
+- {doc}`Camera configuration  <./user_guide/camera_config>`
 - {doc}`Timestamp format and synchronization <./user_guide/misc/timestamp_format>`
 
 ```{caution}
