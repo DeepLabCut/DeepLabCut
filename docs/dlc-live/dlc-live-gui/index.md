@@ -10,13 +10,10 @@ A graphical application for **real-time pose estimation with DeepLabCut** using 
 
 This GUI is designed for **scientists and experimenters** who want to preview, run inference, and record synchronized video with pose overlays—without writing code.
 
-## Table of Contents
+## Table of contents
 
-- {doc}`Installation <./quickstart/install>`
-- {doc}`Overview <./user_guide/overview>`
-- {doc}`Camera setup and backends <./user_guide/cameras_backends/camera_support>`
-- {doc}`Camera configuration  <./user_guide/camera_config>`
-- {doc}`Timestamp format and synchronization <./user_guide/misc/timestamp_format>`
+```{tableofcontents}
+```
 
 ```{caution}
 Please be aware of the {ref}`sec:dlclivegui-index-limitations`
