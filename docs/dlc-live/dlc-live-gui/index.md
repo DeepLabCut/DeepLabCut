@@ -67,15 +67,15 @@ Before getting started, be aware of the following constraints:
 
 - Pose inference runs on **one selected camera at a time** (even in multi-camera mode)
 - Camera synchronization depends on **backend capabilities and hardware**
-  - OpenCV controls for resolution and FPS are "best effort" and may not work with all cameras.
-    Expect inconsistencies when setting certain frame rates or resolutions as resolution depends on the device driver.
-  - **New**: Trigger settings and hardware timestamps are now supported for some backends
+  - OpenCV controls for resolution and FPS are "best effort" and may not work with all cameras
+    Expect inconsistencies when setting certain frame rates or resolutions as resolution depends on the device driver
+  - Trigger settings and hardware timestamps are supported for some backends only
 - DeepLabCut Live models must be **exported and compatible** with the selected backend
   - Some SuperAnimal models from {ref}`file:model-zoo` may not work out of the box.<br>This is currently a known issue for:
     - SuperHuman model (missing detector)
 - **Performance** depends on camera resolution, frame rate, GPU availability, and codec choice
-  - **New**: Faster encoding presets, improved performance for Mono cameras
-  - Expect bottlenecks with heavy models, multiple high-resolution cameras, or CPU-only inference.
+  - Use faster encoding presets and retain Mono format on supported mono cameras for best performance
+  - Expect bottlenecks with heavy models, multiple high-resolution cameras, or CPU-only inference
 
 ______________________________________________________________________
 
