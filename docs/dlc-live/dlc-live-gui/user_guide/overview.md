@@ -25,13 +25,14 @@ When you first launch the application, you will see the main window with three p
 - A **Video panel** (right) showing the live preview (single or tiled multi-camera)
 - A **Stats area** (below the video) summarizing camera, inference, and recorder performance
 
-:::\{figure} ../\_static/images/main_window_100226.png
-:alt: Screenshot of the main window
-:width: 100%
-:align: center
-
+```{figure} ../\_static/images/main_window_100226.png
+---
+alt: Screenshot of the main window
+width: 100%
+align: center
+---
 The main window on startup, showing the Controls panel (left), Video panel (right), and Stats area (below video).
-:::
+```
 
 ______________________________________________________________________
 
