@@ -45,7 +45,7 @@ The main window live preview must be stopped before opening the camera configura
 1. Adjust capture, output, crop, or trigger settings
 1. Select **Apply Settings**
 1. Start the configuration preview and verify the image and reported values
-1. Repeat for any additional cameras.
+1. Repeat for any additional cameras
 1. Select **OK** to apply the complete camera configuration to the main window
 
 ## Discover cameras
