@@ -13189,13 +13189,13 @@ specified in the project configuration file, use:</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.utils.auxiliaryfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_config</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.modelzoo</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_weight_init</span>
 
-<span class="n">project_cfg</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span><span class="s2">&quot;/path/to/my/project/config.yaml&quot;</span><span class="p">)</span>
-<span class="n">super_animal</span> <span class="o">=</span> <span class="s2">&quot;superanimal_quadruped&quot;</span>
+<span class="n">project_cfg</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span><span class="s2">"/path/to/my/project/config.yaml"</span><span class="p">)</span>
+<span class="n">super_animal</span> <span class="o">=</span> <span class="s2">"superanimal_quadruped"</span>
 <span class="n">weight_init</span> <span class="o">=</span> <span class="n">build_weight_init</span><span class="p">(</span>
     <span class="n">cfg</span><span class="o">=</span><span class="n">project_cfg</span><span class="p">,</span>
-    <span class="n">super_animal</span><span class="o">=</span><span class="s2">&quot;superanimal_quadruped&quot;</span><span class="p">,</span>
-    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;hrnet_w32&quot;</span><span class="p">,</span>
-    <span class="n">detector_name</span><span class="o">=</span><span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span><span class="p">,</span>
+    <span class="n">super_animal</span><span class="o">=</span><span class="s2">"superanimal_quadruped"</span><span class="p">,</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">"hrnet_w32"</span><span class="p">,</span>
+    <span class="n">detector_name</span><span class="o">=</span><span class="s2">"fasterrcnn_resnet50_fpn_v2"</span><span class="p">,</span>
     <span class="n">with_decoder</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">memory_replay</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
@@ -13330,10 +13330,10 @@ specified in the project configuration file, use:</p>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a>    <span class="n">customized_pose_checkpoint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a>    <span class="n">customized_detector_checkpoint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WeightInitialization</span><span class="p">:</span>
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Builds the WeightInitialization from a SuperAnimal model for a project.</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="w">    </span><span class="sd">"""Builds the WeightInitialization from a SuperAnimal model for a project.</span>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        cfg: The project&#39;s configuration, or the path to the project configuration file.</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        cfg: The project's configuration, or the path to the project configuration file.</span>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        super_animal: The SuperAnimal model with which to initialize weights.</span>
 </span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        model_name: The type of the model architecture for which to load the weights.</span>
 </span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">        detector_name: The type of detector architecture for which to load the weights.</span>
@@ -13357,13 +13357,13 @@ specified in the project configuration file, use:</p>
 </span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        from deeplabcut.utils.auxiliaryfunctions import read_config</span>
 </span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">        from deeplabcut.modelzoo import build_weight_init</span>
 </span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>
-</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">        project_cfg = read_config(&quot;/path/to/my/project/config.yaml&quot;)</span>
-</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">        super_animal = &quot;superanimal_quadruped&quot;</span>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">        project_cfg = read_config("/path/to/my/project/config.yaml")</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">        super_animal = "superanimal_quadruped"</span>
 </span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">        weight_init = build_weight_init(</span>
 </span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">            cfg=project_cfg,</span>
-</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">            super_animal=&quot;superanimal_quadruped&quot;,</span>
-</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">            model_name=&quot;hrnet_w32&quot;,</span>
-</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a><span class="sd">            detector_name=&quot;fasterrcnn_resnet50_fpn_v2&quot;,</span>
+</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">            super_animal="superanimal_quadruped",</span>
+</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">            model_name="hrnet_w32",</span>
+</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a><span class="sd">            detector_name="fasterrcnn_resnet50_fpn_v2",</span>
 </span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="sd">            with_decoder=True,</span>
 </span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="sd">            memory_replay=False,</span>
 </span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="sd">        )</span>
@@ -13371,11 +13371,11 @@ specified in the project configuration file, use:</p>
 </span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a>
 </span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">    Returns:</span>
 </span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">        The built WeightInitialization.</span>
-</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a>    <span class="k">if</span> <span class="n">super_animal</span> <span class="o">==</span> <span class="s2">&quot;superanimal_humanbody&quot;</span><span class="p">:</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">    """</span>
+</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a>    <span class="k">if</span> <span class="n">super_animal</span> <span class="o">==</span> <span class="s2">"superanimal_humanbody"</span><span class="p">:</span>
 </span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a>        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a>            <span class="s2">&quot;Weight Initialization, Transfer-Learning and Finetuning is currently not supported for&quot;</span>
-</span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78"></a>            <span class="s2">&quot;superanimal_humanbody&quot;</span>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a>            <span class="s2">"Weight Initialization, Transfer-Learning and Finetuning is currently not supported for"</span>
+</span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78"></a>            <span class="s2">"superanimal_humanbody"</span>
 </span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a>        <span class="p">)</span>
 </span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a>
 </span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
