@@ -149,7 +149,7 @@ def adapt_labeled_data_to_new_project(
             old_bodyparts = np.unique(df.iloc[2, 3:])
             print("Old bodyparts:", old_bodyparts)
 
-            # Get the unmber of old bodyparts
+            # Get the number of old bodyparts
             num_of_old_bodyparts = len(old_bodyparts)
 
             # Bodyparts to add

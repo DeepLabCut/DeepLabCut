@@ -25,7 +25,7 @@ estimation framework that is:
 - user defined pose estimation - i.e. species or object agnostic.
 - access to SOTA deep learning models that can be swiftly re-trained for customized applications
 - fast (GPU-powered)
-- scalable (project focused for ease of portability and sharability)
+- scalable (project focused for ease of portability and shareability)
 
 As the project has grown we've turned these original principles into the mission statement and set of values that we
 described below.
