@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -577,7 +578,7 @@ the workflow (ideal for advanced users).</p>
 <h3><a class="toc-backref" href="#id2" role="doc-backlink">Visualize raw keypoint detections (without tracking)</a><a class="headerlink" href="#visualize-raw-keypoint-detections-without-tracking" title="Link to this heading">#</a></h3>
 <p>To validate raw pose estimation performance on a video before committing to the tracking
 results, run:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">videos_to_analyze</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;/fullpath/project/videos/testVideo.mp4&#39;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">videos_to_analyze</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'/fullpath/project/videos/testVideo.mp4'</span><span class="p">]</span>
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
   <span class="n">config_path</span><span class="p">,</span>
   <span class="n">videos_to_analyze</span><span class="p">,</span>
@@ -633,7 +634,7 @@ options are:</p>
 <span class="n">boundingboxslack</span> <span class="p">:</span> <span class="mi">0</span>
 <span class="c1"># Intersection over Union (IoU) threshold for linking two bounding boxes</span>
 <span class="n">iou_threshold</span><span class="p">:</span> <span class="mf">.2</span>
-<span class="c1"># maximum duration of a lost tracklet before it&#39;s considered a &quot;new animal&quot; (in frames)</span>
+<span class="c1"># maximum duration of a lost tracklet before it's considered a "new animal" (in frames)</span>
 <span class="n">max_age</span><span class="p">:</span> <span class="mi">100</span>
 <span class="c1"># minimum number of consecutive frames before a detection is tracked</span>
 <span class="n">min_hits</span><span class="p">:</span> <span class="mi">3</span>
@@ -660,8 +661,8 @@ from the final h5 file as was customary in single animal projects.</p>
 <p>**Next, tracklets are stitched to form complete tracks with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">stitch_tracklets</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="s1">&#39;videofile_path&#39;</span><span class="p">],</span>
-    <span class="n">video_extensions</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s1">'videofile_path'</span><span class="p">],</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s1">'mp4'</span><span class="p">,</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 <span class="p">)</span>
@@ -692,7 +693,7 @@ can be directly specified as follows:</p>
 <p>In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals.
 Here, you can use the tracklets to learn the identity of animals to enhance your
 tracking performance. To use the code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">transformer_reID</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">videos_to_analyze</span><span class="p">,</span> <span class="n">n_tracks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">transformer_reID</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">videos_to_analyze</span><span class="p">,</span> <span class="n">n_tracks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video_extensions</span><span class="o">=</span><span class="s2">"mp4"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note you should pass the n_tracks (number of animals) you expect to see in the video.</p>

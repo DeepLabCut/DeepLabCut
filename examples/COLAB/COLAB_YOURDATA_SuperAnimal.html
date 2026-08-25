@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -659,7 +660,7 @@ In this section, we show how to use SuperAnimal models to predict pose from imag
 
 <span class="n">uploaded</span> <span class="o">=</span> <span class="n">files</span><span class="o">.</span><span class="n">upload</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">uploaded</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;User uploaded file &#39;</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&#39; with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"User uploaded file '</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">' with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s2"> bytes"</span><span class="p">)</span>
 <span class="n">image_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
 <span class="n">image_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">image_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -667,7 +668,7 @@ In this section, we show how to use SuperAnimal models to predict pose from imag
 <span class="c1"># manually upload your video via the Files menu to the left</span>
 <span class="c1"># and define `image_path` yourself with right click &gt; copy path on the image:</span>
 <span class="c1">#</span>
-<span class="c1"># image_path = &quot;/path/to/my/image.png&quot;</span>
+<span class="c1"># image_path = "/path/to/my/image.png"</span>
 <span class="c1"># image_name = os.path.splitext(image_path)[0]</span>
 </pre></div>
 </div>
@@ -681,14 +682,14 @@ In this section, we show how to use SuperAnimal models to predict pose from imag
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># @markdown ---</span>
 <span class="c1"># @markdown SuperAnimal Configurations</span>
-<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse&quot;</span>  <span class="c1"># @param [&quot;superanimal_topviewmouse&quot;, &quot;superanimal_quadruped&quot;]</span>
-<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;hrnet_w32&quot;</span>  <span class="c1"># @param [&quot;hrnet_w32&quot;, &quot;resnet_50&quot;]</span>
-<span class="n">detector_name</span> <span class="o">=</span> <span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span>  <span class="c1"># @param [&quot;fasterrcnn_resnet50_fpn_v2&quot;, &quot;fasterrcnn_mobilenet_v3_large_fpn&quot;] # fmt: skip # noqa: E501</span>
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">"superanimal_topviewmouse"</span>  <span class="c1"># @param ["superanimal_topviewmouse", "superanimal_quadruped"]</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">"hrnet_w32"</span>  <span class="c1"># @param ["hrnet_w32", "resnet_50"]</span>
+<span class="n">detector_name</span> <span class="o">=</span> <span class="s2">"fasterrcnn_resnet50_fpn_v2"</span>  <span class="c1"># @param ["fasterrcnn_resnet50_fpn_v2", "fasterrcnn_mobilenet_v3_large_fpn"] # fmt: skip # noqa: E501</span>
 
 
 <span class="c1"># @markdown ---</span>
 <span class="c1"># @markdown What is the maximum number of animals you expect to have in an image</span>
-<span class="n">max_individuals</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># @param {type:&quot;slider&quot;, min:1, max:30, step:1}</span>
+<span class="n">max_individuals</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># @param {type:"slider", min:1, max:30, step:1}</span>
 </pre></div>
 </div>
 </div>
@@ -702,7 +703,7 @@ In this section, we show how to use SuperAnimal models to predict pose from imag
     <span class="n">detector_name</span><span class="p">,</span>
     <span class="n">image_path</span><span class="p">,</span>
     <span class="n">max_individuals</span><span class="p">,</span>
-    <span class="n">out_folder</span><span class="o">=</span><span class="s2">&quot;/content/&quot;</span><span class="p">,</span>
+    <span class="n">out_folder</span><span class="o">=</span><span class="s2">"/content/"</span><span class="p">,</span>
     <span class="n">close_figure_after_save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -722,7 +723,7 @@ In this section, we show how to use SuperAnimal models to predict pose from imag
 
 <span class="n">uploaded</span> <span class="o">=</span> <span class="n">files</span><span class="o">.</span><span class="n">upload</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">uploaded</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;User uploaded file &#39;</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&#39; with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"User uploaded file '</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">' with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s2"> bytes"</span><span class="p">)</span>
 <span class="n">video_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
 <span class="n">video_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">video_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -740,13 +741,13 @@ In this section, we show how to use SuperAnimal models to predict pose from imag
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># @markdown ---</span>
 <span class="c1"># @markdown SuperAnimal Configurations</span>
-<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse&quot;</span>  <span class="c1"># @param [&quot;superanimal_topviewmouse&quot;, &quot;superanimal_quadruped&quot;]</span>
-<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;hrnet_w32&quot;</span>  <span class="c1"># @param [&quot;hrnet_w32&quot;, &quot;resnet_50&quot;]</span>
-<span class="n">detector_name</span> <span class="o">=</span> <span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span>  <span class="c1"># @param [&quot;fasterrcnn_resnet50_fpn_v2&quot;, &quot;fasterrcnn_mobilenet_v3_large_fpn&quot;]  # fmt: skip # noqa: E501</span>
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">"superanimal_topviewmouse"</span>  <span class="c1"># @param ["superanimal_topviewmouse", "superanimal_quadruped"]</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">"hrnet_w32"</span>  <span class="c1"># @param ["hrnet_w32", "resnet_50"]</span>
+<span class="n">detector_name</span> <span class="o">=</span> <span class="s2">"fasterrcnn_resnet50_fpn_v2"</span>  <span class="c1"># @param ["fasterrcnn_resnet50_fpn_v2", "fasterrcnn_mobilenet_v3_large_fpn"]  # fmt: skip # noqa: E501</span>
 
 <span class="c1"># @markdown ---</span>
 <span class="c1"># @markdown What is the maximum number of animals you expect to have in an image</span>
-<span class="n">max_individuals</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># @param {type:&quot;slider&quot;, min:1, max:30, step:1}</span>
+<span class="n">max_individuals</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># @param {type:"slider", min:1, max:30, step:1}</span>
 </pre></div>
 </div>
 </div>
@@ -764,7 +765,7 @@ In this section, we show how to use SuperAnimal models to predict pose from imag
     <span class="n">detector_name</span><span class="o">=</span><span class="n">detector_name</span><span class="p">,</span>
     <span class="n">video_adapt</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">max_individuals</span><span class="o">=</span><span class="n">max_individuals</span><span class="p">,</span>
-    <span class="n">dest_folder</span><span class="o">=</span><span class="s2">&quot;/content/&quot;</span><span class="p">,</span>
+    <span class="n">dest_folder</span><span class="o">=</span><span class="s2">"/content/"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -787,7 +788,7 @@ In this section, we show how to use SuperAnimal models to predict pose from imag
     <span class="n">bbox_threshold</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
     <span class="n">detector_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">pose_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">dest_folder</span><span class="o">=</span><span class="s2">&quot;/content/&quot;</span><span class="p">,</span>
+    <span class="n">dest_folder</span><span class="o">=</span><span class="s2">"/content/"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -812,12 +813,12 @@ You can compare the evaluation results and get a sense of each baseline. We have
 <p>First, place your DeepLabCut project folder into you google drive! “i.e. move the folder named “Project-YourName-TheDate” into Google Drive.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now, let&#39;s link to your GoogleDrive. Run this cell and follow the</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now, let's link to your GoogleDrive. Run this cell and follow the</span>
 <span class="c1"># authorization instructions:</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">google.colab</span><span class="w"> </span><span class="kn">import</span> <span class="n">drive</span>
 
-<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s2">&quot;/content/drive&quot;</span><span class="p">)</span>
+<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s2">"/content/drive"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -828,8 +829,8 @@ You can compare the evaluation results and get a sense of each baseline. We have
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># TODO: Update the `project_path` to be the path of your DeepLabCut project!</span>
-<span class="n">project_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/content/drive/MyDrive/my-project-2024-07-17&quot;</span><span class="p">)</span>
-<span class="n">config_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+<span class="n">project_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"/content/drive/MyDrive/my-project-2024-07-17"</span><span class="p">)</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">project_path</span> <span class="o">/</span> <span class="s2">"config.yaml"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -839,9 +840,9 @@ You can compare the evaluation results and get a sense of each baseline. We have
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># @markdown ---</span>
 <span class="c1"># @markdown SuperAnimal Configurations</span>
-<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse&quot;</span>  <span class="c1"># @param [&quot;superanimal_topviewmouse&quot;, &quot;superanimal_quadruped&quot;]</span>
-<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;hrnet_w32&quot;</span>  <span class="c1"># @param [&quot;hrnet_w32&quot;, &quot;resnet_50&quot;]</span>
-<span class="n">detector_name</span> <span class="o">=</span> <span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span>  <span class="c1"># @param [&quot;fasterrcnn_resnet50_fpn_v2&quot;, &quot;fasterrcnn_mobilenet_v3_large_fpn&quot;] # fmt: skip # noqa: E501</span>
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">"superanimal_topviewmouse"</span>  <span class="c1"># @param ["superanimal_topviewmouse", "superanimal_quadruped"]</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">"hrnet_w32"</span>  <span class="c1"># @param ["hrnet_w32", "resnet_50"]</span>
+<span class="n">detector_name</span> <span class="o">=</span> <span class="s2">"fasterrcnn_resnet50_fpn_v2"</span>  <span class="c1"># @param ["fasterrcnn_resnet50_fpn_v2", "fasterrcnn_mobilenet_v3_large_fpn"] # fmt: skip # noqa: E501</span>
 </pre></div>
 </div>
 </div>
@@ -888,7 +889,7 @@ weights</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="n">imagenet_transfer_learning_shuffle</span><span class="p">],</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;top_down_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="sa">f</span><span class="s2">"top_down_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="n">detector_type</span><span class="o">=</span><span class="n">detector_name</span><span class="p">,</span>
     <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">PYTORCH</span><span class="p">,</span>
     <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -951,7 +952,7 @@ model, a paradigm adopted from previous task-agnostic transfer learning.</p>
     <span class="n">from_shuffle</span><span class="o">=</span><span class="n">imagenet_transfer_learning_shuffle</span><span class="p">,</span>
     <span class="n">shuffles</span><span class="o">=</span><span class="p">[</span><span class="n">superanimal_transfer_learning_shuffle</span><span class="p">],</span>
     <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">PYTORCH</span><span class="p">,</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;top_down_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="sa">f</span><span class="s2">"top_down_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="n">detector_type</span><span class="o">=</span><span class="n">detector_name</span><span class="p">,</span>
     <span class="n">weight_init</span><span class="o">=</span><span class="n">weight_init</span><span class="p">,</span>
     <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1011,11 +1012,11 @@ of the model, especially for zero-shot. In the case where, e.g., the annotation 
     <span class="n">copy_images</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">conversion_table_path</span> <span class="o">=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;memory_replay&quot;</span> <span class="o">/</span> <span class="s2">&quot;conversion_table.csv&quot;</span>
-<span class="n">confusion_matrix_path</span> <span class="o">=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;memory_replay&quot;</span> <span class="o">/</span> <span class="s2">&quot;confusion_matrix.png&quot;</span>
+<span class="n">conversion_table_path</span> <span class="o">=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">"memory_replay"</span> <span class="o">/</span> <span class="s2">"conversion_table.csv"</span>
+<span class="n">confusion_matrix_path</span> <span class="o">=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">"memory_replay"</span> <span class="o">/</span> <span class="s2">"confusion_matrix.png"</span>
 
 <span class="c1"># You can visualize the pseudo predictions, or do pose embedding clustering etc.</span>
-<span class="n">pseudo_prediction_path</span> <span class="o">=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;memory_replay&quot;</span> <span class="o">/</span> <span class="s2">&quot;pseudo_predictions.json&quot;</span>
+<span class="n">pseudo_prediction_path</span> <span class="o">=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">"memory_replay"</span> <span class="o">/</span> <span class="s2">"pseudo_predictions.json"</span>
 </pre></div>
 </div>
 </div>
@@ -1029,7 +1030,7 @@ of the model, especially for zero-shot. In the case where, e.g., the annotation 
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">confusion_matrix_image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">confusion_matrix_path</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">confusion_matrix_image</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>  <span class="c1"># Hide the axes for better view</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">"off"</span><span class="p">)</span>  <span class="c1"># Hide the axes for better view</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -1092,7 +1093,7 @@ of the model, especially for zero-shot. In the case where, e.g., the annotation 
     <span class="n">from_shuffle</span><span class="o">=</span><span class="n">imagenet_transfer_learning_shuffle</span><span class="p">,</span>
     <span class="n">shuffles</span><span class="o">=</span><span class="p">[</span><span class="n">superanimal_naive_finetune_shuffle</span><span class="p">],</span>
     <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">PYTORCH</span><span class="p">,</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;top_down_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="sa">f</span><span class="s2">"top_down_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="n">detector_type</span><span class="o">=</span><span class="n">detector_name</span><span class="p">,</span>
     <span class="n">weight_init</span><span class="o">=</span><span class="n">weight_init</span><span class="p">,</span>
     <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1172,7 +1173,7 @@ set to 1, memory replay fine-tuning becomes naive-fine-tuning.</p>
     <span class="n">from_shuffle</span><span class="o">=</span><span class="n">imagenet_transfer_learning_shuffle</span><span class="p">,</span>
     <span class="n">shuffles</span><span class="o">=</span><span class="p">[</span><span class="n">superanimal_memory_replay_shuffle</span><span class="p">],</span>
     <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">PYTORCH</span><span class="p">,</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;top_down_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="sa">f</span><span class="s2">"top_down_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="n">detector_type</span><span class="o">=</span><span class="n">detector_name</span><span class="p">,</span>
     <span class="n">weight_init</span><span class="o">=</span><span class="n">weight_init</span><span class="p">,</span>
     <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>

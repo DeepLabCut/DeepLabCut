@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -625,7 +626,7 @@ and a video tutorial on how to use the ModelZoo on Google Colab.</p>
 <p>You are happy with the model and want to go on analyzing further videos on your local machine or you want to refine the model for your specific usecase?</p>
 <div class="highlight-html notranslate"><div class="highlight"><pre><span></span>!zip -r /content/file.zip /content/pigeon_modelZoo-nessi-2022-08-22
 from google.colab import files
-files.download(&quot;/content/file.zip&quot;)
+files.download("/content/file.zip")
 </pre></div>
 </div>
 </div>
@@ -644,13 +645,13 @@ Check <a class="reference internal" href="#how-to-install"><span class="xref mys
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_pretrained_project</span><span class="p">(</span>
-    <span class="s2">&quot;projectname&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;experimenter&quot;</span><span class="p">,</span>
-    <span class="p">[</span><span class="sa">r</span><span class="s2">&quot;path_for_the_videos&quot;</span><span class="p">],</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;mouse_pupil_vclose&quot;</span><span class="p">,</span>
-    <span class="n">working_directory</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;project_directory&quot;</span><span class="p">,</span>
+    <span class="s2">"projectname"</span><span class="p">,</span>
+    <span class="s2">"experimenter"</span><span class="p">,</span>
+    <span class="p">[</span><span class="sa">r</span><span class="s2">"path_for_the_videos"</span><span class="p">],</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">"mouse_pupil_vclose"</span><span class="p">,</span>
+    <span class="n">working_directory</span><span class="o">=</span><span class="sa">r</span><span class="s2">"project_directory"</span><span class="p">,</span>
     <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;.mp4 or .avi?&quot;</span><span class="p">,</span>
+    <span class="n">videotype</span><span class="o">=</span><span class="s2">".mp4 or .avi?"</span><span class="p">,</span>
     <span class="n">analyzevideo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">filtered</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">createlabeledvideo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -675,8 +676,8 @@ Be sure that you set the number of frames to label in the <code class="docutils 
 The more problems you encounter, the higher the number of frames you might want to label.
 You should also add the path of the video(s) into the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, or run the following command to add the videos to your project:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">add_new_videos</span><span class="p">(</span>
-    <span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;/pathofvideos/pigeon.mp4&quot;</span><span class="p">],</span>
+    <span class="s2">"/pathofproject/config.yaml"</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">"/pathofvideos/pigeon.mp4"</span><span class="p">],</span>
     <span class="n">copy_videos</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">coords</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">extract_frames</span><span class="o">=</span><span class="kc">False</span>
@@ -685,12 +686,12 @@ You should also add the path of the video(s) into the <code class="docutils lite
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">deeplabcut.extract_outlier_frames</span></code> function will check for outliers and ask your feedback on whether to extract these outliers frames.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
-    <span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;/pathofvideos/pigeon.mp4&quot;</span><span class="p">]</span>
+    <span class="s2">"/pathofproject/config.yaml"</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">"/pathofvideos/pigeon.mp4"</span><span class="p">]</span>
 <span class="p">)</span>
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_outlier_frames</span><span class="p">(</span>
-    <span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;/pathofvideos/pigeon.mp4&quot;</span><span class="p">],</span>
+    <span class="s2">"/pathofproject/config.yaml"</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">"/pathofvideos/pigeon.mp4"</span><span class="p">],</span>
     <span class="n">automatic</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 </pre></div>
@@ -699,16 +700,16 @@ You should also add the path of the video(s) into the <code class="docutils lite
 You should load the outlier frames directory and corresponding <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file from the previous model.
 It will ask you to define the <code class="docutils literal notranslate"><span class="pre">likelihood</span></code> threshold: labels under the threshold should be refined at this stage.</p>
 <p>After refining, you should combine these data with your previous model’s data set and create a new training data set.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">refine_labels</span><span class="p">(</span><span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">)</span>
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">merge_datasets</span><span class="p">(</span><span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">)</span>
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">refine_labels</span><span class="p">(</span><span class="s2">"/pathofproject/config.yaml"</span><span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">merge_datasets</span><span class="p">(</span><span class="s2">"/pathofproject/config.yaml"</span><span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="s2">"/pathofproject/config.yaml"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Before starting the training of your model, there is one last step left: editing the <code class="docutils literal notranslate"><span class="pre">init_weights</span></code> parameter in your <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> file.
 Go to your project and check the latest snapshot (e.g., <code class="docutils literal notranslate"><span class="pre">snapshot-610000</span></code>) of your model in <code class="docutils literal notranslate"><span class="pre">dlc-models/train</span></code> directory.
 Edit the value of the <code class="docutils literal notranslate"><span class="pre">init_weights</span></code> key in the <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> file and start to re-train your model!</p>
 <p><code class="docutils literal notranslate"><span class="pre">init_weights:</span> <span class="pre">pathofyourproject\dlc-models\iteration-0\DLCFeb31-trainset95shuffle1\train\snapshot-610000</span></code></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="s2">&quot;/pathofproject/config.yaml&quot;</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">saveiters</span><span class="o">=</span><span class="mi">25000</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="s2">"/pathofproject/config.yaml"</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">saveiters</span><span class="o">=</span><span class="mi">25000</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition hint">

@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -586,7 +587,7 @@ project (e.g. Task1), name of the experimenter (e.g. YourName), as well as the d
 cameras to be used. Currently, DeepLabCut supports triangulation using 2 cameras, but will expand to more than 2 cameras
 in a future version.</p>
 <p>To start a 3D project type the following in ipython:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project_3d</span><span class="p">(</span><span class="s2">&quot;ProjectName&quot;</span><span class="p">,</span> <span class="s2">&quot;NameofLabeler&quot;</span><span class="p">,</span> <span class="n">num_cameras</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project_3d</span><span class="p">(</span><span class="s2">"ProjectName"</span><span class="p">,</span> <span class="s2">"NameofLabeler"</span><span class="p">,</span> <span class="n">num_cameras</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>TIP 1: you can also pass <code class="docutils literal notranslate"><span class="pre">working_directory=&quot;Full</span> <span class="pre">path</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">working</span> <span class="pre">directory&quot;</span></code> if you want to place this folder
@@ -735,7 +736,7 @@ file, it will take this by default (otherwise it will take your unfiltered 2D an
 from two cameras are stored. The triangulation can be done in deeplabcut by typing:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">triangulate</span><span class="p">(</span>
   <span class="n">config_path3d</span><span class="p">,</span>
-  <span class="s2">&quot;/yourcomputer/fullpath/videofolder&quot;</span><span class="p">,</span>
+  <span class="s2">"/yourcomputer/fullpath/videofolder"</span><span class="p">,</span>
   <span class="n">filterpredictions</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span>
 <span class="p">)</span>
 </pre></div>
@@ -759,7 +760,7 @@ from two cameras are stored. The triangulation can be done in deeplabcut by typi
     <span class="n">Filter</span> <span class="n">the</span> <span class="n">predictions</span> <span class="n">by</span> <span class="n">fitting</span> <span class="n">median</span> <span class="p">(</span><span class="n">by</span> <span class="n">default</span><span class="p">)</span> <span class="ow">or</span> <span class="n">arima</span> <span class="nb">filter</span><span class="o">.</span> <span class="n">If</span> <span class="n">specified</span> <span class="n">it</span> <span class="n">should</span> <span class="n">be</span> <span class="n">either</span> <span class="err">``</span><span class="kc">True</span><span class="err">``</span> <span class="ow">or</span> <span class="err">``</span><span class="kc">False</span><span class="err">``</span><span class="o">.</span>
 
 <span class="n">filtertype</span><span class="p">:</span> <span class="n">string</span>
-    <span class="n">Select</span> <span class="n">which</span> <span class="nb">filter</span><span class="p">,</span> <span class="s1">&#39;arima&#39;</span> <span class="ow">or</span> <span class="s1">&#39;median&#39;</span> <span class="nb">filter</span><span class="o">.</span>
+    <span class="n">Select</span> <span class="n">which</span> <span class="nb">filter</span><span class="p">,</span> <span class="s1">'arima'</span> <span class="ow">or</span> <span class="s1">'median'</span> <span class="nb">filter</span><span class="o">.</span>
 
 <span class="n">gputouse</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">optional</span><span class="o">.</span> <span class="n">Natural</span> <span class="n">number</span> <span class="n">indicating</span> <span class="n">the</span> <span class="n">number</span> <span class="n">of</span> <span class="n">your</span> <span class="n">GPU</span> <span class="p">(</span><span class="n">see</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">nvidia</span><span class="o">-</span><span class="n">smi</span><span class="p">)</span><span class="o">.</span> <span class="n">If</span> <span class="n">you</span> <span class="n">do</span> <span class="ow">not</span> <span class="n">have</span> <span class="n">a</span> <span class="n">GPU</span> <span class="n">put</span> <span class="kc">None</span><span class="o">.</span>
     <span class="n">See</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">nvidia</span><span class="o">.</span><span class="n">custhelp</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">app</span><span class="o">/</span><span class="n">answers</span><span class="o">/</span><span class="n">detail</span><span class="o">/</span><span class="n">a_id</span><span class="o">/</span><span class="mi">3751</span><span class="o">/~/</span><span class="n">useful</span><span class="o">-</span><span class="n">nvidia</span><span class="o">-</span><span class="n">smi</span><span class="o">-</span><span class="n">queries</span>
@@ -771,7 +772,7 @@ from two cameras are stored. The triangulation can be done in deeplabcut by typi
     <span class="n">Saves</span> <span class="n">the</span> <span class="n">predictions</span> <span class="ow">in</span> <span class="n">a</span> <span class="o">.</span><span class="n">csv</span> <span class="n">file</span><span class="o">.</span> <span class="n">The</span> <span class="n">default</span> <span class="ow">is</span> <span class="err">``</span><span class="kc">False</span><span class="err">``</span><span class="p">;</span> <span class="k">if</span> <span class="n">provided</span> <span class="n">it</span> <span class="n">must</span> <span class="n">be</span> <span class="n">either</span> <span class="err">``</span><span class="kc">True</span><span class="err">``</span> <span class="ow">or</span> <span class="err">``</span><span class="kc">False</span><span class="err">``</span>
 
 <span class="n">track_method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span>
-    <span class="n">Method</span> <span class="n">used</span> <span class="k">for</span> <span class="n">tracking</span><span class="p">:</span> <span class="s2">&quot;box&quot;</span> <span class="ow">or</span> <span class="s2">&quot;ellipse&quot;</span>
+    <span class="n">Method</span> <span class="n">used</span> <span class="k">for</span> <span class="n">tracking</span><span class="p">:</span> <span class="s2">"box"</span> <span class="ow">or</span> <span class="s2">"ellipse"</span>
 </pre></div>
 </div>
 <p>The <strong>triangulated file</strong> is now saved under the same directory where the video files reside (or the destination folder
@@ -792,7 +793,7 @@ video. Note that the <code class="docutils literal notranslate"><span class="pre
 <code class="docutils literal notranslate"><span class="pre">yourDLC_3D_scorername.h5</span></code> is located. This can be done using:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video_3d</span><span class="p">(</span>
   <span class="n">config_path</span><span class="p">,</span>
-  <span class="p">[</span><span class="s2">&quot;triangulated_file_folder&quot;</span><span class="p">],</span>
+  <span class="p">[</span><span class="s2">"triangulated_file_folder"</span><span class="p">],</span>
   <span class="n">start</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
   <span class="n">end</span><span class="o">=</span><span class="mi">250</span>
 <span class="p">)</span>
@@ -835,9 +836,9 @@ here</p>
 <span class="n">draw_skeleton</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">If</span> <span class="kc">True</span> <span class="n">adds</span> <span class="n">a</span> <span class="n">line</span> <span class="n">connecting</span> <span class="n">the</span> <span class="n">body</span> <span class="n">parts</span> <span class="n">making</span> <span class="n">a</span> <span class="n">skeleton</span> <span class="n">on</span> <span class="n">on</span> <span class="n">each</span> <span class="n">frame</span><span class="o">.</span> <span class="n">The</span> <span class="n">body</span> <span class="n">parts</span> <span class="n">to</span> <span class="n">be</span> <span class="n">connected</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">color</span> <span class="n">of</span> <span class="n">these</span> <span class="n">connecting</span> <span class="n">lines</span> <span class="n">are</span> <span class="n">specified</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">config</span> <span class="n">file</span><span class="o">.</span> <span class="n">By</span> <span class="n">default</span><span class="p">:</span> <span class="kc">True</span>
 
-<span class="n">color_by</span> <span class="p">:</span> <span class="n">string</span><span class="p">,</span> <span class="n">optional</span> <span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;bodypart&#39;</span><span class="p">)</span>
+<span class="n">color_by</span> <span class="p">:</span> <span class="n">string</span><span class="p">,</span> <span class="n">optional</span> <span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">'bodypart'</span><span class="p">)</span>
     <span class="n">Coloring</span> <span class="n">rule</span><span class="o">.</span> <span class="n">By</span> <span class="n">default</span><span class="p">,</span> <span class="n">each</span> <span class="n">bodypart</span> <span class="ow">is</span> <span class="n">colored</span> <span class="n">differently</span><span class="o">.</span>
-    <span class="n">If</span> <span class="nb">set</span> <span class="n">to</span> <span class="s1">&#39;individual&#39;</span><span class="p">,</span> <span class="n">points</span> <span class="n">belonging</span> <span class="n">to</span> <span class="n">a</span> <span class="n">single</span> <span class="n">individual</span> <span class="n">are</span> <span class="n">colored</span> <span class="n">the</span> <span class="n">same</span><span class="o">.</span>
+    <span class="n">If</span> <span class="nb">set</span> <span class="n">to</span> <span class="s1">'individual'</span><span class="p">,</span> <span class="n">points</span> <span class="n">belonging</span> <span class="n">to</span> <span class="n">a</span> <span class="n">single</span> <span class="n">individual</span> <span class="n">are</span> <span class="n">colored</span> <span class="n">the</span> <span class="n">same</span><span class="o">.</span>
 
 <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
     <span class="n">Size</span> <span class="n">of</span> <span class="n">the</span> <span class="n">figure</span>

@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -617,12 +618,12 @@ document.write(`
 </ul>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># Now, let&#39;s link to your GoogleDrive. Run this cell and follow the authorization instructions:
-# (We recommend putting a copy of the github repo in your google drive if you are using the demo &quot;examples&quot;)
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># Now, let's link to your GoogleDrive. Run this cell and follow the authorization instructions:
+# (We recommend putting a copy of the github repo in your google drive if you are using the demo "examples")
 
 from google.colab import drive
 
-drive.mount(&quot;/content/drive&quot;)
+drive.mount("/content/drive")
 </pre></div>
 </div>
 </div>
@@ -634,21 +635,21 @@ drive.mount(&quot;/content/drive&quot;)
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span># PLEASE EDIT THIS:
-project_folder_name = &quot;MontBlanc-Daniel-2019-12-16&quot;
-video_type = &quot;mp4&quot; #, mp4, MOV, or avi, whatever you uploaded!
+project_folder_name = "MontBlanc-Daniel-2019-12-16"
+video_type = "mp4" #, mp4, MOV, or avi, whatever you uploaded!
 
 # No need to edit this, we are going to assume you put videos you want to analyze
-# in the &quot;videos&quot; folder, but if this is NOT true, edit below:
-videofile_path = [f&quot;/content/drive/My Drive/{project_folder_name}/videos/&quot;]
+# in the "videos" folder, but if this is NOT true, edit below:
+videofile_path = [f"/content/drive/My Drive/{project_folder_name}/videos/"]
 print(videofile_path)
 
 # The prediction files and labeled videos will be saved in this `labeled-videos` folder
 # in your project folder; if you want them elsewhere, you can edit this;
 # if you want the output files in the same folder as the videos, set this to an empty string.
-destfolder = f&quot;/content/drive/My Drive/{project_folder_name}/labeled-videos&quot;
+destfolder = f"/content/drive/My Drive/{project_folder_name}/labeled-videos"
 
 #No need to edit this, as you set it when you passed the ProjectFolderName (above):
-path_config_file = f&quot;/content/drive/My Drive/{project_folder_name}/config.yaml&quot;
+path_config_file = f"/content/drive/My Drive/{project_folder_name}/config.yaml"
 print(path_config_file)
 
 # This creates a path variable that links to your Google Drive project
@@ -680,7 +681,7 @@ shuffle = 1 # Edit if needed; 1 is the default.
 deeplabcut.create_multianimaltraining_dataset(
     path_config_file,
     Shuffles=[shuffle],
-    net_type=&quot;dlcrnet_ms5&quot;,
+    net_type="dlcrnet_ms5",
     engine=deeplabcut.Engine.PYTORCH,
 )
 </pre></div>
@@ -693,13 +694,13 @@ deeplabcut.create_multianimaltraining_dataset(
 <p>This function trains the network for a specific shuffle of the training dataset. More info can be found <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide.html#train-the-network">in the docs</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># Let&#39;s also change the display and save_epochs just in case Colab takes away
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># Let's also change the display and save_epochs just in case Colab takes away
 # the GPU... If that happens, you can reload from a saved point using the
 # `snapshot_path` argument to `deeplabcut.train_network`:
-#   deeplabcut.train_network(..., snapshot_path=&quot;/content/.../snapshot-050.pt&quot;)
+#   deeplabcut.train_network(..., snapshot_path="/content/.../snapshot-050.pt")
 
 # Typically, you want to train to ~200 epochs. We set the batch size to 8 to
-# utilize the GPU&#39;s capabilities.
+# utilize the GPU's capabilities.
 
 # More info and there are more things you can set:
 #   https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html#g-train-the-network
@@ -712,7 +713,7 @@ deeplabcut.train_network(
     batch_size=8,
 )
 
-# This will run until you stop it (CTRL+C), or hit &quot;STOP&quot; icon, or when it hits the end.
+# This will run until you stop it (CTRL+C), or hit "STOP" icon, or when it hits the end.
 </pre></div>
 </div>
 </div>
@@ -731,7 +732,7 @@ deeplabcut.train_network(
 <p><img alt="alt text" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1590535809087-X655WY9W1MW1MY1I7DHE/ke17ZwdGBToddI8pDm48kBoswZhKnUtAF7-bTXgw67EUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKc5tTP1cnANTUwNNPnYFjIp6XbP9N1GxIgAkxvBVqt0UvLpPHYwvNQTwHg8f_Zu8ZF/evaluation.png?format=1000w" /></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># Let&#39;s evaluate first:
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># Let's evaluate first:
 deeplabcut.evaluate_network(path_config_file, Shuffles=[shuffle], plotting=True)
 
 # plot a few scoremaps:
@@ -748,9 +749,9 @@ deeplabcut.extract_save_all_maps(path_config_file, shuffle=shuffle, Indices=[0, 
 <p>The results are stored in a pickle file in the same directory where the video resides.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>print(&quot;Start Analyzing my video(s)!&quot;)
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>print("Start Analyzing my video(s)!")
 #EDIT OPTION: which video(s) do you want to analyze? You can pass a path or a folder:
-# currently, if you run &quot;as is&quot; it assumes you have a video in the DLC project video folder!
+# currently, if you run "as is" it assumes you have a video in the DLC project video folder!
 
 deeplabcut.analyze_videos(
     path_config_file,
@@ -769,12 +770,12 @@ deeplabcut.analyze_videos(
 <div class="cell_input docutils container">
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>##### PROTIP: #####
 ## look at the output video; if the pose estimation (i.e. key points)
-## don&#39;t look good, don&#39;t proceed with tracking - add more data to your training set and re-train!
+## don't look good, don't proceed with tracking - add more data to your training set and re-train!
 
-# EDIT: let&#39;s check a specific video (PLEASE EDIT VIDEO PATH):
-specific_videofile = &quot;/content/drive/MyDrive/DeepLabCut_maDLC_DemoData/MontBlanc-Daniel-2019-12-16/videos/short.mov&quot;
+# EDIT: let's check a specific video (PLEASE EDIT VIDEO PATH):
+specific_videofile = "/content/drive/MyDrive/DeepLabCut_maDLC_DemoData/MontBlanc-Daniel-2019-12-16/videos/short.mov"
 
-# Don&#39;t edit:
+# Don't edit:
 deeplabcut.create_video_with_all_detections(
     path_config_file, [specific_videofile], shuffle=shuffle, destfolder=destfolder,
 )
@@ -794,18 +795,18 @@ deeplabcut.create_video_with_all_detections(
 <div class="cell_input docutils container">
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>#Check and edit:
 num_animals = 4 # How many animals do you expect to find?
-track_type= &quot;box&quot; # box, skeleton, ellipse
+track_type= "box" # box, skeleton, ellipse
 #-- ellipse is recommended, unless you have a single-point MA project, then use BOX!
 
 # Optional:
 # imagine you tracked a point that is not useful for assembly,
-# like a tail tip that is far from the body, consider dropping it for this step (it&#39;s still used later)!
+# like a tail tip that is far from the body, consider dropping it for this step (it's still used later)!
 # To drop it, uncomment the next line TWO lines and add your parts(s):
 
-# bodypart= &#39;Tail_end&#39;
+# bodypart= 'Tail_end'
 # deeplabcut.convert_detections2tracklets(path_config_file, videofile_path, videotype=VideoType, shuffle=shuffle, overwrite=True, ignore_bodyparts=[bodypart])
 
-# OR don&#39;t drop, just click RUN:
+# OR don't drop, just click RUN:
 deeplabcut.convert_detections2tracklets(
     path_config_file,
     videofile_path,
@@ -871,7 +872,7 @@ deeplabcut.stitch_tracklets(
     path_config_file,
     videofile_path,
     shuffle=shuffle,
-    color_by=&quot;individual&quot;,
+    color_by="individual",
     videotype=video_type,
     save_frames=False,
     filtered=True,

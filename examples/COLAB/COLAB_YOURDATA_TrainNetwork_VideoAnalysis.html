@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -628,12 +629,12 @@ document.write(`
 <h3>First, place your project folder into you google drive! “i.e. move the folder named “Project-YourName-TheDate” into google drive.<a class="headerlink" href="#first-place-your-project-folder-into-you-google-drive-i-e-move-the-folder-named-project-yourname-thedate-into-google-drive" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now, let&#39;s link to your GoogleDrive. Run this cell and follow the authorization instructions:</span>
-<span class="c1"># (We recommend putting a copy of the github repo in your google drive if you are using the demo &quot;examples&quot;)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now, let's link to your GoogleDrive. Run this cell and follow the authorization instructions:</span>
+<span class="c1"># (We recommend putting a copy of the github repo in your google drive if you are using the demo "examples")</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">google.colab</span><span class="w"> </span><span class="kn">import</span> <span class="n">drive</span>
 
-<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s2">&quot;/content/drive&quot;</span><span class="p">)</span>
+<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s2">"/content/drive"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -643,21 +644,21 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># PLEASE EDIT THIS:</span>
-<span class="n">project_folder_name</span> <span class="o">=</span> <span class="s2">&quot;MontBlanc-Daniel-2019-12-16&quot;</span>
-<span class="n">video_type</span> <span class="o">=</span> <span class="s2">&quot;mp4&quot;</span>  <span class="c1"># , mp4, MOV, or avi, whatever you uploaded!</span>
+<span class="n">project_folder_name</span> <span class="o">=</span> <span class="s2">"MontBlanc-Daniel-2019-12-16"</span>
+<span class="n">video_type</span> <span class="o">=</span> <span class="s2">"mp4"</span>  <span class="c1"># , mp4, MOV, or avi, whatever you uploaded!</span>
 
 <span class="c1"># No need to edit this, we are going to assume you put videos you want to analyze</span>
-<span class="c1"># in the &quot;videos&quot; folder, but if this is NOT true, edit below:</span>
-<span class="n">videofile_path</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;/content/drive/My Drive/</span><span class="si">{</span><span class="n">project_folder_name</span><span class="si">}</span><span class="s2">/videos/&quot;</span><span class="p">]</span>
+<span class="c1"># in the "videos" folder, but if this is NOT true, edit below:</span>
+<span class="n">videofile_path</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"/content/drive/My Drive/</span><span class="si">{</span><span class="n">project_folder_name</span><span class="si">}</span><span class="s2">/videos/"</span><span class="p">]</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">videofile_path</span><span class="p">)</span>
 
 <span class="c1"># The prediction files and labeled videos will be saved in this `labeled-videos` folder</span>
 <span class="c1"># in your project folder; if you want them elsewhere, you can edit this;</span>
 <span class="c1"># if you want the output files in the same folder as the videos, set this to an empty string.</span>
-<span class="n">destfolder</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/content/drive/My Drive/</span><span class="si">{</span><span class="n">project_folder_name</span><span class="si">}</span><span class="s2">/labeled-videos&quot;</span>
+<span class="n">destfolder</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"/content/drive/My Drive/</span><span class="si">{</span><span class="n">project_folder_name</span><span class="si">}</span><span class="s2">/labeled-videos"</span>
 
 <span class="c1"># No need to edit this, as you set it when you passed the ProjectFolderName (above):</span>
-<span class="n">path_config_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/content/drive/My Drive/</span><span class="si">{</span><span class="n">project_folder_name</span><span class="si">}</span><span class="s2">/config.yaml&quot;</span>
+<span class="n">path_config_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"/content/drive/My Drive/</span><span class="si">{</span><span class="n">project_folder_name</span><span class="si">}</span><span class="s2">/config.yaml"</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">)</span>
 
 <span class="c1"># This creates a path variable that links to your Google Drive project</span>
@@ -679,7 +680,7 @@ document.write(`
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># There are many more functions you can set here, including which network to use!</span>
 <span class="c1"># Check the docstring for `create_training_dataset` for all options you can use!</span>
 
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">,</span> <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;resnet_50&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">PYTORCH</span><span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">,</span> <span class="n">net_type</span><span class="o">=</span><span class="s2">"resnet_50"</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">PYTORCH</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -691,13 +692,13 @@ document.write(`
 <p>This function trains the network for a specific shuffle of the training dataset.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Let&#39;s also change the display and save_epochs just in case Colab takes away</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Let's also change the display and save_epochs just in case Colab takes away</span>
 <span class="c1"># the GPU... If that happens, you can reload from a saved point using the</span>
 <span class="c1"># `snapshot_path` argument to `deeplabcut.train_network`:</span>
-<span class="c1">#   deeplabcut.train_network(..., snapshot_path=&quot;/content/.../snapshot-050.pt&quot;)</span>
+<span class="c1">#   deeplabcut.train_network(..., snapshot_path="/content/.../snapshot-050.pt")</span>
 
 <span class="c1"># Typically, you want to train to ~200 epochs. We set the batch size to 8 to</span>
-<span class="c1"># utilize the GPU&#39;s capabilities.</span>
+<span class="c1"># utilize the GPU's capabilities.</span>
 
 <span class="c1"># More info and there are more things you can set:</span>
 <span class="c1">#   https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html#g-train-the-network</span>
@@ -710,7 +711,7 @@ document.write(`
     <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="c1"># This will run until you stop it (CTRL+C), or hit &quot;STOP&quot; icon, or when it hits the end.</span>
+<span class="c1"># This will run until you stop it (CTRL+C), or hit "STOP" icon, or when it hits the end.</span>
 </pre></div>
 </div>
 </div>

@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -604,7 +605,7 @@ pip<span class="w"> </span>install<span class="w"> </span>deeplabcut<span class=
 
 <span class="c1"># ONLY IF YOU HAVE A CUDA GPU - check that PyTorch can access your GPU; this</span>
 <span class="c1"># should print `True`</span>
-python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import torch; print(torch.cuda.is_available())&quot;</span>
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import torch; print(torch.cuda.is_available())"</span>
 </pre></div>
 </div>
 </div>
@@ -767,7 +768,7 @@ This is addressed in the listed extras by capping the PyTorch version to match t
 In case you experience problems with the above installation, you can try to let TensorFlow install their own CUDA-toolkit libraries.
 Please run the following installation command (in Linux), replacing <tf-version> with your TensorFlow version (see table above).
 Note that this may break PyTorch functionality.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;tensorflow[and-cuda]==&lt;tf-version&gt;&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">"tensorflow[and-cuda]==&lt;tf-version&gt;"</span>
 </pre></div>
 </div>
 <p><strong>Advanced manual setup (Linux):</strong>
@@ -779,20 +780,20 @@ to know which version of CUDA and cuDNN you should install.</p>
 <p>We have found that installing DeepLabCut with the following commands works well for
 Linux users to install PyTorch 2.3.1, TensorFlow 2.12, CUDA 11.8 and cuDNN 8 in a Conda
 environment:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>deeplabcut-with-tf<span class="w"> </span><span class="s2">&quot;python=3.10&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>deeplabcut-with-tf<span class="w"> </span><span class="s2">"python=3.10"</span>
 conda<span class="w"> </span>activate<span class="w"> </span>deeplabcut-with-tf
 
 <span class="c1"># Install the desired TensorFlow version, built for CUDA 11.8 and cuDNN 8</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;tensorflow==2.12&quot;</span><span class="w"> </span><span class="s2">&quot;tensorpack&gt;=0.11&quot;</span><span class="w"> </span><span class="s2">&quot;tf_slim&gt;=1.1.0&quot;</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"tensorflow==2.12"</span><span class="w"> </span><span class="s2">"tensorpack&gt;=0.11"</span><span class="w"> </span><span class="s2">"tf_slim&gt;=1.1.0"</span>
 
 <span class="c1"># Install PyTorch with a version using CUDA 11.8 and cuDNN 8</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;torch==2.3.1&quot;</span><span class="w"> </span>torchvision<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"torch==2.3.1"</span><span class="w"> </span>torchvision<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
 
 <span class="c1"># Create symbolic links to NVIDIA shared libraries for TensorFlow</span>
 <span class="c1">#   -&gt; as described in their installation docs:</span>
 <span class="c1">#      https://www.tensorflow.org/install/pip#step-by-step_instructions</span>
 
-<span class="nb">pushd</span><span class="w"> </span><span class="k">$(</span>dirname<span class="w"> </span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;print(__import__(&quot;tensorflow&quot;).__file__)&#39;</span><span class="k">))</span>
+<span class="nb">pushd</span><span class="w"> </span><span class="k">$(</span>dirname<span class="w"> </span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">'print(__import__("tensorflow").__file__)'</span><span class="k">))</span>
 ln<span class="w"> </span>-svf<span class="w"> </span>../nvidia/*/lib/*.so*<span class="w"> </span>.
 <span class="nb">popd</span>
 
@@ -842,7 +843,7 @@ though!  -->
 <li><p>Run in the cloned repo:</p></li>
 </ul>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>venv<span class="w"> </span>-p<span class="w"> </span><span class="m">3</span>.12
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;.[gui]&#39;</span><span class="w"> </span><span class="c1"># Change optional installs as needed</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">'.[gui]'</span><span class="w"> </span><span class="c1"># Change optional installs as needed</span>
 <span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w"> </span><span class="c1"># or &amp; .venv\Scripts\activate.ps1 on Windows</span>
 </pre></div>
 </div>

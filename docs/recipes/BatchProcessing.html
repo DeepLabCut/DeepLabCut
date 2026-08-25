@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -540,32 +541,32 @@ network is your config.yaml file.</p>
 <p>Here is an example script. You can copy/paste into a file and end with “.py” to make it a python script.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">Created on Sun Feb 10 16:04:37 2019</span>
 
 <span class="sd">@author: alex</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">getsubfolders</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39; returns list of subfolders &#39;&#39;&#39;</span>
+<span class="w">    </span><span class="sd">''' returns list of subfolders '''</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">p</span><span class="p">))]</span>
 
-<span class="n">project</span> <span class="o">=</span> <span class="s2">&quot;ComplexWheelD3-12-Fumi-2019-01-28&quot;</span>
+<span class="n">project</span> <span class="o">=</span> <span class="s2">"ComplexWheelD3-12-Fumi-2019-01-28"</span>
 
 <span class="n">shuffle</span> <span class="o">=</span> <span class="mi">1</span>
 
-<span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;/home/alex/DLC-workshopRowland&quot;</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s2">"/home/alex/DLC-workshopRowland"</span>
 
 <span class="n">projectpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
-<span class="n">config</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">projectpath</span><span class="p">,</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">projectpath</span><span class="p">,</span> <span class="s2">"config.yaml"</span><span class="p">)</span>
 
-<span class="n">basepath</span> <span class="o">=</span> <span class="s2">&quot;/home/alex/BenchmarkingExperimentsJan2019&quot;</span>
+<span class="n">basepath</span> <span class="o">=</span> <span class="s2">"/home/alex/BenchmarkingExperimentsJan2019"</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 
 <span class="sd">Imagine that the data (here: videos of 3 different types) are in subfolders:</span>
 <span class="sd">    /January/January29 ..</span>
@@ -574,15 +575,15 @@ network is your config.yaml file.</p>
 
 <span class="sd">    etc.</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 
 <span class="n">subfolders</span> <span class="o">=</span> <span class="n">getsubfolders</span><span class="p">(</span><span class="n">basepath</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">subfolder</span> <span class="ow">in</span> <span class="n">subfolders</span><span class="p">:</span> <span class="c1">#this would be January, February etc. in the upper example</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting analyze data in: &quot;</span><span class="p">,</span> <span class="n">subfolder</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Starting analyze data in: "</span><span class="p">,</span> <span class="n">subfolder</span><span class="p">)</span>
     <span class="n">subsubfolders</span> <span class="o">=</span> <span class="n">getsubfolders</span><span class="p">(</span><span class="n">subfolder</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">subsubfolder</span> <span class="ow">in</span> <span class="n">subsubfolders</span><span class="p">:</span> <span class="c1">#this would be February1, etc. in the upper example...</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting analyze data in: &quot;</span><span class="p">,</span> <span class="n">subsubfolder</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">vtype</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.m4v&quot;</span><span class="p">,</span> <span class="s2">&quot;.mpg&quot;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Starting analyze data in: "</span><span class="p">,</span> <span class="n">subsubfolder</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">vtype</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">".mp4"</span><span class="p">,</span> <span class="s2">".m4v"</span><span class="p">,</span> <span class="s2">".mpg"</span><span class="p">]:</span>
             <span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config</span><span class="p">,[</span><span class="n">subsubfolder</span><span class="p">],</span><span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">,</span><span class="n">videotype</span><span class="o">=</span><span class="n">vtype</span><span class="p">,</span><span class="n">save_as_csv</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 </pre></div>
@@ -593,14 +594,14 @@ network is your config.yaml file.</p>
 <p>Make your labmates happy by helping run everyone’s projects! We use this for workshops, but can easily be adapted for your needs. Here is an example script. You can copy/paste into a file and end with “.py” to make it a python script.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-&quot;&quot;&quot;
+"""
 Created on Sat Nov 17 14:12:43 2018
 
 An example script to automate analysis on 3 different GPUs for different projects. Feel free to adapt this to your needs!
 
 @author: alex mathis
 
-&quot;&quot;&quot;
+"""
 
 import subprocess, sys
 import numpy as np
@@ -613,41 +614,41 @@ epochs = 200
 
 model=int(sys.argv[1])
 
-Projects=[[&quot;project1-phoenix-2019-01-28&quot;], [&quot;ComplexWheelD3-12-Fumi-2019-01-28&quot;, &quot;maze-ariel-2019-01-28&quot;], [&quot;TBI-BvA-2019-01-28&quot;, &quot;group-eli-2019-01-28&quot;]]
+Projects=[["project1-phoenix-2019-01-28"], ["ComplexWheelD3-12-Fumi-2019-01-28", "maze-ariel-2019-01-28"], ["TBI-BvA-2019-01-28", "group-eli-2019-01-28"]]
 
 shuffle=1
 
-prefix = &quot;/home/alex/DLC-workshopRowland&quot;
+prefix = "/home/alex/DLC-workshopRowland"
 
 for project in Projects[model]:
     projectpath = os.path.join(prefix, project)
-    config = os.path.join(projectpath, &quot;config.yaml&quot;)
+    config = os.path.join(projectpath, "config.yaml")
 
     cfg = deeplabcut.auxiliaryfunctions.read_config(config)
-    previous_path = cfg[&quot;project_path&quot;]
+    previous_path = cfg["project_path"]
 
-    cfg[&quot;project_path&quot;]=projectpath
+    cfg["project_path"]=projectpath
     deeplabcut.auxiliaryfunctions.write_config(config, cfg)
 
-    print(&quot;This is the name of the script: &quot;, sys.argv[0])
-    print(&quot;Shuffle: &quot;, shuffle)
-    print(&quot;config: &quot;, config)
+    print("This is the name of the script: ", sys.argv[0])
+    print("Shuffle: ", shuffle)
+    print("config: ", config)
 
     deeplabcut.create_training_dataset(config, Shuffles=[shuffle])
 
     deeplabcut.train_network(config, shuffle=shuffle, max_snapshots_to_keep=5, epochs=epochs)
-    print(&quot;Evaluating...&quot;)
+    print("Evaluating...")
     deeplabcut.evaluate_network(config, Shuffles=[shuffle], plotting=True)
 
-    print(&quot;Analyzing videos..., switching to last snapshot...&quot;)
-    for vtype in [&#39;.mp4&#39;,&#39;.m4v&#39;,&#39;.mpg&#39;]:
+    print("Analyzing videos..., switching to last snapshot...")
+    for vtype in ['.mp4','.m4v','.mpg']:
         try:
-            deeplabcut.analyze_videos(config, [str(os.path.join(projectpath, &quot;videos&quot;))], shuffle=shuffle, videotype=vtype, save_as_csv=True)
+            deeplabcut.analyze_videos(config, [str(os.path.join(projectpath, "videos"))], shuffle=shuffle, videotype=vtype, save_as_csv=True)
         except Exception:
             pass
 
-    print(&quot;DONE WITH &quot;, project,&quot; resetting to original path&quot;)
-    cfg[&quot;project_path&quot;] = previous_path
+    print("DONE WITH ", project," resetting to original path")
+    cfg["project_path"] = previous_path
     deeplabcut.auxiliaryfunctions.write_config(config, cfg)
     ```
 </pre></div>

@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -592,8 +593,8 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Setup your project variables:</span>
-<span class="n">YourName</span> <span class="o">=</span> <span class="s2">&quot;teamDLC&quot;</span>
-<span class="n">YourExperimentName</span> <span class="o">=</span> <span class="s2">&quot;testing&quot;</span>
+<span class="n">YourName</span> <span class="o">=</span> <span class="s2">"teamDLC"</span>
+<span class="n">YourExperimentName</span> <span class="o">=</span> <span class="s2">"testing"</span>
 </pre></div>
 </div>
 </div>
@@ -605,13 +606,13 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Created &quot;/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/camera_matrix&quot;
-Created &quot;/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/calibration_images&quot;
-Created &quot;/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/undistortion&quot;
-Created &quot;/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/corners&quot;
-Generated &quot;/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/config.yaml&quot;
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Created "/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/camera_matrix"
+Created "/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/calibration_images"
+Created "/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/undistortion"
+Created "/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/corners"
+Generated "/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/config.yaml"
 
-A new project with name testing-teamDLC-2019-10-29-3d is created at /home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples and a configurable file (config.yaml) is stored there. If you have not calibrated the cameras, then use the function &#39;calibrate_camera&#39; to start calibrating the camera otherwise use the function ``triangulate`` to triangulate the dataframe
+A new project with name testing-teamDLC-2019-10-29-3d is created at /home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples and a configurable file (config.yaml) is stored there. If you have not calibrated the cameras, then use the function 'calibrate_camera' to start calibrating the camera otherwise use the function ``triangulate`` to triangulate the dataframe
 </pre></div>
 </div>
 </div>
@@ -620,10 +621,10 @@ A new project with name testing-teamDLC-2019-10-29-3d is created at /home/macken
 <p><strong>TIP 2:</strong> you can also place config_path3d in front of deeplabcut.create_new_project_3d to create a variable that holds the path to the config.yaml file, i.e. <code class="docutils literal notranslate"><span class="pre">config_path3d=deeplabcut.create_new_project_3d(...</span></code></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># If you&#39;re loading an already created project, just set the 3D Project config_path variable:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># If you're loading an already created project, just set the 3D Project config_path variable:</span>
 <span class="c1"># import os</span>
 <span class="c1"># from pathlib import Path</span>
-<span class="c1"># config_path3d = os.path.join(os.getcwd(),&#39;testing3D-DeepLabCutTeam-2019-06-05-3d/config.yaml&#39;)</span>
+<span class="c1"># config_path3d = os.path.join(os.getcwd(),'testing3D-DeepLabCutTeam-2019-06-05-3d/config.yaml')</span>
 <span class="c1"># print(config_path3d)</span>
 </pre></div>
 </div>
@@ -716,9 +717,9 @@ extracts the grid pattern from the calibration images and store them under the <
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Of course, this does not work on the demo calibration images,</span>
 <span class="c1"># but when you are ready for your own dataset, edit and then run the following!</span>
 
-<span class="n">video_path</span> <span class="o">=</span> <span class="s2">&quot;/home/yourname/videoFolder&quot;</span>
+<span class="n">video_path</span> <span class="o">=</span> <span class="s2">"/home/yourname/videoFolder"</span>
 
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">triangulate</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">video_path</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">triangulate</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">video_path</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">"mp4"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -730,7 +731,7 @@ extracts the grid pattern from the calibration images and store them under the <
 <p>In order to visualize the pose in 3D, the user can create a 3D video for certain frames (these are large files, so we advise just looking at a subset of frames). The user can specify the path of the triangulated file and specify the start and end frame indices to create a 3D labeled video. Note that the triangulated_file is the newly created file that ends with yourDLC_3D_scorername.h5. This can be done using:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video_3d</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;triangulated_file_folder&quot;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">trailpoints</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video_3d</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s2">"triangulated_file_folder"</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">trailpoints</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

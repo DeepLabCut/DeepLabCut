@@ -1,0 +1,1158 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Camera configuration &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=9e359f71" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../../_static/togglebutton.js?v=b8b12719"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/dlc-live/dlc-live-gui/user_guide/camera_config';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="Additional resources" href="misc/misc_landing.html" />
+    <link rel="prev" title="GenTL backend" href="cameras_backends/gentl_backend.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
+    <script>document.write(`<img src="../../../../_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../installation.html">Installing DeepLabCut</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../docker.html">DeepLabCut in Docker</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main workflows overview</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../main-workflows/user-guide.html">DeepLabCut User Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../quick-start/single_animal_quick_guide.html">Single-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../quick-start/tutorial_maDLC.html">Multi-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../main-workflows/multi-animal-tracking.html">Multi-animal tracking</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Overviewof3D.html">3D DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">GUI workflow</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../gui/PROJECT_GUI.html">Project Manager GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../beginner-guides/beginners-guide.html">Setting up a new project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../beginner-guides/manage-project.html">Editing and working with the configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../beginner-guides/Training-Evaluation.html">Neural network training and evaluation in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../beginner-guides/video-analysis.html">Video analysis in the GUI</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../gui/napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../gui/napari/basic_usage.html">Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../gui/napari/advanced_usage.html">Advanced features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../gui/napari/tracking/basic_usage.html">Automated annotation with point tracking</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Notebooks &amp; Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../notebooks/your_data.html">Notebooks for your data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../notebooks/main_demos.html">Demo notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../notebooks/extra.html">Additional features notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut 3.0 - PyTorch guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../pytorch/index.html">PyTorch backend guides</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../pytorch/user_guide.html">What is new in DeepLabCut 3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pytorch/pytorch_config.html">Configuration file reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pytorch/architectures.html">Model architectures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pytorch/Benchmarking_shuffle_guide.html">Benchmarking user guide</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced, Performance &amp; Live</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../ModelZoo.html">The DeepLabCut Model Zoo!</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">DeepLabCut-live-GUI</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../quickstart/install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html">GUI overview</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cameras_backends/camera_support.html">Camera support</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cameras_backends/opencv_backend.html">OpenCV backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cameras_backends/basler_backend.html">Basler backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cameras_backends/aravis_backend.html">Aravis backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cameras_backends/gentl_backend.html">GenTL backend</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Camera configuration</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="misc/modelzoo_downloads.html">Pre-trained models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="misc/timestamp_format.html">Video timestamp format</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../benchmark.html">DeepLabCut benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../recipes/TechHardware.html">Technical &amp; hardware considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/dev/">Developer Documentation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Additional guides (Recipes)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../recipes/index.html">The DeepLabCut Cookbook</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../../../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../dlc-utils/index.html">DeepLabCut-Utils - Community contributions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../dlc-utils/XROMM/usage.html">XROMM + DeepLabCut local integration</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Project &amp; Community</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Governance.html">Governance Model of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../CONTRIBUTING.html">Contributing to DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../citation.html">How to Cite DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/dlc-live/dlc-live-gui/user_guide/camera_config.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../../_sources/docs/dlc-live/dlc-live-gui/user_guide/camera_config.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Camera configuration</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#open-the-camera-configuration-dialog">Open the camera configuration dialog</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-configuration">Example configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#discover-cameras">Discover cameras</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#select-a-backend">Select a backend</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#refresh-the-device-list">Refresh the device list</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#device-identity">Device identity</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#manage-active-cameras">Manage active cameras</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#add-a-camera">Add a camera</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-or-disable-a-camera">Enable or disable a camera</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#remove-a-camera">Remove a camera</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reorder-cameras">Reorder cameras</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#active-camera-labels">Active camera labels</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-identity-and-detected-values">Camera identity and detected values</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#requested-versus-detected-values">Requested versus detected values</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#capture-settings">Capture settings</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resolution">Resolution</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#frame-rate">Frame rate</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#exposure">Exposure</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gain">Gain</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rotation">Rotation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#crop-coordinates">Crop coordinates</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preserve-mono-output">Preserve Mono output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#trigger-settings">Trigger settings</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#apply-reset-and-preview-settings">Apply, reset, and preview settings</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#apply-settings">Apply Settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#automated-preview-restart">Automated preview restart</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reset-settings">Reset Settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-preview">Configuration preview</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#save-or-discard-the-configuration">Save or discard the configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ok">OK</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cancel">Cancel</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-camera-recommendations">Multi-camera recommendations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#no-cameras-detected">No cameras detected</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-opens-but-no-frames-arrive">Camera opens but no frames arrive</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#requested-values-are-not-applied-exactly">Requested values are not applied exactly</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mono-camera-recording-is-dropping-frames-at-high-fps">Mono camera recording is dropping frames at high FPS</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#trigger-settings-are-ignored-or-disabled">Trigger settings are ignored or disabled</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#related-pages">Related pages</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="camera-configuration">
+<span id="file-dlclivegui-camera-configuration"></span><h1>Camera configuration<a class="headerlink" href="#camera-configuration" title="Link to this heading">#</a></h1>
+<p>The <strong>Configure Cameras</strong> dialog is used to add cameras to the application, adjust capture settings, and verify each camera with a live preview.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The application currently allows <strong>up to four</strong> enabled cameras.</p>
+<p>For backend installation, supported camera families, and backend-specific limitations, see:</p>
+<p><a class="reference internal" href="cameras_backends/camera_support.html#file-dlclivegui-camera-support"><span class="std std-ref">Camera support</span></a>.</p>
+</div>
+<section id="open-the-camera-configuration-dialog">
+<h2>Open the camera configuration dialog<a class="headerlink" href="#open-the-camera-configuration-dialog" title="Link to this heading">#</a></h2>
+<p>From the main window, select <strong>Configure Cameras…</strong> in the <strong>Camera</strong> section of the Controls panel.</p>
+<p>The dialog contains:</p>
+<ul class="simple">
+<li><p><strong>Active cameras</strong>: Cameras included in the current application configuration</p></li>
+<li><p><strong>Available cameras</strong>: Devices discovered for the selected backend</p></li>
+<li><p><strong>Camera settings and preview</strong>: Settings, detected values, trigger controls, and a live preview for the selected active camera</p></li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The main window live preview must be stopped before opening the camera configuration dialog.</p>
+</div>
+</section>
+<section id="example-configuration">
+<h2>Example configuration<a class="headerlink" href="#example-configuration" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>Select the desired camera <strong>Backend</strong>.</p>
+<ul class="simple">
+<li><p>A backend must be properly installed to appear in the list</p></li>
+<li><p>See <a class="reference internal" href="cameras_backends/camera_support.html#file-dlclivegui-camera-support"><span class="std std-ref">Camera support</span></a> for backend installation</p></li>
+</ul>
+</li>
+<li><p>Wait for discovery to complete, or select <strong>Refresh</strong> to scan again</p></li>
+<li><p>Select a device under <strong>Available cameras</strong></p></li>
+<li><p>Select <strong>Add Camera</strong> or double-click the device</p></li>
+<li><p>Select the camera under <strong>Active cameras</strong></p></li>
+<li><p>Adjust capture, output, crop, or trigger settings</p></li>
+<li><p>Select <strong>Apply Settings</strong></p></li>
+<li><p>Start the configuration preview and verify the image and reported values</p></li>
+<li><p>Repeat for any additional cameras</p></li>
+<li><p>Select <strong>OK</strong> to apply the complete camera configuration to the main window</p></li>
+</ol>
+</section>
+<section id="discover-cameras">
+<h2>Discover cameras<a class="headerlink" href="#discover-cameras" title="Link to this heading">#</a></h2>
+<section id="select-a-backend">
+<h3>Select a backend<a class="headerlink" href="#select-a-backend" title="Link to this heading">#</a></h3>
+<p>Changing the backend starts a new discovery scan.
+The available devices shown in the dialog belong to the currently selected backend.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Camera capabilities <strong>vary by backend, camera model and driver.</strong></p>
+<p>The GUI enables, disables, or marks controls as best-effort according to the selected backend’s reported capabilities.</p>
+<p>There are many camera functionalities <strong>currently unsupported by the GUI</strong>, though they may be available on the camera hardware or SDK.</p>
+<p>If you need a specific camera feature on a specific backend, <strong>please let us know</strong> so we can improve our support selectively.</p>
+</div>
+</section>
+<section id="refresh-the-device-list">
+<h3>Refresh the device list<a class="headerlink" href="#refresh-the-device-list" title="Link to this heading">#</a></h3>
+<p>Select <strong>Refresh</strong> to scan the selected backend again.</p>
+</section>
+<section id="device-identity">
+<h3>Device identity<a class="headerlink" href="#device-identity" title="Link to this heading">#</a></h3>
+<p>When supported by the backend, the application stores a stable device identity such as a serial number or device ID.
+This helps reconnect the configuration to the same physical camera if device enumeration order changes.</p>
+<p>If stable identity is unavailable, the backend may fall back to the device index.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>A device index is not necessarily permanent. Connecting, disconnecting, or reordering devices can change enumeration order. Verify the selected physical camera after hardware changes.</p>
+</div>
+</section>
+</section>
+<section id="manage-active-cameras">
+<h2>Manage active cameras<a class="headerlink" href="#manage-active-cameras" title="Link to this heading">#</a></h2>
+<section id="add-a-camera">
+<h3>Add a camera<a class="headerlink" href="#add-a-camera" title="Link to this heading">#</a></h3>
+<p>Select a detected device under <strong>Available cameras</strong>, then select <strong>Add Camera</strong>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can also double-click a detected device to add it.</p>
+</div>
+</section>
+<section id="enable-or-disable-a-camera">
+<h3>Enable or disable a camera<a class="headerlink" href="#enable-or-disable-a-camera" title="Link to this heading">#</a></h3>
+<p>Use the <strong>Enabled</strong> checkbox for the selected active camera.</p>
+</section>
+<section id="remove-a-camera">
+<h3>Remove a camera<a class="headerlink" href="#remove-a-camera" title="Link to this heading">#</a></h3>
+<p>Select a camera under <strong>Active cameras</strong>, then select <strong>Remove Camera</strong>.</p>
+<p>Removing a camera deletes it from the working camera configuration.
+It can be added again later.</p>
+</section>
+<section id="reorder-cameras">
+<h3>Reorder cameras<a class="headerlink" href="#reorder-cameras" title="Link to this heading">#</a></h3>
+<p>Use the move-up and move-down controls to change <strong>active camera order</strong>.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Camera order can affect presentation order in the GUI, including the tiled multi-camera preview.</p>
+</div>
+</section>
+<section id="active-camera-labels">
+<h3>Active camera labels<a class="headerlink" href="#active-camera-labels" title="Link to this heading">#</a></h3>
+<p>The active-camera list summarizes important state using labels:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">✓</span></code> indicates an enabled camera.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">○</span></code> indicates a disabled camera.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[external]</span></code>, <code class="docutils literal notranslate"><span class="pre">[follower]</span></code>, or <code class="docutils literal notranslate"><span class="pre">[master]</span></code> indicates an active trigger role.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[DLC]</span></code> identifies the camera selected for pose inference when applicable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[Mono]</span></code> indicates that mono output is preserved.</p></li>
+</ul>
+</section>
+</section>
+<section id="camera-identity-and-detected-values">
+<h2>Camera identity and detected values<a class="headerlink" href="#camera-identity-and-detected-values" title="Link to this heading">#</a></h2>
+<p>The settings area displays read-only identity and probe information for the selected camera, including values such as:</p>
+<ul class="simple">
+<li><p>Camera name</p></li>
+<li><p>Device ID</p></li>
+<li><p>Device index</p></li>
+<li><p>Backend</p></li>
+<li><p>Detected resolution</p></li>
+<li><p>Detected frame rate</p></li>
+<li><p>Camera pixel or output format</p></li>
+</ul>
+<p>The application probes the selected camera to retrieve available runtime information.
+Detected values describe what the backend reports and may differ from the values requested in the editable controls.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A blank or unavailable detected value does not always mean the camera cannot be used.
+Some backends and drivers do not reliably expose all runtime properties.</p>
+</div>
+<section id="requested-versus-detected-values">
+<h3>Requested versus detected values<a class="headerlink" href="#requested-versus-detected-values" title="Link to this heading">#</a></h3>
+<p>Editable fields represent the requested configuration.
+Detected labels represent values reported by the opened camera.</p>
+<p>For example:</p>
+<ul class="simple">
+<li><p>A requested frame rate may be adjusted to a nearby supported value.</p></li>
+<li><p>A requested resolution may be constrained by camera increments or supported modes.</p></li>
+<li><p>A frame rate of <code class="docutils literal notranslate"><span class="pre">0</span></code> represents <strong>Auto</strong>, meaning the backend does not force a specific value.</p></li>
+</ul>
+<p>Always verify the detected values and live preview after applying settings.</p>
+</section>
+</section>
+<section id="capture-settings">
+<h2>Capture settings<a class="headerlink" href="#capture-settings" title="Link to this heading">#</a></h2>
+<section id="resolution">
+<h3>Resolution<a class="headerlink" href="#resolution" title="Link to this heading">#</a></h3>
+<p>Use <strong>Width</strong> and <strong>Height</strong> to request the capture resolution.</p>
+<p>A value of <code class="docutils literal notranslate"><span class="pre">0</span></code> represents <strong>Auto</strong> or the device default.
+Camera backends may clamp or adjust requested dimensions according to supported ranges and increments.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Recording requires a constant frame size. Do not externally change camera resolution during an active recording.</p>
+</div>
+</section>
+<section id="frame-rate">
+<h3>Frame rate<a class="headerlink" href="#frame-rate" title="Link to this heading">#</a></h3>
+<p>Use <strong>FPS</strong> to request the camera frame rate.</p>
+<ul class="simple">
+<li><p>A positive value requests a specific frame rate.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">0</span></code> leaves frame-rate selection to the camera or backend.</p></li>
+</ul>
+<p>When the backend reports an actual frame rate, the configuration preview adjusts its update cadence accordingly.
+If the reported value differs from the request, the GUI may display the device-supported value.</p>
+</section>
+<section id="exposure">
+<h3>Exposure<a class="headerlink" href="#exposure" title="Link to this heading">#</a></h3>
+<p>Use <strong>Exposure</strong> to request camera exposure. A value of <code class="docutils literal notranslate"><span class="pre">0</span></code> leaves exposure automatic or unchanged, depending on the backend.</p>
+<p>Exposure units and supported ranges depend on the backend and camera model. For supported Basler and GenTL cameras, exposure is commonly represented in microseconds.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Long exposure times can limit achievable frame rate.
+When a requested frame rate cannot be reached, verify that exposure duration is short enough for the intended frame interval.</p>
+</div>
+</section>
+<section id="gain">
+<h3>Gain<a class="headerlink" href="#gain" title="Link to this heading">#</a></h3>
+<p>Use <strong>Gain</strong> to request camera gain. A value of <code class="docutils literal notranslate"><span class="pre">0</span></code> leaves gain automatic or unchanged, depending on the backend.
+Higher gain can brighten an image but may also increase image noise. Verify the result in the configuration preview.</p>
+</section>
+<section id="rotation">
+<h3>Rotation<a class="headerlink" href="#rotation" title="Link to this heading">#</a></h3>
+<p>Use <strong>Rotation</strong> to rotate frames for display and downstream processing.
+Rotation is applied by the application and can be updated without reopening the camera preview.</p>
+</section>
+<section id="crop-coordinates">
+<h3>Crop coordinates<a class="headerlink" href="#crop-coordinates" title="Link to this heading">#</a></h3>
+<p>Use <code class="docutils literal notranslate"><span class="pre">x0</span></code>, <code class="docutils literal notranslate"><span class="pre">y0</span></code>, <code class="docutils literal notranslate"><span class="pre">x1</span></code>, and <code class="docutils literal notranslate"><span class="pre">y1</span></code> to define a rectangular crop:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">x0</span></code>, <code class="docutils literal notranslate"><span class="pre">y0</span></code>: Top-left corner</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x1</span></code>, <code class="docutils literal notranslate"><span class="pre">y1</span></code>: Bottom-right corner</p></li>
+</ul>
+<p>A valid crop requires <code class="docutils literal notranslate"><span class="pre">x1</span> <span class="pre">&gt;</span> <span class="pre">x0</span></code> and <code class="docutils literal notranslate"><span class="pre">y1</span> <span class="pre">&gt;</span> <span class="pre">y0</span></code>.</p>
+<p>Coordinates are clamped to the current frame dimensions during preview.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Click and drag left/right on a coordinate input value to adjust pixel-by-pixel.
+Hold <strong>Ctrl</strong> or <strong>Shift</strong> for faster/slower adjustments respectively.</p>
+</div>
+</section>
+</section>
+<section id="preserve-mono-output">
+<h2>Preserve Mono output<a class="headerlink" href="#preserve-mono-output" title="Link to this heading">#</a></h2>
+<p>Enable <strong>Preserve mono frames</strong> when a supported monochrome camera should produce two-dimensional grayscale frames instead of expanding them to three-channel color.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Conversion to color can slow down the capture pipeline when using several high-FPS/resolution cameras.</p>
+<ul class="simple">
+<li><p>Always <strong>enable</strong> mono preservation when you have <strong>grayscale cameras and the backend supports it</strong></p></li>
+<li><p>Always <strong>disable</strong> mono preservation when you have <strong>color cameras</strong></p></li>
+</ul>
+</div>
+<p>The probe may recommend mono preservation when it detects a monochrome camera and the backend supports mono output.</p>
+</section>
+<section id="trigger-settings">
+<span id="sec-dlclivegui-trigger-settings"></span><h2>Trigger settings<a class="headerlink" href="#trigger-settings" title="Link to this heading">#</a></h2>
+<p>For camera backends that expose triggering support, select a configured camera and choose <strong>Trigger Settings…</strong>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>When to use triggered cameras
+Triggering cameras can be useful if you need precise camera synchronization or need to coordinate with other devices.</p>
+<p>In principle, it makes a camera follow external signals rather than its own internal clock,
+ensuring much tighter synchronization between multiple cameras or other devices.</p>
+</div>
+<p>Trigger configuration is currently available for the <strong>Basler</strong> and <strong>GenTL</strong> backends.</p>
+<p><em>The available fields remain <strong>camera and driver-dependent</strong>.</em></p>
+<ul class="simple">
+<li><p><strong>Off / Free-run</strong>: Disable triggering and acquire frames continuously.</p></li>
+<li><p><strong>External trigger</strong>: Wait for hardware pulses on the selected input source.</p></li>
+<li><p><strong>Master output</strong>: Keep the camera free-running and configure an output signal for another camera or device.</p></li>
+<li><p><strong>Follower</strong>: Configure the camera as a synchronized input that follows an external trigger source. Similar to external trigger conceptually.</p></li>
+</ul>
+<p>The active-camera list shows the configured role, such as <code class="docutils literal notranslate"><span class="pre">[external]</span></code>, <code class="docutils literal notranslate"><span class="pre">[follower]</span></code>, or <code class="docutils literal notranslate"><span class="pre">[master]</span></code>.</p>
+<p>For <strong>External trigger</strong> and <strong>Follower</strong>, configure:</p>
+<ul class="simple">
+<li><p><strong>Trigger selector</strong>: Usually <code class="docutils literal notranslate"><span class="pre">FrameStart</span></code> for area-scan cameras.</p></li>
+<li><p><strong>Trigger source</strong>: Select <code class="docutils literal notranslate"><span class="pre">auto</span></code> or enter a camera-supported source such as <code class="docutils literal notranslate"><span class="pre">Line1</span></code> or <code class="docutils literal notranslate"><span class="pre">Line2</span></code>.</p></li>
+<li><p><strong>Activation</strong>: Choose the signal condition, such as <code class="docutils literal notranslate"><span class="pre">RisingEdge</span></code> or <code class="docutils literal notranslate"><span class="pre">FallingEdge</span></code>.</p></li>
+<li><p><strong>Read timeout</strong>: Maximum frame wait in seconds. The backend may use shorter individual waits to keep preview shutdown responsive.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The read timeout is a maximum wait for a single frame.</p>
+<p>If the camera does not receive a valid trigger signal within this time, the backend ends the current wait and reports a timeout error.
+It does not disable the trigger configuration or permanently stop the camera.</p>
+</div>
+<p>For <strong>Master output</strong>, configure:</p>
+<ul class="simple">
+<li><p><strong>Output line</strong>: The camera output line, such as <code class="docutils literal notranslate"><span class="pre">Line2</span></code>.</p></li>
+<li><p><strong>Output source</strong>: The signal routed to that line, such as <code class="docutils literal notranslate"><span class="pre">ExposureActive</span></code>.</p></li>
+<li><p><strong>GenTL strobe options</strong>: Compatible GenTL cameras may additionally expose strobe polarity, operation, duration, and delay. A value of <strong>Default</strong> leaves duration or delay unset.</p></li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The trigger dialog provides backend-specific suggestions, not a guarantee that the selected camera supports every displayed value.</p>
+<p>Enable <strong>Strict mode</strong> when missing or unsupported required trigger features should prevent the camera from opening.
+With strict mode disabled, the backend applies supported settings best-effort and may disable an unsupported trigger configuration.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Start the camera preview after changing trigger settings to verify the configuration. An externally triggered camera may wait or time out until it receives a valid pulse.</p>
+</div>
+</section>
+<section id="apply-reset-and-preview-settings">
+<h2>Apply, reset, and preview settings<a class="headerlink" href="#apply-reset-and-preview-settings" title="Link to this heading">#</a></h2>
+<section id="apply-settings">
+<h3>Apply Settings<a class="headerlink" href="#apply-settings" title="Link to this heading">#</a></h3>
+<p>Select <strong>Apply Settings</strong> to validate and store the current camera settings.
+Pending edits are also applied automatically before actions such as switching cameras, adding a camera, starting preview, or closing the dialog with <strong>OK</strong>.
+If validation fails, remain on the current camera and correct the reported setting.</p>
+</section>
+<section id="automated-preview-restart">
+<h3>Automated preview restart<a class="headerlink" href="#automated-preview-restart" title="Link to this heading">#</a></h3>
+<p>Camera-side changes require the backend to reopen. The configuration preview restarts for changes such as:</p>
+<ul class="simple">
+<li><p>Width or height</p></li>
+<li><p>Frame rate</p></li>
+<li><p>Exposure</p></li>
+<li><p>Gain</p></li>
+<li><p>Preserve-mono mode</p></li>
+<li><p>Trigger settings</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Rotation and crop settings are applied by the preview path and do not require reopening the camera.
+Note that the <strong>main GUI preview</strong> may <strong>use the SDK native rotation and crop</strong> instead if the backend supports it.</p>
+</div>
+</section>
+<section id="reset-settings">
+<h3>Reset Settings<a class="headerlink" href="#reset-settings" title="Link to this heading">#</a></h3>
+<p>Select <strong>Reset Settings</strong> to clear requested capture settings.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Reset updates the working camera configuration.</p>
+</div>
+</section>
+<section id="configuration-preview">
+<h3>Configuration preview<a class="headerlink" href="#configuration-preview" title="Link to this heading">#</a></h3>
+<p>Select <strong>Start Preview</strong> to open the selected active camera.
+The preview displays status messages while loading and reports available information such as requested versus actual resolution, device identity, pixel format, and backend output format.</p>
+<p>Use <strong>Stop Preview</strong> when finished.
+Select <strong>Cancel Loading</strong> if camera startup is taking too long or seems to hang.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>An externally triggered camera may show no frames until valid trigger pulses arrive.
+This can be expected behavior rather than a camera failure.</p>
+<p>Check your trigger settings, wiring and signal source.</p>
+</div>
+</section>
+</section>
+<section id="save-or-discard-the-configuration">
+<h2>Save or discard the configuration<a class="headerlink" href="#save-or-discard-the-configuration" title="Link to this heading">#</a></h2>
+<section id="ok">
+<h3>OK<a class="headerlink" href="#ok" title="Link to this heading">#</a></h3>
+<p>Select <strong>OK</strong> to apply any pending edits and return the working camera configuration to the main window</p>
+<p>If cameras have been added but none are enabled, the dialog asks you to enable at least one camera or remove all cameras.</p>
+</section>
+<section id="cancel">
+<h3>Cancel<a class="headerlink" href="#cancel" title="Link to this heading">#</a></h3>
+<p>Select <strong>Cancel</strong> or close the dialog to discard unaccepted changes and stop active preview, discovery, and probe work.</p>
+</section>
+</section>
+<section id="multi-camera-recommendations">
+<h2>Multi-camera recommendations<a class="headerlink" href="#multi-camera-recommendations" title="Link to this heading">#</a></h2>
+<p>For a reliable multi-camera setup:</p>
+<ol class="arabic simple">
+<li><p>Add and preview each camera individually</p></li>
+<li><p>Confirm stable device identity where supported</p></li>
+<li><p>Use consistent resolution and frame-rate targets when appropriate for the experiment</p></li>
+<li><p>Keep exposure short enough for the intended acquisition rate</p></li>
+<li><p>Verify trigger wiring and roles before starting the main preview</p></li>
+<li><p>Enable only cameras required for the session</p></li>
+<li><p>Save the completed application configuration for reproducibility</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The camera selected for pose inference is configured separately in the main window.
+All enabled cameras can still participate in preview and recording.</p>
+</div>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
+<section id="no-cameras-detected">
+<h3>No cameras detected<a class="headerlink" href="#no-cameras-detected" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Confirm the camera is powered and connected.</p></li>
+<li><p>Confirm the correct backend is selected.</p></li>
+<li><p>Install and configure the required vendor SDK or transport layer as well as driver files.</p>
+<ul>
+<li><p>If a GenTL device appears in OpenCV but not in the GenTL backend, check that the vendor CTI files are installed and accessible.</p></li>
+</ul>
+</li>
+<li><p>Select <strong>Refresh</strong> after changing the connection or driver setup.</p></li>
+<li><p>Close other applications that may have exclusive access to the camera.</p></li>
+</ul>
+<p>See <a class="reference internal" href="cameras_backends/camera_support.html#file-dlclivegui-camera-support"><span class="std std-ref">Camera support</span></a> for backend-specific installation and troubleshooting guidance.</p>
+</section>
+<section id="camera-opens-but-no-frames-arrive">
+<h3>Camera opens but no frames arrive<a class="headerlink" href="#camera-opens-but-no-frames-arrive" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>For free-running cameras, verify exposure, frame rate, and camera acquisition mode.</p></li>
+<li><p>For triggered cameras, verify that valid trigger pulses reach the selected input.</p></li>
+<li><p>Check the preview status for timeout or backend errors.</p></li>
+<li><p>Reset the camera settings and test with device defaults.</p></li>
+</ul>
+</section>
+<section id="requested-values-are-not-applied-exactly">
+<h3>Requested values are not applied exactly<a class="headerlink" href="#requested-values-are-not-applied-exactly" title="Link to this heading">#</a></h3>
+<p>The camera or backend may constrain values to supported ranges, increments, or capture modes.
+Compare the requested settings with detected values and preview status.
+OpenCV controls are particularly dependent on the operating-system driver and camera implementation.</p>
+</section>
+<section id="mono-camera-recording-is-dropping-frames-at-high-fps">
+<h3>Mono camera recording is dropping frames at high FPS<a class="headerlink" href="#mono-camera-recording-is-dropping-frames-at-high-fps" title="Link to this heading">#</a></h3>
+<p>Enable <strong>Preserve mono frames</strong> if the backend and camera support native mono output. Otherwise, the backend may convert the frame to a three-channel format for compatibility.
+Also try the faster encoding presets in the main window recording settings.</p>
+</section>
+<section id="trigger-settings-are-ignored-or-disabled">
+<h3>Trigger settings are ignored or disabled<a class="headerlink" href="#trigger-settings-are-ignored-or-disabled" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Confirm the backend has trigger support in the SDK <strong>and</strong> the GUI</p>
+<ul>
+<li><p>Please open an issue if you need your camera to use triggering but the GUI does not expose it</p></li>
+</ul>
+</li>
+<li><p>Verify that the selected camera exposes the requested trigger nodes and values</p></li>
+<li><p>Start with strict mode disabled to test best-effort behavior</p></li>
+<li><p>Enable strict mode when unsupported settings should fail visibly</p></li>
+<li><p>Consult the camera manufacturer’s documentation for line assignments and electrical requirements</p></li>
+</ul>
+</section>
+</section>
+<section id="related-pages">
+<h2>Related pages<a class="headerlink" href="#related-pages" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="cameras_backends/camera_support.html#file-dlclivegui-camera-support"><span class="std std-ref">Camera support</span></a>: Supported backends, installation, and backend-specific limitations</p></li>
+<li><p><a class="reference internal" href="misc/timestamp_format.html#file-dlclivegui-timestamp-format"><span class="std std-ref">Video timestamp format</span></a>: Software and hardware timestamps recorded with video</p></li>
+<li><p><a class="reference internal" href="overview.html#sec-dlclivegui-recording-paths-info"><span class="std std-ref">Recording output options</span></a>: Recording output paths and naming</p></li>
+<li><p><a class="reference internal" href="../../deeplabcutlive.html#deeplabcut-live"><span class="std std-ref">Running DeepLabCut models in real-time</span></a>: DeepLabCut Live inference documentation</p></li>
+</ul>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./docs/dlc-live/dlc-live-gui/user_guide"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="cameras_backends/gentl_backend.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">GenTL backend</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="misc/misc_landing.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Additional resources</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#open-the-camera-configuration-dialog">Open the camera configuration dialog</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-configuration">Example configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#discover-cameras">Discover cameras</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#select-a-backend">Select a backend</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#refresh-the-device-list">Refresh the device list</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#device-identity">Device identity</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#manage-active-cameras">Manage active cameras</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#add-a-camera">Add a camera</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-or-disable-a-camera">Enable or disable a camera</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#remove-a-camera">Remove a camera</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reorder-cameras">Reorder cameras</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#active-camera-labels">Active camera labels</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-identity-and-detected-values">Camera identity and detected values</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#requested-versus-detected-values">Requested versus detected values</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#capture-settings">Capture settings</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resolution">Resolution</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#frame-rate">Frame rate</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#exposure">Exposure</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gain">Gain</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rotation">Rotation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#crop-coordinates">Crop coordinates</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preserve-mono-output">Preserve Mono output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#trigger-settings">Trigger settings</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#apply-reset-and-preview-settings">Apply, reset, and preview settings</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#apply-settings">Apply Settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#automated-preview-restart">Automated preview restart</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reset-settings">Reset Settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-preview">Configuration preview</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#save-or-discard-the-configuration">Save or discard the configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ok">OK</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cancel">Cancel</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-camera-recommendations">Multi-camera recommendations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#no-cameras-detected">No cameras detected</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-opens-but-no-frames-arrive">Camera opens but no frames arrive</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#requested-values-are-not-applied-exactly">Requested values are not applied exactly</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mono-camera-recording-is-dropping-frames-at-high-fps">Mono camera recording is dropping frames at high FPS</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#trigger-settings-are-ignored-or-disabled">Trigger settings are ignored or disabled</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#related-pages">Related pages</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

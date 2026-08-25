@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -511,7 +512,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of Contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of contents</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#description">Description</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-software-does">What this software does</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#typical-workflow">Typical workflow</a></li>
@@ -536,13 +537,16 @@ document.write(`
 <p>A graphical application for <strong>real-time pose estimation with DeepLabCut</strong> using one or more cameras.</p>
 <p>This GUI is designed for <strong>scientists and experimenters</strong> who want to preview, run inference, and record synchronized video with pose overlays—without writing code.</p>
 <section id="table-of-contents">
-<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p><a class="reference internal" href="quickstart/install.html"><span class="doc">Installation</span></a></p></li>
-<li><p><a class="reference internal" href="user_guide/overview.html"><span class="doc">Overview</span></a></p></li>
-<li><p><a class="reference internal" href="user_guide/cameras_backends/camera_support.html"><span class="doc">Camera setup and backends</span></a></p></li>
-<li><p><a class="reference internal" href="user_guide/misc/timestamp_format.html"><span class="doc">Timestamp format and synchronization</span></a></p></li>
+<h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/overview.html">GUI overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/cameras_backends/camera_support.html">Camera support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/camera_config.html">Camera configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/misc/misc_landing.html">Additional resources</a></li>
 </ul>
+</div>
 <div class="admonition caution">
 <p class="admonition-title">Caution</p>
 <p>Please be aware of the <a class="reference internal" href="#sec-dlclivegui-index-limitations"><span class="std std-ref">Current limitations</span></a></p>
@@ -598,8 +602,9 @@ and <em><a class="reference internal" href="user_guide/overview.html"><span clas
 <li><p>Pose inference runs on <strong>one selected camera at a time</strong> (even in multi-camera mode)</p></li>
 <li><p>Camera synchronization depends on <strong>backend capabilities and hardware</strong></p>
 <ul>
-<li><p>OpenCV controls for resolution and FPS are “best effort” and may not work with all cameras.
-Expect inconsistencies when setting certain frame rates or resolutions as resolution depends on the device driver.</p></li>
+<li><p>OpenCV controls for resolution and FPS are “best effort” and may not work with all cameras
+Expect inconsistencies when setting certain frame rates or resolutions as resolution depends on the device driver</p></li>
+<li><p>Trigger settings and hardware timestamps are supported for some backends only</p></li>
 </ul>
 </li>
 <li><p>DeepLabCut Live models must be <strong>exported and compatible</strong> with the selected backend</p>
@@ -613,7 +618,8 @@ Expect inconsistencies when setting certain frame rates or resolutions as resolu
 </li>
 <li><p><strong>Performance</strong> depends on camera resolution, frame rate, GPU availability, and codec choice</p>
 <ul>
-<li><p>Expect bottlenecks with heavy models, multiple high-resolution cameras, or CPU-only inference.</p></li>
+<li><p>Use faster encoding presets and retain Mono format on supported mono cameras for best performance</p></li>
+<li><p>Expect bottlenecks with heavy models, multiple high-resolution cameras, or CPU-only inference</p></li>
 </ul>
 </li>
 </ul>
@@ -626,8 +632,6 @@ Expect inconsistencies when setting certain frame rates or resolutions as resolu
 <p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-live-GUI">Please report issues, suggest features, or contribute to the codebase on GitHub !</a></p>
 </div></blockquote>
 </section>
-<div class="toctree-wrapper compound">
-</div>
 </section>
 
     <script type="text/x-thebe-config">
@@ -694,7 +698,7 @@ Expect inconsistencies when setting certain frame rates or resolutions as resolu
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of Contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of contents</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#description">Description</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-software-does">What this software does</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#typical-workflow">Typical workflow</a></li>

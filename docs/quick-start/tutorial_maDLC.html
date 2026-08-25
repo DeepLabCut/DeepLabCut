@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -562,9 +563,9 @@ document.write(`
 </div>
 <section id="create-a-project">
 <h3>1. Create a project<a class="headerlink" href="#create-a-project" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_name</span> <span class="o">=</span> <span class="s2">&quot;cutemice&quot;</span>
-<span class="n">experimenter</span> <span class="o">=</span> <span class="s2">&quot;teamdlc&quot;</span>
-<span class="n">video_paths</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;/absolute/path/to/video_file.mp4&quot;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_name</span> <span class="o">=</span> <span class="s2">"cutemice"</span>
+<span class="n">experimenter</span> <span class="o">=</span> <span class="s2">"teamdlc"</span>
+<span class="n">video_paths</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"/absolute/path/to/video_file.mp4"</span><span class="p">]</span>
 
 <span class="n">config_path</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
     <span class="n">project_name</span><span class="p">,</span>
@@ -613,8 +614,8 @@ parts, or unique body parts.</p>
 <h3>3. Extract video frames to annotate<a class="headerlink" href="#extract-video-frames-to-annotate" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;automatic&quot;</span><span class="p">,</span>
-    <span class="n">algo</span><span class="o">=</span><span class="s2">&quot;kmeans&quot;</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">"automatic"</span><span class="p">,</span>
+    <span class="n">algo</span><span class="o">=</span><span class="s2">"kmeans"</span><span class="p">,</span>
     <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -647,7 +648,7 @@ correctly.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_multianimaltraining_dataset</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="n">num_shuffles</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;dlcrnet_ms5&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="s2">"dlcrnet_ms5"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -659,7 +660,7 @@ correctly.</p>
 <h4>PyTorch engine<a class="headerlink" href="#pytorch-engine" title="Link to this heading">#</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">,</span>
     <span class="n">save_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
     <span class="n">epochs</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
 <span class="p">)</span>
@@ -712,7 +713,7 @@ tracklets frame by frame.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">convert_detections2tracklets</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="n">video_paths</span><span class="p">,</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s2">"ellipse"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -723,7 +724,7 @@ tracklets frame by frame.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">stitch_tracklets</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="n">video_paths</span><span class="p">,</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s2">"ellipse"</span><span class="p">,</span>
     <span class="n">min_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -734,11 +735,11 @@ tracklets frame by frame.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="n">video_paths</span><span class="p">,</span>
-    <span class="n">color_by</span><span class="o">=</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span>
+    <span class="n">color_by</span><span class="o">=</span><span class="s2">"individual"</span><span class="p">,</span>
     <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">trailpoints</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
     <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s2">"ellipse"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>

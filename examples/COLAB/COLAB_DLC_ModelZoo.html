@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -592,7 +593,7 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install the latest version of DeepLabCut</span>
-<span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span><span class="s2">&quot;deeplabcut[tf,modelzoo]&quot;</span>
+<span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span><span class="s2">"deeplabcut[tf,modelzoo]"</span>
 </pre></div>
 </div>
 </div>
@@ -625,7 +626,7 @@ document.write(`
 
 <span class="n">uploaded</span> <span class="o">=</span> <span class="n">files</span><span class="o">.</span><span class="n">upload</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">uploaded</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;User uploaded file &quot;</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s1">&quot; with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s1"> bytes&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'User uploaded file "</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s1">" with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s1"> bytes'</span><span class="p">)</span>
 <span class="n">video_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
 
 <span class="c1"># If this cell fails (e.g., when using Safari in place of Google Chrome),</span>
@@ -645,7 +646,7 @@ document.write(`
 
 <span class="n">model_options</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_project</span><span class="o">.</span><span class="n">modelzoo</span><span class="o">.</span><span class="n">Modeloptions</span>
 <span class="n">model_selection</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Dropdown</span><span class="p">(</span>
-    <span class="n">options</span><span class="o">=</span><span class="n">model_options</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">model_options</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Choose a DLC ModelZoo model!&quot;</span><span class="p">,</span> <span class="n">disabled</span><span class="o">=</span><span class="kc">False</span>
+    <span class="n">options</span><span class="o">=</span><span class="n">model_options</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">model_options</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">description</span><span class="o">=</span><span class="s2">"Choose a DLC ModelZoo model!"</span><span class="p">,</span> <span class="n">disabled</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">model_selection</span><span class="p">)</span>
 </pre></div>
@@ -654,10 +655,10 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">project_name</span> <span class="o">=</span> <span class="s2">&quot;myDLC_modelZoo&quot;</span>
-<span class="n">your_name</span> <span class="o">=</span> <span class="s2">&quot;teamDLC&quot;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">project_name</span> <span class="o">=</span> <span class="s2">"myDLC_modelZoo"</span>
+<span class="n">your_name</span> <span class="o">=</span> <span class="s2">"teamDLC"</span>
 <span class="n">model2use</span> <span class="o">=</span> <span class="n">model_selection</span><span class="o">.</span><span class="n">value</span>
-<span class="n">videotype</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">video_path</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>  <span class="c1"># or MOV, or avi, whatever you uploaded!</span>
+<span class="n">videotype</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">video_path</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>  <span class="c1"># or MOV, or avi, whatever you uploaded!</span>
 </pre></div>
 </div>
 </div>
@@ -711,9 +712,9 @@ document.write(`
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Updating the plotting within the config.yaml file (without opening it ;):</span>
 <span class="n">edits</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;dotsize&quot;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>  <span class="c1"># size of the dots!</span>
-    <span class="s2">&quot;colormap&quot;</span><span class="p">:</span> <span class="s2">&quot;spring&quot;</span><span class="p">,</span>  <span class="c1"># any matplotlib colormap!</span>
-    <span class="s2">&quot;pcutoff&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># the higher the more conservative the plotting!</span>
+    <span class="s2">"dotsize"</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>  <span class="c1"># size of the dots!</span>
+    <span class="s2">"colormap"</span><span class="p">:</span> <span class="s2">"spring"</span><span class="p">,</span>  <span class="c1"># any matplotlib colormap!</span>
+    <span class="s2">"pcutoff"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># the higher the more conservative the plotting!</span>
 <span class="p">}</span>
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">auxiliaryfunctions</span><span class="o">.</span><span class="n">edit_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">edits</span><span class="p">)</span>
 </pre></div>
@@ -726,7 +727,7 @@ document.write(`
 <span class="n">project_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 <span class="n">full_video_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
     <span class="n">project_path</span><span class="p">,</span>
-    <span class="s2">&quot;videos&quot;</span><span class="p">,</span>
+    <span class="s2">"videos"</span><span class="p">,</span>
     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">video_path</span><span class="p">),</span>
 <span class="p">)</span>
 

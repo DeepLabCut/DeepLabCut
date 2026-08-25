@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -617,8 +618,8 @@ document.write(`
   Cloning https://github.com/DeepLabCut/DeepLabCut.git (to revision lucas/buctd_v2) to /tmp/pip-install-p_2aupou/deeplabcut_38affa993eac4f18a4fcf05ba8f80e79
   Running command git clone --filter=blob:none --quiet https://github.com/DeepLabCut/DeepLabCut.git /tmp/pip-install-p_2aupou/deeplabcut_38affa993eac4f18a4fcf05ba8f80e79
   Running command git checkout -b lucas/buctd_v2 --track origin/lucas/buctd_v2
-  Switched to a new branch &#39;lucas/buctd_v2&#39;
-  Branch &#39;lucas/buctd_v2&#39; set up to track remote branch &#39;lucas/buctd_v2&#39; from &#39;origin&#39;.
+  Switched to a new branch 'lucas/buctd_v2'
+  Branch 'lucas/buctd_v2' set up to track remote branch 'lucas/buctd_v2' from 'origin'.
   Resolved https://github.com/DeepLabCut/DeepLabCut.git to commit 12cf3fa01b91bbc8c73c1efcecebf83815164da0
   Installing build dependencies ... ?25l?25hdone
   Getting requirements to build wheel ... ?25l?25hdone
@@ -830,7 +831,7 @@ Installing collected packages: ruamel.yaml.clib, nvidia-nvjitlink-cu12, nvidia-c
     Found existing installation: albumentations 2.0.5
     Uninstalling albumentations-2.0.5:
       Successfully uninstalled albumentations-2.0.5
-<span class=" -Color -Color-Red">ERROR: pip&#39;s dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.</span>
+<span class=" -Color -Color-Red">ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.</span>
 <span class=" -Color -Color-Red">thinc 8.3.6 requires numpy&lt;3.0.0,&gt;=2.0.0, but you have numpy 1.26.4 which is incompatible.</span>
 Successfully installed albumentations-1.4.3 blosc2-2.0.0 deeplabcut-3.0.0rc8 dlclibrary-0.0.7 filterpy-1.4.5 imgaug-0.4.0 matplotlib-3.8.4 numpy-1.26.4 nvidia-cublas-cu12-12.4.5.8 nvidia-cuda-cupti-cu12-12.4.127 nvidia-cuda-nvrtc-cu12-12.4.127 nvidia-cuda-runtime-cu12-12.4.127 nvidia-cudnn-cu12-9.1.0.70 nvidia-cufft-cu12-11.2.1.3 nvidia-curand-cu12-10.3.5.147 nvidia-cusolver-cu12-11.6.1.9 nvidia-cusparse-cu12-12.3.1.170 nvidia-nvjitlink-cu12-12.4.127 ruamel.yaml-0.18.10 ruamel.yaml.clib-0.2.12 tables-3.8.0
 </pre></div>
@@ -872,32 +873,32 @@ DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and stand
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
-<span class="n">config</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;trimice-dlc-2021-06-22&quot;</span> <span class="o">/</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+<span class="n">config</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">"trimice-dlc-2021-06-22"</span> <span class="o">/</span> <span class="s2">"config.yaml"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading the tri-mouse dataset into </span><span class="si">{</span><span class="n">download_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downloading the tri-mouse dataset into </span><span class="si">{</span><span class="n">download_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="n">url_record</span> <span class="o">=</span> <span class="s2">&quot;https://zenodo.org/api/records/5851157&quot;</span>
+<span class="n">url_record</span> <span class="o">=</span> <span class="s2">"https://zenodo.org/api/records/5851157"</span>
 <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url_record</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
-    <span class="n">file</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;files&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file</span><span class="p">[</span><span class="s2">&quot;links&quot;</span><span class="p">][</span><span class="s2">&quot;self&quot;</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">"files"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downloading </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file</span><span class="p">[</span><span class="s2">"links"</span><span class="p">][</span><span class="s2">"self"</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">))</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
             <span class="n">zf</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">download_path</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The URL </span><span class="si">{</span><span class="n">url_record</span><span class="si">}</span><span class="s2"> could not be reached.&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The URL </span><span class="si">{</span><span class="n">url_record</span><span class="si">}</span><span class="s2"> could not be reached."</span><span class="p">)</span>
 
 
 <span class="c1"># Check that the config was downloaded correctly</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Config path: </span><span class="si">{</span><span class="n">config</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Config path: </span><span class="si">{</span><span class="n">config</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find config at </span><span class="si">{</span><span class="n">config</span><span class="si">}</span><span class="s2">: check that the dataset was downloaded correctly!&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not find config at </span><span class="si">{</span><span class="n">config</span><span class="si">}</span><span class="s2">: check that the dataset was downloaded correctly!"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -918,8 +919,8 @@ Config path: /content/trimice-dlc-2021-06-22/config.yaml
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">auxiliaryfunctions</span><span class="o">.</span><span class="n">read_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-<span class="n">train_frac</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;TrainingFraction&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">train_frac</span><span class="p">)</span><span class="si">}</span><span class="s2">% of the data in the training set.&quot;</span><span class="p">)</span>
+<span class="n">train_frac</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">"TrainingFraction"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">train_frac</span><span class="p">)</span><span class="si">}</span><span class="s2">% of the data in the training set."</span><span class="p">)</span>
 
 <span class="n">num_images</span> <span class="o">=</span> <span class="mi">112</span>
 <span class="n">train_images</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">train_frac</span> <span class="o">*</span> <span class="n">num_images</span><span class="p">)</span>
@@ -951,7 +952,7 @@ Config path: /content/trimice-dlc-2021-06-22/config.yaml
     <span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="n">BU_SHUFFLE</span><span class="p">],</span>
     <span class="n">trainIndices</span><span class="o">=</span><span class="p">[</span><span class="n">train_indices</span><span class="p">],</span>
     <span class="n">testIndices</span><span class="o">=</span><span class="p">[</span><span class="n">test_indices</span><span class="p">],</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;resnet_50&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="s2">"resnet_50"</span><span class="p">,</span>
     <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">PYTORCH</span><span class="p">,</span>
     <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
@@ -967,7 +968,7 @@ Creating training data for: Shuffle: 1 TrainFraction:  0.7
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 78/78 [00:00&lt;00:00, 1613.55it/s]
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The training dataset is successfully created. Use the function &#39;train_network&#39; to start training. Happy training!
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>
@@ -1011,9 +1012,9 @@ device: auto
 metadata:
   project_path: /content/trimice-dlc-2021-06-22
   pose_config_path: /content/trimice-dlc-2021-06-22/dlc-models-pytorch/iteration-0/trimiceJun22-trainset70shuffle1/train/pytorch_config.yaml
-  bodyparts: [&#39;snout&#39;, &#39;leftear&#39;, &#39;rightear&#39;, &#39;shoulder&#39;, &#39;spine1&#39;, &#39;spine2&#39;, &#39;spine3&#39;, &#39;spine4&#39;, &#39;tailbase&#39;, &#39;tail1&#39;, &#39;tail2&#39;, &#39;tailend&#39;]
+  bodyparts: ['snout', 'leftear', 'rightear', 'shoulder', 'spine1', 'spine2', 'spine3', 'spine4', 'tailbase', 'tail1', 'tail2', 'tailend']
   unique_bodyparts: []
-  individuals: [&#39;mus1&#39;, &#39;mus2&#39;, &#39;mus3&#39;]
+  individuals: ['mus1', 'mus2', 'mus3']
   with_identity: None
 method: bu
 model:
@@ -1042,7 +1043,7 @@ model:
         clip_scores: False
       target_generator:
         type: SequentialGenerator
-        generators: [{&#39;type&#39;: &#39;HeatmapPlateauGenerator&#39;, &#39;num_heatmaps&#39;: 12, &#39;pos_dist_thresh&#39;: 17, &#39;heatmap_mode&#39;: &#39;KEYPOINT&#39;, &#39;gradient_masking&#39;: False, &#39;generate_locref&#39;: True, &#39;locref_std&#39;: 7.2801}, {&#39;type&#39;: &#39;PartAffinityFieldGenerator&#39;, &#39;graph&#39;: [[0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9], [0, 10], [0, 11], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8], [1, 9], [1, 10], [1, 11], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8], [2, 9], [2, 10], [2, 11], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [3, 9], [3, 10], [3, 11], [4, 5], [4, 6], [4, 7], [4, 8], [4, 9], [4, 10], [4, 11], [5, 6], [5, 7], [5, 8], [5, 9], [5, 10], [5, 11], [6, 7], [6, 8], [6, 9], [6, 10], [6, 11], [7, 8], [7, 9], [7, 10], [7, 11], [8, 9], [8, 10], [8, 11], [9, 10], [9, 11], [10, 11]], &#39;width&#39;: 20}]
+        generators: [{'type': 'HeatmapPlateauGenerator', 'num_heatmaps': 12, 'pos_dist_thresh': 17, 'heatmap_mode': 'KEYPOINT', 'gradient_masking': False, 'generate_locref': True, 'locref_std': 7.2801}, {'type': 'PartAffinityFieldGenerator', 'graph': [[0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9], [0, 10], [0, 11], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8], [1, 9], [1, 10], [1, 11], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8], [2, 9], [2, 10], [2, 11], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [3, 9], [3, 10], [3, 11], [4, 5], [4, 6], [4, 7], [4, 8], [4, 9], [4, 10], [4, 11], [5, 6], [5, 7], [5, 8], [5, 9], [5, 10], [5, 11], [6, 7], [6, 8], [6, 9], [6, 10], [6, 11], [7, 8], [7, 9], [7, 10], [7, 11], [8, 9], [8, 10], [8, 11], [9, 10], [9, 11], [10, 11]], 'width': 20}]
       criterion:
         heatmap:
           type: WeightedBCECriterion
@@ -1102,19 +1103,19 @@ Please note that authentication is recommended but still optional to access publ
   warnings.warn(
 </pre></div>
 </div>
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "2e74326b630a4d4fa879ec3a154eecb4", "version_major": 2, "version_minor": 0}</script><div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[timm/resnet50_gn.a1h_in1k] Safe alternative available for &#39;pytorch_model.bin&#39; (as &#39;model.safetensors&#39;). Loading weights using safetensors.
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "2e74326b630a4d4fa879ec3a154eecb4", "version_major": 2, "version_minor": 0}</script><div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[timm/resnet50_gn.a1h_in1k] Safe alternative available for 'pytorch_model.bin' (as 'model.safetensors'). Loading weights using safetensors.
 Data Transforms:
   Training:   Compose([
-  Affine(always_apply=False, p=0.5, interpolation=1, mask_interpolation=0, cval=0, mode=0, scale={&#39;x&#39;: (0.5, 1.25), &#39;y&#39;: (0.5, 1.25)}, translate_percent=None, translate_px={&#39;x&#39;: (0, 0), &#39;y&#39;: (0, 0)}, rotate=(-30, 30), fit_output=False, shear={&#39;x&#39;: (0.0, 0.0), &#39;y&#39;: (0.0, 0.0)}, cval_mask=0, keep_ratio=True, rotate_method=&#39;largest_box&#39;),
+  Affine(always_apply=False, p=0.5, interpolation=1, mask_interpolation=0, cval=0, mode=0, scale={'x': (0.5, 1.25), 'y': (0.5, 1.25)}, translate_percent=None, translate_px={'x': (0, 0), 'y': (0, 0)}, rotate=(-30, 30), fit_output=False, shear={'x': (0.0, 0.0), 'y': (0.0, 0.0)}, cval_mask=0, keep_ratio=True, rotate_method='largest_box'),
   PadIfNeeded(always_apply=True, p=1.0, min_height=448, min_width=448, pad_height_divisor=None, pad_width_divisor=None, position=PositionType.CENTER, border_mode=0, value=None, mask_value=None),
-  KeypointAwareCrop(always_apply=True, p=1.0, width=448, height=448, max_shift=0.1, crop_sampling=&#39;hybrid&#39;),
+  KeypointAwareCrop(always_apply=True, p=1.0, width=448, height=448, max_shift=0.1, crop_sampling='hybrid'),
   MotionBlur(always_apply=False, p=0.5, blur_limit=(3, 7), allow_shifted=True),
   GaussNoise(always_apply=False, p=0.5, var_limit=(0, 162.5625), per_channel=True, mean=0),
   Normalize(always_apply=False, p=1.0, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0),
-], p=1.0, bbox_params={&#39;format&#39;: &#39;coco&#39;, &#39;label_fields&#39;: [&#39;bbox_labels&#39;], &#39;min_area&#39;: 0.0, &#39;min_visibility&#39;: 0.0, &#39;min_width&#39;: 0.0, &#39;min_height&#39;: 0.0, &#39;check_each_transform&#39;: True}, keypoint_params={&#39;format&#39;: &#39;xy&#39;, &#39;label_fields&#39;: [&#39;class_labels&#39;], &#39;remove_invisible&#39;: False, &#39;angle_in_degrees&#39;: True, &#39;check_each_transform&#39;: True}, additional_targets={}, is_check_shapes=True)
+], p=1.0, bbox_params={'format': 'coco', 'label_fields': ['bbox_labels'], 'min_area': 0.0, 'min_visibility': 0.0, 'min_width': 0.0, 'min_height': 0.0, 'check_each_transform': True}, keypoint_params={'format': 'xy', 'label_fields': ['class_labels'], 'remove_invisible': False, 'angle_in_degrees': True, 'check_each_transform': True}, additional_targets={}, is_check_shapes=True)
   Validation: Compose([
   Normalize(always_apply=False, p=1.0, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0),
-], p=1.0, bbox_params={&#39;format&#39;: &#39;coco&#39;, &#39;label_fields&#39;: [&#39;bbox_labels&#39;], &#39;min_area&#39;: 0.0, &#39;min_visibility&#39;: 0.0, &#39;min_width&#39;: 0.0, &#39;min_height&#39;: 0.0, &#39;check_each_transform&#39;: True}, keypoint_params={&#39;format&#39;: &#39;xy&#39;, &#39;label_fields&#39;: [&#39;class_labels&#39;], &#39;remove_invisible&#39;: False, &#39;angle_in_degrees&#39;: True, &#39;check_each_transform&#39;: True}, additional_targets={}, is_check_shapes=True)
+], p=1.0, bbox_params={'format': 'coco', 'label_fields': ['bbox_labels'], 'min_area': 0.0, 'min_visibility': 0.0, 'min_width': 0.0, 'min_height': 0.0, 'check_each_transform': True}, keypoint_params={'format': 'xy', 'label_fields': ['class_labels'], 'remove_invisible': False, 'angle_in_degrees': True, 'check_each_transform': True}, additional_targets={}, is_check_shapes=True)
 Using 78 images and 34 for testing
 
 Starting pose model training...
@@ -1350,7 +1351,7 @@ Name: (0.7, 1, 80, -1, 0.01), dtype: float64
     <span class="n">config</span><span class="p">,</span>
     <span class="n">from_shuffle</span><span class="o">=</span><span class="n">BU_SHUFFLE</span><span class="p">,</span>
     <span class="n">shuffles</span><span class="o">=</span><span class="p">[</span><span class="n">CTD_SHUFFLE</span><span class="p">],</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;ctd_coam_w32&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="s2">"ctd_coam_w32"</span><span class="p">,</span>
     <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">PYTORCH</span><span class="p">,</span>
     <span class="n">ctd_conditions</span><span class="o">=</span><span class="p">(</span><span class="n">BU_SHUFFLE</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
 <span class="p">)</span>
@@ -1366,7 +1367,7 @@ Creating training data for: Shuffle: 2 TrainFraction:  0.7
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 78/78 [00:00&lt;00:00, 8165.62it/s]
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The training dataset is successfully created. Use the function &#39;train_network&#39; to start training. Happy training!
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The training dataset is successfully created. Use the function 'train_network' to start training. Happy training!
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>
@@ -1400,22 +1401,22 @@ Creating training data for: Shuffle: 2 TrainFraction:  0.7
         <span class="c1"># Remove ImageNet normalization from the image so it displays well</span>
         <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">])</span>
         <span class="n">std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">])</span>
-        <span class="n">img</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"image"</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
         <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">img</span> <span class="o">*</span> <span class="n">std</span> <span class="o">+</span> <span class="n">mean</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-        <span class="c1"># Get the ground trouth and &quot;conditional pose&quot;</span>
-        <span class="n">gt_pose</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;annotations&quot;</span><span class="p">][</span><span class="s2">&quot;keypoints&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">gen_samples</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;cond_keypoints&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Get the ground trouth and "conditional pose"</span>
+        <span class="n">gt_pose</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"annotations"</span><span class="p">][</span><span class="s2">"keypoints"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">gen_samples</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"context"</span><span class="p">][</span><span class="s2">"cond_keypoints"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">:</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">"off"</span><span class="p">)</span>
 
         <span class="c1"># plot the ground truth on the left and conditions on the right</span>
         <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">keypoints</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
             <span class="n">axs</span><span class="p">,</span>
-            <span class="p">[</span><span class="s2">&quot;Ground Truth Pose&quot;</span><span class="p">,</span> <span class="s2">&quot;Pose Conditions&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">"Ground Truth Pose"</span><span class="p">,</span> <span class="s2">"Pose Conditions"</span><span class="p">],</span>
             <span class="p">[</span><span class="n">gt_pose</span><span class="p">,</span> <span class="n">gen_samples</span><span class="p">],</span>
             <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">):</span>
@@ -1427,8 +1428,8 @@ Creating training data for: Shuffle: 2 TrainFraction:  0.7
 
 <span class="n">ctd_loader</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">DLCLoader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">)</span>
 
-<span class="n">transform</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">build_transforms</span><span class="p">(</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;train&quot;</span><span class="p">])</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">ctd_loader</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">pose_task</span><span class="p">)</span>
+<span class="n">transform</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">build_transforms</span><span class="p">(</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"train"</span><span class="p">])</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">ctd_loader</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"train"</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">pose_task</span><span class="p">)</span>
 
 <span class="c1"># Fix the seeds for reproducibility; you can change the seed from `0` to another value</span>
 <span class="c1"># to change the results</span>
@@ -1449,17 +1450,17 @@ Creating training data for: Shuffle: 2 TrainFraction:  0.7
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ctd_loader</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">DLCLoader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">)</span>
 
-<span class="c1"># We&#39;ll edit the model config here directly; In practice, edit the pytorch_config file instead.</span>
+<span class="c1"># We'll edit the model config here directly; In practice, edit the pytorch_config file instead.</span>
 <span class="c1"># The parameters that can be set here are the parameters of the `dlc_torch.GenSamplingConfig`</span>
-<span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;gen_sampling&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+<span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"gen_sampling"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># lower the keypoint sigma by a factor of 2 (default: 0.1)</span>
     <span class="c1">#   -&gt; this changes by how much keypoints are jittered; the smaller</span>
     <span class="c1">#      the value, the smaller the jitter</span>
-    <span class="s2">&quot;keypoint_sigmas&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="s2">"keypoint_sigmas"</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
 <span class="p">}</span>
 
-<span class="n">transform</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">build_transforms</span><span class="p">(</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;train&quot;</span><span class="p">])</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">ctd_loader</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">pose_task</span><span class="p">)</span>
+<span class="n">transform</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">build_transforms</span><span class="p">(</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"train"</span><span class="p">])</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">ctd_loader</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"train"</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">pose_task</span><span class="p">)</span>
 
 <span class="c1"># Fix the seeds for reproducibility; you can change the seed from `0` to another value</span>
 <span class="c1"># to change the results</span>
@@ -1479,17 +1480,17 @@ Creating training data for: Shuffle: 2 TrainFraction:  0.7
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ctd_loader</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">DLCLoader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">)</span>
 
-<span class="c1"># We&#39;ll edit the model config here directly; In practice, edit the pytorch_config file instead.</span>
+<span class="c1"># We'll edit the model config here directly; In practice, edit the pytorch_config file instead.</span>
 <span class="c1"># The parameters that can be set here are the parameters of the `dlc_torch.GenSamplingConfig`</span>
-<span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;gen_sampling&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;jitter_prob&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
-    <span class="s2">&quot;swap_prob&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
-    <span class="s2">&quot;inv_prob&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
-    <span class="s2">&quot;miss_prob&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+<span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"gen_sampling"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"jitter_prob"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s2">"swap_prob"</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s2">"inv_prob"</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s2">"miss_prob"</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
 <span class="p">}</span>
 
-<span class="n">transform</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">build_transforms</span><span class="p">(</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;train&quot;</span><span class="p">])</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">ctd_loader</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">pose_task</span><span class="p">)</span>
+<span class="n">transform</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">build_transforms</span><span class="p">(</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"train"</span><span class="p">])</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">ctd_loader</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"train"</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">pose_task</span><span class="p">)</span>
 
 <span class="c1"># Fix the seeds for reproducibility; you can change the seed from `0` to another value</span>
 <span class="c1"># to change the results</span>
@@ -1549,9 +1550,9 @@ device: auto
 metadata:
   project_path: /content/trimice-dlc-2021-06-22
   pose_config_path: /content/trimice-dlc-2021-06-22/dlc-models-pytorch/iteration-0/trimiceJun22-trainset70shuffle2/train/pytorch_config.yaml
-  bodyparts: [&#39;snout&#39;, &#39;leftear&#39;, &#39;rightear&#39;, &#39;shoulder&#39;, &#39;spine1&#39;, &#39;spine2&#39;, &#39;spine3&#39;, &#39;spine4&#39;, &#39;tailbase&#39;, &#39;tail1&#39;, &#39;tail2&#39;, &#39;tailend&#39;]
+  bodyparts: ['snout', 'leftear', 'rightear', 'shoulder', 'spine1', 'spine2', 'spine3', 'spine4', 'tailbase', 'tail1', 'tail2', 'tailend']
   unique_bodyparts: []
-  individuals: [&#39;mus1&#39;, &#39;mus2&#39;, &#39;mus3&#39;]
+  individuals: ['mus1', 'mus2', 'mus3']
   with_identity: None
 method: ctd
 model:
@@ -1634,14 +1635,14 @@ Downloading the pre-trained backbone to /usr/local/lib/python3.11/dist-packages/
 </div>
 <script type="application/vnd.jupyter.widget-view+json">{"model_id": "c95c172c3f4c468c8d3c4ed859405670", "version_major": 2, "version_minor": 0}</script><div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Data Transforms:
   Training:   Compose([
-  Affine(always_apply=False, p=0.5, interpolation=1, mask_interpolation=0, cval=0, mode=0, scale={&#39;x&#39;: (1.0, 1.0), &#39;y&#39;: (1.0, 1.0)}, translate_percent=None, translate_px={&#39;x&#39;: (0, 0), &#39;y&#39;: (0, 0)}, rotate=(-30, 30), fit_output=False, shear={&#39;x&#39;: (0.0, 0.0), &#39;y&#39;: (0.0, 0.0)}, cval_mask=0, keep_ratio=True, rotate_method=&#39;largest_box&#39;),
+  Affine(always_apply=False, p=0.5, interpolation=1, mask_interpolation=0, cval=0, mode=0, scale={'x': (1.0, 1.0), 'y': (1.0, 1.0)}, translate_percent=None, translate_px={'x': (0, 0), 'y': (0, 0)}, rotate=(-30, 30), fit_output=False, shear={'x': (0.0, 0.0), 'y': (0.0, 0.0)}, cval_mask=0, keep_ratio=True, rotate_method='largest_box'),
   MotionBlur(always_apply=False, p=0.5, blur_limit=(3, 7), allow_shifted=True),
   GaussNoise(always_apply=False, p=0.5, var_limit=(0, 162.5625), per_channel=True, mean=0),
   Normalize(always_apply=False, p=1.0, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0),
-], p=1.0, bbox_params={&#39;format&#39;: &#39;coco&#39;, &#39;label_fields&#39;: [&#39;bbox_labels&#39;], &#39;min_area&#39;: 0.0, &#39;min_visibility&#39;: 0.0, &#39;min_width&#39;: 0.0, &#39;min_height&#39;: 0.0, &#39;check_each_transform&#39;: True}, keypoint_params={&#39;format&#39;: &#39;xy&#39;, &#39;label_fields&#39;: [&#39;class_labels&#39;], &#39;remove_invisible&#39;: False, &#39;angle_in_degrees&#39;: True, &#39;check_each_transform&#39;: True}, additional_targets={}, is_check_shapes=True)
+], p=1.0, bbox_params={'format': 'coco', 'label_fields': ['bbox_labels'], 'min_area': 0.0, 'min_visibility': 0.0, 'min_width': 0.0, 'min_height': 0.0, 'check_each_transform': True}, keypoint_params={'format': 'xy', 'label_fields': ['class_labels'], 'remove_invisible': False, 'angle_in_degrees': True, 'check_each_transform': True}, additional_targets={}, is_check_shapes=True)
   Validation: Compose([
   Normalize(always_apply=False, p=1.0, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0),
-], p=1.0, bbox_params={&#39;format&#39;: &#39;coco&#39;, &#39;label_fields&#39;: [&#39;bbox_labels&#39;], &#39;min_area&#39;: 0.0, &#39;min_visibility&#39;: 0.0, &#39;min_width&#39;: 0.0, &#39;min_height&#39;: 0.0, &#39;check_each_transform&#39;: True}, keypoint_params={&#39;format&#39;: &#39;xy&#39;, &#39;label_fields&#39;: [&#39;class_labels&#39;], &#39;remove_invisible&#39;: False, &#39;angle_in_degrees&#39;: True, &#39;check_each_transform&#39;: True}, additional_targets={}, is_check_shapes=True)
+], p=1.0, bbox_params={'format': 'coco', 'label_fields': ['bbox_labels'], 'min_area': 0.0, 'min_visibility': 0.0, 'min_width': 0.0, 'min_height': 0.0, 'check_each_transform': True}, keypoint_params={'format': 'xy', 'label_fields': ['class_labels'], 'remove_invisible': False, 'angle_in_degrees': True, 'check_each_transform': True}, additional_targets={}, is_check_shapes=True)
 Using 234 images and 102 for testing
 
 Starting pose model training...
@@ -1902,13 +1903,13 @@ Model performance:
 
 <span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/apis/training.py</span> in <span class="ni">train_network</span><span class="nt">(config, shuffle, trainingsetindex, modelprefix, device, snapshot_path, detector_path, load_head_weights, batch_size, epochs, save_epochs, detector_batch_size, detector_epochs, detector_save_epochs, display_iters, max_snapshots_to_keep, pose_threshold, pytorch_cfg_updates)</span>
 <span class="g g-Whitespace">    </span><span class="mi">358</span> 
-<span class="g g-Whitespace">    </span><span class="mi">359</span>     <span class="k">if</span> <span class="n">loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;train_settings&quot;</span><span class="p">][</span><span class="s2">&quot;epochs&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">359</span>     <span class="k">if</span> <span class="n">loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">"train_settings"</span><span class="p">][</span><span class="s2">"epochs"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
 <span class="ne">--&gt; </span><span class="mi">360</span>         <span class="n">train</span><span class="p">(</span>
 <span class="g g-Whitespace">    </span><span class="mi">361</span>             <span class="n">loader</span><span class="o">=</span><span class="n">loader</span><span class="p">,</span>
 <span class="g g-Whitespace">    </span><span class="mi">362</span>             <span class="n">run_config</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">,</span>
 
 <span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/apis/training.py</span> in <span class="ni">train</span><span class="nt">(loader, run_config, task, device, gpus, logger_config, snapshot_path, transform, inference_transform, max_snapshots_to_keep, load_head_weights)</span>
-<span class="g g-Whitespace">    </span><span class="mi">190</span>         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Starting pose model training...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="s2">&quot;-&quot;</span><span class="p">))</span>
+<span class="g g-Whitespace">    </span><span class="mi">190</span>         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Starting pose model training...</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="s2">"-"</span><span class="p">))</span>
 <span class="g g-Whitespace">    </span><span class="mi">191</span> 
 <span class="ne">--&gt; </span><span class="mi">192</span>     <span class="n">runner</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
 <span class="g g-Whitespace">    </span><span class="mi">193</span>         <span class="n">train_dataloader</span><span class="p">,</span>
@@ -1916,21 +1917,21 @@ Model performance:
 
 <span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/runners/train.py</span> in <span class="ni">fit</span><span class="nt">(self, train_loader, valid_loader, epochs, display_iters)</span>
 <span class="g g-Whitespace">    </span><span class="mi">212</span>             <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">=</span> <span class="n">e</span>
-<span class="g g-Whitespace">    </span><span class="mi">213</span>             <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;epoch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+<span class="g g-Whitespace">    </span><span class="mi">213</span>             <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">"epoch"</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
 <span class="ne">--&gt; </span><span class="mi">214</span>             <span class="n">train_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epoch</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">215</span>                 <span class="n">train_loader</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">display_iters</span><span class="o">=</span><span class="n">display_iters</span>
+<span class="g g-Whitespace">    </span><span class="mi">215</span>                 <span class="n">train_loader</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"train"</span><span class="p">,</span> <span class="n">display_iters</span><span class="o">=</span><span class="n">display_iters</span>
 <span class="g g-Whitespace">    </span><span class="mi">216</span>             <span class="p">)</span>
 
 <span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/runners/train.py</span> in <span class="ni">_epoch</span><span class="nt">(self, loader, mode, display_iters)</span>
 <span class="g g-Whitespace">    </span><span class="mi">274</span>         <span class="n">loss_metrics</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">275</span>         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">batch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">loader</span><span class="p">):</span>
 <span class="ne">--&gt; </span><span class="mi">276</span>             <span class="n">losses_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">277</span>             <span class="k">if</span> <span class="s2">&quot;total_loss&quot;</span> <span class="ow">in</span> <span class="n">losses_dict</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">278</span>                 <span class="n">epoch_loss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">losses_dict</span><span class="p">[</span><span class="s2">&quot;total_loss&quot;</span><span class="p">])</span>
+<span class="g g-Whitespace">    </span><span class="mi">277</span>             <span class="k">if</span> <span class="s2">"total_loss"</span> <span class="ow">in</span> <span class="n">losses_dict</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">278</span>                 <span class="n">epoch_loss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">losses_dict</span><span class="p">[</span><span class="s2">"total_loss"</span><span class="p">])</span>
 
 <span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/runners/train.py</span> in <span class="ni">step</span><span class="nt">(self, batch, mode)</span>
-<span class="g g-Whitespace">    </span><span class="mi">438</span>         <span class="k">if</span> <span class="s1">&#39;cond_keypoints&#39;</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">]:</span>
-<span class="g g-Whitespace">    </span><span class="mi">439</span>             <span class="n">cond_kpts</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">][</span><span class="s1">&#39;cond_keypoints&#39;</span><span class="p">]</span>
+<span class="g g-Whitespace">    </span><span class="mi">438</span>         <span class="k">if</span> <span class="s1">'cond_keypoints'</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">[</span><span class="s1">'context'</span><span class="p">]:</span>
+<span class="g g-Whitespace">    </span><span class="mi">439</span>             <span class="n">cond_kpts</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">'context'</span><span class="p">][</span><span class="s1">'cond_keypoints'</span><span class="p">]</span>
 <span class="ne">--&gt; </span><span class="mi">440</span>             <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">cond_kpts</span><span class="o">=</span><span class="n">cond_kpts</span><span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">441</span>         <span class="k">else</span><span class="p">:</span>
 <span class="g g-Whitespace">    </span><span class="mi">442</span>             <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
@@ -1986,7 +1987,7 @@ Model performance:
 
 <span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/models/modules/kpt_encoders.py</span> in <span class="ni">blur_heatmap</span><span class="nt">(self, heatmap)</span>
 <span class="g g-Whitespace">     </span><span class="mi">76</span>             <span class="n">The</span> <span class="n">heatmap</span> <span class="k">with</span> <span class="n">a</span> <span class="n">Gaussian</span> <span class="n">blur</span><span class="p">,</span> <span class="n">such</span> <span class="n">that</span> <span class="nb">max</span><span class="p">(</span><span class="n">heatmap</span><span class="p">)</span> <span class="o">=</span> <span class="mi">255</span>
-<span class="g g-Whitespace">     </span><span class="mi">77</span>         <span class="s2">&quot;&quot;&quot;</span>
+<span class="g g-Whitespace">     </span><span class="mi">77</span>         <span class="s2">"""</span>
 <span class="ne">---&gt; </span><span class="mi">78</span><span class="s2">         heatmap = cv2.GaussianBlur(heatmap, self.kernel_size, sigmaX=0)</span>
 <span class="g g-Whitespace">     </span><span class="mi">79</span><span class="s2">         am = np.amax(heatmap)</span>
 <span class="g g-Whitespace">     </span><span class="mi">80</span><span class="s2">         if am == 0:</span>
@@ -2051,9 +2052,9 @@ Name: (0.7, 2, 130, -1, 0.01), dtype: float64
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
-<span class="n">video_name</span> <span class="o">=</span> <span class="s2">&quot;videocompressed1.mp4&quot;</span>
+<span class="n">video_name</span> <span class="o">=</span> <span class="s2">"videocompressed1.mp4"</span>
 <span class="n">video_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="n">video_name</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Video will be saved in </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Video will be saved in </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2065,29 +2066,29 @@ Name: (0.7, 2, 130, -1, 0.01), dtype: float64
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading the tri-mouse video into </span><span class="si">{</span><span class="n">download_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downloading the tri-mouse video into </span><span class="si">{</span><span class="n">download_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="n">url_video_record</span> <span class="o">=</span> <span class="s2">&quot;https://zenodo.org/api/records/7883589&quot;</span>
+<span class="n">url_video_record</span> <span class="o">=</span> <span class="s2">"https://zenodo.org/api/records/7883589"</span>
 <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url_video_record</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
-    <span class="n">file</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;files&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file</span><span class="p">[</span><span class="s2">&quot;links&quot;</span><span class="p">][</span><span class="s2">&quot;self&quot;</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">"files"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downloading </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file</span><span class="p">[</span><span class="s2">"links"</span><span class="p">][</span><span class="s2">"self"</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">))</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
             <span class="n">zf</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">download_path</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The URL </span><span class="si">{</span><span class="n">url_video_record</span><span class="si">}</span><span class="s2"> could not be reached.&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The URL </span><span class="si">{</span><span class="n">url_video_record</span><span class="si">}</span><span class="s2"> could not be reached."</span><span class="p">)</span>
 
 <span class="c1"># Check that the video was downloaded</span>
-<span class="n">src_video_path</span> <span class="o">=</span> <span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;demo-me-2021-07-14&quot;</span> <span class="o">/</span> <span class="s2">&quot;videos&quot;</span> <span class="o">/</span> <span class="n">video_name</span>
+<span class="n">src_video_path</span> <span class="o">=</span> <span class="n">download_path</span> <span class="o">/</span> <span class="s2">"demo-me-2021-07-14"</span> <span class="o">/</span> <span class="s2">"videos"</span> <span class="o">/</span> <span class="n">video_name</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">src_video_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to download the video&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Failed to download the video"</span><span class="p">)</span>
 
 <span class="c1"># Move the video to the final path</span>
 <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">src_video_path</span><span class="p">,</span> <span class="n">video_path</span><span class="p">)</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to move the video&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Failed to move the video"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2109,8 +2110,8 @@ Name: (0.7, 2, 130, -1, 0.01), dtype: float64
     <span class="n">config</span><span class="p">,</span>
     <span class="p">[</span><span class="n">video_path</span><span class="p">],</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">,</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ctd&quot;</span><span class="p">,</span>
-    <span class="n">color_by</span><span class="o">=</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s2">"ctd"</span><span class="p">,</span>
+    <span class="n">color_by</span><span class="o">=</span><span class="s2">"individual"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -2133,8 +2134,8 @@ Running pose prediction with batch size 1
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Saving results in /content/videocompressed1DLC_CtdPrenetCspnextM_trimiceJun22shuffle2_snapshot_130_ctd.h5 and /content/videocompressed1DLC_CtdPrenetCspnextM_trimiceJun22shuffle2_snapshot_130_ctd_full.pickle
 The videos are analyzed. Now your research can truly start!
-You can create labeled videos with &#39;create_labeled_video&#39;.
-If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function &#39;extract_outlier_frames&#39; to extract a few representative outlier frames.
+You can create labeled videos with 'create_labeled_video'.
+If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.
 
 Starting to process video: /content/videocompressed1.mp4
 Loading /content/videocompressed1.mp4 and data.
@@ -2144,7 +2145,7 @@ Generating frames and creating video.
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.11/dist-packages/deeplabcut/utils/make_labeled_video.py:146: FutureWarning: DataFrame.groupby with axis=1 is deprecated. Do `frame.T.groupby(...)` without axis instead.
-  Dataframe.groupby(level=&quot;individuals&quot;, axis=1).size().values // 3
+  Dataframe.groupby(level="individuals", axis=1).size().values // 3
 100%|██████████| 2330/2330 [00:58&lt;00:00, 39.95it/s]
 </pre></div>
 </div>
@@ -2162,16 +2163,16 @@ Generating frames and creating video.
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">show_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">640</span><span class="p">):</span>
-    <span class="n">video_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-    <span class="n">video_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;data:video/mp4;base64,</span><span class="si">{</span><span class="n">b64encode</span><span class="p">(</span><span class="n">video_file</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    &lt;video width=&quot;</span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2">&quot; controls&gt;</span>
-<span class="s2">        &lt;source src=&quot;</span><span class="si">{</span><span class="n">video_url</span><span class="si">}</span><span class="s2">&quot; type=&quot;video/mp4&quot;&gt;</span>
+    <span class="n">video_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">video_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"data:video/mp4;base64,</span><span class="si">{</span><span class="n">b64encode</span><span class="p">(</span><span class="n">video_file</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="sa">f</span><span class="s2">"""</span>
+<span class="s2">    &lt;video width="</span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2">" controls&gt;</span>
+<span class="s2">        &lt;source src="</span><span class="si">{</span><span class="n">video_url</span><span class="si">}</span><span class="s2">" type="video/mp4"&gt;</span>
 <span class="s2">    &lt;/video&gt;</span>
-<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">    """</span><span class="p">)</span>
 
 
-<span class="n">show_video</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;videocompressed1DLC_CtdCoamW32_trimiceJun22shuffle2_snapshot_best-80_ctd_id_p1_labeled.mp4&quot;</span><span class="p">)</span>
+<span class="n">show_video</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">"videocompressed1DLC_CtdCoamW32_trimiceJun22shuffle2_snapshot_best-80_ctd_id_p1_labeled.mp4"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2188,7 +2189,7 @@ Generating frames and creating video.
 </ul>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dest_folder</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;custom-ctd-tracking&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dest_folder</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"custom-ctd-tracking"</span><span class="p">)</span>
 
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
     <span class="n">config</span><span class="p">,</span>
@@ -2208,8 +2209,8 @@ Generating frames and creating video.
     <span class="p">[</span><span class="n">video_path</span><span class="p">],</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">,</span>
     <span class="n">destfolder</span><span class="o">=</span><span class="n">dest_folder</span><span class="p">,</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ctd&quot;</span><span class="p">,</span>
-    <span class="n">color_by</span><span class="o">=</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s2">"ctd"</span><span class="p">,</span>
+    <span class="n">color_by</span><span class="o">=</span><span class="s2">"individual"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>

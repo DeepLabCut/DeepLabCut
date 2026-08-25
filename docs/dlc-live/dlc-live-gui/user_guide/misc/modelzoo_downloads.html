@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="misc_landing.html">Additional resources</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="timestamp_format.html">Video timestamp format</a></li>
@@ -564,12 +565,12 @@ If you are using <strong>TensorFlow models</strong>, you will typically point th
 <h3>Example constants<a class="headerlink" href="#example-constants" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="n">MODELS_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;./models&quot;</span><span class="p">)</span>
+<span class="n">MODELS_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"./models"</span><span class="p">)</span>
 
-<span class="n">TORCH_MODEL</span> <span class="o">=</span> <span class="s2">&quot;resnet_50&quot;</span>
+<span class="n">TORCH_MODEL</span> <span class="o">=</span> <span class="s2">"resnet_50"</span>
 <span class="n">TORCH_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;checkpoint&quot;</span><span class="p">:</span> <span class="n">MODELS_DIR</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;exported_quadruped_</span><span class="si">{</span><span class="n">TORCH_MODEL</span><span class="si">}</span><span class="s2">.pt&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;super_animal&quot;</span><span class="p">:</span> <span class="s2">&quot;superanimal_quadruped&quot;</span><span class="p">,</span>
+    <span class="s2">"checkpoint"</span><span class="p">:</span> <span class="n">MODELS_DIR</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"exported_quadruped_</span><span class="si">{</span><span class="n">TORCH_MODEL</span><span class="si">}</span><span class="s2">.pt"</span><span class="p">,</span>
+    <span class="s2">"super_animal"</span><span class="p">:</span> <span class="s2">"superanimal_quadruped"</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -579,13 +580,13 @@ If you are using <strong>TensorFlow models</strong>, you will typically point th
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dlclive.modelzoo.pytorch_model_zoo_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_modelzoo_model</span>
 
 <span class="n">export_modelzoo_model</span><span class="p">(</span>
-    <span class="n">export_path</span><span class="o">=</span><span class="n">TORCH_CONFIG</span><span class="p">[</span><span class="s2">&quot;checkpoint&quot;</span><span class="p">],</span>
-    <span class="n">super_animal</span><span class="o">=</span><span class="n">TORCH_CONFIG</span><span class="p">[</span><span class="s2">&quot;super_animal&quot;</span><span class="p">],</span>
-    <span class="n">model_name</span><span class="o">=</span><span class="n">TORCH_MODEL</span><span class="p">,</span> <span class="c1"># or e.g. &quot;hrnet_w32&quot;</span>
-    <span class="n">detector_name</span><span class="o">=</span><span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span>
+    <span class="n">export_path</span><span class="o">=</span><span class="n">TORCH_CONFIG</span><span class="p">[</span><span class="s2">"checkpoint"</span><span class="p">],</span>
+    <span class="n">super_animal</span><span class="o">=</span><span class="n">TORCH_CONFIG</span><span class="p">[</span><span class="s2">"super_animal"</span><span class="p">],</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="n">TORCH_MODEL</span><span class="p">,</span> <span class="c1"># or e.g. "hrnet_w32"</span>
+    <span class="n">detector_name</span><span class="o">=</span><span class="s2">"fasterrcnn_resnet50_fpn_v2"</span>
 <span class="p">)</span>
 
-<span class="k">assert</span> <span class="n">TORCH_CONFIG</span><span class="p">[</span><span class="s2">&quot;checkpoint&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">exists</span><span class="p">(),</span> <span class="s2">&quot;Export failed&quot;</span>
+<span class="k">assert</span> <span class="n">TORCH_CONFIG</span><span class="p">[</span><span class="s2">"checkpoint"</span><span class="p">]</span><span class="o">.</span><span class="n">exists</span><span class="p">(),</span> <span class="s2">"Export failed"</span>
 </pre></div>
 </div>
 <p>What this does:</p>
@@ -630,20 +631,20 @@ If you are using <strong>TensorFlow models</strong>, you will typically point th
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dlclive.modelzoo.pytorch_model_zoo_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_modelzoo_model</span>
 
-<span class="n">MODELS_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;./models&quot;</span><span class="p">)</span>
-<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;resnet_50&quot;</span>
-<span class="n">super_animal</span> <span class="o">=</span> <span class="s2">&quot;superanimal_quadruped&quot;</span>
+<span class="n">MODELS_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"./models"</span><span class="p">)</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">"resnet_50"</span>
+<span class="n">super_animal</span> <span class="o">=</span> <span class="s2">"superanimal_quadruped"</span>
 
-<span class="n">export_path</span> <span class="o">=</span> <span class="n">MODELS_DIR</span> <span class="o">/</span> <span class="s2">&quot;exported_models&quot;</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;exported_</span><span class="si">{</span><span class="n">super_animal</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">.pt&quot;</span>
+<span class="n">export_path</span> <span class="o">=</span> <span class="n">MODELS_DIR</span> <span class="o">/</span> <span class="s2">"exported_models"</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"exported_</span><span class="si">{</span><span class="n">super_animal</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">.pt"</span>
 
 <span class="n">export_modelzoo_model</span><span class="p">(</span>
     <span class="n">export_path</span><span class="o">=</span><span class="n">export_path</span><span class="p">,</span>
     <span class="n">super_animal</span><span class="o">=</span><span class="n">super_animal</span><span class="p">,</span>
     <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
-    <span class="n">detector_name</span><span class="o">=</span><span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span>
+    <span class="n">detector_name</span><span class="o">=</span><span class="s2">"fasterrcnn_resnet50_fpn_v2"</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exported model zoo checkpoint to: </span><span class="si">{</span><span class="n">export_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Exported model zoo checkpoint to: </span><span class="si">{</span><span class="n">export_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

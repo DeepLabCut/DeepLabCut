@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -540,7 +541,7 @@ ALL the functions in deeplabcut by typing <code class="docutils literal notransl
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1567907844296-STHTZ2SD6UB5WCVEN2I8/ke17ZwdGBToddI8pDm48kJEw9Z-3B5ptjcdSkknf02DlfiSMXz2YNBs8ylwAJx2qgRUppHe6ToX8uSOdETM-XipuQpH02DE1EkoTaghKW779xRs5veesYFcByqmynT9oByNVWkh1tiIAZLs8gRhPycqbSMdPDHKAvTCdk8NbVnE/optionsA.png?format=1000w" width="90%">
 </p>
 <p>Now, for any of these functions, you type <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos_converth5_to_csv?</span></code> you get:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Signature: deeplabcut.analyze_videos_converth5_to_csv(videopath, videotype=&#39;.avi&#39;)
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Signature: deeplabcut.analyze_videos_converth5_to_csv(videopath, videotype='.avi')
 Docstring:
 By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position  in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) in the same directory, where the video is stored. If the flag save_as_csv is set to True, the data is also exported as comma-separated value file. However, if the flag was *not* set, then this function allows the conversion of all h5 files to csv files (without having to analyze the videos again)!
 
@@ -559,8 +560,8 @@ Only videos with this extension are analyzed. The default is ``.avi``
  Examples
 -----------
 
-    Converts all pose-output files belonging to mp4 videos in the folder &#39;/media/alex/experimentaldata/cheetahvideos&#39; to csv files.
-    deeplabcut.analyze_videos_converth5_to_csv(&#39;/media/alex/experimentaldata/cheetahvideos&#39;,&#39;.mp4&#39;)
+    Converts all pose-output files belonging to mp4 videos in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files.
+    deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
 </pre></div>
 </div>
 <p>While some of the names are ridiculously long, we wanted them to be “self-explanatory.” Here is a list
@@ -618,7 +619,7 @@ to use them, use the <code class="docutils literal notranslate"><span class="pre
 steps 1-3 in <a class="reference internal" href="Overviewof3D.html#d-overview"><span class="std std-ref">3D Overview</span></a>.</p></li>
 <li><p>Second, you must extract imagr from <code class="docutils literal notranslate"><span class="pre">camera_1</span></code> first; here you would have run the standard <code class="docutils literal notranslate"><span class="pre">deeplabcut.extract_frames(config_path,</span> <span class="pre">userfeedback=True)</span></code>, but just extract files from 1 camera. Next, you need to extract matching frames from <code class="docutils literal notranslate"><span class="pre">camera_2</span></code>:</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="n">config3d</span><span class="o">=</span><span class="n">config_path3d</span><span class="p">,</span> <span class="n">extracted_cam</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s1">'match'</span><span class="p">,</span> <span class="n">config3d</span><span class="o">=</span><span class="n">config_path3d</span><span class="p">,</span> <span class="n">extracted_cam</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You can set <code class="docutils literal notranslate"><span class="pre">extracted_cam=0</span></code> to match all other camera images to the frame numbers in the <code class="docutils literal notranslate"><span class="pre">camera_1</span></code> folder, or change this to match to other cameras. If you <code class="docutils literal notranslate"><span class="pre">deeplabcut.extract_frames</span></code> with <code class="docutils literal notranslate"><span class="pre">mode='automatic'</span></code> before, it shouldn’t matter which camera you pick. If you already extracted from both cameras, be warned this will overwrite the images for <code class="docutils literal notranslate"><span class="pre">camera_2</span></code>.</p>

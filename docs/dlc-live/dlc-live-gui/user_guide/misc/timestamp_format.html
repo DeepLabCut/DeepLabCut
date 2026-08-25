@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="misc_landing.html">Additional resources</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">Video timestamp format</a></li>
@@ -512,16 +513,23 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#file-naming">File naming</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#important-notes">Important notes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#json-structure">JSON structure</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fields">Fields</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#top-level-fields">Top-level fields</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#per-frame-fields">Per-frame fields</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timestamp-source-fields">Timestamp source fields</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#software-and-hardware-timestamps">Software and hardware timestamps</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#software-timestamp">Software timestamp</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#hardware-timestamp">Hardware timestamp</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-timestamps-in-python">Loading timestamps in Python</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#about-timestamps">About timestamps</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-notes">Additional notes</a></li>
 </ul>
             </nav>
         </div>
@@ -535,7 +543,8 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="video-timestamp-format">
 <span id="file-dlclivegui-timestamp-format"></span><h1>Video timestamp format<a class="headerlink" href="#video-timestamp-format" title="Link to this heading">#</a></h1>
-<p>When recording videos, the application automatically saves frame timestamps to a JSON file alongside the video file.</p>
+<p>When recording videos, the application automatically saves frame timestamps to a JSON file alongside each video file.
+The file includes an app-side software timestamp for every written frame and, when supported by the camera backend, optional hardware-generated timestamp metadata.</p>
 <section id="file-naming">
 <h2>File naming<a class="headerlink" href="#file-naming" title="Link to this heading">#</a></h2>
 <div class="admonition note">
@@ -544,89 +553,212 @@ document.write(`
 please refer to the <a class="reference internal" href="../overview.html#sec-dlclivegui-recording-paths-info"><span class="std std-ref">Recording output options</span></a> section.</p>
 </div>
 <p>For a video file named <code class="docutils literal notranslate"><span class="pre">recording_2025-10-23_143052.mp4</span></code>, the timestamp file will be:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">recording_2025</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mf">23_143052.</span><span class="n">mp4_timestamps</span><span class="o">.</span><span class="n">json</span>
+<div class="highlight-txt notranslate"><div class="highlight"><pre><span></span>recording_2025-10-23_143052.mp4_timestamps.json
 </pre></div>
 </div>
+</section>
+<section id="important-notes">
+<h2>Important notes<a class="headerlink" href="#important-notes" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Software timestamp records are added only after a frame is successfully written by the encoder.</p>
+<ul>
+<li><p>It is therefore coupled <strong>to the recording rather than inference or GUI display</strong>.</p></li>
+<li><p><strong>It should not be interpreted as a model-side inference timestamp or a direct-from-camera acquisition timestamp.</strong> It is recorded when the camera SDK supplies a frame to the GUI via the backend frame read.</p></li>
+</ul>
+</li>
+<li><p>Frames dropped before writing are not included in <code class="docutils literal notranslate"><span class="pre">frame_timestamps</span></code>.</p></li>
+<li><p>Hardware timestamp availability may differ by backend, camera model, and driver.</p></li>
+<li><p>The encoded video is written with a fixed input frame rate configured when recording starts.</p>
+<ul>
+<li><p>The timestamps reflect acquisition and enqueue timing and may not perfectly match encoded frame pacing, especially if frames are dropped or capture timing varies.</p></li>
+</ul>
+</li>
+</ul>
 </section>
 <section id="json-structure">
 <h2>JSON structure<a class="headerlink" href="#json-structure" title="Link to this heading">#</a></h2>
+<p>Timestamp files currently use the following format:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;video_file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;recording_2025-10-23_143052.mp4&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;num_frames&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1500</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;timestamps&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="mf">1729693852.123456</span><span class="p">,</span>
-<span class="w">    </span><span class="mf">1729693852.156789</span><span class="p">,</span>
-<span class="w">    </span><span class="mf">1729693852.190123</span>
+<span class="w">  </span><span class="nt">"video_file"</span><span class="p">:</span><span class="w"> </span><span class="s2">"recording_2025-10-23_143052.mp4"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"num_frames"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"timestamp_sources"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"software_timestamp"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"host_time.time"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"backend"</span><span class="p">:</span><span class="w"> </span><span class="s2">"host"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"kind"</span><span class="p">:</span><span class="w"> </span><span class="s2">"software_wall_clock"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"timebase"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Unix epoch"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"seconds"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Host-side software timestamp captured during acquisition."</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"hardware_timestamp"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"grab_result.GetTimeStamp"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"backend"</span><span class="p">:</span><span class="w"> </span><span class="s2">"basler"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"default_reported"</span><span class="p">:</span><span class="w"> </span><span class="s2">"seconds"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"raw_unit"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ticks"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"tick_frequency_hz"</span><span class="p">:</span><span class="w"> </span><span class="mf">1000000000.0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"timebase"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Basler camera timestamp counter"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"kind"</span><span class="p">:</span><span class="w"> </span><span class="s2">"camera_clock"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"extra"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"tick_frequency_source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GevTimestampTickFrequency"</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"frame_timestamps"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"frame_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"software_timestamp"</span><span class="p">:</span><span class="w"> </span><span class="mf">1729693852.123456</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"hardware_timestamp"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"seconds"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.123456789</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"raw_value"</span><span class="p">:</span><span class="w"> </span><span class="mi">123456789</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"hardware_timestamp_default"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.123456789</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"frame_index"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"software_timestamp"</span><span class="p">:</span><span class="w"> </span><span class="mf">1729693852.156789</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"hardware_timestamp"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"seconds"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.156789123</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"raw_value"</span><span class="p">:</span><span class="w"> </span><span class="mi">156789123</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">"hardware_timestamp_default"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.156789123</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;start_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1729693852.123456</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;end_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1729693902.123456</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;duration_seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">50.0</span>
+<span class="w">  </span><span class="nt">"start_time"</span><span class="p">:</span><span class="w"> </span><span class="mf">1729693852.123456</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"end_time"</span><span class="p">:</span><span class="w"> </span><span class="mf">1729693852.156789</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"duration_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.033333</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<section id="fields">
-<h3>Fields<a class="headerlink" href="#fields" title="Link to this heading">#</a></h3>
+<p>If hardware timestamps are unavailable, <code class="docutils literal notranslate"><span class="pre">timestamp_sources.hardware_timestamp</span></code> is <code class="docutils literal notranslate"><span class="pre">null</span></code> and each frame record contains only <code class="docutils literal notranslate"><span class="pre">frame_index</span></code> and <code class="docutils literal notranslate"><span class="pre">software_timestamp</span></code>.</p>
+<section id="top-level-fields">
+<h3>Top-level fields<a class="headerlink" href="#top-level-fields" title="Link to this heading">#</a></h3>
 <ul class="simple">
-<li><p><strong>video_file</strong>: Name of the associated video file</p></li>
-<li><p><strong>num_frames</strong>: Total number of frames recorded</p></li>
-<li><p><strong>timestamps</strong>: Array of Unix timestamps (seconds since epoch with microsecond precision) for each frame</p></li>
-<li><p><strong>start_time</strong>: Timestamp of the first frame</p></li>
-<li><p><strong>end_time</strong>: Timestamp of the last frame</p></li>
-<li><p><strong>duration_seconds</strong>: Total recording duration in seconds</p></li>
+<li><p><strong>video_file</strong>: Name of the associated video file.</p></li>
+<li><p><strong>num_frames</strong>: Number of frames successfully written to the video and represented in <code class="docutils literal notranslate"><span class="pre">frame_timestamps</span></code>.</p></li>
+<li><p><strong>timestamp_sources</strong>: Describes the software timestamp source and any available hardware timestamp source.</p></li>
+<li><p><strong>frame_timestamps</strong>: Ordered per-frame timestamp records.</p></li>
+<li><p><strong>start_time</strong>: Software timestamp of the first written frame.</p></li>
+<li><p><strong>end_time</strong>: Software timestamp of the last written frame.</p></li>
+<li><p><strong>duration_seconds</strong>: Difference between the last and first software timestamps.</p></li>
 </ul>
 </section>
+<section id="per-frame-fields">
+<h3>Per-frame fields<a class="headerlink" href="#per-frame-fields" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>frame_index</strong>: Zero-based index of the written frame.</p></li>
+<li><p><strong>software_timestamp</strong>: Host-side Unix timestamp in seconds.</p></li>
+<li><p><strong>hardware_timestamp</strong>: Optional backend-provided timestamp values. Defined values may include:</p>
+<ul>
+<li><p><strong>seconds</strong>: Hardware timestamp converted to seconds in the device timebase.</p></li>
+<li><p><strong>wall_clock_time</strong>: Unix timestamp, only when the backend can confidently provide a wall-clock value.</p></li>
+<li><p><strong>raw_value</strong>: Original device-specific timestamp value, such as camera clock ticks.</p></li>
+</ul>
+</li>
+<li><p><strong>hardware_timestamp_default</strong>: Optional convenience value selected by the backend’s <code class="docutils literal notranslate"><span class="pre">default_reported</span></code> field.</p></li>
+</ul>
+</section>
+<section id="timestamp-source-fields">
+<h3>Timestamp source fields<a class="headerlink" href="#timestamp-source-fields" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">timestamp_sources.hardware_timestamp</span></code> object describes how hardware values should be interpreted:</p>
+<ul class="simple">
+<li><p><strong>source</strong>: Backend API or feature that produced the timestamp.</p></li>
+<li><p><strong>backend</strong>: Camera backend name.</p></li>
+<li><p><strong>default_reported</strong>: Per-frame hardware value recommended as the default, such as <code class="docutils literal notranslate"><span class="pre">seconds</span></code> or <code class="docutils literal notranslate"><span class="pre">raw_value</span></code>.</p></li>
+<li><p><strong>raw_unit</strong>: Unit of the original hardware value, such as <code class="docutils literal notranslate"><span class="pre">ticks</span></code>.</p></li>
+<li><p><strong>tick_frequency_hz</strong>: Frequency used to convert ticks to seconds, when available.</p></li>
+<li><p><strong>timebase</strong>: Description of the hardware clock.</p></li>
+<li><p><strong>kind</strong>: Timestamp category, such as <code class="docutils literal notranslate"><span class="pre">camera_clock</span></code>.</p></li>
+<li><p><strong>extra</strong>: Additional backend-specific source information.</p></li>
+</ul>
+</section>
+</section>
+<section id="software-and-hardware-timestamps">
+<h2>Software and hardware timestamps<a class="headerlink" href="#software-and-hardware-timestamps" title="Link to this heading">#</a></h2>
+<section id="software-timestamp">
+<h3>Software timestamp<a class="headerlink" href="#software-timestamp" title="Link to this heading">#</a></h3>
+<p>Every written frame has a <code class="docutils literal notranslate"><span class="pre">software_timestamp</span></code>. It is normally supplied by the camera acquisition path.
+If no timestamp is provided to the recorder, the recorder falls back to <code class="docutils literal notranslate"><span class="pre">time.time()</span></code> when the frame is enqueued.</p>
+<p>Software timestamps use Unix epoch seconds and can therefore be compared directly with other host-side wall-clock data.</p>
+</section>
+<section id="hardware-timestamp">
+<h3>Hardware timestamp<a class="headerlink" href="#hardware-timestamp" title="Link to this heading">#</a></h3>
+<p>Hardware timestamps are optional and <strong>backend-dependent</strong>.
+They supplement the software timestamp rather than replace it.</p>
+<ul class="simple">
+<li><p>The Basler backend provides hardware timestamp metadata on supported cameras using <code class="docutils literal notranslate"><span class="pre">grab_result.GetTimeStamp()</span></code>.</p>
+<ul>
+<li><p>The raw value is stored in ticks.</p></li>
+<li><p>When a valid tick frequency is available, the JSON also contains a value converted to seconds.</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>A hardware timestamp expressed in seconds is not necessarily Unix time. For example, a Basler <code class="docutils literal notranslate"><span class="pre">camera_clock</span></code> value is relative to the camera’s own timestamp counter unless the backend explicitly reports a wall-clock timebase.</p>
+<p>Do not directly subtract a camera-clock timestamp from a Unix software timestamp.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Hardware timestamp support is best-effort. Cameras and backends that do not expose usable hardware timestamps still record software timestamps normally.</p>
+</div>
+</section>
+</section>
 <section id="usage">
-<h3>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h3>
-<p>The timestamps correspond to the time each frame was captured by the camera (from <code class="docutils literal notranslate"><span class="pre">FrameData.timestamp</span></code>) <strong>when that timestamp is provided by the caller</strong>.
-If no timestamp is provided, the recorder falls back to <code class="docutils literal notranslate"><span class="pre">time.time()</span></code> at enqueue time.</p>
-<p>This allows precise synchronization with:</p>
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
+<p>The timestamp JSON can help support synchronization with:</p>
 <ul class="simple">
 <li><p>DLC pose estimation results</p></li>
 <li><p>External sensors or triggers</p></li>
 <li><p>Other data streams recorded during the same session</p></li>
 </ul>
-</section>
+<p>Use <code class="docutils literal notranslate"><span class="pre">software_timestamp</span></code> for host wall-clock comparisons.
+Use hardware timestamps when device-level timing is required, while <strong>accounting for the hardware clock’s timebase and synchronization method.</strong></p>
 <section id="loading-timestamps-in-python">
 <h3>Loading timestamps in Python<a class="headerlink" href="#loading-timestamps-in-python" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 
-<span class="c1"># Load timestamps</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;recording_2025-10-23_143052.mp4_timestamps.json&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"recording_2025-10-23_143052.mp4_timestamps.json"</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Video: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;video_file&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total frames: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;num_frames&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duration: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;duration_seconds&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Video: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">'video_file'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Total frames: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">'num_frames'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Duration: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">'duration_seconds'</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> seconds"</span><span class="p">)</span>
 
-<span class="c1"># Convert first timestamp to human-readable format</span>
-<span class="n">start_dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recording started: </span><span class="si">{</span><span class="n">start_dt</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># Convert the first software timestamp to local readable time</span>
+<span class="n">first_record</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"frame_timestamps"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">start_dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">first_record</span><span class="p">[</span><span class="s2">"software_timestamp"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Recording started: </span><span class="si">{</span><span class="n">start_dt</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1"># Calculate average frame rate (based on timestamps)</span>
-<span class="n">avg_fps</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;num_frames&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;duration_seconds&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;duration_seconds&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="mf">0.0</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average FPS: </span><span class="si">{</span><span class="n">avg_fps</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># Calculate average frame rate from software timestamps.</span>
+<span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">"duration_seconds"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s2">"num_frames"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">avg_fps</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"num_frames"</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">data</span><span class="p">[</span><span class="s2">"duration_seconds"</span><span class="p">]</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">avg_fps</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Average FPS: </span><span class="si">{</span><span class="n">avg_fps</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1"># Access individual frame timestamps</span>
-<span class="k">for</span> <span class="n">frame_idx</span><span class="p">,</span> <span class="n">timestamp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;timestamps&#39;</span><span class="p">]):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frame </span><span class="si">{</span><span class="n">frame_idx</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># Access software and optional hardware timestamps per frame.</span>
+<span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">"frame_timestamps"</span><span class="p">]:</span>
+    <span class="n">frame_index</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">"frame_index"</span><span class="p">]</span>
+    <span class="n">software_timestamp</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">"software_timestamp"</span><span class="p">]</span>
+    <span class="n">hardware_timestamp</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"hardware_timestamp"</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"Frame </span><span class="si">{</span><span class="n">frame_index</span><span class="si">}</span><span class="s2">: "</span>
+        <span class="sa">f</span><span class="s2">"software=</span><span class="si">{</span><span class="n">software_timestamp</span><span class="si">}</span><span class="s2">, "</span>
+        <span class="sa">f</span><span class="s2">"hardware=</span><span class="si">{</span><span class="n">hardware_timestamp</span><span class="si">}</span><span class="s2">"</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
 </section>
 </section>
-<section id="notes">
-<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading">#</a></h2>
-<section id="about-timestamps">
-<h3>About timestamps<a class="headerlink" href="#about-timestamps" title="Link to this heading">#</a></h3>
+<section id="additional-notes">
+<h2>Additional notes<a class="headerlink" href="#additional-notes" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p>Timestamps use <code class="docutils literal notranslate"><span class="pre">time.time()</span></code> (Unix epoch seconds) when no explicit timestamp is supplied to the recorder.</p></li>
-<li><p>Frame timestamps are captured when frames are enqueued for writing (before encoding), and when provided by the caller can represent camera capture time.</p></li>
-<li><p>If frames are dropped due to queue overflow, those frames will not have timestamps in the array.</p></li>
-<li><p>The timestamp array length should match the number of frames in the video file.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">frame_timestamps</span></code> array length should match <code class="docutils literal notranslate"><span class="pre">num_frames</span></code> and the number of frames written to the video.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start_time</span></code>, <code class="docutils literal notranslate"><span class="pre">end_time</span></code>, and <code class="docutils literal notranslate"><span class="pre">duration_seconds</span></code> are calculated from software timestamps.</p></li>
+<li><p>Hardware timestamp source metadata is written once in <code class="docutils literal notranslate"><span class="pre">timestamp_sources</span></code>; changing timestamp sources during one recording is not expected.</p></li>
 </ul>
-<p>The encoded video is written with a fixed input frame rate configured when recording starts.</p>
-<p>The timestamps reflect capture/enqueue timing and may not perfectly match the encoded frame pacing, especially if frames are dropped or capture timing varies.</p>
-</section>
 </section>
 </section>
 
@@ -695,16 +827,23 @@ If no timestamp is provided, the recorder falls back to <code class="docutils li
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#file-naming">File naming</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#important-notes">Important notes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#json-structure">JSON structure</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fields">Fields</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#top-level-fields">Top-level fields</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#per-frame-fields">Per-frame fields</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timestamp-source-fields">Timestamp source fields</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#software-and-hardware-timestamps">Software and hardware timestamps</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#software-timestamp">Software timestamp</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#hardware-timestamp">Hardware timestamp</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-timestamps-in-python">Loading timestamps in Python</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#about-timestamps">About timestamps</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-notes">Additional notes</a></li>
 </ul>
   </nav></div>
 

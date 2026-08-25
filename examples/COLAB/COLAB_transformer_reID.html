@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -601,7 +602,7 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install DLC version 2.2-2.3 (pre DLC3):</span>
-<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;deeplabcut[tf]&quot;</span>
+<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="s2">"deeplabcut[tf]"</span>
 </pre></div>
 </div>
 </div>
@@ -630,17 +631,17 @@ document.write(`
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
-<span class="n">url_record</span> <span class="o">=</span> <span class="s2">&quot;https://zenodo.org/api/records/7883589&quot;</span>
+<span class="n">url_record</span> <span class="o">=</span> <span class="s2">"https://zenodo.org/api/records/7883589"</span>
 <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url_record</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
-    <span class="n">file</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;files&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file</span><span class="p">[</span><span class="s2">&quot;links&quot;</span><span class="p">][</span><span class="s2">&quot;self&quot;</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">"files"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downloading </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file</span><span class="p">[</span><span class="s2">"links"</span><span class="p">][</span><span class="s2">"self"</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">))</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
-            <span class="n">zf</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/content&quot;</span><span class="p">)</span>
+            <span class="n">zf</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">"/content"</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The URL </span><span class="si">{</span><span class="n">url_record</span><span class="si">}</span><span class="s2"> could not be reached.&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The URL </span><span class="si">{</span><span class="n">url_record</span><span class="si">}</span><span class="s2"> could not be reached."</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -657,16 +658,16 @@ document.write(`
 <p>In one step, since <code class="docutils literal notranslate"><span class="pre">auto_track=True</span></code> you extract detections and association costs, create tracklets, &amp; stitch them. We can use this to compare to the transformer-guided tracking below.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_path</span> <span class="o">=</span> <span class="s2">&quot;/content/demo-me-2021-07-14&quot;</span>
-<span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
-<span class="n">video</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="s2">&quot;videos&quot;</span><span class="p">,</span> <span class="s2">&quot;videocompressed1.mp4&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">project_path</span> <span class="o">=</span> <span class="s2">"/content/demo-me-2021-07-14"</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="s2">"config.yaml"</span><span class="p">)</span>
+<span class="n">video</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="s2">"videos"</span><span class="p">,</span> <span class="s2">"videocompressed1.mp4"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">video</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span> <span class="n">auto_track</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">video</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">"mp4"</span><span class="p">,</span> <span class="n">auto_track</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -675,7 +676,7 @@ document.write(`
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.11/dist-packages/tensorflow/python/keras/engine/base_layer_v1.py:1694: UserWarning: `layer.apply` is deprecated and will be removed in a future version. Please use `layer.__call__` method instead.
-  warnings.warn(&#39;`layer.apply` is deprecated and &#39;
+  warnings.warn('`layer.apply` is deprecated and '
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Activating extracting of PAFs
@@ -705,21 +706,21 @@ Analyzing /content/demo-me-2021-07-14/videos/videocompressed1DLC_dlcrnetms5_demo
 2330it [00:06, 342.29it/s] 
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The tracklets were created (i.e., under the hood deeplabcut.convert_detections2tracklets was run). Now you can &#39;refine_tracklets&#39; in the GUI, or run &#39;deeplabcut.stitch_tracklets&#39;.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The tracklets were created (i.e., under the hood deeplabcut.convert_detections2tracklets was run). Now you can 'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'.
 Processing...  /content/demo-me-2021-07-14/videos/videocompressed1.mp4
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 4/4 [00:00&lt;00:00, 1488.53it/s]
-/usr/local/lib/python3.11/dist-packages/deeplabcut/refine_training_dataset/stitch.py:934: FutureWarning: Starting with pandas version 3.0 all arguments of to_hdf except for the argument &#39;path_or_buf&#39; will be keyword-only.
-  df.to_hdf(output_name, &quot;tracks&quot;, format=&quot;table&quot;, mode=&quot;w&quot;)
+/usr/local/lib/python3.11/dist-packages/deeplabcut/refine_training_dataset/stitch.py:934: FutureWarning: Starting with pandas version 3.0 all arguments of to_hdf except for the argument 'path_or_buf' will be keyword-only.
+  df.to_hdf(output_name, "tracks", format="table", mode="w")
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The videos are analyzed. Time to assemble animals and track &#39;em... 
- Call &#39;create_video_with_all_detections&#39; to check multi-animal detection quality before tracking.
-If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function &#39;extract_outlier_frames&#39; to extract a few representative outlier frames.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The videos are analyzed. Time to assemble animals and track 'em... 
+ Call 'create_video_with_all_detections' to check multi-animal detection quality before tracking.
+If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;DLC_dlcrnetms5_demoJul14shuffle0_20000&#39;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>'DLC_dlcrnetms5_demoJul14shuffle0_20000'
 </pre></div>
 </div>
 </div>
@@ -733,13 +734,13 @@ If the tracking is not satisfactory for some videos, consider expanding the trai
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Filter the predictions to remove small jitter, if desired:</span>
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">video</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">video</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">"mp4"</span><span class="p">)</span>
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span>
+    <span class="n">videotype</span><span class="o">=</span><span class="s2">"mp4"</span><span class="p">,</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">color_by</span><span class="o">=</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span>
+    <span class="n">color_by</span><span class="o">=</span><span class="s2">"individual"</span><span class="p">,</span>
     <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">filtered</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -752,8 +753,8 @@ If the tracking is not satisfactory for some videos, consider expanding the trai
 Saving filtered csv poses!
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.11/dist-packages/deeplabcut/post_processing/filtering.py:298: FutureWarning: Starting with pandas version 3.0 all arguments of to_hdf except for the argument &#39;path_or_buf&#39; will be keyword-only.
-  data.to_hdf(outdataname, &quot;df_with_missing&quot;, format=&quot;table&quot;, mode=&quot;w&quot;)
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.11/dist-packages/deeplabcut/post_processing/filtering.py:298: FutureWarning: Starting with pandas version 3.0 all arguments of to_hdf except for the argument 'path_or_buf' will be keyword-only.
+  data.to_hdf(outdataname, "df_with_missing", format="table", mode="w")
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Starting to process video: /content/demo-me-2021-07-14/videos/videocompressed1.mp4
@@ -764,7 +765,7 @@ Generating frames and creating video.
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.11/dist-packages/deeplabcut/utils/make_labeled_video.py:140: FutureWarning: DataFrame.groupby with axis=1 is deprecated. Do `frame.T.groupby(...)` without axis instead.
-  Dataframe.groupby(level=&quot;individuals&quot;, axis=1).size().values // 3
+  Dataframe.groupby(level="individuals", axis=1).size().values // 3
 100%|██████████| 2330/2330 [00:31&lt;00:00, 73.04it/s]
 </pre></div>
 </div>
@@ -781,13 +782,13 @@ Generating frames and creating video.
 </div></blockquote>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">plot_trajectories</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">video</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">plot_trajectories</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">video</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">"mp4"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading  /content/demo-me-2021-07-14/videos/videocompressed1.mp4 and data.
-Plots created! Please check the directory &quot;plot-poses&quot; within the video directory
+Plots created! Please check the directory "plot-poses" within the video directory
 </pre></div>
 </div>
 </div>
@@ -804,8 +805,8 @@ Plots created! Please check the directory &quot;plot-poses&quot; within the vide
     <span class="n">config_path</span><span class="p">,</span>
     <span class="p">[</span><span class="n">video</span><span class="p">],</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ellipse&quot;</span><span class="p">,</span>
+    <span class="n">videotype</span><span class="o">=</span><span class="s2">"mp4"</span><span class="p">,</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s2">"ellipse"</span><span class="p">,</span>
     <span class="n">n_triplets</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -816,13 +817,13 @@ Plots created! Please check the directory &quot;plot-poses&quot; within the vide
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.11/dist-packages/tensorflow/python/keras/engine/base_layer_v1.py:1694: UserWarning: `layer.apply` is deprecated and will be removed in a future version. Please use `layer.__call__` method instead.
-  warnings.warn(&#39;`layer.apply` is deprecated and &#39;
+  warnings.warn('`layer.apply` is deprecated and '
 /usr/local/lib/python3.11/dist-packages/tensorflow/python/keras/engine/base_layer_v1.py:1694: UserWarning: `layer.apply` is deprecated and will be removed in a future version. Please use `layer.__call__` method instead.
-  warnings.warn(&#39;`layer.apply` is deprecated and &#39;
+  warnings.warn('`layer.apply` is deprecated and '
 /usr/local/lib/python3.11/dist-packages/tensorflow/python/keras/engine/base_layer_v1.py:1694: UserWarning: `layer.apply` is deprecated and will be removed in a future version. Please use `layer.__call__` method instead.
-  warnings.warn(&#39;`layer.apply` is deprecated and &#39;
+  warnings.warn('`layer.apply` is deprecated and '
 /usr/local/lib/python3.11/dist-packages/tensorflow/python/keras/engine/base_layer_v1.py:1694: UserWarning: `layer.apply` is deprecated and will be removed in a future version. Please use `layer.__call__` method instead.
-  warnings.warn(&#39;`layer.apply` is deprecated and &#39;
+  warnings.warn('`layer.apply` is deprecated and '
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Activating extracting of PAFs
@@ -836,7 +837,7 @@ Starting to extract posture
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 2330/2330 [01:18&lt;00:00, 29.78it/s]
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function &#39;extract_outlier_frames&#39; to extract a few representative outlier frames.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames.
 Epoch 10, train acc: 0.61
 Epoch 10, test acc 0.45
 Epoch 20, train acc: 0.74
@@ -862,8 +863,8 @@ Processing...  /content/demo-me-2021-07-14/videos/videocompressed1.mp4
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 4/4 [00:00&lt;00:00, 483.21it/s]
-/usr/local/lib/python3.11/dist-packages/deeplabcut/refine_training_dataset/stitch.py:934: FutureWarning: Starting with pandas version 3.0 all arguments of to_hdf except for the argument &#39;path_or_buf&#39; will be keyword-only.
-  df.to_hdf(output_name, &quot;tracks&quot;, format=&quot;table&quot;, mode=&quot;w&quot;)
+/usr/local/lib/python3.11/dist-packages/deeplabcut/refine_training_dataset/stitch.py:934: FutureWarning: Starting with pandas version 3.0 all arguments of to_hdf except for the argument 'path_or_buf' will be keyword-only.
+  df.to_hdf(output_name, "tracks", format="table", mode="w")
 </pre></div>
 </div>
 </div>
@@ -875,15 +876,15 @@ Processing...  /content/demo-me-2021-07-14/videos/videocompressed1.mp4
     <span class="n">config_path</span><span class="p">,</span>
     <span class="p">[</span><span class="n">video</span><span class="p">],</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;transformer&quot;</span><span class="p">,</span>
+    <span class="n">videotype</span><span class="o">=</span><span class="s2">"mp4"</span><span class="p">,</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s2">"transformer"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading  /content/demo-me-2021-07-14/videos/videocompressed1.mp4 and data.
-Plots created! Please check the directory &quot;plot-poses&quot; within the video directory
+Plots created! Please check the directory "plot-poses" within the video directory
 </pre></div>
 </div>
 </div>
@@ -893,12 +894,12 @@ Plots created! Please check the directory &quot;plot-poses&quot; within the vide
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span>
+    <span class="n">videotype</span><span class="o">=</span><span class="s2">"mp4"</span><span class="p">,</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">color_by</span><span class="o">=</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span>
+    <span class="n">color_by</span><span class="o">=</span><span class="s2">"individual"</span><span class="p">,</span>
     <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;transformer&quot;</span><span class="p">,</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s2">"transformer"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -912,7 +913,7 @@ Generating frames and creating video.
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.11/dist-packages/deeplabcut/utils/make_labeled_video.py:140: FutureWarning: DataFrame.groupby with axis=1 is deprecated. Do `frame.T.groupby(...)` without axis instead.
-  Dataframe.groupby(level=&quot;individuals&quot;, axis=1).size().values // 3
+  Dataframe.groupby(level="individuals", axis=1).size().values // 3
 100%|██████████| 2330/2330 [00:31&lt;00:00, 73.75it/s]
 </pre></div>
 </div>

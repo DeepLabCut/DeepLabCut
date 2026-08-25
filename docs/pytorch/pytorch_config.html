@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -639,10 +640,10 @@ only one of ‘min_width’ and ‘pad_width_divisor’ parameters must be set.<
 <span class="w">  </span><span class="nt">min_width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># int: if not None, the minimum width of the image</span>
 <span class="w">  </span><span class="nt">pad_height_divisor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># int: if not None, ensures image height is dividable by value of this argument.</span>
 <span class="w">  </span><span class="nt">pad_width_divisor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># int: if not None, ensures image width is dividable by value of this argument.</span>
-<span class="w">  </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">random</span><span class="w">  </span><span class="c1"># str: position of the image, one of &#39;A.PadIfNeeded.Position&#39;</span>
-<span class="w">  </span><span class="nt">border_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reflect_101</span><span class="w">  </span><span class="c1"># str: &#39;constant&#39; or &#39;reflect_101&#39; (see cv2.BORDER modes)</span>
-<span class="w">  </span><span class="nt">border_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># str: padding value if border_mode is &#39;constant&#39;</span>
-<span class="w">  </span><span class="nt">border_mask_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># str: padding value for mask if border_mode is &#39;constant&#39;</span>
+<span class="w">  </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">random</span><span class="w">  </span><span class="c1"># str: position of the image, one of 'A.PadIfNeeded.Position'</span>
+<span class="w">  </span><span class="nt">border_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reflect_101</span><span class="w">  </span><span class="c1"># str: 'constant' or 'reflect_101' (see cv2.BORDER modes)</span>
+<span class="w">  </span><span class="nt">border_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># str: padding value if border_mode is 'constant'</span>
+<span class="w">  </span><span class="nt">border_mask_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># str: padding value for mask if border_mode is 'constant'</span>
 </pre></div>
 </div>
 <p><strong>Covering</strong>: Based on Albumentations’s <a class="reference external" href="https://albumentations.ai/docs/api_reference/augmentations/dropout/coarse_dropout/#albumentations.augmentations.dropout.coarse_dropout">CoarseDropout</a>
@@ -723,7 +724,7 @@ keypoints. The methods to sample the center of the crop are as follows:</p>
 <span class="w">  </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">400</span><span class="w">  </span><span class="c1"># int: the height of the crop</span>
 <span class="w">  </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">400</span><span class="w">  </span><span class="c1"># int: the height of the crop</span>
 <span class="w">  </span><span class="nt">max_shift</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span><span class="w">  </span><span class="c1"># float: maximum allowed shift of the cropping center position as a fraction of the crop size.</span>
-<span class="w">  </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hybrid</span><span class="w"> </span><span class="c1"># str: the center sampling method (one of &#39;uniform&#39;, &#39;keypoints&#39;, &#39;density&#39;, &#39;hybrid&#39;)</span>
+<span class="w">  </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hybrid</span><span class="w"> </span><span class="c1"># str: the center sampling method (one of 'uniform', 'keypoints', 'density', 'hybrid')</span>
 </pre></div>
 </div>
 <p><strong>Collate</strong>: Defines how images are collated into batches. The default way collate
@@ -752,7 +753,7 @@ are the smallest size such that the target size fits entirely in the image.</p><
 <span class="w">  </span><span class="nt">max_short_side</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1152</span><span class="w">  </span><span class="c1"># the maximum size of the target short side</span>
 <span class="w">  </span><span class="nt">multiple_of</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w">  </span><span class="c1"># pads the target height, width such that they are multiples of 32</span>
 <span class="w">  </span><span class="nt">to_square</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># instead of using the aspect ratio of the first image, only the</span>
-<span class="w">    </span><span class="c1"># short side of the first image will be used to sample a &quot;side&quot;, and the images will</span>
+<span class="w">    </span><span class="c1"># short side of the first image will be used to sample a "side", and the images will</span>
 <span class="w">    </span><span class="c1"># be cropped in squares</span>
 </pre></div>
 </div>
@@ -783,7 +784,7 @@ bodyparts in the project).</p>
 <span class="w">  </span><span class="nt">heads</span><span class="p">:</span><span class="w">  </span><span class="c1"># configures how the different heads will make predictions</span>
 <span class="w">    </span><span class="nt">bodypart</span><span class="p">:</span><span class="w">  </span><span class="c1"># configures how pose will be predicted for bodyparts</span>
 <span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HeatmapHead</span>
-<span class="w">      </span><span class="nt">predictor</span><span class="p">:</span><span class="w">  </span><span class="c1"># the BasePredictor used to make predictions from the head&#39;s outputs</span>
+<span class="w">      </span><span class="nt">predictor</span><span class="p">:</span><span class="w">  </span><span class="c1"># the BasePredictor used to make predictions from the head's outputs</span>
 <span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HeatmapPredictor</span>
 <span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 <span class="w">      </span><span class="nt">target_generator</span><span class="p">:</span><span class="w">  </span><span class="c1"># the BaseTargetGenerator used to create targets for the head</span>
@@ -791,7 +792,7 @@ bodyparts in the project).</p>
 <span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 <span class="w">      </span><span class="nt">criterion</span><span class="p">:</span><span class="w">  </span><span class="c1"># the loss criterion used for the head</span>
 <span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">...</span>
-<span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w">  </span><span class="c1"># head-specific options, such as `heatmap_config` or `locref_config` for a &quot;HeatmapHead&quot;</span>
+<span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w">  </span><span class="c1"># head-specific options, such as `heatmap_config` or `locref_config` for a "HeatmapHead"</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">backbone</span></code>, <code class="docutils literal notranslate"><span class="pre">neck</span></code> and <code class="docutils literal notranslate"><span class="pre">head</span></code> configurations are loaded using the
@@ -807,7 +808,7 @@ in the configuration.</p>
 <span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HRNet</span>
 <span class="w">    </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hrnet_w32</span><span class="w">  </span><span class="c1"># creates an HRNet W32</span>
 <span class="w">    </span><span class="nt">pretrained</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># the backbone weights for training will be loaded from TIMM (pre-trained on ImageNet)</span>
-<span class="w">    </span><span class="nt">interpolate_branches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># don&#39;t interpolate &amp; concatenate channels from all branches</span>
+<span class="w">    </span><span class="nt">interpolate_branches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># don't interpolate &amp; concatenate channels from all branches</span>
 <span class="w">    </span><span class="nt">increased_channel_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># use the incre_modules defined in the TIMM HRNet</span>
 <span class="w">  </span><span class="nt">backbone_output_channels</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">128</span><span class="w">  </span><span class="c1"># number of channels output by the backbone</span>
 </pre></div>
@@ -820,8 +821,8 @@ learning rate schedulers). Unless you’re experienced with machine learning and
 models <strong>it is not recommended to change the optimizer or scheduler</strong>.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runner</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PoseTrainingRunner</span><span class="w">  </span><span class="c1"># should not need to modify this</span>
-<span class="w">  </span><span class="nt">key_metric</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;test.mAP&quot;</span><span class="w">  </span><span class="c1"># the metric to use to select the &quot;best snapshot&quot;</span>
-<span class="w">  </span><span class="nt">key_metric_asc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># whether &quot;larger=better&quot; for the key_metric</span>
+<span class="w">  </span><span class="nt">key_metric</span><span class="p">:</span><span class="w"> </span><span class="s">"test.mAP"</span><span class="w">  </span><span class="c1"># the metric to use to select the "best snapshot"</span>
+<span class="w">  </span><span class="nt">key_metric_asc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># whether "larger=better" for the key_metric</span>
 <span class="w">  </span><span class="nt">eval_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># the interval between each passes through the evaluation dataset</span>
 <span class="w">  </span><span class="nt">optimizer</span><span class="p">:</span><span class="w">  </span><span class="c1"># the optimizer to use to train the model</span>
 <span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
@@ -829,7 +830,7 @@ models <strong>it is not recommended to change the optimizer or scheduler</stron
 <span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 <span class="w">  </span><span class="nt">load_scheduler_state_dict</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true/false</span><span class="w"> </span><span class="c1"># whether to load scheduler state when resuming training from a snapshot,</span>
 <span class="w">  </span><span class="nt">snapshots</span><span class="p">:</span><span class="w">  </span><span class="c1"># parameters for the TorchSnapshotManager</span>
-<span class="w">    </span><span class="nt">max_snapshots</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1"># the maximum number of snapshots to save (the &quot;best&quot; model does not count as one of them)</span>
+<span class="w">    </span><span class="nt">max_snapshots</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1"># the maximum number of snapshots to save (the "best" model does not count as one of them)</span>
 <span class="w">    </span><span class="nt">save_epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">25</span><span class="w">  </span><span class="c1"># the interval between each snapshot save</span>
 <span class="w">    </span><span class="nt">save_optimizer_state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># whether the optimizer state should be saved with the model snapshots (very little reason to set to true)</span>
 <span class="w">  </span><span class="nt">gpus</span><span class="p">:</span><span class="w"> </span><span class="c1"># GPUs to use to train the network</span>
@@ -952,7 +953,7 @@ and metrics.</p>
 <span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WandbLogger</span>
 <span class="w"> </span><span class="nt">project_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-dlc3-project</span><span class="w">  </span><span class="c1"># the name of the project where the run should be logged</span>
 <span class="w"> </span><span class="nt">run_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dekr-w32-shuffle0</span><span class="w">  </span><span class="c1"># the name of the run to log</span>
-<span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w">  </span><span class="c1"># any other argument you can pass to `wandb.init`, such as `tags: [&quot;dekr&quot;, &quot;split=0&quot;]`</span>
+<span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w">  </span><span class="c1"># any other argument you can pass to `wandb.init`, such as `tags: ["dekr", "split=0"]`</span>
 </pre></div>
 </div>
 <p>If you set up a <code class="docutils literal notranslate"><span class="pre">WandbLogger</span></code>, the corresponding run info (<code class="docutils literal notranslate"><span class="pre">entity</span></code>, <code class="docutils literal notranslate"><span class="pre">project</span></code>, <code class="docutils literal notranslate"><span class="pre">run_id</span></code>)
@@ -993,7 +994,7 @@ sub-configs, currently supporting <strong>multithreading</strong>, <strong>compi
 <span class="w">    </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30.0</span>
 <span class="w">  </span><span class="nt">compile</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">    </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;inductor&quot;</span>
+<span class="w">    </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="s">"inductor"</span>
 <span class="w">  </span><span class="nt">autocast</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">  </span><span class="nt">conditions</span><span class="p">:</span>

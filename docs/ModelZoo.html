@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -640,13 +641,13 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 <p>You can simply call the model and run video inference.</p>
 <p>To note, a good step is typically to use our self-supervised video adaptation method to reduce jitter. In the <code class="docutils literal notranslate"><span class="pre">deeplabcut.video_inference_superanimal</span></code> simply function set the <code class="docutils literal notranslate"><span class="pre">video_adapt</span></code> option to <strong>True</strong>. Be aware, that enabling this option will (minimally) extend the processing time.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
-<span class="n">video_path</span> <span class="o">=</span> <span class="s2">&quot;demo-video.mp4&quot;</span>
-<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_quadruped&quot;</span>
+<span class="n">video_path</span> <span class="o">=</span> <span class="s2">"demo-video.mp4"</span>
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">"superanimal_quadruped"</span>
 
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">video_inference_superanimal</span><span class="p">([</span><span class="n">video_path</span><span class="p">],</span>
                                         <span class="n">superanimal_name</span><span class="p">,</span>
-                                        <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;hrnet_w32&quot;</span><span class="p">,</span>
-                                        <span class="n">detector_name</span><span class="o">=</span><span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span><span class="p">,</span>
+                                        <span class="n">model_name</span><span class="o">=</span><span class="s2">"hrnet_w32"</span><span class="p">,</span>
+                                        <span class="n">detector_name</span><span class="o">=</span><span class="s2">"fasterrcnn_resnet50_fpn_v2"</span><span class="p">,</span>
                                         <span class="n">video_adapt</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -664,15 +665,15 @@ intermediate 2D predictions to <code class="docutils literal notranslate"><span 
 the in-memory 3D dataframe (<code class="docutils literal notranslate"><span class="pre">df_3d</span></code>) in the function output.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">video_path</span> <span class="o">=</span> <span class="s2">&quot;demo-video.mp4&quot;</span>
+<span class="n">video_path</span> <span class="o">=</span> <span class="s2">"demo-video.mp4"</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">video_inference_superanimal</span><span class="p">(</span>
     <span class="n">videos</span><span class="o">=</span><span class="p">[</span><span class="n">video_path</span><span class="p">],</span>
-    <span class="n">superanimal_name</span><span class="o">=</span><span class="s2">&quot;superanimal_quadruped&quot;</span><span class="p">,</span>
-    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;fmpose3d_animals&quot;</span><span class="p">,</span>
+    <span class="n">superanimal_name</span><span class="o">=</span><span class="s2">"superanimal_quadruped"</span><span class="p">,</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">"fmpose3d_animals"</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
     <span class="n">fmpose_return_3d</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># include 3D dataframe in returned payload</span>
 <span class="p">)</span>
-<span class="n">df_3d</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">video_path</span><span class="p">][</span><span class="s2">&quot;df_3d&quot;</span><span class="p">]</span>
+<span class="n">df_3d</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">video_path</span><span class="p">][</span><span class="s2">"df_3d"</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
@@ -680,16 +681,16 @@ the in-memory 3D dataframe (<code class="docutils literal notranslate"><span cla
 <h3>Practical example: Using SuperAnimal model bottom up, considering video/animal size.<a class="headerlink" href="#practical-example-using-superanimal-model-bottom-up-considering-video-animal-size" title="Link to this heading">#</a></h3>
 <p>In our work we introduced a spatial-pyramid for smartly rescaling images. Imagine if you frames are much larger than what we trained on, it would be hard for the model to find the animal! Here, you can simply guide the model with the <code class="docutils literal notranslate"><span class="pre">scale_list</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
-<span class="n">video_path</span> <span class="o">=</span> <span class="s2">&quot;demo-video.mp4&quot;</span>
-<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_quadruped&quot;</span>
+<span class="n">video_path</span> <span class="o">=</span> <span class="s2">"demo-video.mp4"</span>
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">"superanimal_quadruped"</span>
 
 <span class="c1"># The purpose of the scale list is to aggregate predictions from various image sizes. We anticipate the appearance size of the animal in the images to be approximately 400 pixels.</span>
 <span class="n">scale_list</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
 
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">video_inference_superanimal</span><span class="p">([</span><span class="n">video_path</span><span class="p">],</span>
                                         <span class="n">superanimal_name</span><span class="p">,</span>
-                                        <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;hrnet_w32&quot;</span><span class="p">,</span>
-                                        <span class="n">detector_name</span><span class="o">=</span><span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span><span class="p">,</span>
+                                        <span class="n">model_name</span><span class="o">=</span><span class="s2">"hrnet_w32"</span><span class="p">,</span>
+                                        <span class="n">detector_name</span><span class="o">=</span><span class="s2">"fasterrcnn_resnet50_fpn_v2"</span><span class="p">,</span>
                                         <span class="n">scale_list</span><span class="o">=</span><span class="n">scale_list</span><span class="p">,</span>
                                         <span class="n">video_adapt</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 </pre></div>
@@ -706,15 +707,15 @@ the in-memory 3D dataframe (<code class="docutils literal notranslate"><span cla
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.modelzoo</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_weight_init</span>
 
-<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse&quot;</span>
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">"superanimal_topviewmouse"</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;openfield-Pranav-2018-10-30&quot;</span><span class="p">,</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">"openfield-Pranav-2018-10-30"</span><span class="p">,</span> <span class="s2">"config.yaml"</span><span class="p">)</span>
 
 <span class="n">weight_init</span> <span class="o">=</span> <span class="n">build_weight_init</span><span class="p">(</span>
     <span class="n">cfg</span><span class="o">=</span><span class="n">config_path</span><span class="p">,</span>
     <span class="n">super_animal</span><span class="o">=</span><span class="n">superanimal_name</span><span class="p">,</span>
-    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;hrnet_w32&quot;</span><span class="p">,</span>
-    <span class="n">detector_name</span><span class="o">=</span><span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span><span class="p">,</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">"hrnet_w32"</span><span class="p">,</span>
+    <span class="n">detector_name</span><span class="o">=</span><span class="s2">"fasterrcnn_resnet50_fpn_v2"</span><span class="p">,</span>
     <span class="n">with_decoder</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 

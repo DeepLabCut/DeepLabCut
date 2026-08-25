@@ -269,6 +269,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -825,10 +826,10 @@ This is why administrator privileges are required for Windows users, as creating
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-kebab-horizontal no-title" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14a2 2 0 1 1-.001-3.999A2 2 0 0 1 20 14ZM6 12a2 2 0 1 1-3.999.001A2 2 0 0 1 6 12Zm8 0a2 2 0 1 1-3.999.001A2 2 0 0 1 14 12Z"></path></svg></span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
-    <span class="s2">&quot;Name of the project&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Name of the experimenter&quot;</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;Full path of video 1&quot;</span><span class="p">,</span> <span class="s2">&quot;Full path of video 2&quot;</span><span class="p">,</span> <span class="s2">&quot;Full path of video 3&quot;</span><span class="p">],</span>
-    <span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;Full path of the working directory&quot;</span><span class="p">,</span>
+    <span class="s2">"Name of the project"</span><span class="p">,</span>
+    <span class="s2">"Name of the experimenter"</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">"Full path of video 1"</span><span class="p">,</span> <span class="s2">"Full path of video 2"</span><span class="p">,</span> <span class="s2">"Full path of video 3"</span><span class="p">],</span>
+    <span class="n">working_directory</span><span class="o">=</span><span class="s2">"Full path of the working directory"</span><span class="p">,</span>
     <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">multianimal</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
@@ -839,10 +840,10 @@ This is why administrator privileges are required for Windows users, as creating
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-kebab-horizontal no-title" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14a2 2 0 1 1-.001-3.999A2 2 0 0 1 20 14ZM6 12a2 2 0 1 1-3.999.001A2 2 0 0 1 6 12Zm8 0a2 2 0 1 1-3.999.001A2 2 0 0 1 14 12Z"></path></svg></span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
-    <span class="s2">&quot;Name of the project&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Name of the experimenter&quot;</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;Full path of video 1&quot;</span><span class="p">,</span> <span class="s2">&quot;Full path of video 2&quot;</span><span class="p">,</span> <span class="s2">&quot;Full path of video 3&quot;</span><span class="p">],</span>
-    <span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;Full path of the working directory&quot;</span><span class="p">,</span>
+    <span class="s2">"Name of the project"</span><span class="p">,</span>
+    <span class="s2">"Name of the experimenter"</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">"Full path of video 1"</span><span class="p">,</span> <span class="s2">"Full path of video 2"</span><span class="p">,</span> <span class="s2">"Full path of video 3"</span><span class="p">],</span>
+    <span class="n">working_directory</span><span class="o">=</span><span class="s2">"Full path of the working directory"</span><span class="p">,</span>
     <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">multianimal</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
@@ -924,8 +925,8 @@ If <code class="docutils literal notranslate"><span class="pre">copy_videos=Fals
 If <code class="docutils literal notranslate"><span class="pre">copy_videos=True</span></code>, the videos are copied into the directory.</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">add_new_videos</span><span class="p">(</span>
-    <span class="s2">&quot;Full path of the project configuration file&quot;</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;full path of video 4&quot;</span><span class="p">,</span> <span class="s2">&quot;full path of video 5&quot;</span><span class="p">],</span>
+    <span class="s2">"Full path of the project configuration file"</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">"full path of video 4"</span><span class="p">,</span> <span class="s2">"full path of video 5"</span><span class="p">],</span>
     <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span>
 <span class="p">)</span>
 </pre></div>
@@ -1072,8 +1073,8 @@ refinement below).</p>
 <h5>Code example<a class="headerlink" href="#id2" title="Link to this heading">#</a></h5>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;automatic/manual&quot;</span><span class="p">,</span>
-    <span class="n">algo</span><span class="o">=</span><span class="s2">&quot;uniform/kmeans&quot;</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">"automatic/manual"</span><span class="p">,</span>
+    <span class="n">algo</span><span class="o">=</span><span class="s2">"uniform/kmeans"</span><span class="p">,</span>
     <span class="n">crop</span><span class="o">=</span><span class="kc">True</span><span class="o">/</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
@@ -1134,7 +1135,7 @@ Therefore, it is hard to provide one-size-fits-all code that extracts frames to 
 If the user feels specific frames are lacking, they can extract hand selected frames of interest using the interactive GUI
 provided along with the toolbox.</p>
 <p>This can be launched by using:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s2">&quot;manual&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s2">"manual"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The user can use the <em>Load Video</em> button to load one of the videos in the project configuration file, use the scroll
@@ -1396,7 +1397,7 @@ pose estimation model, using the same data split as was used for shuffle 0:</p>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="n">from_shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">shuffles</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;resnet_50&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="s2">"resnet_50"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -1443,7 +1444,7 @@ models) of the model that you want to train (before you start training).</p>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">"cuda:0"</span><span class="p">,</span>
     <span class="n">max_snapshots_to_keep</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
     <span class="n">displayiters</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
     <span class="n">save_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
@@ -1675,7 +1676,7 @@ refine the model rather than proceeding with the current results.</strong></p>
 <p>The trained network can be used to analyze new videos. These videos <strong>do not</strong> need to be in the config file!
 You can analyze new videos with the following line of code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;fullpath/analysis/project/videos/reachingvideo1.avi&quot;</span><span class="p">],</span>
+    <span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s2">"fullpath/analysis/project/videos/reachingvideo1.avi"</span><span class="p">],</span>
     <span class="n">save_as_csv</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 </pre></div>
@@ -1684,7 +1685,7 @@ You can analyze new videos with the following line of code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="n">videos</span><span class="p">,</span>
-    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;avi&quot;</span><span class="p">,</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">"avi"</span><span class="p">,</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1765,16 +1766,16 @@ This creates a new .h5 file with the ending <code class="docutils literal notran
 <h5>Code examples<a class="headerlink" href="#code-examples" title="Link to this heading">#</a></h5>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;fullpath/analysis/project/videos/reachingvideo1.avi&quot;</span><span class="p">]</span>
+    <span class="p">[</span><span class="s2">"fullpath/analysis/project/videos/reachingvideo1.avi"</span><span class="p">]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>An example call:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;fullpath/analysis/project/videos&quot;</span><span class="p">],</span>
-    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span>
-    <span class="n">filtertype</span><span class="o">=</span><span class="s2">&quot;arima&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">"fullpath/analysis/project/videos"</span><span class="p">],</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">".mp4"</span><span class="p">,</span>
+    <span class="n">filtertype</span><span class="o">=</span><span class="s2">"arima"</span><span class="p">,</span>
     <span class="n">ARdegree</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
     <span class="n">MAdegree</span><span class="o">=</span><span class="mi">2</span>
 <span class="p">)</span>
@@ -1783,10 +1784,10 @@ This creates a new .h5 file with the ending <code class="docutils literal notran
 <p>Here are parameters you can modify and pass:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;fullpath/analysis/project/videos/reachingvideo1.avi&quot;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s2">"fullpath/analysis/project/videos/reachingvideo1.avi"</span><span class="p">],</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">filtertype</span><span class="o">=</span><span class="s2">&quot;arima&quot;</span><span class="p">,</span>
+    <span class="n">filtertype</span><span class="o">=</span><span class="s2">"arima"</span><span class="p">,</span>
     <span class="n">p_bound</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
     <span class="n">ARdegree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
     <span class="n">MAdegree</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -1834,7 +1835,7 @@ set it to <code class="docutils literal notranslate"><span class="pre">0</span><
 </section>
 <section id="id23">
 <h5>Code example<a class="headerlink" href="#id23" title="Link to this heading">#</a></h5>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">plot_trajectories</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;fullpath/analysis/project/videos/reachingvideo1.avi&#39;</span><span class="p">])</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">plot_trajectories</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s1">'fullpath/analysis/project/videos/reachingvideo1.avi'</span><span class="p">])</span>
 </pre></div>
 </div>
 </section>
@@ -1881,8 +1882,8 @@ quality). One can use the command as follows to create multiple labeled videos:<
 <h5>Code example<a class="headerlink" href="#id26" title="Link to this heading">#</a></h5>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;fullpath/analysis/project/videos/reachingvideo1.avi&quot;</span><span class="p">,</span>
-     <span class="s2">&quot;fullpath/analysis/project/videos/reachingvideo2.avi&quot;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s2">"fullpath/analysis/project/videos/reachingvideo1.avi"</span><span class="p">,</span>
+     <span class="s2">"fullpath/analysis/project/videos/reachingvideo2.avi"</span><span class="p">],</span>
     <span class="n">save_frames</span> <span class="o">=</span> <span class="kc">True</span><span class="o">/</span><span class="kc">False</span>
 <span class="p">)</span>
 </pre></div>
@@ -1891,8 +1892,8 @@ quality). One can use the command as follows to create multiple labeled videos:<
 i.e.:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;fullpath/afolderofvideos&quot;</span><span class="p">],</span>
-    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">"fullpath/afolderofvideos"</span><span class="p">],</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">".mp4"</span><span class="p">,</span>
     <span class="n">filtered</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 </pre></div>
@@ -1901,8 +1902,8 @@ i.e.:</p>
 (see <a class="reference internal" href="#fig-skeleton-trail"><span class="std std-numref">Fig. 10</span></a>). To set the “trailing points” you need to pass <code class="docutils literal notranslate"><span class="pre">trailpoints</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;fullpath/afolderofvideos&quot;</span><span class="p">],</span>
-    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">"fullpath/afolderofvideos"</span><span class="p">],</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">".mp4"</span><span class="p">,</span>
     <span class="n">trailpoints</span><span class="o">=</span><span class="mi">10</span>
 <span class="p">)</span>
 </pre></div>
@@ -1912,7 +1913,7 @@ video. (Note that <code class="docutils literal notranslate"><span class="pre">d
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="p">[</span><span class="n">videos</span><span class="p">],</span>
-    <span class="n">video_extensions</span><span class="o">=</span><span class="s1">&#39;avi&#39;</span><span class="p">,</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s1">'avi'</span><span class="p">,</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">filtered</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1920,16 +1921,16 @@ video. (Note that <code class="docutils literal notranslate"><span class="pre">d
     <span class="n">save_frames</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">Frames2plot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">displayedbodyparts</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
-    <span class="n">displayedindividuals</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
-    <span class="n">codec</span><span class="o">=</span><span class="s1">&#39;mp4v&#39;</span><span class="p">,</span>
+    <span class="n">displayedbodyparts</span><span class="o">=</span><span class="s1">'all'</span><span class="p">,</span>
+    <span class="n">displayedindividuals</span><span class="o">=</span><span class="s1">'all'</span><span class="p">,</span>
+    <span class="n">codec</span><span class="o">=</span><span class="s1">'mp4v'</span><span class="p">,</span>
     <span class="n">outputframerate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">destfolder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">trailpoints</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">displaycropped</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">color_by</span><span class="o">=</span><span class="s1">&#39;bodypart&#39;</span><span class="p">,</span>
-    <span class="n">track_method</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">color_by</span><span class="o">=</span><span class="s1">'bodypart'</span><span class="p">,</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -1942,11 +1943,11 @@ There is also a GUI to help you do this, used by calling <code class="docutils l
 <p>Here is how the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> additions/edits should look (for example, on the Openfield demo data we provide):</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plotting configuration</span>
 <span class="nt">skeleton</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;snout&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;leftear&quot;</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;snout&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;rightear&quot;</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;leftear&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;tailbase&quot;</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;leftear&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;rightear&quot;</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;rightear&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;tailbase&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"snout"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"leftear"</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"snout"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"rightear"</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"leftear"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"tailbase"</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"leftear"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"rightear"</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"rightear"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"tailbase"</span><span class="p p-Indicator">]</span>
 <span class="nt">skeleton_color</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">white</span>
 <span class="nt">pcutoff</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span>
 <span class="nt">dotsize</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
@@ -1957,8 +1958,8 @@ There is also a GUI to help you do this, used by calling <code class="docutils l
 <p>Then pass <code class="docutils literal notranslate"><span class="pre">draw_skeleton=True</span></code> with the command:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
-    <span class="p">[</span><span class="s2">&quot;fullpath/afolderofvideos&quot;</span><span class="p">],</span>
-    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">"fullpath/afolderofvideos"</span><span class="p">],</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">".mp4"</span><span class="p">,</span>
     <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 </pre></div>
@@ -1966,8 +1967,8 @@ There is also a GUI to help you do this, used by calling <code class="docutils l
 <p>You can create a video with only the “dots” plotted, i.e., in the
 <a class="reference external" href="https://link.springer.com/article/10.1007/BF00309043">style of Johansson</a>, by passing <code class="docutils literal notranslate"><span class="pre">keypoints_only=True</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
-    <span class="n">config_path</span><span class="p">,[</span><span class="s2">&quot;fullpath/afolderofvideos&quot;</span><span class="p">],</span>
-    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span>
+    <span class="n">config_path</span><span class="p">,[</span><span class="s2">"fullpath/afolderofvideos"</span><span class="p">],</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">".mp4"</span><span class="p">,</span>
     <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 </pre></div>
@@ -2007,7 +2008,7 @@ can use the function by:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyzeskeleton</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="n">video</span><span class="p">,</span>
-    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">&quot;avi&quot;</span><span class="p">,</span>
+    <span class="n">video_extensions</span><span class="o">=</span><span class="s2">"avi"</span><span class="p">,</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">save_as_csv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -2046,7 +2047,7 @@ where the decoder might make large errors.</p>
 </section>
 <section id="id32">
 <h5>Code example<a class="headerlink" href="#id32" title="Link to this heading">#</a></h5>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_outlier_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;videofile_path&quot;</span><span class="p">])</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_outlier_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s2">"videofile_path"</span><span class="p">])</span>
 </pre></div>
 </div>
 </section>
@@ -2054,7 +2055,7 @@ where the decoder might make large errors.</p>
 <h5>Frame-selection methods<a class="headerlink" href="#id33" title="Link to this heading">#</a></h5>
 <p>We provide various frame-selection methods for this purpose. In particular
 the user can set:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>outlieralgorithm: &quot;fitting&quot;, &quot;jump&quot;, or &quot;uncertain&quot;
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>outlieralgorithm: "fitting", "jump", or "uncertain"
 </pre></div>
 </div>
 <ul class="simple">
@@ -2071,7 +2072,7 @@ body part estimates are at least <code class="docutils literal notranslate"><spa
 <li><p><code class="docutils literal notranslate"><span class="pre">outlieralgorithm=&quot;manual&quot;</span></code>: manually select outlier frames based on visual inspection from the user.</p></li>
 </ul>
 <p>As an example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_outlier_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;videofile_path&quot;</span><span class="p">],</span> <span class="n">outlieralgorithm</span><span class="o">=</span><span class="s2">&quot;manual&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_outlier_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s2">"videofile_path"</span><span class="p">],</span> <span class="n">outlieralgorithm</span><span class="o">=</span><span class="s2">"manual"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

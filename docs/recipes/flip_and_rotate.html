@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
@@ -625,11 +626,11 @@ document.write(`
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">project_folder</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/&quot;</span>  <span class="c1"># the folder in which the DLC project will be created</span>
+<span class="n">project_folder</span> <span class="o">=</span> <span class="s2">"/home/user/projects/"</span>  <span class="c1"># the folder in which the DLC project will be created</span>
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project</span><span class="p">(</span>
-    <span class="n">project</span><span class="o">=</span><span class="s2">&quot;bat_augmentation_austin_2020_bat_data&quot;</span><span class="p">,</span>
-    <span class="n">experimenter</span><span class="o">=</span><span class="s2">&quot;DLC&quot;</span><span class="p">,</span>
-    <span class="n">videos</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;/home/user/dummyVideos/&quot;</span><span class="p">],</span>
+    <span class="n">project</span><span class="o">=</span><span class="s2">"bat_augmentation_austin_2020_bat_data"</span><span class="p">,</span>
+    <span class="n">experimenter</span><span class="o">=</span><span class="s2">"DLC"</span><span class="p">,</span>
+    <span class="n">videos</span><span class="o">=</span><span class="p">[</span><span class="s2">"/home/user/dummyVideos/"</span><span class="p">],</span>
     <span class="n">working_directory</span><span class="o">=</span><span class="n">project_folder</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -646,7 +647,7 @@ document.write(`
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define config file</span>
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
 
 <span class="c1"># import tools for modifying our config file</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.utils.auxiliaryfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">edit_config</span><span class="p">,</span> <span class="n">read_config</span>
@@ -662,23 +663,23 @@ document.write(`
 <span class="n">edit_config</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="p">{</span>
-        <span class="s2">&quot;bodyparts&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">&quot;t3L&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;wstL&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;t5L&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;elbL&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;shdL&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;ankL&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;nl&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;str&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;lmb&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;shdR&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;ankR&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;elbR&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;wstR&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;t5R&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;t3R&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tail&quot;</span><span class="p">,</span>
+        <span class="s2">"bodyparts"</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">"t3L"</span><span class="p">,</span>
+            <span class="s2">"wstL"</span><span class="p">,</span>
+            <span class="s2">"t5L"</span><span class="p">,</span>
+            <span class="s2">"elbL"</span><span class="p">,</span>
+            <span class="s2">"shdL"</span><span class="p">,</span>
+            <span class="s2">"ankL"</span><span class="p">,</span>
+            <span class="s2">"nl"</span><span class="p">,</span>
+            <span class="s2">"str"</span><span class="p">,</span>
+            <span class="s2">"lmb"</span><span class="p">,</span>
+            <span class="s2">"shdR"</span><span class="p">,</span>
+            <span class="s2">"ankR"</span><span class="p">,</span>
+            <span class="s2">"elbR"</span><span class="p">,</span>
+            <span class="s2">"wstR"</span><span class="p">,</span>
+            <span class="s2">"t5R"</span><span class="p">,</span>
+            <span class="s2">"t3R"</span><span class="p">,</span>
+            <span class="s2">"tail"</span><span class="p">,</span>
         <span class="p">]</span>
     <span class="p">},</span>
 <span class="p">)</span>
@@ -689,8 +690,8 @@ document.write(`
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># fetch the list of videos from an older project using the same videos</span>
-<span class="n">videolist</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span><span class="s2">&quot;/home/user/projects/old_project-DLC-2022-08-03/config.yaml&quot;</span><span class="p">)[</span><span class="s2">&quot;video_sets&quot;</span><span class="p">]</span>
-<span class="n">edit_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;video_sets&quot;</span><span class="p">:</span> <span class="n">videolist</span><span class="p">})</span>
+<span class="n">videolist</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span><span class="s2">"/home/user/projects/old_project-DLC-2022-08-03/config.yaml"</span><span class="p">)[</span><span class="s2">"video_sets"</span><span class="p">]</span>
+<span class="n">edit_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">{</span><span class="s2">"video_sets"</span><span class="p">:</span> <span class="n">videolist</span><span class="p">})</span>
 </pre></div>
 </div>
 </div>
@@ -750,11 +751,11 @@ document.write(`
 <p>By default, DeepLabCut assumes that we want to randomly divide the data into training and testing data. But for testing, you might want more control of this. Therefore, we will manually define which frames are for training and which are for testing. More on this later, but for now, we need to create a dummy training dataset as this will make DeepLabCut create a nice list of all the frames in the dataset.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let's make</span>
 <span class="c1"># sure deeplabcut is imported and the config_path defined</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
 
 <span class="c1"># Dummy training dataset to get indexes and so on from later</span>
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="mi">99</span><span class="p">])</span>
@@ -777,11 +778,11 @@ document.write(`
 <p>So by parsing the list of frames from the dataset, we can create our four shuffles as specified in <em>table 1</em> and in the list above.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let's make</span>
 <span class="c1"># sure deeplabcut is imported and the config_path defined</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
 
 <span class="c1"># We need pandas for creatig a nice list to parse</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
@@ -789,7 +790,7 @@ document.write(`
 <span class="c1"># Read the h5 file containing all the frames:</span>
 <span class="c1"># (project_folder/training-datasets/iteration-0/UnaufmentedDataSet_project_folder/CollectedData_LabelerName.h5)</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span>
-    <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18/CollectedData_DLC.h5&quot;</span>
+    <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18/CollectedData_DLC.h5"</span>
 <span class="p">)</span>
 
 <span class="n">image_paths</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>  <span class="c1"># turn dataframe into list</span>
@@ -802,9 +803,9 @@ document.write(`
 <span class="n">test_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">train_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">image_paths</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_A&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_A"</span><span class="p">):</span>
         <span class="n">train_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_50_test&quot;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_50_test"</span><span class="p">):</span>
         <span class="n">test_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span>
@@ -812,19 +813,19 @@ document.write(`
     <span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
     <span class="n">trainIndices</span><span class="o">=</span><span class="p">[</span><span class="n">train_inds</span><span class="p">],</span>
     <span class="n">testIndices</span><span class="o">=</span><span class="p">[</span><span class="n">test_inds</span><span class="p">],</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;resnet_50&quot;</span><span class="p">,</span>
-    <span class="n">augmenter_type</span><span class="o">=</span><span class="s2">&quot;../imagesaug&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="s2">"resnet_50"</span><span class="p">,</span>
+    <span class="n">augmenter_type</span><span class="o">=</span><span class="s2">"../imagesaug"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># train on half+ref, shuffle 2</span>
 <span class="n">test_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">train_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">image_paths</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_A&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_A"</span><span class="p">):</span>
         <span class="n">train_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_25_ref&quot;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_25_ref"</span><span class="p">):</span>
         <span class="n">train_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_50_test&quot;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_50_test"</span><span class="p">):</span>
         <span class="n">test_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span>
@@ -832,19 +833,19 @@ document.write(`
     <span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
     <span class="n">trainIndices</span><span class="o">=</span><span class="p">[</span><span class="n">train_inds</span><span class="p">],</span>
     <span class="n">testIndices</span><span class="o">=</span><span class="p">[</span><span class="n">test_inds</span><span class="p">],</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;resnet_50&quot;</span><span class="p">,</span>
-    <span class="n">augmenter_type</span><span class="o">=</span><span class="s2">&quot;../imagesaug&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="s2">"resnet_50"</span><span class="p">,</span>
+    <span class="n">augmenter_type</span><span class="o">=</span><span class="s2">"../imagesaug"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># train on full, test data is OOD, shuffle 3</span>
 <span class="n">test_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">train_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">image_paths</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_A&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_A"</span><span class="p">):</span>
         <span class="n">train_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_B&quot;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_B"</span><span class="p">):</span>
         <span class="n">train_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_50_test&quot;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_50_test"</span><span class="p">):</span>
         <span class="n">test_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span>
@@ -852,21 +853,21 @@ document.write(`
     <span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
     <span class="n">trainIndices</span><span class="o">=</span><span class="p">[</span><span class="n">train_inds</span><span class="p">],</span>
     <span class="n">testIndices</span><span class="o">=</span><span class="p">[</span><span class="n">test_inds</span><span class="p">],</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;resnet_50&quot;</span><span class="p">,</span>
-    <span class="n">augmenter_type</span><span class="o">=</span><span class="s2">&quot;../imagesaug&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="s2">"resnet_50"</span><span class="p">,</span>
+    <span class="n">augmenter_type</span><span class="o">=</span><span class="s2">"../imagesaug"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># train on full+ref, shuffle 4</span>
 <span class="n">test_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">train_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">image_paths</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_A&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_A"</span><span class="p">):</span>
         <span class="n">train_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_B&quot;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_B"</span><span class="p">):</span>
         <span class="n">train_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_25_ref&quot;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_25_ref"</span><span class="p">):</span>
         <span class="n">train_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_50_test&quot;</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_50_test"</span><span class="p">):</span>
         <span class="n">test_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span>
@@ -874,8 +875,8 @@ document.write(`
     <span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
     <span class="n">trainIndices</span><span class="o">=</span><span class="p">[</span><span class="n">train_inds</span><span class="p">],</span>
     <span class="n">testIndices</span><span class="o">=</span><span class="p">[</span><span class="n">test_inds</span><span class="p">],</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;resnet_50&quot;</span><span class="p">,</span>
-    <span class="n">augmenter_type</span><span class="o">=</span><span class="s2">&quot;../imagesaug&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="s2">"resnet_50"</span><span class="p">,</span>
+    <span class="n">augmenter_type</span><span class="o">=</span><span class="s2">"../imagesaug"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -892,7 +893,7 @@ document.write(`
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle_number</span><span class="p">,</span>
-    <span class="n">modelprefix</span><span class="o">=</span><span class="s1">&#39;extra_blurry&#39;</span><span class="p">,</span>
+    <span class="n">modelprefix</span><span class="o">=</span><span class="s1">'extra_blurry'</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
 </div>
@@ -910,9 +911,9 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
 <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span>
-    <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18&quot;</span>
+    <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18"</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="o">*</span><span class="n">files</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="o">*</span><span class="n">files</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -933,11 +934,11 @@ document.write(`
 <p>With all that clarified, let’s now create our first project subfolder/modelprefix.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let's make</span>
 <span class="c1"># sure deeplabcut is imported and the config_path defined</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
 
 <span class="c1"># we also need the package os for folder manipulation</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -950,15 +951,15 @@ document.write(`
 
 <span class="c1"># Number and name for our model folder</span>
 <span class="n">model_number</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">modelprefix_pre</span> <span class="o">=</span> <span class="s2">&quot;data_augm&quot;</span>
-<span class="n">daug_str</span> <span class="o">=</span> <span class="s2">&quot;base&quot;</span>
+<span class="n">modelprefix_pre</span> <span class="o">=</span> <span class="s2">"data_augm"</span>
+<span class="n">daug_str</span> <span class="o">=</span> <span class="s2">"base"</span>
 
 <span class="c1"># Get config as dict and associated paths</span>
 <span class="n">cfg</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 <span class="n">project_path</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span>
-    <span class="s2">&quot;project_path&quot;</span>
-<span class="p">]</span>  <span class="c1"># or: os.path.dirname(config_path) #dlc_models_path = os.path.join(project_path, &quot;dlc-models&quot;)</span>
-<span class="n">training_datasets_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="s2">&quot;training-datasets&quot;</span><span class="p">)</span>
+    <span class="s2">"project_path"</span>
+<span class="p">]</span>  <span class="c1"># or: os.path.dirname(config_path) #dlc_models_path = os.path.join(project_path, "dlc-models")</span>
+<span class="n">training_datasets_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="s2">"training-datasets"</span><span class="p">)</span>
 
 <span class="c1"># Define shuffles</span>
 <span class="n">shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
@@ -975,11 +976,11 @@ document.write(`
     <span class="n">list_base_test_pose_config_file_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base_test_pose_config_file_path_TEMP</span><span class="p">)</span>
 
 <span class="c1"># Create subdirs for this augmentation method</span>
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">modelprefix_pre</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_number</span><span class="si">:</span><span class="s2">0=2d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">daug_str</span><span class="p">])</span>  <span class="c1"># modelprefix_pre = aug_</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"_"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">modelprefix_pre</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">model_number</span><span class="si">:</span><span class="s2">0=2d</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">daug_str</span><span class="p">])</span>  <span class="c1"># modelprefix_pre = aug_</span>
 <span class="n">aug_project_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="n">model_prefix</span><span class="p">)</span>
 <span class="n">aug_dlc_models</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
     <span class="n">aug_project_path</span><span class="p">,</span>
-    <span class="s2">&quot;dlc-models&quot;</span><span class="p">,</span>
+    <span class="s2">"dlc-models"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># make the folder for this modelprefix</span>
@@ -987,7 +988,7 @@ document.write(`
     <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">aug_project_path</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Skipping this one as it already exists&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Skipping this one as it already exists"</span><span class="p">)</span>
 
 <span class="c1"># Copy base train pose config file to the directory of this augmentation method</span>
 <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">shuffle</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">shuffles</span><span class="p">,</span> <span class="n">trainingsetindices</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)):</span>
@@ -996,8 +997,8 @@ document.write(`
     <span class="p">)</span>
 
     <span class="c1"># make train and test directories for this subdir</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">one_train_pose_config_file_path</span><span class="p">)))</span>  <span class="c1"># create parentdir &#39;train&#39;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">one_test_pose_config_file_path</span><span class="p">)))</span>  <span class="c1"># create parentdir &#39;test</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">one_train_pose_config_file_path</span><span class="p">)))</span>  <span class="c1"># create parentdir 'train'</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">one_test_pose_config_file_path</span><span class="p">)))</span>  <span class="c1"># create parentdir 'test</span>
 
     <span class="c1"># copy test and train config from base project to this subdir</span>
     <span class="c1"># copy base train config file</span>
@@ -1015,20 +1016,20 @@ document.write(`
 <p>We will also edit the settings for this network to use the adam optimizer.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;data_augm_00_base&quot;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"data_augm_00_base"</span>
 
 <span class="c1">## Initialise dict with additional edits to train config: optimizer</span>
 <span class="n">train_edits_dict</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">dict_optimizer</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="s2">&quot;adam&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>  <span class="c1"># the gpu I&#39;m using has plenty of memory so batch size 8 makes sense</span>
-    <span class="s2">&quot;multi_step&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mi">7500</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="mi">12000</span><span class="p">],</span> <span class="p">[</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mi">150000</span><span class="p">]],</span>
+    <span class="s2">"optimizer"</span><span class="p">:</span> <span class="s2">"adam"</span><span class="p">,</span>
+    <span class="s2">"batch_size"</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>  <span class="c1"># the gpu I'm using has plenty of memory so batch size 8 makes sense</span>
+    <span class="s2">"multi_step"</span><span class="p">:</span> <span class="p">[[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mi">7500</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="mi">12000</span><span class="p">],</span> <span class="p">[</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mi">150000</span><span class="p">]],</span>
 <span class="p">}</span>  <span class="c1"># if no yaml file passed, initialise as an empty dict</span>
 <span class="n">train_edits_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
     <span class="p">{</span>
-        <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">&quot;optimizer&quot;</span><span class="p">],</span>  <span class="c1">#&#39;adam&#39;,</span>
-        <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">],</span>
-        <span class="s2">&quot;multi_step&quot;</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">&quot;multi_step&quot;</span><span class="p">],</span>
+        <span class="s2">"optimizer"</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">"optimizer"</span><span class="p">],</span>  <span class="c1">#'adam',</span>
+        <span class="s2">"batch_size"</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">"batch_size"</span><span class="p">],</span>
+        <span class="s2">"multi_step"</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">"multi_step"</span><span class="p">],</span>
     <span class="p">}</span>
 <span class="p">)</span>
 
@@ -1051,10 +1052,10 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
 <span class="c1"># define config path and model prefix</span>
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;data_augm_00_base&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"data_augm_00_base"</span>
 
-<span class="c1"># the computer I&#39;m working on has several gpus, here I used the third one.</span>
+<span class="c1"># the computer I'm working on has several gpus, here I used the third one.</span>
 <span class="n">gputouse</span> <span class="o">=</span> <span class="mi">3</span>
 
 <span class="c1"># define shuffles and trainingsetindices</span>
@@ -1069,7 +1070,7 @@ document.write(`
         <span class="n">modelprefix</span><span class="o">=</span><span class="n">model_prefix</span><span class="p">,</span>
         <span class="n">gputouse</span><span class="o">=</span><span class="n">gputouse</span><span class="p">,</span>
         <span class="n">trainingsetindex</span><span class="o">=</span><span class="n">trainingsetindex</span><span class="p">,</span>
-        <span class="n">max_snapshots_to_keep</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>  <span class="c1"># training for 150000 iterations so let&#39;s save 50, 100, and 150.</span>
+        <span class="n">max_snapshots_to_keep</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>  <span class="c1"># training for 150000 iterations so let's save 50, 100, and 150.</span>
         <span class="n">saveiters</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
@@ -1083,15 +1084,15 @@ document.write(`
 <p>After training the networks, we need to test how they perform. To do that, we first need to evaluate them using the built-in DeepLabCut method <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code>. By default this will evaluate the last snapshot, in our case, this means that the network will be evaluated after 150k iterations, but we want to know how well it does at 50k and 100k too, so let’s edit our config file to test all saved snapshot.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let's make</span>
 <span class="c1"># sure deeplabcut is imported and the config_path defined</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/juser/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/juser/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.utils.auxiliaryfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">edit_config</span><span class="p">,</span> <span class="n">read_config</span>
 
-<span class="n">edit_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;snapshotindex&quot;</span><span class="p">:</span> <span class="s2">&quot;all&quot;</span><span class="p">})</span>
+<span class="n">edit_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">{</span><span class="s2">"snapshotindex"</span><span class="p">:</span> <span class="s2">"all"</span><span class="p">})</span>
 </pre></div>
 </div>
 </div>
@@ -1101,8 +1102,8 @@ document.write(`
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;data_augm_00_base&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"data_augm_00_base"</span>
 <span class="n">Shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
 <span class="n">trainingsetindices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 
@@ -1120,12 +1121,12 @@ document.write(`
 <p>We will use a function I wrote called <code class="docutils literal notranslate"><span class="pre">getErrorDistribution</span></code> to get the list mentioned above. We will do this for each shuffle.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let's make</span>
 <span class="c1"># sure deeplabcut is imported and the config_path defined</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;data_augm_00_base&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"data_augm_00_base"</span>
 <span class="n">Shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
 <span class="n">trainingsetindices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 
@@ -1134,14 +1135,14 @@ document.write(`
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>  <span class="c1"># my python file for this function is stored in the parent folder as I&#39;m running this</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">".."</span><span class="p">)</span>  <span class="c1"># my python file for this function is stored in the parent folder as I'm running this</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">getErrorDistribution</span><span class="w"> </span><span class="kn">import</span> <span class="n">getErrorDistribution</span>  <span class="c1"># import the getErrorDistribution function</span>
 
 <span class="c1"># Read the h5 file containing all the frames:</span>
 <span class="c1"># (project_folder/training-datasets/iteration-0/UnaufmentedDataSet_project_folder/CollectedData_LabelerName.h5)</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span>
-    <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18/CollectedData_DLC.h5&quot;</span>
+    <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18/CollectedData_DLC.h5"</span>
 <span class="p">)</span>
 
 <span class="n">image_paths</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>  <span class="c1"># turn dataframe into list</span>
@@ -1149,7 +1150,7 @@ document.write(`
 <span class="c1"># get test indices</span>
 <span class="n">test_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">image_paths</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_50_test&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_50_test"</span><span class="p">):</span>
         <span class="n">test_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
 <span class="n">error_distributions</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1186,7 +1187,7 @@ document.write(`
 <span class="n">fig</span><span class="o">.</span><span class="n">set_figheight</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">set_figwidth</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">shuffle</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>  <span class="c1"># we start counting at 0, so for now, let&#39;s consider each index one less</span>
+<span class="k">for</span> <span class="n">shuffle</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>  <span class="c1"># we start counting at 0, so for now, let's consider each index one less</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">])</span> <span class="o">-</span> <span class="mf">1.5</span> <span class="o">+</span> <span class="n">shuffle</span><span class="p">,</span>
         <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">error_distributions</span><span class="p">[</span><span class="n">shuffle</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
@@ -1204,17 +1205,17 @@ document.write(`
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">25</span><span class="p">,</span> <span class="mi">175</span><span class="p">])</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">])</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">])</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Without P-cut&quot;</span><span class="p">)</span>
-<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;With P-cut 0.6&quot;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Without P-cut"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"With P-cut 0.6"</span><span class="p">)</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([])</span>
-<span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">&quot;half, OOD&quot;</span><span class="p">,</span> <span class="s2">&quot;half, Ref&quot;</span><span class="p">,</span> <span class="s2">&quot;full, OOD&quot;</span><span class="p">,</span> <span class="s2">&quot;full, Ref&quot;</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">"half, OOD"</span><span class="p">,</span> <span class="s2">"half, Ref"</span><span class="p">,</span> <span class="s2">"full, OOD"</span><span class="p">,</span> <span class="s2">"full, Ref"</span><span class="p">])</span>
 
 <span class="c1"># add a big axis, hide frame</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="c1">## hide tick and tick label of the big axis</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelcolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Iterations (thousands)&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Error (px)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelcolor</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">"both"</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Iterations (thousands)"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Error (px)"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1239,7 +1240,7 @@ document.write(`
         <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;=</span> <span class="n">i</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">p_value</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">wilcoxon</span><span class="p">(</span>
-            <span class="n">x</span><span class="o">=</span><span class="n">error_distributions_pcut</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">y</span><span class="o">=</span><span class="n">error_distributions_pcut</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">nan_policy</span><span class="o">=</span><span class="s2">&quot;omit&quot;</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">error_distributions_pcut</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">y</span><span class="o">=</span><span class="n">error_distributions_pcut</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">nan_policy</span><span class="o">=</span><span class="s2">"omit"</span>
         <span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">p_value</span><span class="p">)</span>
@@ -1254,12 +1255,12 @@ document.write(`
 <p>To that end, let’s plot the error distributions of the four shuffles per camera and per video number. Remember, out seven test video triplets each consist of three videos depicting the same bat flight.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let's make</span>
 <span class="c1"># sure deeplabcut is imported and the config_path defined</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;data_augm_00_base&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"data_augm_00_base"</span>
 <span class="n">Shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
 <span class="n">trainingsetindices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 
@@ -1268,14 +1269,14 @@ document.write(`
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>  <span class="c1"># my python file for this function is stored in the parent folder as I&#39;m running this</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">".."</span><span class="p">)</span>  <span class="c1"># my python file for this function is stored in the parent folder as I'm running this</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">getErrorDistribution</span><span class="w"> </span><span class="kn">import</span> <span class="n">getErrorDistribution</span>  <span class="c1"># import the getErrorDistribution function</span>
 
 <span class="c1"># Read the h5 file containing all the frames:</span>
 <span class="c1"># (project_folder/training-datasets/iteration-0/UnaufmentedDataSet_project_folder/CollectedData_LabelerName.h5)</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span>
-    <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18/CollectedData_DLC.h5&quot;</span>
+    <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18/CollectedData_DLC.h5"</span>
 <span class="p">)</span>
 
 <span class="n">image_paths</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>  <span class="c1"># turn dataframe into list</span>
@@ -1283,7 +1284,7 @@ document.write(`
 <span class="c1"># get test indices</span>
 <span class="n">test_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">image_paths</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_50_test&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_50_test"</span><span class="p">):</span>
         <span class="n">test_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
 <span class="c1"># this gives us the paths of our 27 test videos</span>
@@ -1291,31 +1292,31 @@ document.write(`
 
 <span class="c1"># %% sorted so that the corresponding videos have the same index in three lists (one per camera)</span>
 <span class="n">test_paths_cam1</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000099Track8_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000103Track3_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000104Track3_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000108Track6_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000123Track6_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000128Track2_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000134Track5_50_test&quot;</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000099Track8_50_test"</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000103Track3_50_test"</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000104Track3_50_test"</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000108Track6_50_test"</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000123Track6_50_test"</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000128Track2_50_test"</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000134Track5_50_test"</span><span class="p">,</span>
 <span class="p">]</span>
 <span class="n">test_paths_cam2</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000099Track6_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000103Track3_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000104Track2_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000109Track1_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000124Track9_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000130Track2_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000136Track10_50_test&quot;</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000099Track6_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000103Track3_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000104Track2_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000109Track1_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000124Track9_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000130Track2_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000136Track10_50_test"</span><span class="p">,</span>
 <span class="p">]</span>
 <span class="n">test_paths_cam3</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000095Track14_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000100Track4_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000101Track4_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000106Track3_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000122Track7_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000127Track4_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000133Track9_50_test&quot;</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000095Track14_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000100Track4_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000101Track4_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000106Track3_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000122Track7_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000127Track4_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000133Track9_50_test"</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">nvideos</span> <span class="o">=</span> <span class="mi">7</span>  <span class="c1"># number of videos</span>
@@ -1425,13 +1426,13 @@ document.write(`
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">])</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">])</span>
 <span class="n">ax3</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">])</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Cam 1&quot;</span><span class="p">)</span>
-<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Cam 2&quot;</span><span class="p">)</span>
-<span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Cam 3&quot;</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Error (px&quot;</span><span class="p">)</span>
-<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Error (px&quot;</span><span class="p">)</span>
-<span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Error (px&quot;</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">&quot;half, OOD&quot;</span><span class="p">,</span> <span class="s2">&quot;half, Ref&quot;</span><span class="p">,</span> <span class="s2">&quot;full, OOD&quot;</span><span class="p">,</span> <span class="s2">&quot;full, Ref&quot;</span><span class="p">])</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Cam 1"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Cam 2"</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Cam 3"</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Error (px"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Error (px"</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Error (px"</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">"half, OOD"</span><span class="p">,</span> <span class="s2">"half, Ref"</span><span class="p">,</span> <span class="s2">"full, OOD"</span><span class="p">,</span> <span class="s2">"full, Ref"</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1447,17 +1448,17 @@ document.write(`
 <p>For shuffle3, “full, OOD”, video 1, 2, 4, and 5 does poorly whereas video 3, 6, and 7 do rather well. Why is this? To get an idea of if the videos on which the network does well differs from the one on which it does poorly, we can create labeled frames with the predicted positions of the bodyparts and the correct positions (human labels). This is done with the <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code> function using the <code class="docutils literal notranslate"><span class="pre">plotting</span></code> input parameter.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let's make</span>
 <span class="c1"># sure deeplabcut is imported and the config_path defined</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/jusers/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;data_augm_00_base&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/jusers/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"data_augm_00_base"</span>
 
 <span class="c1"># we only want to plot the last snapshot (150k iterations)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.utils.auxiliaryfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">edit_config</span><span class="p">,</span> <span class="n">read_config</span>
 
-<span class="n">edit_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;snapshotindex&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">})</span>
+<span class="n">edit_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">{</span><span class="s2">"snapshotindex"</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">})</span>
 
 <span class="n">shuffle</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">trainingsetindex</span> <span class="o">=</span> <span class="mi">2</span>
@@ -1486,11 +1487,11 @@ document.write(`
 <p>First up, let’s make another modelprefix folder in our project. It basically the same code as before but with some minor modifications, I’ll highlight the changes.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let's make</span>
 <span class="c1"># sure deeplabcut is imported and the config_path defined</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
 
 <span class="c1"># we also need the package os for folder manipulation</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -1503,15 +1504,15 @@ document.write(`
 
 <span class="c1"># Number and name for our model folder</span>
 <span class="n">model_number</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># CHANGE</span>
-<span class="n">modelprefix_pre</span> <span class="o">=</span> <span class="s2">&quot;data_augm&quot;</span>
-<span class="n">daug_str</span> <span class="o">=</span> <span class="s2">&quot;fliplr&quot;</span>  <span class="c1"># CHANGE</span>
+<span class="n">modelprefix_pre</span> <span class="o">=</span> <span class="s2">"data_augm"</span>
+<span class="n">daug_str</span> <span class="o">=</span> <span class="s2">"fliplr"</span>  <span class="c1"># CHANGE</span>
 
 <span class="c1"># Get config as dict and associated paths</span>
 <span class="n">cfg</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 <span class="n">project_path</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span>
-    <span class="s2">&quot;project_path&quot;</span>
-<span class="p">]</span>  <span class="c1"># or: os.path.dirname(config_path) #dlc_models_path = os.path.join(project_path, &quot;dlc-models&quot;)</span>
-<span class="n">training_datasets_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="s2">&quot;training-datasets&quot;</span><span class="p">)</span>
+    <span class="s2">"project_path"</span>
+<span class="p">]</span>  <span class="c1"># or: os.path.dirname(config_path) #dlc_models_path = os.path.join(project_path, "dlc-models")</span>
+<span class="n">training_datasets_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="s2">"training-datasets"</span><span class="p">)</span>
 
 <span class="c1"># Define shuffles</span>
 <span class="n">shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
@@ -1528,11 +1529,11 @@ document.write(`
     <span class="n">list_base_test_pose_config_file_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base_test_pose_config_file_path_TEMP</span><span class="p">)</span>
 
 <span class="c1"># Create subdirs for this augmentation method</span>
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">modelprefix_pre</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_number</span><span class="si">:</span><span class="s2">0=2d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">daug_str</span><span class="p">])</span>  <span class="c1"># modelprefix_pre = aug_</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"_"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">modelprefix_pre</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">model_number</span><span class="si">:</span><span class="s2">0=2d</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">daug_str</span><span class="p">])</span>  <span class="c1"># modelprefix_pre = aug_</span>
 <span class="n">aug_project_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="n">model_prefix</span><span class="p">)</span>
 <span class="n">aug_dlc_models</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
     <span class="n">aug_project_path</span><span class="p">,</span>
-    <span class="s2">&quot;dlc-models&quot;</span><span class="p">,</span>
+    <span class="s2">"dlc-models"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># make the folder for this modelprefix</span>
@@ -1540,7 +1541,7 @@ document.write(`
     <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">aug_project_path</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Skipping this one as it already exists&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Skipping this one as it already exists"</span><span class="p">)</span>
 
 <span class="c1"># Copy base train pose config file to the directory of this augmentation method</span>
 <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">shuffle</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">shuffles</span><span class="p">,</span> <span class="n">trainingsetindices</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)):</span>
@@ -1549,8 +1550,8 @@ document.write(`
     <span class="p">)</span>
 
     <span class="c1"># make train and test directories for this subdir</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">one_train_pose_config_file_path</span><span class="p">)))</span>  <span class="c1"># create parentdir &#39;train&#39;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">one_test_pose_config_file_path</span><span class="p">)))</span>  <span class="c1"># create parentdir &#39;test</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">one_train_pose_config_file_path</span><span class="p">)))</span>  <span class="c1"># create parentdir 'train'</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">one_test_pose_config_file_path</span><span class="p">)))</span>  <span class="c1"># create parentdir 'test</span>
 
     <span class="c1"># copy test and train config from base project to this subdir</span>
     <span class="c1"># copy base train config file</span>
@@ -1601,27 +1602,27 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import tools for changing our config file</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.utils.auxiliaryfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">edit_config</span>
 
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;data_augm_01_fliplr&quot;</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"data_augm_01_fliplr"</span>
 
 <span class="c1">## Initialise dict with additional edits to train config: optimizer</span>
 <span class="n">train_edits_dict</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">dict_optimizer</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="s2">&quot;adam&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>  <span class="c1"># the gpu I&#39;m using has plenty of memory so batch size 8 makes sense</span>
-    <span class="s2">&quot;multi_step&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mi">7500</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="mi">12000</span><span class="p">],</span> <span class="p">[</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mi">150000</span><span class="p">]],</span>
+    <span class="s2">"optimizer"</span><span class="p">:</span> <span class="s2">"adam"</span><span class="p">,</span>
+    <span class="s2">"batch_size"</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>  <span class="c1"># the gpu I'm using has plenty of memory so batch size 8 makes sense</span>
+    <span class="s2">"multi_step"</span><span class="p">:</span> <span class="p">[[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mi">7500</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="mi">12000</span><span class="p">],</span> <span class="p">[</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mi">150000</span><span class="p">]],</span>
 <span class="p">}</span>  <span class="c1"># if no yaml file passed, initialise as an empty dict</span>
 <span class="n">train_edits_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
     <span class="p">{</span>
-        <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">&quot;optimizer&quot;</span><span class="p">],</span>  <span class="c1">#&#39;adam&#39;,</span>
-        <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">],</span>
-        <span class="s2">&quot;multi_step&quot;</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">&quot;multi_step&quot;</span><span class="p">],</span>
+        <span class="s2">"optimizer"</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">"optimizer"</span><span class="p">],</span>  <span class="c1">#'adam',</span>
+        <span class="s2">"batch_size"</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">"batch_size"</span><span class="p">],</span>
+        <span class="s2">"multi_step"</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">"multi_step"</span><span class="p">],</span>
     <span class="p">}</span>
 <span class="p">)</span>
 
 <span class="c1"># Augmentation edits</span>
 <span class="n">edits_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-<span class="n">edits_dict</span><span class="p">[</span><span class="s2">&quot;symmetric_pairs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">13</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="n">edits_dict</span><span class="p">[</span><span class="s2">&quot;fliplr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">edits_dict</span><span class="p">[</span><span class="s2">"symmetric_pairs"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">13</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">edits_dict</span><span class="p">[</span><span class="s2">"fliplr"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
 <span class="k">for</span> <span class="n">shuffle</span><span class="p">,</span> <span class="n">trainingsetindex</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">shuffles</span><span class="p">,</span> <span class="n">trainingsetindices</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">one_train_pose_config_file_path</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">return_train_network_path</span><span class="p">(</span>
@@ -1643,10 +1644,10 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
 <span class="c1"># define config path and model prefix</span>
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;data_augm_01_flipr&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"data_augm_01_flipr"</span>
 
-<span class="c1"># the computer I&#39;m working on has several gpus, here I used the third one.</span>
+<span class="c1"># the computer I'm working on has several gpus, here I used the third one.</span>
 <span class="n">gputouse</span> <span class="o">=</span> <span class="mi">3</span>
 
 <span class="c1"># define shuffles and trainingsetindices</span>
@@ -1661,7 +1662,7 @@ document.write(`
         <span class="n">modelprefix</span><span class="o">=</span><span class="n">model_prefix</span><span class="p">,</span>
         <span class="n">gputouse</span><span class="o">=</span><span class="n">gputouse</span><span class="p">,</span>
         <span class="n">trainingsetindex</span><span class="o">=</span><span class="n">trainingsetindex</span><span class="p">,</span>
-        <span class="n">max_snapshots_to_keep</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>  <span class="c1"># training for 150000 iterations so let&#39;s save 50, 100, and 150.</span>
+        <span class="n">max_snapshots_to_keep</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>  <span class="c1"># training for 150000 iterations so let's save 50, 100, and 150.</span>
         <span class="n">saveiters</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
@@ -1678,8 +1679,8 @@ document.write(`
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;data_augm_01_fliplr&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"data_augm_01_fliplr"</span>
 <span class="n">Shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
 <span class="n">trainingsetindices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 
@@ -1687,7 +1688,7 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.utils.auxiliaryfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">edit_config</span>
 
 <span class="c1"># make sure we are testing all snapshots</span>
-<span class="n">edit_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;snapshotindex&quot;</span><span class="p">:</span> <span class="s2">&quot;all&quot;</span><span class="p">})</span>
+<span class="n">edit_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">{</span><span class="s2">"snapshotindex"</span><span class="p">:</span> <span class="s2">"all"</span><span class="p">})</span>
 
 <span class="k">for</span> <span class="n">shuffle</span><span class="p">,</span> <span class="n">trainingsetindex</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">Shuffles</span><span class="p">,</span> <span class="n">trainingsetindices</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">deeplabcut</span><span class="o">.</span><span class="n">evaluate_network</span><span class="p">(</span>
@@ -1699,14 +1700,14 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let's make</span>
 <span class="c1"># sure deeplabcut is imported and the config_path defined</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
-<span class="n">model_prefix_base</span> <span class="o">=</span> <span class="s2">&quot;data_augm_00_base&quot;</span>
-<span class="n">model_prefix_augm</span> <span class="o">=</span> <span class="s2">&quot;data_augm_01_fliplr&quot;</span>
-<span class="n">Shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c1"># let&#39;s start with the refined un-augmented, i.e. shuffle 4</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
+<span class="n">model_prefix_base</span> <span class="o">=</span> <span class="s2">"data_augm_00_base"</span>
+<span class="n">model_prefix_augm</span> <span class="o">=</span> <span class="s2">"data_augm_01_fliplr"</span>
+<span class="n">Shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c1"># let's start with the refined un-augmented, i.e. shuffle 4</span>
 <span class="n">trainingsetindices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
 
 <span class="c1"># We need pandas for creatig a nice list to parse</span>
@@ -1714,14 +1715,14 @@ document.write(`
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>  <span class="c1"># my python file for this function is stored in the parent folder as I&#39;m running this</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">".."</span><span class="p">)</span>  <span class="c1"># my python file for this function is stored in the parent folder as I'm running this</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">getErrorDistribution</span><span class="w"> </span><span class="kn">import</span> <span class="n">getErrorDistribution</span>  <span class="c1"># import the getErrorDistribution function</span>
 
 <span class="c1"># Read the h5 file containing all the frames:</span>
 <span class="c1"># (project_folder/training-datasets/iteration-0/UnaufmentedDataSet_project_folder/CollectedData_LabelerName.h5)</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span>
-    <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18/CollectedData_DLC.h5&quot;</span>
+    <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18/CollectedData_DLC.h5"</span>
 <span class="p">)</span>
 
 <span class="n">image_paths</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>  <span class="c1"># turn dataframe into list</span>
@@ -1729,7 +1730,7 @@ document.write(`
 <span class="c1"># get test indices</span>
 <span class="n">test_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">image_paths</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_50_test&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_50_test"</span><span class="p">):</span>
         <span class="n">test_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
 <span class="n">error_distributions_pcut</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1757,7 +1758,7 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="k">for</span> <span class="n">shuffle</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>  <span class="c1"># we start counting at 0, so for now, let&#39;s consider each index one less</span>
+<span class="k">for</span> <span class="n">shuffle</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>  <span class="c1"># we start counting at 0, so for now, let's consider each index one less</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">])</span> <span class="o">-</span> <span class="mf">1.5</span> <span class="o">+</span> <span class="n">shuffle</span><span class="p">,</span>
         <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">error_distributions_pcut</span><span class="p">[</span><span class="n">shuffle</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
@@ -1767,12 +1768,12 @@ document.write(`
 <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">])</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">25</span><span class="p">,</span> <span class="mi">175</span><span class="p">])</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Error with P-cut 0.6, comparing baseline to fliplr and 180 degrees rotation augmented&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Error with P-cut 0.6, comparing baseline to fliplr and 180 degrees rotation augmented"</span><span class="p">)</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">&quot;Full, ref, baseline&quot;</span><span class="p">,</span> <span class="s2">&quot;Full, OOD, fliplr&quot;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">"Full, ref, baseline"</span><span class="p">,</span> <span class="s2">"Full, OOD, fliplr"</span><span class="p">])</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Iterations (thousands)&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Error (px)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Iterations (thousands)"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Error (px)"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1793,11 +1794,11 @@ document.write(`
 </ul>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let's make</span>
 <span class="c1"># sure deeplabcut is imported and the config_path defined</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
 
 <span class="c1"># we also need the package os for folder manipulation</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -1810,15 +1811,15 @@ document.write(`
 
 <span class="c1"># Number and name for our model folder</span>
 <span class="n">model_number</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># CHANGE</span>
-<span class="n">modelprefix_pre</span> <span class="o">=</span> <span class="s2">&quot;data_augm&quot;</span>
-<span class="n">daug_str</span> <span class="o">=</span> <span class="s2">&quot;max_rotate&quot;</span>  <span class="c1"># CHANGE</span>
+<span class="n">modelprefix_pre</span> <span class="o">=</span> <span class="s2">"data_augm"</span>
+<span class="n">daug_str</span> <span class="o">=</span> <span class="s2">"max_rotate"</span>  <span class="c1"># CHANGE</span>
 
 <span class="c1"># Get config as dict and associated paths</span>
 <span class="n">cfg</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 <span class="n">project_path</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span>
-    <span class="s2">&quot;project_path&quot;</span>
-<span class="p">]</span>  <span class="c1"># or: os.path.dirname(config_path) #dlc_models_path = os.path.join(project_path, &quot;dlc-models&quot;)</span>
-<span class="n">training_datasets_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="s2">&quot;training-datasets&quot;</span><span class="p">)</span>
+    <span class="s2">"project_path"</span>
+<span class="p">]</span>  <span class="c1"># or: os.path.dirname(config_path) #dlc_models_path = os.path.join(project_path, "dlc-models")</span>
+<span class="n">training_datasets_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="s2">"training-datasets"</span><span class="p">)</span>
 
 <span class="c1"># Define shuffles</span>
 <span class="n">shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
@@ -1835,11 +1836,11 @@ document.write(`
     <span class="n">list_base_test_pose_config_file_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base_test_pose_config_file_path_TEMP</span><span class="p">)</span>
 
 <span class="c1"># Create subdirs for this augmentation method</span>
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">modelprefix_pre</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_number</span><span class="si">:</span><span class="s2">0=2d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">daug_str</span><span class="p">])</span>  <span class="c1"># modelprefix_pre = aug_</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"_"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">modelprefix_pre</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">model_number</span><span class="si">:</span><span class="s2">0=2d</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">daug_str</span><span class="p">])</span>  <span class="c1"># modelprefix_pre = aug_</span>
 <span class="n">aug_project_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="n">model_prefix</span><span class="p">)</span>
 <span class="n">aug_dlc_models</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
     <span class="n">aug_project_path</span><span class="p">,</span>
-    <span class="s2">&quot;dlc-models&quot;</span><span class="p">,</span>
+    <span class="s2">"dlc-models"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># make the folder for this modelprefix</span>
@@ -1847,7 +1848,7 @@ document.write(`
     <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">aug_project_path</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Skipping this one as it already exists&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Skipping this one as it already exists"</span><span class="p">)</span>
 
 <span class="c1"># Copy base train pose config file to the directory of this augmentation method</span>
 <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">shuffle</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">shuffles</span><span class="p">,</span> <span class="n">trainingsetindices</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)):</span>
@@ -1856,8 +1857,8 @@ document.write(`
     <span class="p">)</span>
 
     <span class="c1"># make train and test directories for this subdir</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">one_train_pose_config_file_path</span><span class="p">)))</span>  <span class="c1"># create parentdir &#39;train&#39;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">one_test_pose_config_file_path</span><span class="p">)))</span>  <span class="c1"># create parentdir &#39;test</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">one_train_pose_config_file_path</span><span class="p">)))</span>  <span class="c1"># create parentdir 'train'</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">one_test_pose_config_file_path</span><span class="p">)))</span>  <span class="c1"># create parentdir 'test</span>
 
     <span class="c1"># copy test and train config from base project to this subdir</span>
     <span class="c1"># copy base train config file</span>
@@ -1873,28 +1874,28 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import tools for changing our config file</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.utils.auxiliaryfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">edit_config</span>
 
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;data_augm_03_max_rotate&quot;</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"data_augm_03_max_rotate"</span>
 
 <span class="c1">## Initialise dict with additional edits to train config: optimizer</span>
 <span class="n">train_edits_dict</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">dict_optimizer</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="s2">&quot;adam&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>  <span class="c1"># the gpu I&#39;m using has plenty of memory so batch size 8 makes sense</span>
-    <span class="s2">&quot;multi_step&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mi">7500</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="mi">12000</span><span class="p">],</span> <span class="p">[</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mi">150000</span><span class="p">]],</span>
+    <span class="s2">"optimizer"</span><span class="p">:</span> <span class="s2">"adam"</span><span class="p">,</span>
+    <span class="s2">"batch_size"</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>  <span class="c1"># the gpu I'm using has plenty of memory so batch size 8 makes sense</span>
+    <span class="s2">"multi_step"</span><span class="p">:</span> <span class="p">[[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mi">7500</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span> <span class="o">*</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="mi">12000</span><span class="p">],</span> <span class="p">[</span><span class="mf">1e-5</span><span class="p">,</span> <span class="mi">150000</span><span class="p">]],</span>
 <span class="p">}</span>  <span class="c1"># if no yaml file passed, initialise as an empty dict</span>
 <span class="n">train_edits_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
     <span class="p">{</span>
-        <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">&quot;optimizer&quot;</span><span class="p">],</span>  <span class="c1">#&#39;adam&#39;,</span>
-        <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">],</span>
-        <span class="s2">&quot;multi_step&quot;</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">&quot;multi_step&quot;</span><span class="p">],</span>
+        <span class="s2">"optimizer"</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">"optimizer"</span><span class="p">],</span>  <span class="c1">#'adam',</span>
+        <span class="s2">"batch_size"</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">"batch_size"</span><span class="p">],</span>
+        <span class="s2">"multi_step"</span><span class="p">:</span> <span class="n">dict_optimizer</span><span class="p">[</span><span class="s2">"multi_step"</span><span class="p">],</span>
     <span class="p">}</span>
 <span class="p">)</span>
 
 <span class="c1"># Augmentation edits</span>
 <span class="n">edits_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-<span class="n">edits_dict</span><span class="p">[</span><span class="s2">&quot;symmetric_pairs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">13</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="n">edits_dict</span><span class="p">[</span><span class="s2">&quot;fliplr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">edits_dict</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">180</span>
+<span class="n">edits_dict</span><span class="p">[</span><span class="s2">"symmetric_pairs"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">13</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">edits_dict</span><span class="p">[</span><span class="s2">"fliplr"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">edits_dict</span><span class="p">[</span><span class="s2">"rotation"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">180</span>
 
 <span class="k">for</span> <span class="n">shuffle</span><span class="p">,</span> <span class="n">trainingsetindex</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">shuffles</span><span class="p">,</span> <span class="n">trainingsetindices</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">one_train_pose_config_file_path</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">return_train_network_path</span><span class="p">(</span>
@@ -1916,10 +1917,10 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
 <span class="c1"># define config path and model prefix</span>
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;data_augm_03_max_rotate&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"data_augm_03_max_rotate"</span>
 
-<span class="c1"># the computer I&#39;m working on has several gpus, here I used the third one.</span>
+<span class="c1"># the computer I'm working on has several gpus, here I used the third one.</span>
 <span class="n">gputouse</span> <span class="o">=</span> <span class="mi">3</span>
 
 <span class="c1"># define shuffles and trainingsetindices</span>
@@ -1934,7 +1935,7 @@ document.write(`
         <span class="n">modelprefix</span><span class="o">=</span><span class="n">model_prefix</span><span class="p">,</span>
         <span class="n">gputouse</span><span class="o">=</span><span class="n">gputouse</span><span class="p">,</span>
         <span class="n">trainingsetindex</span><span class="o">=</span><span class="n">trainingsetindex</span><span class="p">,</span>
-        <span class="n">max_snapshots_to_keep</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>  <span class="c1"># training for 150000 iterations so let&#39;s save 50, 100, and 150.</span>
+        <span class="n">max_snapshots_to_keep</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>  <span class="c1"># training for 150000 iterations so let's save 50, 100, and 150.</span>
         <span class="n">saveiters</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
@@ -1946,8 +1947,8 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Evaluate the network</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
-<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">&quot;data_augm_03_max_rotate&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
+<span class="n">model_prefix</span> <span class="o">=</span> <span class="s2">"data_augm_03_max_rotate"</span>
 <span class="n">Shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
 <span class="n">trainingsetindices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 
@@ -1955,7 +1956,7 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.utils.auxiliaryfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">edit_config</span>
 
 <span class="c1"># make sure we are testing all snapshots</span>
-<span class="n">edit_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;snapshotindex&quot;</span><span class="p">:</span> <span class="s2">&quot;all&quot;</span><span class="p">})</span>
+<span class="n">edit_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">{</span><span class="s2">"snapshotindex"</span><span class="p">:</span> <span class="s2">"all"</span><span class="p">})</span>
 
 <span class="k">for</span> <span class="n">shuffle</span><span class="p">,</span> <span class="n">trainingsetindex</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">Shuffles</span><span class="p">,</span> <span class="n">trainingsetindices</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">deeplabcut</span><span class="o">.</span><span class="n">evaluate_network</span><span class="p">(</span>
@@ -1969,14 +1970,14 @@ document.write(`
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get detailed error data for plotting</span>
 
-<span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
+<span class="c1"># in case we restarted the kernel or something, let's make</span>
 <span class="c1"># sure deeplabcut is imported and the config_path defined</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
-<span class="n">model_prefix_base</span> <span class="o">=</span> <span class="s2">&quot;data_augm_00_base&quot;</span>
-<span class="n">model_prefix_augm</span> <span class="o">=</span> <span class="s2">&quot;data_augm_03_max_rotate&quot;</span>
-<span class="n">Shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c1"># let&#39;s start with the refined un-augmented, i.e. shuffle 4</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
+<span class="n">model_prefix_base</span> <span class="o">=</span> <span class="s2">"data_augm_00_base"</span>
+<span class="n">model_prefix_augm</span> <span class="o">=</span> <span class="s2">"data_augm_03_max_rotate"</span>
+<span class="n">Shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c1"># let's start with the refined un-augmented, i.e. shuffle 4</span>
 <span class="n">trainingsetindices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
 
 <span class="c1"># We need pandas for creatig a nice list to parse</span>
@@ -1984,14 +1985,14 @@ document.write(`
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>  <span class="c1"># my python file for this function is stored in the parent folder as I&#39;m running this</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">".."</span><span class="p">)</span>  <span class="c1"># my python file for this function is stored in the parent folder as I'm running this</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">getErrorDistribution</span><span class="w"> </span><span class="kn">import</span> <span class="n">getErrorDistribution</span>  <span class="c1"># import the getErrorDistribution function</span>
 
 <span class="c1"># Read the h5 file containing all the frames:</span>
 <span class="c1"># (project_folder/training-datasets/iteration-0/UnaufmentedDataSet_project_folder/CollectedData_LabelerName.h5)</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span>
-    <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18/CollectedData_DLC.h5&quot;</span>
+    <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18/CollectedData_DLC.h5"</span>
 <span class="p">)</span>
 
 <span class="n">image_paths</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>  <span class="c1"># turn dataframe into list</span>
@@ -1999,7 +2000,7 @@ document.write(`
 <span class="c1"># get test indices</span>
 <span class="n">test_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">image_paths</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_50_test&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_50_test"</span><span class="p">):</span>
         <span class="n">test_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
 <span class="n">error_distributions_pcut</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2033,7 +2034,7 @@ document.write(`
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
 
-<span class="k">for</span> <span class="n">shuffle</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>  <span class="c1"># we start counting at 0, so for now, let&#39;s consider each index one less</span>
+<span class="k">for</span> <span class="n">shuffle</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>  <span class="c1"># we start counting at 0, so for now, let's consider each index one less</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">])</span> <span class="o">-</span> <span class="mf">1.5</span> <span class="o">+</span> <span class="n">shuffle</span><span class="p">,</span>
         <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">error_distributions_pcut</span><span class="p">[</span><span class="n">shuffle</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
@@ -2043,12 +2044,12 @@ document.write(`
 <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">])</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">25</span><span class="p">,</span> <span class="mi">175</span><span class="p">])</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Error with P-cut 0.6, comparing baseline to fliplr and 180 degrees rotation augmented&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Error with P-cut 0.6, comparing baseline to fliplr and 180 degrees rotation augmented"</span><span class="p">)</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">&quot;Full, ref, baseline&quot;</span><span class="p">,</span> <span class="s2">&quot;Full, OOD, fliplr_180_rotate&quot;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">"Full, ref, baseline"</span><span class="p">,</span> <span class="s2">"Full, OOD, fliplr_180_rotate"</span><span class="p">])</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Iterations (thousands)&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Error (px)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Iterations (thousands)"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Error (px)"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2057,13 +2058,13 @@ document.write(`
 <p>With this, it appears that we have reached our goal, which was <strong>to use augmentation to match or beat the accuracy of refining</strong>. But let’s also take a look at the accuracy per video. I will also plot the baseline, un-refined full network accuracy here to highlight how much the augmentation has improved the performance of the network.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let's make</span>
 <span class="c1"># sure deeplabcut is imported and the config_path defined</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 
-<span class="n">config_path</span> <span class="o">=</span> <span class="s2">&quot;/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml&quot;</span>
-<span class="n">model_prefix_base</span> <span class="o">=</span> <span class="s2">&quot;data_augm_00_base&quot;</span>
-<span class="n">model_prefix_augm</span> <span class="o">=</span> <span class="s2">&quot;data_augm_03_max_rotate&quot;</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="s2">"/home/user/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/config.yaml"</span>
+<span class="n">model_prefix_base</span> <span class="o">=</span> <span class="s2">"data_augm_00_base"</span>
+<span class="n">model_prefix_augm</span> <span class="o">=</span> <span class="s2">"data_augm_03_max_rotate"</span>
 <span class="n">Shuffles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 <span class="n">trainingsetindices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
 
@@ -2072,14 +2073,14 @@ document.write(`
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>  <span class="c1"># my python file for this function is stored in the parent folder as I&#39;m running this</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">".."</span><span class="p">)</span>  <span class="c1"># my python file for this function is stored in the parent folder as I'm running this</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">getErrorDistribution</span><span class="w"> </span><span class="kn">import</span> <span class="n">getErrorDistribution</span>  <span class="c1"># import the getErrorDistribution function</span>
 
 <span class="c1"># Read the h5 file containing all the frames:</span>
 <span class="c1"># (project_folder/training-datasets/iteration-0/UnaufmentedDataSet_project_folder/CollectedData_LabelerName.h5)</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span>
-    <span class="s2">&quot;/home/juser/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18/CollectedData_DLC.h5&quot;</span>
+    <span class="s2">"/home/juser/projects/bat_augmentation_austin_2020_bat_data-DLC-2022-08-18/training-datasets/iteration-0/UnaugmentedDataSet_bat_augmentation_austin_2020_bat_dataAug18/CollectedData_DLC.h5"</span>
 <span class="p">)</span>
 
 <span class="n">image_paths</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>  <span class="c1"># turn dataframe into list</span>
@@ -2087,7 +2088,7 @@ document.write(`
 <span class="c1"># get test indices</span>
 <span class="n">test_inds</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">image_paths</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_50_test&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_50_test"</span><span class="p">):</span>
         <span class="n">test_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
 <span class="c1"># this gives us the paths of our 27 test videos</span>
@@ -2095,31 +2096,31 @@ document.write(`
 
 <span class="c1"># %% sorted so that the corresponding videos have the same index in three lists (one per camera)</span>
 <span class="n">test_paths_cam1</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000099Track8_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000103Track3_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000104Track3_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000108Track6_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000123Track6_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000128Track2_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TS5-544-Cam1_2020-06-25_000134Track5_50_test&quot;</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000099Track8_50_test"</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000103Track3_50_test"</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000104Track3_50_test"</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000108Track6_50_test"</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000123Track6_50_test"</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000128Track2_50_test"</span><span class="p">,</span>
+    <span class="s2">"TS5-544-Cam1_2020-06-25_000134Track5_50_test"</span><span class="p">,</span>
 <span class="p">]</span>
 <span class="n">test_paths_cam2</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000099Track6_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000103Track3_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000104Track2_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000109Track1_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000124Track9_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000130Track2_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-519-Cam2_2020-06-25_000136Track10_50_test&quot;</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000099Track6_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000103Track3_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000104Track2_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000109Track1_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000124Track9_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000130Track2_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-519-Cam2_2020-06-25_000136Track10_50_test"</span><span class="p">,</span>
 <span class="p">]</span>
 <span class="n">test_paths_cam3</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000095Track14_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000100Track4_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000101Track4_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000106Track3_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000122Track7_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000127Track4_50_test&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;IL5-534-Cam3_2020-06-25_000133Track9_50_test&quot;</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000095Track14_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000100Track4_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000101Track4_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000106Track3_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000122Track7_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000127Track4_50_test"</span><span class="p">,</span>
+    <span class="s2">"IL5-534-Cam3_2020-06-25_000133Track9_50_test"</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">nvideos</span> <span class="o">=</span> <span class="mi">7</span>  <span class="c1"># number of videos</span>
@@ -2234,13 +2235,13 @@ document.write(`
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">])</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">])</span>
 <span class="n">ax3</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">])</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Cam 1&quot;</span><span class="p">)</span>
-<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Cam 2&quot;</span><span class="p">)</span>
-<span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Cam 3&quot;</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Error (px&quot;</span><span class="p">)</span>
-<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Error (px&quot;</span><span class="p">)</span>
-<span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Error (px&quot;</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">&quot;Full, ref, baseline&quot;</span><span class="p">,</span> <span class="s2">&quot;Full, OOD, fliplr_180_rotate&quot;</span><span class="p">,</span> <span class="s2">&quot;Full, OOD, baseline&quot;</span><span class="p">])</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Cam 1"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Cam 2"</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Cam 3"</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Error (px"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Error (px"</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Error (px"</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">"Full, ref, baseline"</span><span class="p">,</span> <span class="s2">"Full, OOD, fliplr_180_rotate"</span><span class="p">,</span> <span class="s2">"Full, OOD, baseline"</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>

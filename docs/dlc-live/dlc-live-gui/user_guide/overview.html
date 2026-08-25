@@ -267,6 +267,7 @@
 <li class="toctree-l3"><a class="reference internal" href="cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2"><a class="reference internal" href="camera_config.html">Camera configuration</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="misc/modelzoo_downloads.html">Pre-trained models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="misc/timestamp_format.html">Video timestamp format</a></li>
@@ -514,7 +515,10 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#main-window-at-a-glance">Main window at a glance</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#intended-workflow">Intended workflow</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#main-control-panel">Main control panel</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-settings">Camera settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-settings">Camera settings</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#trigger-settings">Trigger settings</a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dlclive-settings">DLCLive settings</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#recording">Recording</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#recording-output-options">Recording output options</a></li>
@@ -567,12 +571,13 @@ document.write(`
 <li><p>A <strong>Video panel</strong> (right) showing the live preview (single or tiled multi-camera)</p></li>
 <li><p>A <strong>Stats area</strong> (below the video) summarizing camera, inference, and recorder performance</p></li>
 </ul>
-<div class="\{figure} docutils">
-<p>:alt: Screenshot of the main window
-:width: 100%
-:align: center</p>
-<p>The main window on startup, showing the Controls panel (left), Video panel (right), and Stats area (below video).</p>
-</div>
+<figure class="align-center" id="id4">
+<a class="reference internal image-reference" href="../../../../_images/main_window_gui.png"><img alt="Screenshot of the main window" src="../../../../_images/main_window_gui.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-number">Fig. 14 </span><span class="caption-text">The main window on startup, showing the Controls panel (left), Video panel (right), and Stats area (below video).</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
 </section>
 <hr class="docutils" />
 <section id="intended-workflow">
@@ -637,7 +642,13 @@ Opens the camera configuration dialog where you can:</p>
 <ul>
 <li><p>Add, enable, or disable cameras</p></li>
 <li><p>Select backend and index</p></li>
-<li><p>Adjust camera-specific properties</p></li>
+<li><p>Adjust camera-specific properties</p>
+<ul>
+<li><p>Adjust exposure, gain, frame size, and frame rate</p></li>
+<li><p>Choose output format (color, grayscale, etc.)</p></li>
+<li><p>Configure supported trigger roles</p></li>
+</ul>
+</li>
 <li><p>Switch between single- and multi-camera setups</p></li>
 </ul>
 </li>
@@ -646,7 +657,8 @@ Opens the camera configuration dialog where you can:</p>
 <p class="admonition-title">Important</p>
 <p>Depending on the system, backend and camera model,
 settings may vary widely between proper support, partial support, or no support at all.</p>
-<p>This is especially true for the generalist OpenCV backend, which may work well with some cameras but not others.</p>
+<p>This is especially true for the generalist OpenCV backend, which may work well with some cameras but not others.
+Please open an issue or PR if you would like to see support for a specific camera or backend improved.</p>
 </div>
 <ul class="simple">
 <li><p><strong>Active</strong>
@@ -662,14 +674,18 @@ Displays a summary of configured cameras:</p>
 <p>In multi-camera mode, pose inference runs on <strong>one selected camera at a time</strong> (the <em>Inference Camera</em>),
 even though preview and recording may include multiple cameras.</p>
 </div>
+<section id="trigger-settings">
+<h4>Trigger settings<a class="headerlink" href="#trigger-settings" title="Link to this heading">#</a></h4>
+<p>See <a class="reference internal" href="camera_config.html#sec-dlclivegui-trigger-settings"><span class="std std-ref">Trigger settings</span></a> for details on configuring camera trigger roles and options.</p>
+</section>
 </section>
 <hr class="docutils" />
 <section id="dlclive-settings">
 <h3>DLCLive settings<a class="headerlink" href="#dlclive-settings" title="Link to this heading">#</a></h3>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">DLCLive</span></code> stands for DeepLabCut Live, the real-time pose estimation engine that powers the inference capabilities of this application.</p>
-<p>Find more information here if needed: <a class="reference internal" href="../../deeplabcutlive.html#deeplabcut-live"><span class="std std-ref">Running DeepLabCut models in real-time</span></a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DLCLive</span></code> refers to DeepLabCut Live, the real-time pose estimation engine that powers the inference capabilities of this application.</p>
+<p>Find more information here: <a class="reference internal" href="../../deeplabcutlive.html#deeplabcut-live"><span class="std std-ref">Running DeepLabCut models in real-time</span></a>.</p>
 </div>
 <p><strong>Purpose:</strong> Configure and run pose inference on the live stream.</p>
 <ul class="simple">
@@ -723,10 +739,23 @@ See <a class="reference internal" href="misc/timestamp_format.html#file-dlcliveg
 </section>
 <section id="encoding-options">
 <h4>Encoding options<a class="headerlink" href="#encoding-options" title="Link to this heading">#</a></h4>
-<ul class="simple">
+<ul>
 <li><p><strong>Container</strong> (e.g. <code class="docutils literal notranslate"><span class="pre">mp4</span></code>, <code class="docutils literal notranslate"><span class="pre">avi</span></code>, <code class="docutils literal notranslate"><span class="pre">mov</span></code>)</p></li>
 <li><p><strong>Codec</strong> (availability depends on OS and hardware)</p></li>
 <li><p><strong>CRF</strong> (quality/compression tradeoff; lower values = higher quality)</p></li>
+<li><p><strong>Use faster encoding parameters</strong>
+Applies faster FFmpeg settings to supported codecs to reduce encoding overhead and help maintain recording throughput.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">libx264</span></code> and <code class="docutils literal notranslate"><span class="pre">libx265</span></code>, this enables:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">preset=ultrafast</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tune=zerolatency</span></code></p></li>
+</ul>
+<p>These settings can reduce encoding latency, but may produce larger video files for the selected quality level. Other codecs, including hardware encoders such as <code class="docutils literal notranslate"><span class="pre">h264_nvenc</span></code>, are left unchanged.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please let us know if you would like to see additional codec options or presets added to the GUI.</p>
+</div>
+</li>
 </ul>
 </section>
 <section id="controls">
@@ -741,7 +770,8 @@ See <a class="reference internal" href="misc/timestamp_format.html#file-dlcliveg
 <ul>
 <li><p><strong>Record video with overlays</strong>
 Include pose predictions and/or bounding boxes directly in the recorded video.</p>
-<div class="\{danger} docutils">
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
 <p>This <strong>cannot be easily undone</strong> once the recording is saved.</p>
 <p>Use with caution if you want to preserve <strong>raw footage</strong> intact.</p>
 </div>
@@ -871,7 +901,7 @@ Enable the application’s dark theme.</p></li>
 </li>
 <li><p>Remembered paths (e.g. last-used model directory)</p></li>
 </ul>
-<p>On startup, the application attempts to <strong>restore your last‑used settings</strong> if saved,
+<p>On startup, the application attempts to <strong>restore your last-used settings</strong> if saved,
 but you can always manually load and save configurations.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
@@ -956,7 +986,10 @@ rather than relying on the remembered application state snapshot.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#main-window-at-a-glance">Main window at a glance</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#intended-workflow">Intended workflow</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#main-control-panel">Main control panel</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-settings">Camera settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-settings">Camera settings</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#trigger-settings">Trigger settings</a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dlclive-settings">DLCLive settings</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#recording">Recording</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#recording-output-options">Recording output options</a></li>
