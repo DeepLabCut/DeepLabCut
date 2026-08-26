@@ -164,9 +164,8 @@ class ApiProvenance:
     """Provenance of one version's `api.jsonl` build.
 
     `package_version` is `deeplabcut.__version__` at `revision`. They usually
-    agree for a tagged release, but not for `main`, where `package_version`
-    is whatever the next release will be called while the build itself is
-    only pinned exactly by `revision`.
+    match for a tagged release, but not for `main`, where `package_version`
+    is the next release's name while `revision` pins the actual build.
     """
 
     package_version: str
@@ -218,14 +217,11 @@ class VersionManifest:
     """`knowledge/<version_label>/manifest.json`: provenance of one version's build.
 
     `api_version_label` is the dev-docs deploy label this build's api urls
-    point at (what `--version-label` was, e.g. `main` or `3.0.1` -- matches
-    mike's own vocabulary, see `deploy-dev-docs-mike.yml`).
+    point at, matching mike's `version_label`.
 
-    `api` and `docs` are independent: `--skip-api`/`--skip-docs` let a CI run
-    rebuild only one of the two (see README "Deployment"), so each is stamped
-    with its own `revision`/`generated_at` rather than sharing one. `docs` is
-    None for a version that has never indexed user docs -- normal for
-    anything other than `main`, see "Versioning" in README.md.
+    `api` and `docs` are stamped independently, since they can be rebuilt at
+    different times. `docs` is None for a version with no indexed user docs
+    (every label other than `main`).
     """
 
     api_version_label: str

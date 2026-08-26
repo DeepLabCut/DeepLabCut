@@ -36,10 +36,8 @@ DEFAULT_OUTPUT_ROOT = Path("_build/knowledge-index")
 DOCS_BASE_URL = "https://deeplabcut.github.io/DeepLabCut/"
 API_BASE_URL = "https://deeplabcut.github.io/DeepLabCut/dev/{version}/"
 
-# The dev-docs version label whose build carries docs.jsonl and llms.txt. The
-# user docs are only ever deployed as a single rolling build on gh-pages
-# (there is no historical snapshot to index), so only this label's build
-# indexes them -- see "Versioning" in README.md.
+# The only dev-docs version label whose build carries docs.jsonl and llms.txt
+# -- the user docs are unversioned, so no other label indexes them.
 DOCS_VERSION_LABEL = "main"
 
 
@@ -77,30 +75,18 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         default="",
         help=(
             "Commit the source was read at, recorded in the manifest (default: "
-            "HEAD of --repo). Set this explicitly for a release build that only "
-            "checks out deeplabcut/ at a tag rather than the whole repo, where "
-            "HEAD would otherwise record the wrong commit."
+            "HEAD of --repo; override if --repo doesn't fully reflect it)."
         ),
     )
     parser.add_argument(
         "--skip-api",
         action="store_true",
-        help=(
-            "Don't rebuild api.jsonl this run -- leave it, and its provenance in "
-            "the manifest, exactly as already on disk under --output. For a CI "
-            "run that only wants to refresh docs.jsonl for main independently of "
-            "the dev-docs deploy."
-        ),
+        help="Don't rebuild api.jsonl; keep it and its manifest provenance as on disk.",
     )
     parser.add_argument(
         "--skip-docs",
         action="store_true",
-        help=(
-            "Don't rebuild docs.jsonl/llms.txt this run, even for the "
-            f"'{DOCS_VERSION_LABEL}' label -- leave them, and docs' provenance in "
-            "the manifest, exactly as already on disk under --output. For a CI "
-            "run that only wants to refresh api.jsonl."
-        ),
+        help="Don't rebuild docs.jsonl/llms.txt; keep them and their manifest provenance as on disk.",
     )
     return parser.parse_args(argv)
 
