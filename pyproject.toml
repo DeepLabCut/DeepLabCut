@@ -77,14 +77,16 @@ gui = [
 ]
 openvino = [ "openvino-dev==2022.1" ]
 docs = [
-  "docutils",
   "jupyter-book==1.0.4.post1",
-  "markdown-it-py",
   "sphinxcontrib-mermaid",
+]
+knowledge-index = [
+  "docutils",
+  "griffelib",
+  "markdown-it-py",
 ]
 dev-docs = [
   "black>=24",
-  "griffelib",
   "mike>=2.1",
   "mkdocs>=1.6",
   "mkdocs-api-autonav>=0.1",

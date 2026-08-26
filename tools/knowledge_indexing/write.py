@@ -11,10 +11,8 @@ import json
 from collections.abc import Iterable, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from .api_index import ApiNode
-from .docs_index import DocsPageNode
 from .schemas import (
     API_FILE,
     DOCS_FILE,
@@ -28,6 +26,10 @@ from .schemas import (
     TopManifest,
     VersionManifest,
 )
+
+if TYPE_CHECKING:
+    from .api_index import ApiNode
+    from .docs_index import DocsPageNode
 
 
 def write_version(
