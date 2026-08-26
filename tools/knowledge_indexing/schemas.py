@@ -19,6 +19,8 @@ unambiguous about what it points at.
 
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass
 from typing import Any
 
@@ -40,6 +42,15 @@ API_FILE = "api.jsonl"
 VERSION_MANIFEST = "manifest.json"
 TOP_MANIFEST = "manifest.json"
 LLMS_TXT = "llms.txt"
+
+
+def _content_hash(fields: dict[str, Any]) -> str:
+    """Sha256 of `fields` as canonical JSON.
+
+    Lets a consumer that already has a record detect whether a freshly
+    fetched one changed, without diffing every field.
+    """
+    return hashlib.sha256(json.dumps(fields, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -65,7 +76,7 @@ class DocPageRecord:
     type: str = "page"
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        fields = {
             "id": self.id,
             "type": self.type,
             "title": self.title,
@@ -80,6 +91,7 @@ class DocPageRecord:
             "related_pages": list(self.related_pages),
             "labels": list(self.labels),
         }
+        return {**fields, "content_hash": _content_hash(fields)}
 
 
 @dataclass(frozen=True)
@@ -102,7 +114,7 @@ class DocSectionRecord:
     type: str = "section"
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        fields = {
             "id": self.id,
             "type": self.type,
             "page": self.page,
@@ -113,6 +125,7 @@ class DocSectionRecord:
             "section": self.section or None,
             "summary": self.summary,
         }
+        return {**fields, "content_hash": _content_hash(fields)}
 
 
 @dataclass(frozen=True)
@@ -133,7 +146,7 @@ class ApiRecord:
     source: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        fields = {
             "id": self.id,
             "kind": self.kind,
             "name": self.name,
@@ -143,20 +156,32 @@ class ApiRecord:
             "source": self.source,
             "url": self.url,
         }
+        return {**fields, "content_hash": _content_hash(fields)}
 
 
 @dataclass(frozen=True)
 class VersionManifest:
-    """`knowledge/<version>/manifest.json`: provenance of one version's build."""
+    """`knowledge/<version_label>/manifest.json`: provenance of one version's build.
 
-    version: str
+    `api_version_label` is the dev-docs deploy label this build's api urls
+    point at (what `--version-label` was, e.g. `main` or `3.0.1` -- matches
+    mike's own vocabulary, see `deploy-dev-docs-mike.yml`); `package_version`
+    is `deeplabcut.__version__` at `revision`. They usually agree for a
+    tagged release, but not for `main`, where `package_version` is whatever
+    the next release will be called while the build itself is only pinned
+    exactly by `revision`.
+    """
+
+    api_version_label: str
+    package_version: str
     revision: str
     generated_at: str
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "schema_version": SCHEMA_VERSION,
-            "version": self.version,
+            "api_version_label": self.api_version_label,
+            "package_version": self.package_version or None,
             "revision": self.revision or None,
             "extractor_version": EXTRACTOR_VERSION,
             "generated_by": GENERATED_BY,

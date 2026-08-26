@@ -14,7 +14,7 @@ python -m tools.knowledge_indexing
 |---|---|
 | `--output` | Directory mirroring the gh-pages site root to write into (default: `<repo>/_build/knowledge-index`) |
 | `--repo` | Repository root, containing `_toc.yml`, `docs/` and `deeplabcut/` (default: cwd) |
-| `--version` | Developer-docs version the API URLs point at, one of the versions mike deploys (default: `main`) |
+| `--version-label` | Developer-docs version label the API URLs point at, one of the labels mike deploys (default: `main`) |
 
 Everything is read from the repository, so no built or deployed documentation is
 needed. Both documentation extras are required: `griffe` comes with `dev-docs`,
@@ -28,7 +28,7 @@ pip install -e ".[docs,dev-docs]"
 
 ```text
 _build/knowledge-index/
-├── llms.txt                 spec-format entry point (llmstxt.org), only for --version main
+├── llms.txt                 spec-format entry point (llmstxt.org), only for --version-label main
 └── knowledge/
     ├── manifest.json        enumeration: every indexed api version, which one is current
     ├── main/
@@ -42,8 +42,16 @@ _build/knowledge-index/
 
 Read `knowledge/manifest.json` first: gh-pages gives no directory listing, so it
 is the only way to discover which api versions exist. Each record in `docs.jsonl`
-and `api.jsonl` is a self-contained JSON object with a stable `id`, so an agent
-can load either file lazily by scanning for the ids it needs.
+and `api.jsonl` is a self-contained JSON object with a stable `id` and a
+`content_hash` (sha256 of its own fields), so an agent can load either file
+lazily by scanning for the ids it needs, and a consumer that already has a
+record can tell whether a freshly fetched one changed without diffing it.
+
+Each version's `manifest.json` records both `api_version_label` (the dev-docs
+deploy label its api urls point at, matching mike's own vocabulary -- see
+`deploy-dev-docs-mike.yml`) and `package_version` (`deeplabcut.__version__` at
+that `revision`) — they usually agree for a tagged release, but not for
+`main`, where only `revision` pins the build exactly.
 
 Ids are namespaced by type — `docs:`, `docs:<page>#<anchor>`, `api:` — so a
 reference is unambiguous about what it points at. Every `url` is absolute, so a
@@ -57,8 +65,9 @@ mirrors that: one directory per version actually built, e.g. `3.0.1/`.
 The user docs, by contrast, are only ever deployed as a single rolling build at
 the site root — there is no historical snapshot to point at, and indexing raw
 markdown from an old git tag would be worse than the live rendered page (and
-redundant with git itself). So `docs.jsonl` and `llms.txt` are only ever written
-for `--version main`; every other version's directory holds `api.jsonl` alone.
+redundant with git itself). So `docs.jsonl` and `llms.txt` are only ever
+written for `--version-label main`; every other version's directory holds
+`api.jsonl` alone.
 
 ## Where the data comes from
 
@@ -119,7 +128,7 @@ explicit `ignore: true`.
 
 ### llms.txt
 
-Written only for `--version main`, alongside `docs.jsonl`. Follows the
+Written only for `--version-label main`, alongside `docs.jsonl`. Follows the
 [llmstxt.org](https://llmstxt.org) convention: an H1 title, a one-line
 description, then `##` sections of links. Only top-level pages (no parent) are
 listed per toc part — nested pages are reachable through a page's own `children`
@@ -154,3 +163,6 @@ structured index instead.
   so the rescan sees every version that came before. `api.latest` currently
   always points at `main`; resolving "latest stable release" numbering is left
   to that pipeline.
+- **`content_hash` is not used for incremental building.** It lets a consumer
+  detect that a record changed, but nothing here uses it to skip re-extracting
+  or re-writing unchanged records -- every run reads and writes everything.
