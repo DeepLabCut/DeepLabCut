@@ -25,6 +25,7 @@ def write_index(
 ) -> None:
     """Write `groups` (directory name -> nodes) under `output_dir`, and the manifest."""
     for directory, nodes in groups.items():
+        _check_unique_ids(directory, nodes)
         node_dir = output_dir / directory
         node_dir.mkdir(parents=True, exist_ok=True)
         for node in nodes:
@@ -38,6 +39,15 @@ def write_index(
         base_urls=base_urls or {},
     )
     _write_yaml(output_dir / MANIFEST, manifest.to_dict())
+
+
+def _check_unique_ids(directory: str, nodes: Sequence[Node]) -> None:
+    """Raise if `nodes` has a duplicate id, which would silently overwrite a file."""
+    seen: set[str] = set()
+    for node in nodes:
+        if node.id in seen:
+            raise ValueError(f"Duplicate node id {node.id!r} in {directory}/")
+        seen.add(node.id)
 
 
 def write_symbol_table(output_dir: Path, apis: Sequence[ApiNode]) -> int:

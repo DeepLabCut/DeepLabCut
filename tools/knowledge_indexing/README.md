@@ -12,7 +12,7 @@ python -m tools.knowledge_indexing
 
 | Option | Meaning |
 |---|---|
-| `--output` | Directory to write the index into (default: `<repo>/build/knowledge-index/<version>`) |
+| `--output` | Directory to write the index into (default: `<repo>/_build/knowledge-index/<version>`) |
 | `--repo` | Repository root, containing `_toc.yml`, `docs/` and `deeplabcut/` (default: cwd) |
 | `--version` | Developer-docs version the API URLs point at, one of the versions mike deploys (default: `main`) |
 
@@ -28,7 +28,7 @@ pip install -e ".[docs,dev-docs]"
 ## Output
 
 ```text
-build/knowledge-index/main/
+_build/knowledge-index/main/
 ├── index.yaml        manifest: schema, provenance, and every node id with its file
 ├── symbols.yaml      flat symbol id -> module node lookup
 ├── apis/             one file per published module
@@ -120,7 +120,8 @@ page.
   from headings.
 - **Notebooks are not indexed.** `_toc.yml` lists notebooks under `examples/`,
   which would need a reader for `.ipynb` markdown cells.
-- **Nothing validates the index.** There is no `--check` mode, so anchors,
-  dangling references, duplicate ids and unresolvable URLs are not caught.
+- **Validation is minimal.** Duplicate node ids abort the write, but there is no
+  `--check` mode, so anchors, dangling references and unresolvable URLs are not
+  caught.
 - **The user docs are not versioned** upstream, so `docs-pages/` is identical
   across index versions and only stamped with the revision it came from.
