@@ -21,8 +21,9 @@ from .write import write_index, write_symbol_table
 PACKAGE = "deeplabcut"
 
 # Default output, relative to --repo and per version, so the index is a build
-# artifact of the repository it describes. `build/` is already gitignored.
-DEFAULT_OUTPUT_ROOT = Path("build/knowledge-index")
+# artifact of the repository it describes. `_build/` is where the other docs
+# builds already write theirs (`_build/html`, `_build/dev`) and is gitignored.
+DEFAULT_OUTPUT_ROOT = Path("_build/knowledge-index")
 
 # The published sites every `docs_url` is built against. The user docs are
 # unversioned and live at the site root, while the developer docs are deployed per
