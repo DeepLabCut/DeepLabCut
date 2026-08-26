@@ -20,9 +20,11 @@ from .schemas import (
     DOCS_FILE,
     TOP_MANIFEST,
     VERSION_MANIFEST,
+    ApiProvenance,
     ApiRecord,
     DocPageRecord,
     DocSectionRecord,
+    DocsProvenance,
     TopManifest,
     VersionManifest,
 )
@@ -31,23 +33,39 @@ from .schemas import (
 def write_version(
     knowledge_dir: Path,
     version_label: str,
-    apis: Sequence[ApiNode],
+    apis: Sequence[ApiNode] | None,
     docs_pages: Sequence[DocsPageNode] | None,
     package_version: str = "",
     revision: str = "",
 ) -> tuple[int, int]:
-    """Write one version's `api.jsonl`, its manifest, and `docs.jsonl` if given.
+    """Write `api.jsonl` and/or `docs.jsonl` for one version, plus its manifest.
 
-    `docs_pages` is None for a version that does not index user docs -- only
-    the unversioned build carries `docs.jsonl`, see README.md. Returns the
-    number of api and docs records written.
+    `apis` (or `docs_pages`) is None to leave that half untouched this run --
+    whatever is already on disk under `knowledge_dir/version_label` (e.g.
+    seeded from a prior, separate build) is kept as-is, and its provenance is
+    carried forward into the rewritten manifest rather than overwritten. This
+    is what lets `--skip-api`/`--skip-docs` (see `__main__.py`) rebuild one
+    half of a version without clobbering the other. Returns the number of api
+    and docs records written this run (0 for a half that was left untouched).
     """
     version_dir = knowledge_dir / version_label
     version_dir.mkdir(parents=True, exist_ok=True)
 
-    api_records = _api_records(apis)
-    _check_unique_ids(API_FILE, (record.id for record in api_records))
-    _write_jsonl(version_dir / API_FILE, (record.to_dict() for record in api_records))
+    existing = _read_json(version_dir / VERSION_MANIFEST)
+    api_provenance = ApiProvenance.from_dict(existing["api"]) if existing and existing.get("api") else None
+    docs_provenance = DocsProvenance.from_dict(existing["docs"]) if existing and existing.get("docs") else None
+
+    api_count = 0
+    if apis is not None:
+        api_records = _api_records(apis)
+        _check_unique_ids(API_FILE, (record.id for record in api_records))
+        _write_jsonl(version_dir / API_FILE, (record.to_dict() for record in api_records))
+        api_count = len(api_records)
+        api_provenance = ApiProvenance(
+            package_version=package_version,
+            revision=revision,
+            generated_at=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
+        )
 
     docs_count = 0
     if docs_pages is not None:
@@ -56,16 +74,20 @@ def write_version(
         _check_unique_ids(DOCS_FILE, (record.id for record in docs_records))
         _write_jsonl(version_dir / DOCS_FILE, (record.to_dict() for record in docs_records))
         docs_count = len(docs_records)
+        docs_provenance = DocsProvenance(
+            revision=revision,
+            generated_at=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
+        )
 
-    manifest = VersionManifest(
-        api_version_label=version_label,
-        package_version=package_version,
-        revision=revision,
-        generated_at=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
-    )
+    if api_provenance is None:
+        raise ValueError(
+            f"No api provenance for {version_label!r}: apis was skipped and no manifest.json exists yet"
+        )
+
+    manifest = VersionManifest(api_version_label=version_label, api=api_provenance, docs=docs_provenance)
     _write_json(version_dir / VERSION_MANIFEST, manifest.to_dict())
 
-    return len(api_records), docs_count
+    return api_count, docs_count
 
 
 def write_top_manifest(knowledge_dir: Path, docs_version_label: str) -> None:
@@ -181,3 +203,11 @@ def _write_jsonl(path: Path, records: Iterable[dict[str, Any]]) -> None:
 def _write_json(path: Path, data: dict[str, Any]) -> None:
     """Write a single, human-readable JSON object."""
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _read_json(path: Path) -> dict[str, Any] | None:
+    """Read a JSON object, or None if `path` doesn't exist or isn't valid JSON."""
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
