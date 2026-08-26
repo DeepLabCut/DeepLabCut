@@ -1,0 +1,143 @@
+name: Docs / Deploy knowledge index
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        description: "Action to perform: deploy or delete."
+        required: true
+        type: string
+
+      version_label:
+        description: "Version label to deploy/delete, e.g. main or 3.0."
+        required: true
+        type: string
+
+      git_tag:
+        description: "Git tag whose deeplabcut package should be checked out before deploying. Required for deploy when version_label isn't main."
+        required: false
+        default: ""
+        type: string
+
+      skip_api:
+        description: "Don't rebuild api.jsonl this run; keep whatever is already published. Ignored for delete."
+        required: false
+        default: false
+        type: boolean
+
+      skip_docs:
+        description: "Don't rebuild docs.jsonl/llms.txt this run; keep whatever is already published. Ignored for delete."
+        required: false
+        default: false
+        type: boolean
+
+      python-version:
+        description: Python version used to build the knowledge index.
+        required: false
+        default: "3.10"
+        type: string
+
+jobs:
+  knowledge-index:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Validate inputs
+        shell: bash
+        run: |
+          case "${{ inputs.action }}" in
+            deploy|delete)
+              ;;
+            *)
+              echo "::error::Unsupported action '${{ inputs.action }}'. Expected 'deploy' or 'delete'."
+              exit 1
+              ;;
+          esac
+
+          if [ "${{ inputs.action }}" = "deploy" ] && [ -z "${{ inputs.git_tag }}" ] && [ "${{ inputs.version_label }}" != "main" ]; then
+            echo "::error::git_tag is required when deploying non-'main' versions."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check out tagged package source
+        if: inputs.action == 'deploy' && inputs.git_tag != ''
+        shell: bash
+        run: |
+          git checkout "${{ inputs.git_tag }}" -- deeplabcut
+
+      - name: Resolve revision
+        id: revision
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.git_tag }}" ]; then
+            echo "sha=$(git rev-parse "${{ inputs.git_tag }}^{commit}")" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install knowledge-index dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[docs,dev-docs]"
+
+      - name: Check out existing knowledge index from gh-pages
+        uses: actions/checkout@v6
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages-knowledge
+          sparse-checkout: |
+            knowledge
+
+      - name: Seed output with existing knowledge index
+        shell: bash
+        run: |
+          mkdir -p _build/knowledge-index
+          if [ -d gh-pages-knowledge/knowledge ]; then
+            cp -r gh-pages-knowledge/knowledge _build/knowledge-index/
+          fi
+
+      - name: Build knowledge index
+        if: inputs.action == 'deploy'
+        shell: bash
+        run: |
+          python -m tools.knowledge_indexing \
+            --output _build/knowledge-index \
+            --version-label "${{ inputs.version_label }}" \
+            --revision "${{ steps.revision.outputs.sha }}" \
+            ${{ inputs.skip_api && '--skip-api' || '' }} \
+            ${{ inputs.skip_docs && '--skip-docs' || '' }}
+
+      - name: Remove deleted version
+        if: inputs.action == 'delete'
+        shell: bash
+        run: rm -rf "_build/knowledge-index/knowledge/${{ inputs.version_label }}"
+
+      - name: Rebuild top-level manifest
+        if: inputs.action == 'delete'
+        shell: bash
+        run: |
+          python -c "
+          from pathlib import Path
+          from tools.knowledge_indexing import write_top_manifest
+          write_top_manifest(Path('_build/knowledge-index/knowledge'), docs_version_label='main')
+          "
+
+      - name: Deploy knowledge index
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _build/knowledge-index
+          keep_files: true
