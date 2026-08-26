@@ -137,11 +137,10 @@ explicit `ignore: true`.
 
 Written only for `--version-label main`, alongside `docs.jsonl`. Follows the
 [llmstxt.org](https://llmstxt.org) convention: an H1 title, a one-line
-description, then `##` sections of links. Only top-level pages (no parent) are
-listed per toc part — nested pages are reachable through a page's own `children`
-in `docs.jsonl` — plus sections pointing at the API reference and at
-`knowledge/manifest.json`, `docs.jsonl` and `api.jsonl` for agents that want the
-structured index instead.
+description, then `##` sections of links.
+Links to the docs site, the API reference, and prominently to
+`knowledge/manifest.json`, `docs.jsonl` and `api.jsonl` for agents that want
+the structured index.
 
 ## Deployment
 
@@ -180,7 +179,7 @@ user-docs half can never get built by the wrong trigger:
 | `toc.py` | `_toc.yml` → the set of published pages and their hierarchy |
 | `api_index.py` | Source tree → API nodes, via griffe (build-time only) |
 | `docs_index.py` | Markdown → docs-page nodes with sections (build-time only) |
-| `llms_txt.py` | Docs-page nodes → `llms.txt` |
+| `llms_txt.py` | Renders `llms.txt` |
 | `write.py` | Nodes → `docs.jsonl` / `api.jsonl` and both manifests |
 | `__main__.py` | CLI |
 
