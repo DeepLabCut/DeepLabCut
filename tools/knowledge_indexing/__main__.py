@@ -8,6 +8,7 @@ See README.md for the output layout.
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -24,22 +25,22 @@ PACKAGE = "deeplabcut"
 # Default output, relative to --repo, so the index is a build artifact of the
 # repository it describes. `_build/` is where the other docs builds already
 # write theirs (`_build/html`, `_build/dev`) and is gitignored. Unlike them,
-# this mirrors the gh-pages site root: `knowledge/<version>/` and `llms.txt`
-# sit directly under it.
+# this mirrors the gh-pages site root: `knowledge/<version-label>/` and
+# `llms.txt` sit directly under it.
 DEFAULT_OUTPUT_ROOT = Path("_build/knowledge-index")
 
 # The published sites every url is built against. The user docs are unversioned
 # and live at the site root, while the developer docs are deployed per version
 # by mike under `dev/` (`plugins.mike` in dev-docs/mkdocs.yml), which is the
-# segment --version fills in.
+# segment --version-label fills in.
 DOCS_BASE_URL = "https://deeplabcut.github.io/DeepLabCut/"
 API_BASE_URL = "https://deeplabcut.github.io/DeepLabCut/dev/{version}/"
 
-# The dev-docs version whose build carries docs.jsonl and llms.txt. The user
-# docs are only ever deployed as a single rolling build on gh-pages (there is
-# no historical snapshot to index), so only this version's build indexes them
-# -- see "Versioning" in README.md.
-DOCS_VERSION = "main"
+# The dev-docs version label whose build carries docs.jsonl and llms.txt. The
+# user docs are only ever deployed as a single rolling build on gh-pages
+# (there is no historical snapshot to index), so only this label's build
+# indexes them -- see "Versioning" in README.md.
+DOCS_VERSION_LABEL = "main"
 
 
 def _parse_args(argv: list[str] | None) -> argparse.Namespace:
@@ -52,7 +53,7 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         type=Path,
         help=(
             "Directory mirroring the gh-pages site root to write into -- gets "
-            f"'{KNOWLEDGE_DIR}/<version>/' and '{LLMS_TXT}' "
+            f"'{KNOWLEDGE_DIR}/<version-label>/' and '{LLMS_TXT}' "
             f"(default: <repo>/{DEFAULT_OUTPUT_ROOT})."
         ),
     )
@@ -63,12 +64,12 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         help=f"Repository root, containing {TOC_FILE}, docs/ and {PACKAGE}/ (default: cwd).",
     )
     parser.add_argument(
-        "--version",
-        default=DOCS_VERSION,
+        "--version-label",
+        default=DOCS_VERSION_LABEL,
         help=(
-            "Developer-docs version the API URLs point at, also recorded in the "
-            "manifest. One of the versions mike deploys, e.g. main or 3.0 "
-            f"(default: {DOCS_VERSION})."
+            "Developer-docs version label the API URLs point at, also recorded "
+            "as api_version_label in the manifest. One of the labels mike "
+            f"deploys, e.g. main or 3.0 (default: {DOCS_VERSION_LABEL})."
         ),
     )
     return parser.parse_args(argv)
@@ -89,6 +90,23 @@ def _git_revision(repo: Path) -> str:
     return result.stdout.strip()
 
 
+_VERSION_ASSIGNMENT = re.compile(r'^__version__\s*=\s*["\']([^"\']+)["\']', re.MULTILINE)
+
+
+def _package_version(repo: Path) -> str:
+    """`deeplabcut.__version__`, read from source without importing the package.
+
+    Importing it would pull in the same optional dependencies (torch, a GPU)
+    that `api_index.py` avoids by reading the source with griffe instead.
+    """
+    try:
+        text = (repo / PACKAGE / "version.py").read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    match = _VERSION_ASSIGNMENT.search(text)
+    return match.group(1) if match else ""
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     repo: Path = args.repo
@@ -100,8 +118,8 @@ def main(argv: list[str] | None = None) -> int:
 
     output: Path = args.output or repo / DEFAULT_OUTPUT_ROOT
     knowledge_dir = output / KNOWLEDGE_DIR
-    api_base_url = API_BASE_URL.format(version=args.version)
-    include_docs = args.version == DOCS_VERSION
+    api_base_url = API_BASE_URL.format(version=args.version_label)
+    include_docs = args.version_label == DOCS_VERSION_LABEL
 
     print(f"Reading API from {repo / PACKAGE} ...")
     apis = build_api_nodes(PACKAGE, repo, api_base_url)
@@ -113,27 +131,28 @@ def main(argv: list[str] | None = None) -> int:
         docs_pages = build_docs_nodes(repo, DOCS_BASE_URL)
         print(f"  {len(docs_pages)} pages, {sum(len(page.sections) for page in docs_pages)} sections")
     else:
-        print(f"Skipping user docs: only the '{DOCS_VERSION}' build carries {LLMS_TXT} and docs.jsonl")
+        print(f"Skipping user docs: only the '{DOCS_VERSION_LABEL}' build carries {LLMS_TXT} and docs.jsonl")
 
     api_count, docs_count = write_version(
         knowledge_dir,
-        args.version,
+        args.version_label,
         apis,
         docs_pages,
+        package_version=_package_version(repo),
         revision=_git_revision(repo),
     )
-    write_top_manifest(knowledge_dir, docs_version=DOCS_VERSION)
+    write_top_manifest(knowledge_dir, docs_version_label=DOCS_VERSION_LABEL)
 
     if docs_pages is not None:
         llms_txt = build_llms_txt(
             docs_pages,
             api_base_url=api_base_url,
             knowledge_base_url=f"{DOCS_BASE_URL}{KNOWLEDGE_DIR}/",
-            version=args.version,
+            version_label=args.version_label,
         )
         (output / LLMS_TXT).write_text(llms_txt, encoding="utf-8")
 
-    print(f"Wrote {api_count} api records and {docs_count} docs records to {knowledge_dir / args.version}")
+    print(f"Wrote {api_count} api records and {docs_count} docs records to {knowledge_dir / args.version_label}")
     return 0
 
 

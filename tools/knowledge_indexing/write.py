@@ -30,9 +30,10 @@ from .schemas import (
 
 def write_version(
     knowledge_dir: Path,
-    version: str,
+    version_label: str,
     apis: Sequence[ApiNode],
     docs_pages: Sequence[DocsPageNode] | None,
+    package_version: str = "",
     revision: str = "",
 ) -> tuple[int, int]:
     """Write one version's `api.jsonl`, its manifest, and `docs.jsonl` if given.
@@ -41,7 +42,7 @@ def write_version(
     the unversioned build carries `docs.jsonl`, see README.md. Returns the
     number of api and docs records written.
     """
-    version_dir = knowledge_dir / version
+    version_dir = knowledge_dir / version_label
     version_dir.mkdir(parents=True, exist_ok=True)
 
     api_records = _api_records(apis)
@@ -57,7 +58,8 @@ def write_version(
         docs_count = len(docs_records)
 
     manifest = VersionManifest(
-        version=version,
+        api_version_label=version_label,
+        package_version=package_version,
         revision=revision,
         generated_at=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
     )
@@ -66,7 +68,7 @@ def write_version(
     return len(api_records), docs_count
 
 
-def write_top_manifest(knowledge_dir: Path, docs_version: str) -> None:
+def write_top_manifest(knowledge_dir: Path, docs_version_label: str) -> None:
     """Rebuild `knowledge/manifest.json` from whatever version directories exist.
 
     Run after `write_version`, so a version built by an earlier, separate run
@@ -76,10 +78,10 @@ def write_top_manifest(knowledge_dir: Path, docs_version: str) -> None:
     versions = sorted(
         child.name for child in knowledge_dir.iterdir() if child.is_dir() and (child / VERSION_MANIFEST).is_file()
     )
-    has_docs = (knowledge_dir / docs_version / DOCS_FILE).is_file()
+    has_docs = (knowledge_dir / docs_version_label / DOCS_FILE).is_file()
     manifest = TopManifest(
-        docs_path=f"{docs_version}/{DOCS_FILE}" if has_docs else "",
-        api_latest=docs_version,
+        docs_path=f"{docs_version_label}/{DOCS_FILE}" if has_docs else "",
+        api_latest=docs_version_label,
         api_versions=tuple(versions),
     )
     _write_json(knowledge_dir / TOP_MANIFEST, manifest.to_dict())
