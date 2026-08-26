@@ -40,13 +40,10 @@ def write_version(
 ) -> tuple[int, int]:
     """Write `api.jsonl` and/or `docs.jsonl` for one version, plus its manifest.
 
-    `apis` (or `docs_pages`) is None to leave that half untouched this run --
-    whatever is already on disk under `knowledge_dir/version_label` (e.g.
-    seeded from a prior, separate build) is kept as-is, and its provenance is
-    carried forward into the rewritten manifest rather than overwritten. This
-    is what lets `--skip-api`/`--skip-docs` (see `__main__.py`) rebuild one
-    half of a version without clobbering the other. Returns the number of api
-    and docs records written this run (0 for a half that was left untouched).
+    `apis` (or `docs_pages`) may be None to leave that half untouched: its
+    file and manifest provenance are kept exactly as already on disk under
+    `knowledge_dir/version_label`. Returns the number of api and docs records
+    written this run (0 for an untouched half).
     """
     version_dir = knowledge_dir / version_label
     version_dir.mkdir(parents=True, exist_ok=True)
@@ -75,14 +72,13 @@ def write_version(
         _write_jsonl(version_dir / DOCS_FILE, (record.to_dict() for record in docs_records))
         docs_count = len(docs_records)
         docs_provenance = DocsProvenance(
+            package_version=package_version,
             revision=revision,
             generated_at=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
         )
 
     if api_provenance is None:
-        raise ValueError(
-            f"No api provenance for {version_label!r}: apis was skipped and no manifest.json exists yet"
-        )
+        raise ValueError(f"No api provenance for {version_label!r}: apis was skipped and no manifest.json exists yet")
 
     manifest = VersionManifest(api_version_label=version_label, api=api_provenance, docs=docs_provenance)
     _write_json(version_dir / VERSION_MANIFEST, manifest.to_dict())
@@ -91,12 +87,7 @@ def write_version(
 
 
 def write_top_manifest(knowledge_dir: Path, docs_version_label: str) -> None:
-    """Rebuild `knowledge/manifest.json` from whatever version directories exist.
-
-    Run after `write_version`, so a version built by an earlier, separate run
-    is picked up as long as its directory is already under `knowledge_dir` --
-    this is what lets each version's build stay ignorant of every other one.
-    """
+    """Rebuild `knowledge/manifest.json` from the version directories under `knowledge_dir`."""
     versions = sorted(
         child.name for child in knowledge_dir.iterdir() if child.is_dir() and (child / VERSION_MANIFEST).is_file()
     )

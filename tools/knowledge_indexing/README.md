@@ -51,16 +51,15 @@ lazily by scanning for the ids it needs, and a consumer that already has a
 record can tell whether a freshly fetched one changed without diffing it.
 
 Each version's `manifest.json` records `api_version_label` (the dev-docs
-deploy label its api urls point at, matching mike's own vocabulary -- see
-`deploy-dev-docs-mike.yml`), plus **independent** `api` and `docs` provenance
-blocks, each with its own `revision`/`generated_at` -- `--skip-api`/
-`--skip-docs` (see "Deployment") let the two be rebuilt by separate CI runs at
-different times, so one shared timestamp/revision would be misleading. `api`
-also carries `package_version` (`deeplabcut.__version__` at that block's
-`revision`) -- it usually agrees with `api_version_label` for a tagged
-release, but not for `main`, where only `revision` pins the build exactly.
-`docs` is absent for a version that has never indexed user docs (every label
-other than `main`).
+deploy label its api urls point at, matching mike's own vocabulary), plus
+**independent** `api` and `docs` provenance blocks -- each with its own
+`revision`/`package_version`/`generated_at`, since `--skip-api`/`--skip-docs`
+(see "Deployment") let the two be rebuilt by separate CI runs at different
+times. `package_version` is `deeplabcut.__version__` at that block's
+`revision`; it usually agrees with `api_version_label` for a tagged release,
+but not for `main`, where only `revision` pins the build exactly. `docs` is
+absent for a version that has never indexed user docs (every label other
+than `main`).
 
 Ids are namespaced by type — `docs:`, `docs:<page>#<anchor>`, `api:` — so a
 reference is unambiguous about what it points at. Every `url` is absolute, so a
