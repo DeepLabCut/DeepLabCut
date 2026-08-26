@@ -52,3 +52,14 @@ jobs:
       config-file: dev-docs/mkdocs.yml
       deploy-prefix: dev
     secrets: inherit
+
+  deploy-user-docs-knowledge-index:
+    # docs.jsonl/llms.txt only; api.jsonl is built by deploy-dev-docs-mike.yml instead.
+    needs: deploy-dev-docs-main
+    uses: ./.github/workflows/deploy-knowledge-index.yml
+    with:
+      action: deploy
+      version_label: main
+      skip_api: true
+      python-version: "3.10"
+    secrets: inherit

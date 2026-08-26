@@ -127,3 +127,15 @@ jobs:
             --config-file "${{ inputs.config-file }}" \
             --deploy-prefix "${{ inputs.deploy-prefix }}" \
             "${{ inputs.version_label }}"
+
+  knowledge-index:
+    # api.jsonl only; docs.jsonl/llms.txt are built by deploy-docs.yml instead.
+    needs: mike
+    uses: ./.github/workflows/deploy-knowledge-index.yml
+    with:
+      action: ${{ inputs.action }}
+      version_label: ${{ inputs.version_label }}
+      git_tag: ${{ inputs.git_tag }}
+      skip_docs: true
+      python-version: ${{ inputs.python-version }}
+    secrets: inherit
