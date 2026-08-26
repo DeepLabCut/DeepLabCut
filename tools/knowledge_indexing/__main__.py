@@ -72,6 +72,36 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
             f"deploys, e.g. main or 3.0 (default: {DOCS_VERSION_LABEL})."
         ),
     )
+    parser.add_argument(
+        "--revision",
+        default="",
+        help=(
+            "Commit the source was read at, recorded in the manifest (default: "
+            "HEAD of --repo). Set this explicitly for a release build that only "
+            "checks out deeplabcut/ at a tag rather than the whole repo, where "
+            "HEAD would otherwise record the wrong commit."
+        ),
+    )
+    parser.add_argument(
+        "--skip-api",
+        action="store_true",
+        help=(
+            "Don't rebuild api.jsonl this run -- leave it, and its provenance in "
+            "the manifest, exactly as already on disk under --output. For a CI "
+            "run that only wants to refresh docs.jsonl for main independently of "
+            "the dev-docs deploy."
+        ),
+    )
+    parser.add_argument(
+        "--skip-docs",
+        action="store_true",
+        help=(
+            "Don't rebuild docs.jsonl/llms.txt this run, even for the "
+            f"'{DOCS_VERSION_LABEL}' label -- leave them, and docs' provenance in "
+            "the manifest, exactly as already on disk under --output. For a CI "
+            "run that only wants to refresh api.jsonl."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -111,6 +141,10 @@ def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     repo: Path = args.repo
 
+    if args.skip_api and args.skip_docs:
+        print("Error: --skip-api and --skip-docs together leave nothing to build.", file=sys.stderr)
+        return 1
+
     for required in (repo / TOC_FILE, repo / PACKAGE):
         if not required.exists():
             print(f"Error: {required} not found; is --repo the repository root?", file=sys.stderr)
@@ -119,17 +153,24 @@ def main(argv: list[str] | None = None) -> int:
     output: Path = args.output or repo / DEFAULT_OUTPUT_ROOT
     knowledge_dir = output / KNOWLEDGE_DIR
     api_base_url = API_BASE_URL.format(version=args.version_label)
-    include_docs = args.version_label == DOCS_VERSION_LABEL
+    include_api = not args.skip_api
+    include_docs = args.version_label == DOCS_VERSION_LABEL and not args.skip_docs
 
-    print(f"Reading API from {repo / PACKAGE} ...")
-    apis = build_api_nodes(PACKAGE, repo, api_base_url)
-    print(f"  {len(apis)} modules, {sum(len(node.symbols) for node in apis)} documented symbols")
+    apis = None
+    if include_api:
+        print(f"Reading API from {repo / PACKAGE} ...")
+        apis = build_api_nodes(PACKAGE, repo, api_base_url)
+        print(f"  {len(apis)} modules, {sum(len(node.symbols) for node in apis)} documented symbols")
+    else:
+        print("Skipping API: --skip-api")
 
     docs_pages = None
     if include_docs:
         print(f"Reading user docs listed in {repo / TOC_FILE} ...")
         docs_pages = build_docs_nodes(repo, DOCS_BASE_URL)
         print(f"  {len(docs_pages)} pages, {sum(len(page.sections) for page in docs_pages)} sections")
+    elif args.skip_docs:
+        print("Skipping user docs: --skip-docs")
     else:
         print(f"Skipping user docs: only the '{DOCS_VERSION_LABEL}' build carries {LLMS_TXT} and docs.jsonl")
 
@@ -139,7 +180,7 @@ def main(argv: list[str] | None = None) -> int:
         apis,
         docs_pages,
         package_version=_package_version(repo),
-        revision=_git_revision(repo),
+        revision=args.revision or _git_revision(repo),
     )
     write_top_manifest(knowledge_dir, docs_version_label=DOCS_VERSION_LABEL)
 

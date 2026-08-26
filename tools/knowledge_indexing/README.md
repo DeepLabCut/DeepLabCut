@@ -15,6 +15,9 @@ python -m tools.knowledge_indexing
 | `--output` | Directory mirroring the gh-pages site root to write into (default: `<repo>/_build/knowledge-index`) |
 | `--repo` | Repository root, containing `_toc.yml`, `docs/` and `deeplabcut/` (default: cwd) |
 | `--version-label` | Developer-docs version label the API URLs point at, one of the labels mike deploys (default: `main`) |
+| `--revision` | Commit the source was read at, recorded in the manifest (default: `HEAD` of `--repo`) |
+| `--skip-api` | Don't rebuild `api.jsonl` this run; keep it and its manifest provenance as already on disk |
+| `--skip-docs` | Don't rebuild `docs.jsonl`/`llms.txt` this run; keep them and their manifest provenance as already on disk |
 
 Everything is read from the repository, so no built or deployed documentation is
 needed. Both documentation extras `docs` and `dev-docs` are required, which contain
@@ -32,7 +35,7 @@ _build/knowledge-index/
 └── knowledge/
     ├── manifest.json        enumeration: every indexed api version, which one is current
     ├── main/
-    │   ├── manifest.json    schema, provenance and revision for this version's build
+    │   ├── manifest.json    schema, and independent provenance for its api/docs halves
     │   ├── docs.jsonl       one line per doc page and per section on it
     │   └── api.jsonl        one line per module and per documented symbol on it
     └── 3.0.1/
@@ -47,11 +50,17 @@ and `api.jsonl` is a self-contained JSON object with a stable `id` and a
 lazily by scanning for the ids it needs, and a consumer that already has a
 record can tell whether a freshly fetched one changed without diffing it.
 
-Each version's `manifest.json` records both `api_version_label` (the dev-docs
+Each version's `manifest.json` records `api_version_label` (the dev-docs
 deploy label its api urls point at, matching mike's own vocabulary -- see
-`deploy-dev-docs-mike.yml`) and `package_version` (`deeplabcut.__version__` at
-that `revision`) — they usually agree for a tagged release, but not for
-`main`, where only `revision` pins the build exactly.
+`deploy-dev-docs-mike.yml`), plus **independent** `api` and `docs` provenance
+blocks, each with its own `revision`/`generated_at` -- `--skip-api`/
+`--skip-docs` (see "Deployment") let the two be rebuilt by separate CI runs at
+different times, so one shared timestamp/revision would be misleading. `api`
+also carries `package_version` (`deeplabcut.__version__` at that block's
+`revision`) -- it usually agrees with `api_version_label` for a tagged
+release, but not for `main`, where only `revision` pins the build exactly.
+`docs` is absent for a version that has never indexed user docs (every label
+other than `main`).
 
 Ids are namespaced by type — `docs:`, `docs:<page>#<anchor>`, `api:` — so a
 reference is unambiguous about what it points at. Every `url` is absolute, so a
@@ -136,6 +145,35 @@ in `docs.jsonl` — plus sections pointing at the API reference and at
 `knowledge/manifest.json`, `docs.jsonl` and `api.jsonl` for agents that want the
 structured index instead.
 
+## Deployment
+
+`.github/workflows/deploy-knowledge-index.yml` publishes the index to
+gh-pages by plain copy (`peaceiris/actions-gh-pages`, `keep_files: true`) --
+the same mechanism the user docs already use, not mike. Before running the
+tool, it checks out the existing `gh-pages` `knowledge/` tree into the output
+directory, so `write_top_manifest`'s rescan (see "Known gaps") sees every
+version published by earlier runs, and `write_version`'s manifest merge (see
+above) preserves whichever half of the version it wasn't asked to rebuild.
+
+It has two call sites, kept deliberately separate so the api half and the
+user-docs half can never get built by the wrong trigger:
+
+- **`deploy-dev-docs-mike.yml`** calls it (`needs: mike`, so it runs after
+  mike's own push) with `skip_docs: true`, for *every* dev-docs deploy or
+  delete -- `main` included. This is the api-only half, and living inside
+  `deploy-dev-docs-mike.yml` rather than being called separately by each of
+  its own callers is what keeps it in sync with every dev-docs deploy by
+  construction: `deploy-docs.yml` (on every push to `main`) and
+  `manage-dev-docs.yml` (a release's `version_label` and `git_tag`, so
+  `api.jsonl`'s `revision`/`package_version` reflect the tagged source, not
+  whatever `HEAD` happens to be) both reach it this way, with no way to
+  reach dev-docs deploy without it.
+- **`deploy-docs.yml`** also calls it directly, with `version_label: main,
+  skip_api: true`, gated on `deploy-main-docs` (transitively, via
+  `deploy-dev-docs-main`). This is the only path that ever rebuilds
+  `docs.jsonl`/`llms.txt`, and it is unreachable from `manage-dev-docs.yml`
+  -- a manually triggered release deploy can never touch the user-docs half.
+
 ## Module layout
 
 | File | Responsibility |
@@ -158,11 +196,9 @@ structured index instead.
   no `--check` mode, so anchors, dangling references and unresolvable URLs are
   not caught.
 - **`knowledge/manifest.json` is rebuilt by rescanning disk**, not by tracking
-  state across separate builds. A CI pipeline that builds one version per job
-  needs to check out the existing `knowledge/` tree before running this tool,
-  so the rescan sees every version that came before. `api.latest` currently
-  always points at `main`; resolving "latest stable release" numbering is left
-  to that pipeline.
+  state across separate builds -- see "Deployment" below for how CI seeds that
+  rescan. `api.latest` currently always points at `main`; resolving "latest
+  stable release" numbering is left for later.
 - **`content_hash` is not used for incremental building.** It lets a consumer
   detect that a record changed, but nothing here uses it to skip re-extracting
   or re-writing unchanged records -- every run reads and writes everything.
