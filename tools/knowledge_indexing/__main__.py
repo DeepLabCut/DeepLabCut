@@ -61,10 +61,10 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
 
 
 def _git_revision(repo: Path) -> str:
-    """Short commit hash of `repo`, or "" if it is not a git checkout."""
+    """Full commit hash of `repo`, or "" if it is not a git checkout."""
     try:
         result = subprocess.run(
-            ["git", "-C", str(repo), "rev-parse", "--short", "HEAD"],
+            ["git", "-C", str(repo), "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
             timeout=10,
