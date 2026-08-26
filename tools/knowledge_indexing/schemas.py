@@ -23,7 +23,7 @@ from typing import Any, ClassVar
 # Bumped when a published file changes shape, so a consumer can refuse an index
 # it does not understand. Recorded in `index.yaml` and `symbols.yaml`.
 SCHEMA_VERSION = 1
-EXTRACTOR_VERSION = "0.2.0"
+EXTRACTOR_VERSION = "0.0.1"
 GENERATED_BY = "tools/knowledge_indexing"
 
 NAMESPACE_SEPARATOR = ":"
