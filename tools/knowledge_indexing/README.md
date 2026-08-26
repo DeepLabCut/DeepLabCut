@@ -20,11 +20,10 @@ python -m tools.knowledge_indexing
 | `--skip-docs` | Don't rebuild `docs.jsonl`/`llms.txt` this run; keep them and their manifest provenance as already on disk |
 
 Everything is read from the repository, so no built or deployed documentation is
-needed. Both documentation extras `docs` and `dev-docs` are required, which contain
-`docutils`, `markdown-it-py` and `griffe` (published on PyPI as `griffelib`).
+needed.
 
 ```bash
-pip install -e ".[docs,dev-docs]"
+pip install -e ".[knowledge-index]"
 ```
 
 ## Output

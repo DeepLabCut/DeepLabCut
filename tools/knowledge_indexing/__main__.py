@@ -13,8 +13,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from .api_index import build_api_nodes
-from .docs_index import build_docs_nodes
 from .llms_txt import build_llms_txt
 from .schemas import KNOWLEDGE_DIR, LLMS_TXT
 from .toc import TOC_FILE
@@ -144,6 +142,8 @@ def main(argv: list[str] | None = None) -> int:
 
     apis = None
     if include_api:
+        from .api_index import build_api_nodes
+
         print(f"Reading API from {repo / PACKAGE} ...")
         apis = build_api_nodes(PACKAGE, repo, api_base_url)
         print(f"  {len(apis)} modules, {sum(len(node.symbols) for node in apis)} documented symbols")
@@ -152,6 +152,8 @@ def main(argv: list[str] | None = None) -> int:
 
     docs_pages = None
     if include_docs:
+        from .docs_index import build_docs_nodes
+
         print(f"Reading user docs listed in {repo / TOC_FILE} ...")
         docs_pages = build_docs_nodes(repo, DOCS_BASE_URL)
         print(f"  {len(docs_pages)} pages, {sum(len(page.sections) for page in docs_pages)} sections")
