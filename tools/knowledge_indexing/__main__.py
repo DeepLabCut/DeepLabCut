@@ -172,9 +172,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     write_top_manifest(knowledge_dir, docs_version_label=DOCS_VERSION_LABEL)
 
-    if docs_pages is not None:
+    if include_docs:
         llms_txt = build_llms_txt(
-            docs_pages,
+            docs_base_url=DOCS_BASE_URL,
             api_base_url=api_base_url,
             knowledge_base_url=f"{DOCS_BASE_URL}{KNOWLEDGE_DIR}/",
             version_label=args.version_label,
