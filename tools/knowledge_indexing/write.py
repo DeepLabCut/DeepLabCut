@@ -1,71 +1,181 @@
 """Serialise the knowledge index to disk.
 
-The shapes written here are defined in `schemas.py`; this module only decides
-where each one goes and how it is dumped.
+The record and manifest shapes written here are defined in `schemas.py`; this
+module flattens the build-time trees from `api_index.py` and `docs_index.py`
+into those records and writes them as JSON / JSONL.
 """
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+import json
+from collections.abc import Iterable, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import yaml
+from .api_index import ApiNode
+from .docs_index import DocsPageNode
+from .schemas import (
+    API_FILE,
+    DOCS_FILE,
+    TOP_MANIFEST,
+    VERSION_MANIFEST,
+    ApiRecord,
+    DocPageRecord,
+    DocSectionRecord,
+    TopManifest,
+    VersionManifest,
+)
 
-from .schemas import MANIFEST, SYMBOL_TABLE, ApiNode, Manifest, Node, SymbolTable
 
-
-def write_index(
-    output_dir: Path,
-    groups: dict[str, Sequence[Node]],
+def write_version(
+    knowledge_dir: Path,
     version: str,
+    apis: Sequence[ApiNode],
+    docs_pages: Sequence[DocsPageNode] | None,
     revision: str = "",
-    base_urls: dict[str, str] | None = None,
-) -> None:
-    """Write `groups` (directory name -> nodes) under `output_dir`, and the manifest."""
-    for directory, nodes in groups.items():
-        _check_unique_ids(directory, nodes)
-        node_dir = output_dir / directory
-        node_dir.mkdir(parents=True, exist_ok=True)
-        for node in nodes:
-            _write_yaml(node_dir / node.filename, node.to_dict())
+) -> tuple[int, int]:
+    """Write one version's `api.jsonl`, its manifest, and `docs.jsonl` if given.
 
-    manifest = Manifest(
+    `docs_pages` is None for a version that does not index user docs -- only
+    the unversioned build carries `docs.jsonl`, see README.md. Returns the
+    number of api and docs records written.
+    """
+    version_dir = knowledge_dir / version
+    version_dir.mkdir(parents=True, exist_ok=True)
+
+    api_records = _api_records(apis)
+    _check_unique_ids(API_FILE, (record.id for record in api_records))
+    _write_jsonl(version_dir / API_FILE, (record.to_dict() for record in api_records))
+
+    docs_count = 0
+    if docs_pages is not None:
+        page_records, section_records = _doc_records(docs_pages)
+        docs_records: list[DocPageRecord | DocSectionRecord] = [*page_records, *section_records]
+        _check_unique_ids(DOCS_FILE, (record.id for record in docs_records))
+        _write_jsonl(version_dir / DOCS_FILE, (record.to_dict() for record in docs_records))
+        docs_count = len(docs_records)
+
+    manifest = VersionManifest(
         version=version,
-        generated_at=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
-        nodes=groups,
         revision=revision,
-        base_urls=base_urls or {},
+        generated_at=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
     )
-    _write_yaml(output_dir / MANIFEST, manifest.to_dict())
+    _write_json(version_dir / VERSION_MANIFEST, manifest.to_dict())
+
+    return len(api_records), docs_count
 
 
-def _check_unique_ids(directory: str, nodes: Sequence[Node]) -> None:
-    """Raise if `nodes` has a duplicate id, which would silently overwrite a file."""
+def write_top_manifest(knowledge_dir: Path, docs_version: str) -> None:
+    """Rebuild `knowledge/manifest.json` from whatever version directories exist.
+
+    Run after `write_version`, so a version built by an earlier, separate run
+    is picked up as long as its directory is already under `knowledge_dir` --
+    this is what lets each version's build stay ignorant of every other one.
+    """
+    versions = sorted(
+        child.name for child in knowledge_dir.iterdir() if child.is_dir() and (child / VERSION_MANIFEST).is_file()
+    )
+    has_docs = (knowledge_dir / docs_version / DOCS_FILE).is_file()
+    manifest = TopManifest(
+        docs_path=f"{docs_version}/{DOCS_FILE}" if has_docs else "",
+        api_latest=docs_version,
+        api_versions=tuple(versions),
+    )
+    _write_json(knowledge_dir / TOP_MANIFEST, manifest.to_dict())
+
+
+def _doc_records(pages: Sequence[DocsPageNode]) -> tuple[list[DocPageRecord], list[DocSectionRecord]]:
+    """Flatten each page and its sections into their published rows."""
+    page_records = []
+    section_records = []
+    for page in pages:
+        page_records.append(
+            DocPageRecord(
+                id=page.id,
+                title=page.title,
+                url=page.docs_url,
+                source_file=page.source_file,
+                section=page.part,
+                summary=page.summary,
+                status=page.status,
+                last_verified=page.last_verified,
+                parent=page.parent,
+                children=page.children,
+                related_pages=page.related_pages,
+                labels=page.labels,
+            )
+        )
+        for section in page.sections:
+            section_records.append(
+                DocSectionRecord(
+                    id=section.id,
+                    page=page.id,
+                    title=section.title,
+                    url=section.docs_url,
+                    anchor=section.anchor,
+                    level=section.level,
+                    section=page.part,
+                    summary=section.excerpt,
+                )
+            )
+    return page_records, section_records
+
+
+def _api_records(apis: Sequence[ApiNode]) -> list[ApiRecord]:
+    """Flatten each module and its symbols into their published rows.
+
+    A module gets its own row only if it has a docstring -- a module with
+    neither a docstring nor symbols was already dropped by `build_api_nodes`,
+    but one with only undocumented symbols would otherwise get an empty row.
+    """
+    records = []
+    for node in apis:
+        if node.summary:
+            records.append(
+                ApiRecord(
+                    id=node.id,
+                    kind="module",
+                    name=node.module,
+                    module=node.module,
+                    url=node.docs_url,
+                    summary=node.summary,
+                    source=node.source,
+                )
+            )
+        for symbol in node.symbols:
+            records.append(
+                ApiRecord(
+                    id=f"{node.id}.{symbol.name}",
+                    kind=symbol.kind,
+                    name=symbol.name,
+                    module=node.module,
+                    url=symbol.docs_url,
+                    signature=symbol.signature,
+                    summary=symbol.summary,
+                    source=symbol.source,
+                )
+            )
+    return records
+
+
+def _check_unique_ids(filename: str, ids: Iterable[str]) -> None:
+    """Raise if `ids` has a duplicate, which would otherwise silently collide."""
     seen: set[str] = set()
-    for node in nodes:
-        if node.id in seen:
-            raise ValueError(f"Duplicate node id {node.id!r} in {directory}/")
-        seen.add(node.id)
+    for record_id in ids:
+        if record_id in seen:
+            raise ValueError(f"Duplicate record id {record_id!r} in {filename}")
+        seen.add(record_id)
 
 
-def write_symbol_table(output_dir: Path, apis: Sequence[ApiNode]) -> int:
-    """Write the symbol table for `apis`, returning the number of symbols in it."""
-    table = SymbolTable.from_apis(apis)
-    _write_yaml(output_dir / SYMBOL_TABLE, table.to_dict())
-    return len(table.symbols)
-
-
-def _write_yaml(path: Path, data: dict[str, Any]) -> None:
-    """Serialise `data` to `path`, preserving the field order of the schema."""
+def _write_jsonl(path: Path, records: Iterable[dict[str, Any]]) -> None:
+    """Write one JSON object per line."""
     path.write_text(
-        yaml.safe_dump(
-            data,
-            sort_keys=False,
-            allow_unicode=True,
-            default_flow_style=False,
-            width=100,
-        ),
+        "\n".join(json.dumps(record, ensure_ascii=False) for record in records) + "\n",
         encoding="utf-8",
     )
+
+
+def _write_json(path: Path, data: dict[str, Any]) -> None:
+    """Write a single, human-readable JSON object."""
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

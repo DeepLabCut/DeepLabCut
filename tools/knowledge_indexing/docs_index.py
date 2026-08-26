@@ -11,6 +11,10 @@ paragraph of prose beneath it.
 Markdown is parsed with markdown-it-py, the parser Jupyter Book uses. The docs
 nest code fences up to five backticks deep, and the contents of a fence must not
 be read as markdown.
+
+`DocsPageNode` and `Section` are build-time only -- `write.py` flattens them
+into the `DocPageRecord` / `DocSectionRecord` rows published in `docs.jsonl`
+(see `schemas.py`).
 """
 
 from __future__ import annotations
@@ -28,8 +32,55 @@ from docutils.nodes import make_id
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
 
-from .schemas import DOCS_NAMESPACE, DocsPageNode, Section
+from .schemas import DOCS_NAMESPACE
 from .toc import TOC_FILE, TocEntry, read_toc
+
+# Audit `visibility` values that keep a page out of the index, even though it
+# is listed in `_toc.yml`. Anything else (including unset) is included.
+HIDDEN_VISIBILITY = frozenset({"orphaned"})
+
+
+@dataclass(frozen=True)
+class Section:
+    """A heading within a docs page, retrievable in its own right.
+
+    `anchor` addresses it on the published page; `excerpt` is the first paragraph
+    of prose beneath the heading.
+    """
+
+    id: str
+    title: str
+    level: int
+    anchor: str
+    docs_url: str
+    excerpt: str = ""
+
+
+@dataclass(frozen=True)
+class DocsPageNode:
+    """One page of the user documentation.
+
+    `part`, `parent` and `children` come from `_toc.yml` and place the page in
+    the published navigation. `status` and `last_verified` are copied from the
+    page's audit frontmatter; nothing is filtered on them. `labels` are the
+    MyST targets the page defines, which is what a `{ref}` elsewhere in the
+    docs resolves against.
+    """
+
+    id: str
+    title: str
+    docs_url: str
+    source_file: str
+    part: str = ""
+    parent: str = ""
+    children: tuple[str, ...] = ()
+    summary: str = ""
+    status: str = ""
+    last_verified: str = ""
+    sections: tuple[Section, ...] = ()
+    related_pages: tuple[str, ...] = ()
+    labels: tuple[str, ...] = ()
+
 
 # Ids are relative to this directory, so `docs/installation` becomes
 # `docs:installation` while root pages such as `README` keep their name.
@@ -118,10 +169,10 @@ def build_docs_nodes(repo: Path, base_url: str = "") -> list[DocsPageNode]:
 
 
 def _parse_page(path: Path, entry: TocEntry, base_url: str) -> ParsedPage | None:
-    """Parse one page, or return None if its frontmatter asks to be ignored."""
+    """Parse one page, or None if its frontmatter keeps it out of the index."""
     frontmatter, body = _split_frontmatter(path.read_text(encoding="utf-8"))
     audit = frontmatter.get("deeplabcut") or {}
-    if audit.get("ignore"):
+    if audit.get("ignore") or audit.get("visibility") in HIDDEN_VISIBILITY:
         return None
 
     local_id = _local_id(entry.file)
@@ -158,7 +209,6 @@ def _to_node(page: ParsedPage, labels: dict[str, str], local_ids: set[str], base
         children=tuple(_qualify(child) for child in map(_local_id, entry.children) if child in local_ids),
         summary=page.summary,
         status=str(page.audit.get("status") or ""),
-        visibility=str(page.audit.get("visibility") or ""),
         last_verified=str(page.audit.get("last_verified") or ""),
         sections=page.sections,
         related_pages=_related_pages(page, labels, local_ids),

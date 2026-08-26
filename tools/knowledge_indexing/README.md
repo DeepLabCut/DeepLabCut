@@ -1,8 +1,8 @@
 # Knowledge indexing
 
 Generates an LLM-friendly knowledge index from the DeepLabCut source and user
-documentation. The output is a directory of small YAML files, one per node, that
-an agent can load lazily by id.
+documentation. The output is `llms.txt` plus a handful of small JSONL/JSON
+files under `knowledge/`, meant to be deployed alongside the docs on gh-pages.
 
 ## Usage
 
@@ -12,14 +12,13 @@ python -m tools.knowledge_indexing
 
 | Option | Meaning |
 |---|---|
-| `--output` | Directory to write the index into (default: `<repo>/_build/knowledge-index/<version>`) |
+| `--output` | Directory mirroring the gh-pages site root to write into (default: `<repo>/_build/knowledge-index`) |
 | `--repo` | Repository root, containing `_toc.yml`, `docs/` and `deeplabcut/` (default: cwd) |
 | `--version` | Developer-docs version the API URLs point at, one of the versions mike deploys (default: `main`) |
 
 Everything is read from the repository, so no built or deployed documentation is
 needed. Both documentation extras are required: `griffe` comes with `dev-docs`,
-`docutils` with `docs`, and `markdown-it-py` with either. `pyyaml` is a core
-dependency.
+`docutils` with `docs`, and `markdown-it-py` with either.
 
 ```bash
 pip install -e ".[docs,dev-docs]"
@@ -28,25 +27,38 @@ pip install -e ".[docs,dev-docs]"
 ## Output
 
 ```text
-_build/knowledge-index/main/
-├── index.yaml        manifest: schema, provenance, and every node id with its file
-├── symbols.yaml      flat symbol id -> module node lookup
-├── apis/             one file per published module
-└── docs-pages/       one file per published docs page, with its sections
+_build/knowledge-index/
+├── llms.txt                 spec-format entry point (llmstxt.org), only for --version main
+└── knowledge/
+    ├── manifest.json        enumeration: every indexed api version, which one is current
+    ├── main/
+    │   ├── manifest.json    schema, provenance and revision for this version's build
+    │   ├── docs.jsonl       one line per doc page and per section on it
+    │   └── api.jsonl        one line per module and per documented symbol on it
+    └── 3.0.1/
+        ├── manifest.json
+        └── api.jsonl        no docs.jsonl -- see "Versioning" below
 ```
 
-Read `index.yaml` first; it maps each node id to its file, which matters because
-ids are namespaced and docs-page ids are nested (`docs:pytorch/user_guide`) while
-the directories are flat.
+Read `knowledge/manifest.json` first: gh-pages gives no directory listing, so it
+is the only way to discover which api versions exist. Each record in `docs.jsonl`
+and `api.jsonl` is a self-contained JSON object with a stable `id`, so an agent
+can load either file lazily by scanning for the ids it needs.
 
 Ids are namespaced by type — `docs:`, `docs:<page>#<anchor>`, `api:` — so a
-reference is unambiguous about what it points at.
+reference is unambiguous about what it points at. Every `url` is absolute, so a
+record carries a working link on its own.
 
-Every `docs_url` is absolute, so a node carries a working link on its own. The two
-sites they are built against are recorded under `base_urls` in the manifest: the
-user docs are unversioned at the site root, while the developer docs are deployed
-per version by mike under `dev/<version>/`, which is the segment `--version`
-fills in. Both bases are defined in `__main__.py`.
+### Versioning — docs and api are not symmetric
+
+The developer-docs API reference is deployed per version by mike, so `api.jsonl`
+mirrors that: one directory per version actually built, e.g. `3.0.1/`.
+
+The user docs, by contrast, are only ever deployed as a single rolling build at
+the site root — there is no historical snapshot to point at, and indexing raw
+markdown from an old git tag would be worse than the live rendered page (and
+redundant with git itself). So `docs.jsonl` and `llms.txt` are only ever written
+for `--version main`; every other version's directory holds `api.jsonl` alone.
 
 ## Where the data comes from
 
@@ -57,15 +69,11 @@ fills in. Both bases are defined in `__main__.py`.
 tool that renders it means signatures and docstrings match what is published, and
 nothing has to be imported — no torch, no GPU, no optional dependencies.
 
-Each symbol gets a `source` (`file.py:lineno`) and a `docs_url` derived from its
+Each symbol gets a `source` (`file.py:lineno`) and a `url` derived from its
 dotted path, following the layout `mkdocs-api-autonav` generates. Only documented
 symbols are indexed, because `mkdocstrings` omits undocumented members from the
 reference pages, so an entry for one would have neither a summary nor a URL that
-resolves.
-
-API nodes are grouped per module, which keeps each file worth loading, so
-`symbols.yaml` maps every symbol id to the module node documenting it for lookups
-that start from a bare name.
+resolves. A module gets its own `kind: "module"` row only if it has a docstring.
 
 Two constants in `api_index.py` mirror `dev-docs/mkdocs.yml` and must be kept in
 sync with it: `EXCLUDED_MODULES` and `API_ROOT_URI`.
@@ -75,7 +83,7 @@ sync with it: `EXCLUDED_MODULES` and `API_ROOT_URI`.
 `_toc.yml` defines the scope. It lists the pages that are actually published —
 `docs/` holds others that it deliberately leaves out — and it is the only place
 the part / chapter / section hierarchy exists, so it also supplies each page's
-`part`, `parent` and `children`.
+`section` (its toc part), `parent` and `children`.
 
 Parsing uses `markdown-it-py`, the parser Jupyter Book itself uses, because the
 docs nest code fences up to five backticks deep; matching fences with regular
@@ -86,32 +94,49 @@ one document; a concept is a reusable domain entity discussed across documents.
 Slugged headings are the former pretending to be the latter, which is why this
 tool generates no concepts at all — see "Known gaps".
 
-Each section carries an `anchor` and a `docs_url` pointing at it, plus an
-`excerpt`: the first paragraph of prose under the heading. Anchors come from
-`docutils.nodes.make_id`, the function docutils uses to build section ids. A
-heading whose body is only a subheading, a figure or code has no excerpt.
+Each page is one `type: "page"` row in `docs.jsonl`; each heading below its title
+is its own `type: "section"` row, carrying an `anchor` and a `url` pointing at
+it, plus a `summary`: the first paragraph of prose under the heading. Anchors
+come from `docutils.nodes.make_id`, the function docutils uses to build section
+ids. A heading whose body is only a subheading, a figure or code has no summary.
+A section row denormalises its page's `section` (toc part) so it stands on its
+own, but everything else about the page — `status`, `parent`, `children`,
+`related_pages`, `labels` — lives only on the page row, reachable via the
+section's `page` field.
 
 Admonition-style MyST directives (`{note}`, `{important}`, `{tip}`, …) are fenced
 blocks, and their bodies are parsed for prose rather than skipped as code.
 
 Pages link to each other mostly through MyST labels rather than file paths, so
 parsing happens in two passes: collect the labels each page defines, then resolve
-every link and `{ref}` against them. Each node publishes its own `labels`, which
+every link and `{ref}` against them. Each page publishes its own `labels`, which
 is what a `{ref}` elsewhere in the docs resolves against.
 
-`status`, `visibility` and `last_verified` are copied from each page's audit
-frontmatter. Nothing is filtered on them; only an explicit `ignore: true` skips a
-page.
+`status` and `last_verified` are copied from each page's audit frontmatter onto
+its page row. `visibility` is not published — it only filters: a page whose
+`visibility` is in `HIDDEN_VISIBILITY` (`docs_index.py`) is skipped, same as an
+explicit `ignore: true`.
+
+### llms.txt
+
+Written only for `--version main`, alongside `docs.jsonl`. Follows the
+[llmstxt.org](https://llmstxt.org) convention: an H1 title, a one-line
+description, then `##` sections of links. Only top-level pages (no parent) are
+listed per toc part — nested pages are reachable through a page's own `children`
+in `docs.jsonl` — plus sections pointing at the API reference and at
+`knowledge/manifest.json`, `docs.jsonl` and `api.jsonl` for agents that want the
+structured index instead.
 
 ## Module layout
 
 | File | Responsibility |
 |---|---|
-| `schemas.py` | The on-disk schema: every published file and node type |
+| `schemas.py` | The published schema: every record and manifest shape |
 | `toc.py` | `_toc.yml` → the set of published pages and their hierarchy |
-| `api_index.py` | Source tree → API nodes, via griffe |
-| `docs_index.py` | Markdown → docs-page nodes with sections |
-| `write.py` | Nodes → YAML files, symbol table and manifest |
+| `api_index.py` | Source tree → API nodes, via griffe (build-time only) |
+| `docs_index.py` | Markdown → docs-page nodes with sections (build-time only) |
+| `llms_txt.py` | Docs-page nodes → `llms.txt` |
+| `write.py` | Nodes → `docs.jsonl` / `api.jsonl` and both manifests |
 | `__main__.py` | CLI |
 
 ## Known gaps
@@ -120,8 +145,12 @@ page.
   from headings.
 - **Notebooks are not indexed.** `_toc.yml` lists notebooks under `examples/`,
   which would need a reader for `.ipynb` markdown cells.
-- **Validation is minimal.** Duplicate node ids abort the write, but there is no
-  `--check` mode, so anchors, dangling references and unresolvable URLs are not
-  caught.
-- **The user docs are not versioned** upstream, so `docs-pages/` is identical
-  across index versions and only stamped with the revision it came from.
+- **Validation is minimal.** Duplicate record ids abort the write, but there is
+  no `--check` mode, so anchors, dangling references and unresolvable URLs are
+  not caught.
+- **`knowledge/manifest.json` is rebuilt by rescanning disk**, not by tracking
+  state across separate builds. A CI pipeline that builds one version per job
+  needs to check out the existing `knowledge/` tree before running this tool,
+  so the rescan sees every version that came before. `api.latest` currently
+  always points at `main`; resolving "latest stable release" numbering is left
+  to that pipeline.

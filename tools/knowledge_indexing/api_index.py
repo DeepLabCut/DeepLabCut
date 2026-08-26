@@ -12,17 +12,46 @@ resolves.
 
 `EXCLUDED_MODULES` and `API_ROOT_URI` mirror `dev-docs/mkdocs.yml` and have to be
 kept in sync with it.
+
+`ApiNode` and `Symbol` are build-time only -- `write.py` flattens them into the
+`ApiRecord` rows published in `api.jsonl` (see `schemas.py`).
 """
 
 from __future__ import annotations
 
 import logging
 from collections.abc import Iterator
+from dataclasses import dataclass
 from pathlib import Path
 
 import griffe
 
-from .schemas import API_NAMESPACE, ApiNode, Symbol
+from .schemas import API_NAMESPACE
+
+
+@dataclass(frozen=True)
+class Symbol:
+    """A documented function or class, as published on an API reference page."""
+
+    name: str
+    kind: str
+    summary: str
+    signature: str
+    source: str
+    docs_url: str
+
+
+@dataclass(frozen=True)
+class ApiNode:
+    """One published module and the symbols documented on its reference page."""
+
+    id: str
+    module: str
+    summary: str
+    source: str
+    docs_url: str
+    symbols: tuple[Symbol, ...] = ()
+
 
 # griffe models a module member either as the object itself or, when it was
 # imported or re-exported, as an alias pointing at it.
