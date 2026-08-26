@@ -17,8 +17,8 @@ python -m tools.knowledge_indexing
 | `--version-label` | Developer-docs version label the API URLs point at, one of the labels mike deploys (default: `main`) |
 
 Everything is read from the repository, so no built or deployed documentation is
-needed. Both documentation extras are required: `griffe` comes with `dev-docs`,
-`docutils` with `docs`, and `markdown-it-py` with either.
+needed. Both documentation extras `docs` and `dev-docs` are required, which contain
+`docutils`, `markdown-it-py` and `griffe` (published on PyPI as `griffelib`).
 
 ```bash
 pip install -e ".[docs,dev-docs]"
