@@ -9,17 +9,14 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+from typing import Collection, Iterable
 from pathlib import Path
 
 
-def normalize_video_path(video: str | Path) -> Path:
-    return Path(video)
-
-
 def _filter_config_videos(
-    configured_videos,
-    selected_videos,
-) -> list:
+    configured_videos: Iterable[str | Path],
+    selected_videos: Collection[Path] | None,
+) -> list[str | Path]:
     """Return config video keys matching the selected video paths.
 
     The original config keys are returned so they remain valid for subsequent
@@ -30,8 +27,8 @@ def _filter_config_videos(
     if selected_videos is None:
         return configured_videos
 
-    selected = {normalize_video_path(video) for video in selected_videos}
-    return [video for video in configured_videos if normalize_video_path(video) in selected]
+    selected = set(selected_videos)
+    return [video for video in configured_videos if Path(video) in selected]
 
 
 def select_cropping_area(config: str | Path, videos=None):
@@ -93,7 +90,7 @@ def extract_frames(
     slider_width=25,
     config3d=None,
     extracted_cam=0,
-    videos_list=None,
+    videos_list: list[str | Path] | None = None,
 ):
     """Extracts frames from the project videos.
 
@@ -251,6 +248,10 @@ def extract_frames(
     from skimage.util import img_as_ubyte
 
     from deeplabcut.utils import auxiliaryfunctions, frameselectiontools
+    
+    videos_list = (
+        None if videos_list is None else [Path(video) for video in videos_list]
+    )
 
     config_file = Path(config)
     cfg = auxiliaryfunctions.read_config(config_file)
