@@ -42,24 +42,26 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # Unsafe free-text inputs are read from the environment inside `run:`
+    # rather than spliced in as `${{ }}`.
+    env:
+      VERSION_LABEL: ${{ inputs.version_label }}
+      GIT_TAG: ${{ inputs.git_tag }}
 
     steps:
-      - name: Validate inputs
+      - name: Reject unknown action
+        if: inputs.action != 'deploy' && inputs.action != 'delete'
         shell: bash
         run: |
-          case "${{ inputs.action }}" in
-            deploy|delete)
-              ;;
-            *)
-              echo "::error::Unsupported action '${{ inputs.action }}'. Expected 'deploy' or 'delete'."
-              exit 1
-              ;;
-          esac
+          echo "::error::Unsupported action. Expected 'deploy' or 'delete'."
+          exit 1
 
-          if [ "${{ inputs.action }}" = "deploy" ] && [ -z "${{ inputs.git_tag }}" ] && [ "${{ inputs.version_label }}" != "main" ]; then
-            echo "::error::git_tag is required when deploying non-'main' versions."
-            exit 1
-          fi
+      - name: Require git_tag for release versions
+        if: inputs.action == 'deploy' && inputs.version_label != 'main' && inputs.git_tag == ''
+        shell: bash
+        run: |
+          echo "::error::git_tag is required when deploying a version other than main."
+          exit 1
 
       - uses: actions/checkout@v6
         with:
@@ -68,15 +70,15 @@ jobs:
       - name: Check out tagged package source
         if: inputs.action == 'deploy' && inputs.git_tag != ''
         shell: bash
-        run: |
-          git checkout "${{ inputs.git_tag }}" -- deeplabcut
+        run: git checkout "$GIT_TAG" -- deeplabcut
 
       - name: Resolve revision
+        if: inputs.action == 'deploy'
         id: revision
         shell: bash
         run: |
-          if [ -n "${{ inputs.git_tag }}" ]; then
-            echo "sha=$(git rev-parse "${{ inputs.git_tag }}^{commit}")" >> "$GITHUB_OUTPUT"
+          if [ -n "$GIT_TAG" ]; then
+            echo "sha=$(git rev-parse "$GIT_TAG^{commit}")" >> "$GITHUB_OUTPUT"
           else
             echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           fi

@@ -54,6 +54,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # Unsafe free-text inputs are read from the environment inside `run:`
+    # rather than spliced in as `${{ }}`.
+    env:
+      VERSION_LABEL: ${{ inputs.version_label }}
+      ALIASES: ${{ inputs.aliases }}
+      DEFAULT_LABEL: ${{ inputs.default_label }}
+      GIT_TAG: ${{ inputs.git_tag }}
+      CONFIG_FILE: ${{ inputs.config-file }}
+      DEPLOY_PREFIX: ${{ inputs.deploy-prefix }}
 
     steps:
       - name: Validate inputs
@@ -80,8 +89,7 @@ jobs:
       - name: Check out tagged package source
         if: inputs.git_tag != ''
         shell: bash
-        run: |
-          git checkout "${{ inputs.git_tag }}" -- deeplabcut
+        run: git checkout "$GIT_TAG" -- deeplabcut
 
       - name: Set up dev-docs environment
         uses: ./.github/actions/setup-dev-docs
@@ -99,24 +107,26 @@ jobs:
         if: inputs.action == 'deploy'
         shell: bash
         run: |
-          if [ -n "${{ inputs.aliases }}" ]; then
+          if [ -n "$ALIASES" ]; then
+            # Unquoted on purpose: aliases is a space-separated list and each
+            # word becomes its own mike argument.
             mike deploy --push \
-              --config-file "${{ inputs.config-file }}" \
-              --deploy-prefix "${{ inputs.deploy-prefix }}" \
+              --config-file "$CONFIG_FILE" \
+              --deploy-prefix "$DEPLOY_PREFIX" \
               --update-aliases \
-              "${{ inputs.version_label }}" ${{ inputs.aliases }}
+              "$VERSION_LABEL" $ALIASES
           else
             mike deploy --push \
-              --config-file "${{ inputs.config-file }}" \
-              --deploy-prefix "${{ inputs.deploy-prefix }}" \
-              "${{ inputs.version_label }}"
+              --config-file "$CONFIG_FILE" \
+              --deploy-prefix "$DEPLOY_PREFIX" \
+              "$VERSION_LABEL"
           fi
 
-          if [ -n "${{ inputs.default_label }}" ]; then
+          if [ -n "$DEFAULT_LABEL" ]; then
             mike set-default --push \
-              --config-file "${{ inputs.config-file }}" \
-              --deploy-prefix "${{ inputs.deploy-prefix }}" \
-              "${{ inputs.default_label }}"
+              --config-file "$CONFIG_FILE" \
+              --deploy-prefix "$DEPLOY_PREFIX" \
+              "$DEFAULT_LABEL"
           fi
 
       - name: Delete dev-docs version
@@ -124,9 +134,9 @@ jobs:
         shell: bash
         run: |
           mike delete --push \
-            --config-file "${{ inputs.config-file }}" \
-            --deploy-prefix "${{ inputs.deploy-prefix }}" \
-            "${{ inputs.version_label }}"
+            --config-file "$CONFIG_FILE" \
+            --deploy-prefix "$DEPLOY_PREFIX" \
+            "$VERSION_LABEL"
 
   knowledge-index:
     # api.jsonl only; docs.jsonl/llms.txt are built by deploy-docs.yml instead.
