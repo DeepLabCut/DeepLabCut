@@ -90,9 +90,7 @@ def write_version(
 
 def write_top_manifest(knowledge_dir: Path, docs_version_label: str) -> None:
     """Rebuild `knowledge/manifest.json` from the version directories under `knowledge_dir`."""
-    versions = sorted(
-        child.name for child in knowledge_dir.iterdir() if child.is_dir() and (child / VERSION_MANIFEST).is_file()
-    )
+    versions = sorted(child.name for child in knowledge_dir.iterdir() if child.is_dir() and _has_api(child))
     has_docs = (knowledge_dir / docs_version_label / DOCS_FILE).is_file()
     manifest = TopManifest(
         docs_path=f"{docs_version_label}/{DOCS_FILE}" if has_docs else "",
@@ -100,6 +98,14 @@ def write_top_manifest(knowledge_dir: Path, docs_version_label: str) -> None:
         api_versions=tuple(versions),
     )
     _write_json(knowledge_dir / TOP_MANIFEST, manifest.to_dict())
+
+
+def _has_api(version_dir: Path) -> bool:
+    """True if `version_dir` publishes an api.jsonl the manifest vouches for."""
+    if not (version_dir / API_FILE).is_file():
+        return False
+    manifest = _read_json(version_dir / VERSION_MANIFEST)
+    return bool(manifest and manifest.get("api"))
 
 
 def _doc_records(pages: Sequence[DocsPageNode]) -> tuple[list[DocPageRecord], list[DocSectionRecord]]:
@@ -199,8 +205,9 @@ def _write_json(path: Path, data: dict[str, Any]) -> None:
 
 
 def _read_json(path: Path) -> dict[str, Any] | None:
-    """Read a JSON object, or None if `path` doesn't exist or isn't valid JSON."""
+    """Read a JSON object, or None if `path` doesn't exist. A malformed file raises."""
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+        text = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
         return None
+    return json.loads(text)
