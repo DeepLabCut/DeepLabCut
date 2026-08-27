@@ -24,7 +24,7 @@ Everything is read from the repository, so no built or deployed documentation is
 needed.
 
 ```bash
-pip install -e ".[knowledge-index]"
+uv pip install --group knowledge-index
 ```
 
 ## Output
