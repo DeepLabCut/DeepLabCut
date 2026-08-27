@@ -8,6 +8,7 @@ into those records and writes them as JSON / JSONL.
 from __future__ import annotations
 
 import json
+import shutil
 from collections.abc import Iterable, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
@@ -98,6 +99,11 @@ def write_top_manifest(knowledge_dir: Path, docs_version_label: str) -> None:
         api_versions=tuple(versions),
     )
     _write_json(knowledge_dir / TOP_MANIFEST, manifest.to_dict())
+
+
+def delete_version(knowledge_dir: Path, version_label: str) -> None:
+    """Remove a released version's API index (only releases; "main" cannot be deleted)."""
+    shutil.rmtree(knowledge_dir / version_label, ignore_errors=True)
 
 
 def _has_api(version_dir: Path) -> bool:

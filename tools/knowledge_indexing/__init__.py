@@ -12,7 +12,7 @@ from __future__ import annotations
 from .llms_txt import build_llms_txt
 from .schemas import ApiRecord, DocPageRecord, DocSectionRecord, TopManifest, VersionManifest
 from .toc import TocEntry, read_toc
-from .write import write_top_manifest, write_version
+from .write import delete_version, write_top_manifest, write_version
 
 __all__ = [
     "ApiRecord",
@@ -22,6 +22,7 @@ __all__ = [
     "TopManifest",
     "VersionManifest",
     "build_llms_txt",
+    "delete_version",
     "read_toc",
     "write_top_manifest",
     "write_version",

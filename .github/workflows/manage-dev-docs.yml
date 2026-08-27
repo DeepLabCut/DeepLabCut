@@ -12,7 +12,7 @@ on:
           - delete-version
 
       version_label:
-        description: "Version label to deploy or delete, e.g. 3.0"
+        description: "Version label to deploy or delete, e.g. 3.0. 'main' cannot be deleted."
         required: true
         type: string
 
