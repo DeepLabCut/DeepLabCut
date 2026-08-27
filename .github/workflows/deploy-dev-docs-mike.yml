@@ -90,10 +90,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      # remove existing checkout to prevent merging a new version into it
       - name: Check out tagged package source
         if: inputs.git_tag != ''
         shell: bash
-        run: git checkout "$GIT_TAG" -- deeplabcut
+        run: |
+          rm -rf deeplabcut
+          git checkout "$GIT_TAG" -- deeplabcut
 
       - name: Set up dev-docs environment
         uses: ./.github/actions/setup-dev-docs
