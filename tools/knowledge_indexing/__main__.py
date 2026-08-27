@@ -38,6 +38,17 @@ API_BASE_URL = "https://deeplabcut.github.io/DeepLabCut/dev/{version}/"
 # -- the user docs are unversioned, so no other label indexes them.
 DOCS_VERSION_LABEL = "main"
 
+# version_label is restricted to safe characters for URLs and filesystem paths.
+_VERSION_LABEL = re.compile(r"^[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?$")
+
+
+def _version_label(value: str) -> str:
+    if not _VERSION_LABEL.match(value):
+        raise argparse.ArgumentTypeError(
+            f"{value!r} is not a valid version label (letters, digits, '.', '-', '_' only)"
+        )
+    return value
+
 
 def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -61,6 +72,7 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--version-label",
+        type=_version_label,
         default=DOCS_VERSION_LABEL,
         help=(
             "Developer-docs version label the API URLs point at, also recorded "
