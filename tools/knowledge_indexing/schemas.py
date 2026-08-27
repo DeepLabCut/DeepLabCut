@@ -220,8 +220,8 @@ class VersionManifest:
     point at, matching mike's `version_label`.
 
     `api` and `docs` are stamped independently, since they can be rebuilt at
-    different times. `docs` is None for a version with no indexed user docs
-    (every label other than `main`).
+    different times. Every published version has an api index; `docs` is None
+    for a version with no indexed user docs (every label other than `main`).
     """
 
     api_version_label: str

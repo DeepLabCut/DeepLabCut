@@ -18,6 +18,7 @@ python -m tools.knowledge_indexing
 | `--revision` | Commit the source was read at, recorded in the manifest (default: `HEAD` of `--repo`) |
 | `--skip-api` | Don't rebuild `api.jsonl` this run; keep it and its manifest provenance as already on disk |
 | `--skip-docs` | Don't rebuild `docs.jsonl`/`llms.txt` this run; keep them and their manifest provenance as already on disk |
+| `--delete` | Remove a released version's API index instead of building. `main` cannot be deleted — see "Deleting a version" |
 
 Everything is read from the repository, so no built or deployed documentation is
 needed.
@@ -144,20 +145,29 @@ the structured index.
 
 ## Deployment
 
-`.github/workflows/deploy-knowledge-index.yml` publishes the index to
-gh-pages by plain copy (`peaceiris/actions-gh-pages`, `keep_files: true`) --
+`.github/workflows/deploy-knowledge-index.yml` deploys or deletes. A deploy
+publishes by plain copy (`peaceiris/actions-gh-pages`, `keep_files: true`) --
 the same mechanism the user docs already use, not mike. Before running the
 tool, it checks out the existing `gh-pages` `knowledge/` tree into the output
-directory, so `write_top_manifest`'s rescan (see "Known gaps") sees every
-version published by earlier runs, and `write_version`'s manifest merge (see
-above) preserves whichever half of the version it wasn't asked to rebuild.
+directory, so `write_top_manifest`'s rescan sees every version published by
+earlier runs, and `write_version`'s manifest merge preserves whichever half
+of the version it wasn't asked to rebuild.
+
+### Deleting a version
+
+A delete edits and pushes a real `gh-pages` checkout directly with `git`:
+`keep_files: true` means the publish action never removes a file absent from
+`publish_dir`, so it cannot perform a deletion at all.
+**Only released versions can be deleted, and only their API index.** `main`
+is refused outright — it tracks the repository's latest state, is redeployed
+on every push, and is the only version carrying the user docs.
 
 It has two call sites, kept deliberately separate so the api half and the
 user-docs half can never get built by the wrong trigger:
 
 - **`deploy-dev-docs-mike.yml`** calls it (`needs: mike`, so it runs after
-  mike's own push) with `skip_docs: true`, for *every* dev-docs deploy or
-  delete -- `main` included. This is the api-only half, and living inside
+  mike's own push) with `skip_docs: true`, for every dev-docs deploy or
+  delete. This is the api-only half, and living inside
   `deploy-dev-docs-mike.yml` rather than being called separately by each of
   its own callers is what keeps it in sync with every dev-docs deploy by
   construction: `deploy-docs.yml` (on every push to `main`) and

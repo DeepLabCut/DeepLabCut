@@ -16,7 +16,7 @@ from pathlib import Path
 from .llms_txt import build_llms_txt
 from .schemas import KNOWLEDGE_DIR, LLMS_TXT
 from .toc import TOC_FILE
-from .write import write_top_manifest, write_version
+from .write import delete_version, write_top_manifest, write_version
 
 PACKAGE = "deeplabcut"
 
@@ -89,14 +89,19 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--delete",
+        action="store_true",
+        help=f"Remove a released version's API index from --output. '{DOCS_VERSION_LABEL}' cannot be deleted.",
+    )
+    parser.add_argument(
         "--skip-api",
         action="store_true",
-        help="Don't rebuild api.jsonl; keep it and its manifest provenance as on disk.",
+        help="Leave api.jsonl and its manifest provenance untouched.",
     )
     parser.add_argument(
         "--skip-docs",
         action="store_true",
-        help="Don't rebuild docs.jsonl/llms.txt; keep them and their manifest provenance as on disk.",
+        help="Leave docs.jsonl/llms.txt and their manifest provenance untouched.",
     )
     return parser.parse_args(argv)
 
@@ -133,21 +138,55 @@ def _package_version(repo: Path) -> str:
     return match.group(1) if match else ""
 
 
+def _delete(knowledge_dir: Path, args: argparse.Namespace) -> int:
+    """Remove a released version's API index, then rebuild the top-level manifest.
+
+    Deleting a version that was never indexed succeeds: dev-docs versions
+    predating this tool have no index to remove, and that should not fail the
+    deploy that removes them.
+    """
+    if args.version_label == DOCS_VERSION_LABEL:
+        print(
+            f"Error: '{DOCS_VERSION_LABEL}' cannot be deleted; it tracks the latest "
+            "source and is redeployed on every push, and it alone carries the user docs.",
+            file=sys.stderr,
+        )
+        return 1
+
+    if not (knowledge_dir / args.version_label).is_dir():
+        print(f"Nothing to delete: {knowledge_dir / args.version_label} does not exist.")
+        return 0
+
+    delete_version(knowledge_dir, args.version_label)
+    write_top_manifest(knowledge_dir, docs_version_label=DOCS_VERSION_LABEL)
+    print(f"Deleted the {args.version_label} API index from {knowledge_dir}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     repo: Path = args.repo
 
     if args.skip_api and args.skip_docs:
-        print("Error: --skip-api and --skip-docs together leave nothing to build.", file=sys.stderr)
+        print("Error: --skip-api and --skip-docs together leave nothing to do.", file=sys.stderr)
         return 1
 
+    if args.delete and (args.skip_api or args.skip_docs):
+        print("Error: --skip-api/--skip-docs apply to builds, not --delete.", file=sys.stderr)
+        return 1
+
+    output: Path = args.output or repo / DEFAULT_OUTPUT_ROOT
+    knowledge_dir = output / KNOWLEDGE_DIR
+
+    if args.delete:
+        return _delete(knowledge_dir, args)
+
+    # Only a build reads the repository; a delete just edits the output tree.
     for required in (repo / TOC_FILE, repo / PACKAGE):
         if not required.exists():
             print(f"Error: {required} not found; is --repo the repository root?", file=sys.stderr)
             return 1
 
-    output: Path = args.output or repo / DEFAULT_OUTPUT_ROOT
-    knowledge_dir = output / KNOWLEDGE_DIR
     api_base_url = API_BASE_URL.format(version=args.version_label)
     include_api = not args.skip_api
     include_docs = args.version_label == DOCS_VERSION_LABEL and not args.skip_docs

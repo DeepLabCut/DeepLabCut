@@ -20,13 +20,13 @@ on:
         type: string
 
       skip_api:
-        description: "Don't rebuild api.jsonl this run; keep whatever is already published. Ignored for delete."
+        description: "Leave api.jsonl untouched. Deploy only; a delete always concerns the API index."
         required: false
         default: false
         type: boolean
 
       skip_docs:
-        description: "Don't rebuild docs.jsonl/llms.txt this run; keep whatever is already published. Ignored for delete."
+        description: "Leave docs.jsonl/llms.txt untouched. Deploy only; a delete never touches the user docs."
         required: false
         default: false
         type: boolean
@@ -94,52 +94,58 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install ".[knowledge-index]"
 
-      - name: Check out existing knowledge index from gh-pages
+      - name: Check out published knowledge index
         uses: actions/checkout@v6
-        continue-on-error: true
         with:
           ref: gh-pages
-          path: gh-pages-knowledge
+          path: gh-pages
           sparse-checkout: |
             knowledge
-
-      - name: Seed output with existing knowledge index
-        shell: bash
-        run: |
-          mkdir -p _build/knowledge-index
-          if [ -d gh-pages-knowledge/knowledge ]; then
-            cp -r gh-pages-knowledge/knowledge _build/knowledge-index/
-          fi
 
       - name: Build knowledge index
         if: inputs.action == 'deploy'
         shell: bash
+        env:
+          REVISION: ${{ steps.revision.outputs.sha }}
         run: |
+          mkdir -p _build/knowledge-index
+          if [ -d gh-pages/knowledge ]; then
+            cp -r gh-pages/knowledge _build/knowledge-index/
+          fi
           python -m tools.knowledge_indexing \
             --output _build/knowledge-index \
-            --version-label "${{ inputs.version_label }}" \
-            --revision "${{ steps.revision.outputs.sha }}" \
+            --version-label "$VERSION_LABEL" \
+            --revision "$REVISION" \
             ${{ inputs.skip_api && '--skip-api' || '' }} \
             ${{ inputs.skip_docs && '--skip-docs' || '' }}
 
-      - name: Remove deleted version
-        if: inputs.action == 'delete'
-        shell: bash
-        run: rm -rf "_build/knowledge-index/knowledge/${{ inputs.version_label }}"
-
-      - name: Rebuild top-level manifest
-        if: inputs.action == 'delete'
-        shell: bash
-        run: |
-          python -c "
-          from pathlib import Path
-          from tools.knowledge_indexing import write_top_manifest
-          write_top_manifest(Path('_build/knowledge-index/knowledge'), docs_version_label='main')
-          "
-
       - name: Deploy knowledge index
+        if: inputs.action == 'deploy'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: _build/knowledge-index
           keep_files: true
+
+      - name: Delete version from knowledge index
+        if: inputs.action == 'delete'
+        shell: bash
+        run: |
+          python -m tools.knowledge_indexing --delete \
+            --output gh-pages \
+            --version-label "$VERSION_LABEL"
+
+      - name: Push deletion
+        if: inputs.action == 'delete'
+        shell: bash
+        working-directory: gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add --all knowledge
+          if git diff --cached --quiet; then
+            echo "Nothing to delete."
+          else
+            git commit -m "Delete knowledge index for $VERSION_LABEL"
+            git push
+          fi
