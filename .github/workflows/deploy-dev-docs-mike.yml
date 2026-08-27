@@ -98,6 +98,17 @@ jobs:
           rm -rf deeplabcut
           git checkout "$GIT_TAG" -- deeplabcut
 
+      - name: Check the version is deployed before attempting a delete
+        if: inputs.action == 'delete'
+        shell: bash
+        run: |
+          git fetch --depth=1 origin gh-pages
+          versions=$(git show "origin/gh-pages:$DEPLOY_PREFIX/versions.json" | jq -r '.[].version')
+          if ! grep -qxF "$VERSION_LABEL" <<<"$versions"; then
+            echo "::error::'$VERSION_LABEL' is not deployed under $DEPLOY_PREFIX/. Deployed: $(tr '\n' ' ' <<<"$versions")"
+            exit 1
+          fi
+
       - name: Set up dev-docs environment
         uses: ./.github/actions/setup-dev-docs
         with:
