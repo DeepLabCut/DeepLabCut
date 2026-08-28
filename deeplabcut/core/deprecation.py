@@ -98,8 +98,8 @@ class DeprecationRound(Enum):
     )
 
     INIT_TF_DEPRECATION = DeprecationRoundInfo(
-        since="3.0.2",
-        removed_in="3.1",
+        since="3.1",
+        removed_in="3.2",
         pull_request=3382,
         summary=(
             "Deprecate the TensorFlow-only API in preparation for dropping TensorFlow. "
