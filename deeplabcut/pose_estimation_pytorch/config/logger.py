@@ -41,16 +41,27 @@ class WandbLoggerConfig(LoggerConfig):  #
         type: Logger type (should be 'WandbLogger')
         project_name: The name of the wandb project
         run_name: The name of the wandb run
+        entity: The wandb user or team under which the run is logged
+        notes: A longer description of the run, displayed in the wandb UI
+        tags: Tags for the run, used to organize and filter runs in the wandb UI
+        group: The name of the group to which this run belongs
+        job_type: The type of job being logged (e.g. 'train' or 'eval')
         image_log_interval: How often train/test images are logged in epochs
             (if None, train/test inputs are never logged)
         model: The model architecture to log
         train_folder: The path of the folder containing training files.
-        wandb_kwargs: Additional keyword arguments to pass to wandb.init
+        wandb_kwargs: Additional keyword arguments to pass to wandb.init. Use this for
+            wandb.init parameters which are not declared above.
     """
 
     type: Literal[LoggerType.WandbLogger]
     project_name: str = "deeplabcut"
     run_name: str = "tmp"
+    entity: str | None = None
+    notes: str | None = None
+    tags: list[str] | None = None
+    group: str | None = None
+    job_type: str | None = None
     image_log_interval: int | None = None
     model: dict | None = None
     train_folder: str | None = None
