@@ -234,11 +234,11 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
-            h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5")
+            h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5", warn_on_unsupported_ext=False)
         else:
             h5_files = []
     else:
-        h5_files = collect_video_paths(video_folder, extensions=".h5")
+        h5_files = collect_video_paths(video_folder, extensions=".h5", warn_on_unsupported_ext=False)
         videos = collect_video_paths(video_folder, extensions=videotype)
 
     _convert_h5_files_to("csv", None, h5_files, videos)
@@ -271,11 +271,11 @@ def analyze_videos_converth5_to_nwb(
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
-            h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5")
+            h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5", warn_on_unsupported_ext=False)
         else:
             h5_files = []
     else:
-        h5_files = collect_video_paths(video_folder, extensions=".h5")
+        h5_files = collect_video_paths(video_folder, extensions=".h5", warn_on_unsupported_ext=False)
         videos = collect_video_paths(video_folder, extensions=videotype)
 
     _convert_h5_files_to("nwb", config, h5_files, videos)

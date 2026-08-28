@@ -559,7 +559,7 @@ def check_if_post_processing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="
 
 
 def check_if_not_analyzed(destfolder, vname, DLCscorer, DLCscorerlegacy, flag="video"):
-    h5files = collect_video_paths(destfolder, extensions=".h5")
+    h5files = collect_video_paths(destfolder, extensions=".h5", warn_on_unsupported_ext=False)
     if not len(h5files):
         dataname = Path(destfolder) / (vname + DLCscorer + ".h5")
         return True, dataname, DLCscorer
@@ -640,7 +640,7 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
     tracker = TRACK_METHODS.get(track_method, "")
 
     candidates = []
-    for file in collect_video_paths(folder, extensions=".h5"):
+    for file in collect_video_paths(folder, extensions=".h5", warn_on_unsupported_ext=False):
         stem = file.stem.replace("_filtered", "")
         starts_by_scorer = file.name.startswith((videoname + scorer, videoname + scorer_legacy))
         if tracker:
