@@ -79,7 +79,8 @@ def convertcsv2h5(config: str | Path, userfeedback=True, scorer=None):
                 data = pd.read_csv(fn, index_col=index_col, header=header)
                 data.columns = data.columns.set_levels([scorer], level="scorer")
                 guarantee_multiindex_rows(data)
-                data.to_hdf(fn.replace(".csv", ".h5"), key="df_with_missing", mode="w")
+                h5_path = fn.with_suffix(".h5")
+                data.to_hdf(h5_path, key="df_with_missing", mode="w")
                 data.to_csv(fn)
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
