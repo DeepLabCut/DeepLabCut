@@ -276,7 +276,7 @@ class CreateVideos(DefaultTab):
             self.root.writer.write("Labeled videos created.")
         else:
             failed_videos = [video for success, video in zip(videos_created, videos, strict=False) if not success]
-            failed_videos_str = ", ".join(failed_videos)
+            failed_videos_str = ", ".join(str(video) for video in failed_videos)
             self.root.writer.write(f"Failed to create videos from {failed_videos_str}.")
 
         if self.plot_trajectories.isChecked():
