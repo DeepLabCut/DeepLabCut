@@ -9,7 +9,26 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+from typing import Collection, Iterable
 from pathlib import Path
+
+
+def _filter_config_videos(
+    configured_videos: Iterable[str | Path],
+    selected_videos: Collection[Path] | None,
+) -> list[str | Path]:
+    """Return config video keys matching the selected video paths.
+
+    The original config keys are returned so they remain valid for subsequent
+    config dictionary lookups.
+    """
+    configured_videos = list(configured_videos)
+
+    if selected_videos is None:
+        return configured_videos
+
+    selected = set(selected_videos)
+    return [video for video in configured_videos if Path(video) in selected]
 
 
 def select_cropping_area(config: str | Path, videos=None):
@@ -71,7 +90,7 @@ def extract_frames(
     slider_width=25,
     config3d=None,
     extracted_cam=0,
-    videos_list=None,
+    videos_list: list[str | Path] | None = None,
 ):
     """Extracts frames from the project videos.
 
@@ -229,15 +248,23 @@ def extract_frames(
     from skimage.util import img_as_ubyte
 
     from deeplabcut.utils import auxiliaryfunctions, frameselectiontools
+    
+    videos_list = (
+        None if videos_list is None else [Path(video) for video in videos_list]
+    )
 
     config_file = Path(config)
     cfg = auxiliaryfunctions.read_config(config_file)
     print("Config file read successfully.")
 
-    if videos_list is None:
-        videos = list(cfg.get("video_sets_original") or cfg["video_sets"])
-    else:  # filter video_list by the ones in the config file
-        videos = [v for v in cfg["video_sets"] if v in videos_list]
+    configured_videos = list(cfg.get("video_sets_original") or cfg["video_sets"])
+    videos = _filter_config_videos(configured_videos, videos_list)
+
+    if videos_list is not None and not videos:
+        raise ValueError(
+            "None of the selected videos matched the videos in the project "
+            "configuration. Selected videos may use a different path representation."
+        )
 
     if mode == "manual":
         from deeplabcut.gui.widgets import launch_napari
@@ -407,7 +434,11 @@ def extract_frames(
             else:  # NO!
                 has_failed.append(False)
 
-        if all(has_failed):
+        if not has_failed:
+            raise RuntimeError(
+                "No videos were processed. Check that the selected video paths match the entries in config.yaml"
+            )
+        elif all(has_failed):
             print("Frame extraction failed. Video files must be corrupted.")
             return has_failed
         elif any(has_failed):
@@ -427,9 +458,14 @@ def extract_frames(
         config_file = Path(config)
         cfg = auxiliaryfunctions.read_config(config_file)
         print("Config file read successfully.")
-        videos = sorted(cfg["video_sets"].keys())
-        if videos_list is not None:  # filter video_list by the ones in the config file
-            videos = [v for v in videos if v in videos_list]
+
+        videos = _filter_config_videos(sorted(cfg["video_sets"]), videos_list)
+        if videos_list is not None and not videos:
+            raise ValueError(
+                "None of the selected videos matched the videos in the project "
+                "configuration. Selected videos may use a different path representation."
+            )
+
         project_path = Path(config).parents[0]
         labels_path = project_path / "labeled-data"
         try:
