@@ -92,7 +92,7 @@ def triangulate(
                 ],
             )
     """
-    from deeplabcut.compat import analyze_videos
+    from deeplabcut.api.pose_estimation import analyze_videos
     from deeplabcut.post_processing import filtering
 
     cfg_3d = auxiliaryfunctions.read_config(config)

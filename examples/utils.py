@@ -28,7 +28,7 @@ from PIL import Image
 
 import deeplabcut
 import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.compat import Engine
+from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
 
 

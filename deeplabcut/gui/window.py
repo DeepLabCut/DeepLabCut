@@ -40,7 +40,6 @@ from deeplabcut import auxiliaryfunctions
 from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.debug import install_debug_recorder
 from deeplabcut.core.engine import Engine
-from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.gui import components
 from deeplabcut.gui.config_file_monitor import ConfigFileMonitor
 from deeplabcut.gui.dialogs import create_generate_debug_log_action
@@ -278,6 +277,24 @@ class MainWindow(QMainWindow):
                 msg.setWindowIcon(icon)
                 msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
                 msg.exec_()
+                return
+            else:
+                msg = QtWidgets.QMessageBox()
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setText("TensorFlow support is deprecated.")
+                msg.setInformativeText(
+                    "TensorFlow support will be removed in a future release.\n\n"
+                    "Your project config and annotated data are fully compatible with PyTorch. "
+                    "We recommend switching to the PyTorch engine.\n\n"
+                    "See the docs for more information:\n"
+                    "https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html"
+                )
+                msg.setWindowTitle("TensorFlow Deprecated")
+                msg.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+                msg.button(QtWidgets.QMessageBox.Ok).setText("Continue with TensorFlow")
+                msg.button(QtWidgets.QMessageBox.Cancel).setText("Switch to PyTorch")
+                if msg.exec_() == QtWidgets.QMessageBox.Cancel:
+                    return
 
         self._engine = e
         self.engine_change.emit(e)
@@ -311,41 +328,39 @@ class MainWindow(QMainWindow):
         return [""]
 
     @property
-    def _selected_model_train_folder(self) -> tuple[Path, Engine]:
-        """Resolve model paths from the validated project-config snapshot."""
+    def _selected_model_train_folder(self) -> tuple[Path, Path, Path]:
+        """Resolve model paths from the validated project-config snapshot.
+
+        Returns:
+            tuple[Path, Path, Path]:
+            - The path to the training configuration file.
+            - The path to the test configuration file.
+            - The path to the snapshot folder.
+        """
         cfg = self.cfg
         if cfg is None:
             raise RuntimeError("No project configuration is loaded.")
-
-        shuffle = int(self.shuffle_value)
-        trainingset_index = int(self.trainingset_index)
-        engine = get_shuffle_engine(
-            cfg,
-            trainingsetindex=trainingset_index,
-            shuffle=shuffle,
+        train_cfg_path, test_cfg_path, snapshot_folder = deeplabcut.return_train_network_path(
+            self.config_path,
+            shuffle=int(self.shuffle_value),
+            trainingsetindex=int(self.trainingset_index),
+            modelprefix="",
         )
-        model_folder = auxiliaryfunctions.get_model_folder(
-            cfg.TrainingFraction[trainingset_index],
-            shuffle,
-            cfg,
-            engine=engine,
-        )
-        return Path(cfg.project_path) / model_folder / "train", engine
+        return tuple(Path(p).absolute() for p in (train_cfg_path, test_cfg_path, snapshot_folder))
 
     @property
     def pose_cfg_path(self) -> Path:
         try:
-            train_folder, engine = self._selected_model_train_folder
-            filename = "pytorch_config.yaml" if engine == Engine.PYTORCH else "pose_cfg.yaml"
-            return train_folder / filename
+            train_cfg_path, _, _ = self._selected_model_train_folder
+            return train_cfg_path
         except FileNotFoundError:
             return (Path(deeplabcut.__file__).parent / "pose_cfg.yaml").absolute()
 
     @property
     def models_folder(self) -> Path:
         try:
-            train_folder, _ = self._selected_model_train_folder
-            return train_folder
+            _, _, model_folder = self._selected_model_train_folder
+            return model_folder
         except FileNotFoundError:
             return self.project_folder
 

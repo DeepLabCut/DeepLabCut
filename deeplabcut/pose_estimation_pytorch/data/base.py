@@ -16,7 +16,7 @@ from pathlib import Path
 import albumentations as A
 import numpy as np
 
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.pose_estimation_pytorch.config import GenSamplingConfig, PoseConfig
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
@@ -47,7 +47,9 @@ class Loader(ABC):
             Returns a dictionary containing dataset parameters derived from the configuration.
     """
 
-    @renamed_parameter(old="model_config_path", new="model_config", since="3.0.1")
+    @renamed_parameter(
+        old="model_config_path", new="model_config", deprecation_round=DeprecationRound.CONFIG_MODEL_MIGRATION
+    )
     def __init__(
         self,
         project_root: str | Path,
