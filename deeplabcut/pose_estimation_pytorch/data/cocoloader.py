@@ -76,6 +76,49 @@ class COCOLoader(Loader):
         if self.test_json_filename:
             self.test_json = self.load_json(self.project_root, self.test_json_filename)
 
+        self._validate_against_model_cfg()
+
+    def _validate_against_model_cfg(self) -> None:
+        """Checks that the COCO annotations are compatible with `model_cfg.metadata`.
+        `model_cfg.metadata` is authoritative for `bodyparts` and `individuals`
+        (the pose model is built with these parameters, and the COCO JSON should match).
+
+        Raises:
+            ValueError: If an image has more individuals than `model_cfg` supports, or
+                if the annotated bodyparts don't match `model_cfg.metadata.bodyparts`.
+        """
+        meta = self.model_cfg.metadata
+        bodyparts = list(meta.bodyparts)
+
+        for name, coco_json in (("train", self.train_json), ("test", self.test_json)):
+            if coco_json is None:
+                continue
+
+            json_bodyparts = list(coco_json["categories"][0]["keypoints"])
+            if json_bodyparts != bodyparts:
+                raise ValueError(
+                    f"The bodyparts in {self.train_json_filename if name == 'train' else self.test_json_filename} "
+                    f"({json_bodyparts}) don't match model_cfg.metadata.bodyparts ({bodyparts}). The order must "
+                    "match exactly, as it determines which keypoint index is associated with which bodypart name."
+                )
+
+            observed = self._max_individuals_in_json(coco_json)
+            if observed > meta.num_individuals:
+                raise ValueError(
+                    f"{self.train_json_filename if name == 'train' else self.test_json_filename} has an image "
+                    f"with {observed} individuals, but model_cfg only supports {meta.num_individuals} "
+                    f"(metadata.individuals={list(meta.individuals)}). Rebuild the model config with "
+                    f"max_individuals >= {observed} before training/evaluating on this dataset."
+                )
+
+    @staticmethod
+    def _max_individuals_in_json(coco_json: dict) -> int:
+        """Returns the max number of annotations on any single image in a COCO dict."""
+        img_to_annotations = map_id_to_annotations(coco_json.get("annotations") or [])
+        if not img_to_annotations:
+            return 0
+        return max(len(ann_ids) for ann_ids in img_to_annotations.values())
+
     def get_dataset_parameters(self) -> PoseDatasetParameters:
         """Retrieves dataset parameters based on the instance's configuration.
 
@@ -83,7 +126,9 @@ class COCOLoader(Loader):
             An instance of the PoseDatasetParameters with the parameters set.
         """
         if self._dataset_parameters is None:
-            num_individuals, bodyparts = self.get_project_parameters(self.train_json)
+            meta = self.model_cfg.metadata
+            bodyparts = meta.bodyparts
+            individuals = meta.individuals
 
             crop_cfg = self.model_cfg.select("data.train.top_down_crop") or {}
             crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
@@ -96,8 +141,8 @@ class COCOLoader(Loader):
 
             self._dataset_parameters = PoseDatasetParameters(
                 bodyparts=bodyparts,
-                unique_bpts=[],
-                individuals=[f"individual{i}" for i in range(num_individuals)],
+                unique_bpts=meta.unique_bodyparts,
+                individuals=individuals,
                 with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
                 color_mode=self.model_cfg.get("color_mode", "RGB"),
                 ctd_bbox_margin=ctd_bbox_margin,
@@ -300,28 +345,43 @@ class COCOLoader(Loader):
         return data
 
     @staticmethod
-    def get_project_parameters(train_json: dict) -> tuple[int, list[str]]:
-        """
-        Loads the parameters for the project from the train json file
-        TODO: Should this compute the number also using the test json?
+    def get_project_parameters(
+        train_json: dict,
+        test_json: dict | None = None,
+    ) -> tuple[int, list[str]]:
+        """Suggests parameters for a project, given its COCO-format JSON annotation(s).
+
+        Use this to pick `bodyparts`/`max_individuals` when building a `PoseConfig` for
+        a new COCO project (e.g. before calling `make_pytorch_pose_config`). Once a
+        model config exists, it becomes authoritative for the dataset (see
+        `COCOLoader.get_dataset_parameters`) - this helper is only meant to bootstrap
+        it from the data.
 
         Args:
             train_json: the json dictionary containing the data for training
+            test_json: the json dictionary containing the data for testing/evaluation,
+                if any. Passing this ensures the suggested number of individuals also
+                covers the test set, so a model trained with it doesn't fail during
+                evaluation because a test image has more individuals than train ever did.
 
         Returns:
-            int: the maximum number of individuals in a single image
+            int: the maximum number of individuals in a single image, across train
+                (and test, if given)
             list[str]: the name of keypoints annotated in this project
+
+        Raises:
+            ValueError: If the train JSON contains no images.
         """
-        # TODO: Check that there's a single category
+        train_json = COCOLoader.validate_categories(train_json)
         bodyparts = train_json["categories"][0]["keypoints"]
 
-        img_to_annotations = map_id_to_annotations(train_json["annotations"])
-        if len(img_to_annotations) == 0:
+        num_individuals = COCOLoader._max_individuals_in_json(train_json)
+        if num_individuals == 0:
             raise ValueError(f"No images found in the dataset: {train_json}!")
-        elif len(img_to_annotations) == 1:
-            num_individuals = len(list(img_to_annotations.values())[0])
-        else:
-            num_individuals = max(*[len(a_ids) for a_ids in img_to_annotations.values()])
+
+        if test_json is not None:
+            test_json = COCOLoader.validate_categories(test_json)
+            num_individuals = max(num_individuals, COCOLoader._max_individuals_in_json(test_json))
 
         return num_individuals, bodyparts
 

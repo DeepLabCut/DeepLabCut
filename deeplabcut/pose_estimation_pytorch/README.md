@@ -321,9 +321,13 @@ project_root = Path("/path/to/my/COCOProject")
 train_json_filename = "train.json"
 test_json_filename = "test.json"
 
-# Parse information about the project
+# Parse information about the project. (Pass test_dict if you have a test set)
 train_dict = dlc_torch.COCOLoader.load_json(project_root, filename=train_json_filename)
-max_num_individuals, bodyparts = dlc_torch.COCOLoader.get_project_parameters(train_dict)
+test_dict = dlc_torch.COCOLoader.load_json(project_root, filename=test_json_filename)
+max_num_individuals, bodyparts = dlc_torch.COCOLoader.get_project_parameters(
+    train_dict,
+    test_dict,
+)
 
 # Generate a configuration file for your PyTorch model
 # In this case, it's for a Top-Down HRNet_w32
