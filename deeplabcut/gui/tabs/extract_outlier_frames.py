@@ -146,7 +146,7 @@ class ExtractOutlierFrames(DefaultTab):
             videos=videos,
             video_extensions=videotype,
             shuffle=shuffle,
-            outlieralgorithm=outlieralgorithm,
+            outlier_algorithm=outlieralgorithm,
             track_method=track_method,
             automatic=True,
         )
@@ -166,4 +166,4 @@ class ExtractOutlierFrames(DefaultTab):
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         result = msg.exec_()
         if result == QtWidgets.QMessageBox.Yes:
-            deeplabcut.merge_datasets(self.root.config_path, forceiterate=None)
+            deeplabcut.merge_datasets(self.root.config_path, force_iterate=None)

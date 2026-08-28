@@ -25,6 +25,7 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
 )
 
 from deeplabcut.core.config import ProjectConfig, write_config
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import (
     DataSplit,
@@ -65,6 +66,11 @@ def _MakeTest_pose_yaml(dictionary, keys2save, saveasfile):
     auxiliaryfunctions.write_plainconfig(saveasfile, dict_test)
 
 
+@renamed_parameter(old="analyzevideo", new="analyze_video", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="createlabeledvideo", new="create_labeled_video", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(old="trainFraction", new="train_fraction", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def _tf_create_pretrained_project(
     project: str,
     experimenter: str,
@@ -73,10 +79,10 @@ def _tf_create_pretrained_project(
     working_directory: str | None = None,
     copy_videos: bool = False,
     video_extensions: str | Sequence[str] | None = None,
-    analyzevideo: bool = True,
+    analyze_video: bool = True,
     filtered: bool = True,
-    createlabeledvideo: bool = True,
-    trainFraction: float | None = None,
+    create_labeled_video: bool = True,
+    train_fraction: float | None = None,
     *,
     engine=Engine.TF,
 ) -> tuple[str, str]:
@@ -104,9 +110,9 @@ def _tf_create_pretrained_project(
         copy_videos,
         video_extensions=video_extensions,
     )
-    if trainFraction is not None:
+    if train_fraction is not None:
         ProjectConfig.from_yaml(cfg).update(
-            TrainingFraction=[trainFraction],
+            TrainingFraction=[train_fraction],
         ).to_yaml(cfg, log_changes=True, mark_clean=True)
 
     config = auxiliaryfunctions.read_config(cfg)
@@ -233,7 +239,7 @@ def _tf_create_pretrained_project(
     cfg_path = str(cfg)
     video_dir = Path(cfg_path).parent / "videos"
 
-    if analyzevideo:
+    if analyze_video:
         print("Analyzing video...")
         deeplabcut.analyze_videos(
             cfg_path,
@@ -242,7 +248,7 @@ def _tf_create_pretrained_project(
             save_as_csv=True,
         )
 
-    if createlabeledvideo:
+    if create_labeled_video:
         if filtered:
             deeplabcut.filterpredictions(cfg_path, [video_dir], video_extensions)
 

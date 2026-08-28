@@ -15,12 +15,13 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def analyzeskeleton(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
@@ -38,7 +39,7 @@ def analyzeskeleton(
     The bone and skeleton information is defined in the config file.
 
     Args:
-        config (str | Path): Full path of the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file.
         videos (list[str | Path]): The full paths to videos for analysis or a path to the
             directory, where all the videos with same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -101,17 +102,21 @@ def analyzeskeleton(
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="filtertype", new="filter_type", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="windowlength", new="window_length", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="ARdegree", new="ar_degree", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="MAdegree", new="ma_degree", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def filterpredictions(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     video: str | Path,
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
-    filtertype="median",
-    windowlength=5,
+    filter_type="median",
+    window_length=5,
     p_bound=0.001,
-    ARdegree=3,
-    MAdegree=1,
+    ar_degree=3,
+    ma_degree=1,
     alpha=0.01,
     save_as_csv=True,
     destfolder=None,
@@ -122,11 +127,11 @@ def filterpredictions(
 ):
     """Fits frame-by-frame pose predictions.
 
-    The pose predictions are fitted with ARIMA model (filtertype='arima') or median
+    The pose predictions are fitted with ARIMA model (filter_type='arima') or median
     filter (default).
 
     Args:
-        config (str | Path): Full path of the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file.
         video (str | Path): Full path of the video to filter. Make sure that this video is
             already analyzed.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -141,19 +146,19 @@ def filterpredictions(
             the labeled-dataset for the corresponding shuffle of training dataset. Defaults to 1.
         trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use.
             Note that TrainingFraction is a list in config.yaml. Defaults to 0.
-        filtertype (string, optional): The filter type - 'arima', 'median' or 'spline'. Defaults to "median".
-        windowlength (int, optional): For filtertype='median' filters the input array using a local window-size given
-            by windowlength. The array will automatically be zero-padded.
+        filter_type (string, optional): The filter type - 'arima', 'median' or 'spline'. Defaults to "median".
+        window_length (int, optional): For filter_type='median' filters the input array using a local window-size given
+            by window_length. The array will automatically be zero-padded.
             https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.medfilt.html.
             The windowlenght should be an odd number.
-            If filtertype='spline', windowlength is the maximal gap size to fill. Defaults to 5.
-        p_bound (float, optional): For filtertype 'arima' this parameter defines the likelihood below,
+            If filter_type='spline', window_length is the maximal gap size to fill. Defaults to 5.
+        p_bound (float, optional): For filter_type 'arima' this parameter defines the likelihood below,
             below which a body part will be consided as missing data for filtering purposes.
             Defaults to 0.001.
-        ARdegree (int, optional): For filtertype 'arima' Autoregressive degree of Sarimax model degree.
+        ar_degree (int, optional): For filter_type 'arima' Autoregressive degree of Sarimax model degree.
             see https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html.
             Defaults to 3.
-        MAdegree (int, optional): For filtertype 'arima' Moving Average degree of Sarimax model degree.
+        ma_degree (int, optional): For filter_type 'arima' Moving Average degree of Sarimax model degree.
             See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html.
             Defaults to 1.
         alpha (float, optional): Significance level for detecting outliers based on the
@@ -186,9 +191,9 @@ def filterpredictions(
                 'C:\\myproject\\reaching-task\\config.yaml',
                 ['C:\\myproject\\trailtracking-task\\test.mp4'],
                 shuffle=3,
-                filtertype='arima',
-                ARdegree=5,
-                MAdegree=2,
+                filter_type='arima',
+                ar_degree=5,
+                ma_degree=2,
             )
 
         Use median filter over 10 bins:
@@ -197,7 +202,7 @@ def filterpredictions(
                 'C:\\myproject\\reaching-task\\config.yaml',
                 ['C:\\myproject\\trailtracking-task\\test.mp4'],
                 shuffle=3,
-                windowlength=10,
+                window_length=10,
             )
 
         One can then use the filtered rather than the frame-by-frame predictions by calling:
@@ -224,11 +229,11 @@ def filterpredictions(
         video_extensions=video_extensions,
         shuffle=shuffle,
         trainingsetindex=trainingsetindex,
-        filtertype=filtertype,
-        windowlength=windowlength,
+        filter_type=filter_type,
+        window_length=window_length,
         p_bound=p_bound,
-        ARdegree=ARdegree,
-        MAdegree=MAdegree,
+        ar_degree=ar_degree,
+        ma_degree=ma_degree,
         alpha=alpha,
         save_as_csv=save_as_csv,
         destfolder=destfolder,

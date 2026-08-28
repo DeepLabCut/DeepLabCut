@@ -15,24 +15,28 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 
 
+@renamed_parameter(
+    old="extraction_algo", new="extraction_algorithm", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
 def find_outliers_in_raw_data(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     pickle_file: str | Path,
     video_file: str | Path,
     pcutoff=0.1,
     percentiles=(5, 95),
     with_annotations=True,
-    extraction_algo="kmeans",
+    extraction_algorithm="kmeans",
     copy_videos=False,
 ):
     """Extract outlier frames from either raw detections or assemblies of multiple
     animals.
 
     Args:
-        config (str | Path): Absolute path to the project config.yaml.
+        config (ProjectConfig | dict | Path | str): Absolute path to the project config.yaml.
         pickle_file (str | Path): Path to a *_full.pickle or *_assemblies.pickle.
         video_file (str | Path): Path to the corresponding video file for frame extraction.
         pcutoff (float, optional): Detection confidence threshold below which frames are
@@ -44,7 +48,7 @@ def find_outliers_in_raw_data(
         with_annotations (bool, optional): If true, extract frames and the corresponding
             network predictions. Otherwise, only the frames are extracted. Defaults to
             True.
-        extraction_algo (string, optional): Outlier detection algorithm. Must be either
+        extraction_algorithm (string, optional): Outlier detection algorithm. Must be either
             ``uniform`` or ``kmeans``. Defaults to "kmeans".
         copy_videos (bool, optional): If True, newly-added videos (from which outlier
             frames are extracted) are copied to the project folder. By default, symbolic
@@ -61,32 +65,48 @@ def find_outliers_in_raw_data(
         pcutoff=pcutoff,
         percentiles=percentiles,
         with_annotations=with_annotations,
-        extraction_algo=extraction_algo,
+        extraction_algorithm=extraction_algorithm,
         copy_videos=copy_videos,
     )
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(
+    old="outlieralgorithm", new="outlier_algorithm", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(old="frames2use", new="frames_to_use", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(old="ARdegree", new="ar_degree", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="MAdegree", new="ma_degree", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="extractionalgorithm", new="extraction_algorithm", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(
+    old="cluster_resizewidth", new="cluster_resize_width", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(old="savelabeled", new="save_labeled", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def extract_outlier_frames(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
-    outlieralgorithm="jump",
-    frames2use=None,
-    comparisonbodyparts="all",
+    outlier_algorithm="jump",
+    frames_to_use=None,
+    comparison_bodyparts="all",
     epsilon=20,
     p_bound=0.01,
-    ARdegree=3,
-    MAdegree=1,
+    ar_degree=3,
+    ma_degree=1,
     alpha=0.01,
-    extractionalgorithm="kmeans",
+    extraction_algorithm="kmeans",
     automatic=False,
-    cluster_resizewidth=30,
+    cluster_resize_width=30,
     cluster_color=False,
     opencv=True,
-    savelabeled=False,
+    save_labeled=False,
     copy_videos=False,
     destfolder=None,
     modelprefix="",
@@ -102,7 +122,7 @@ def extract_outlier_frames(
     ``numframes2extract``.
 
     Args:
-        config (str | Path): Full path of the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file.
         videos (list[str | Path]): The full paths to videos for analysis or a path to the
             directory, where all the videos with same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -118,7 +138,7 @@ def extract_outlier_frames(
             of training dataset. Defaults to 1.
         trainingsetindex (int, optional): Integer specifying which TrainingsetFraction
             to use. Note that TrainingFraction is a list in config.yaml. Defaults to 0.
-        outlieralgorithm (str, optional): String specifying the algorithm used to detect
+        outlier_algorithm (str, optional): String specifying the algorithm used to detect
             the outliers.
 
             * ``'fitting'`` fits an Auto Regressive Integrated Moving Average model to
@@ -128,32 +148,32 @@ def extract_outlier_frames(
             * ``'uncertain'`` looks for frames with confidence below p_bound
             * ``'manual'`` launches a GUI from which the user can choose the frames
             * ``'list'`` looks for user to provide a list of frame numbers to use,
-              'frames2use'. In this case, ``'extractionalgorithm'`` is forced to be
+              'frames_to_use'. In this case, ``'extraction_algorithm'`` is forced to be
               ``'uniform.'``
 
             Defaults to "jump".
-        frames2use (list[str], optional): If ``'outlieralgorithm'`` is ``'list'``,
+        frames_to_use (list[str], optional): If ``'outlier_algorithm'`` is ``'list'``,
             provide the list of frames here. Defaults to None.
-        comparisonbodyparts (list[str] or str, optional): This selects the body parts for
+        comparison_bodyparts (list[str] or str, optional): This selects the body parts for
             which the comparisons with the outliers are carried out. If ``"all"``, then
             all body parts from config.yaml are used. If a list of strings that are a
             subset of the full list E.g. ['hand','Joystick'] for the demo
             Reaching-Mackenzie-2018-08-30/config.yaml to select only these body parts.
             Defaults to "all".
-        p_bound (float, optional): For outlieralgorithm ``'uncertain'`` this parameter
+        p_bound (float, optional): For outlier_algorithm ``'uncertain'`` this parameter
             defines the likelihood below which a body part will be flagged as a putative
             outlier. Defaults to 0.01.
-        epsilon (float, optional): If ``'outlieralgorithm'`` is ``'fitting'``, this is
+        epsilon (float, optional): If ``'outlier_algorithm'`` is ``'fitting'``, this is
             the float bound according to which frames are picked when the (average) body
-            part estimate deviates from model fit. If ``'outlieralgorithm'`` is
+            part estimate deviates from model fit. If ``'outlier_algorithm'`` is
             ``'jump'``, this is the float bound specifying the distance by which body
             points jump from one frame to next (Euclidean distance). Defaults to 20.
-        ARdegree (int, optional): For outlieralgorithm ``'fitting'``: Autoregressive
+        ar_degree (int, optional): For outlier_algorithm ``'fitting'``: Autoregressive
             degree of ARIMA model degree. (Note we use SARIMAX without exogeneous and
             seasonal part) See
             https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
             Defaults to 3.
-        MAdegree (int, optional): For outlieralgorithm ``'fitting'``: Moving Average
+        ma_degree (int, optional): For outlier_algorithm ``'fitting'``: Moving Average
             degree of ARIMA model degree. (Note we use SARIMAX without exogeneous and
             seasonal part) See
             https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
@@ -161,13 +181,13 @@ def extract_outlier_frames(
         alpha (float, optional): Significance level for detecting outliers based on
             confidence interval of fitted ARIMA model. Only the distance is used
             however. Defaults to 0.01.
-        extractionalgorithm (str, optional): String specifying the algorithm to use for
+        extraction_algorithm (str, optional): String specifying the algorithm to use for
             selecting the frames from the identified putatative outlier frames.
             Currently, deeplabcut supports either ``kmeans`` or ``uniform`` based
             selection (same logic as for extract_frames). Defaults to "kmeans".
         automatic (bool, optional): If ``True``, extract outliers without being asked
             for user feedback. Defaults to False.
-        cluster_resizewidth (number, optional): If ``"extractionalgorithm"`` is
+        cluster_resize_width (number, optional): If ``"extraction_algorithm"`` is
             ``"kmeans"``, one can change the width to which the images are downsampled
             (aspect ratio is fixed). Defaults to 30.
         cluster_color (bool, optional): If ``False``, each downsampled image is treated
@@ -176,7 +196,7 @@ def extract_outlier_frames(
             Defaults to False.
         opencv (bool, optional): Uses openCV for loading & extractiong (otherwise moviepy
             (legacy)). Defaults to True.
-        savelabeled (bool, optional): If ``True``, frame are saved with predicted labels
+        save_labeled (bool, optional): If ``True``, frame are saved with predicted labels
             in each folder. Defaults to False.
         copy_videos (bool, optional): If True, newly-added videos (from which outlier
             frames are extracted) are copied to the project folder. By default, symbolic
@@ -218,7 +238,7 @@ def extract_outlier_frames(
             deeplabcut.extract_outlier_frames(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/video/reachinvideo1.avi'],
-                extractionalgorithm='kmeans',
+                extraction_algorithm='kmeans',
             )
 
         Extract the frames using the "kmeans" algorithm and ``"epsilon=5"`` pixels.
@@ -227,7 +247,7 @@ def extract_outlier_frames(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/video/reachinvideo1.avi'],
                 epsilon=5,
-                extractionalgorithm='kmeans',
+                extraction_algorithm='kmeans',
             )
     """
     from deeplabcut.refine_training_dataset.outlier_frames import (
@@ -240,20 +260,20 @@ def extract_outlier_frames(
         video_extensions=video_extensions,
         shuffle=shuffle,
         trainingsetindex=trainingsetindex,
-        outlieralgorithm=outlieralgorithm,
-        frames2use=frames2use,
-        comparisonbodyparts=comparisonbodyparts,
+        outlier_algorithm=outlier_algorithm,
+        frames_to_use=frames_to_use,
+        comparison_bodyparts=comparison_bodyparts,
         epsilon=epsilon,
         p_bound=p_bound,
-        ARdegree=ARdegree,
-        MAdegree=MAdegree,
+        ar_degree=ar_degree,
+        ma_degree=ma_degree,
         alpha=alpha,
-        extractionalgorithm=extractionalgorithm,
+        extraction_algorithm=extraction_algorithm,
         automatic=automatic,
-        cluster_resizewidth=cluster_resizewidth,
+        cluster_resize_width=cluster_resize_width,
         cluster_color=cluster_color,
         opencv=opencv,
-        savelabeled=savelabeled,
+        save_labeled=save_labeled,
         copy_videos=copy_videos,
         destfolder=destfolder,
         modelprefix=modelprefix,
@@ -262,7 +282,8 @@ def extract_outlier_frames(
     )
 
 
-def merge_datasets(config: str | Path, forceiterate=None):
+@renamed_parameter(old="forceiterate", new="force_iterate", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+def merge_datasets(config: ProjectConfig | dict | Path | str, force_iterate=None):
     """Merge the original training dataset with the newly refined data.
 
     Checks if the original training dataset can be merged with the newly refined
@@ -272,8 +293,8 @@ def merge_datasets(config: str | Path, forceiterate=None):
     If this is the case then the ``"iteration"`` variable is advanced by 1.
 
     Args:
-        config (str | Path): Full path of the config.yaml file.
-        forceiterate (int or None, optional): If an integer is given the iteration
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file.
+        force_iterate (int or None, optional): If an integer is given the iteration
             variable is set to this value. This is only done if all datasets were
             labeled or refined. Defaults to None.
 
@@ -285,12 +306,13 @@ def merge_datasets(config: str | Path, forceiterate=None):
         merge_datasets as _merge_datasets,
     )
 
-    return _merge_datasets(config=config, forceiterate=forceiterate)
+    return _merge_datasets(config=config, force_iterate=force_iterate)
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="config_path", new="config", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def stitch_tracklets(
-    config_path: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
@@ -314,7 +336,7 @@ def stitch_tracklets(
     optimization problem.
 
     Args:
-        config_path (str | Path): Path to the main project config.yaml file.
+        config (ProjectConfig | dict | Path | str): Path to the main project config.yaml file.
         videos (list[str | Path]): Full paths to videos for analysis, or a directory where all videos
             with the same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -384,7 +406,7 @@ def stitch_tracklets(
     from deeplabcut.refine_training_dataset.stitch import stitch_tracklets as _stitch_tracklets
 
     return _stitch_tracklets(
-        config_path=config_path,
+        config=config,
         videos=videos,
         video_extensions=video_extensions,
         shuffle=shuffle,

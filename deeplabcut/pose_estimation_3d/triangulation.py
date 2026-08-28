@@ -10,26 +10,32 @@
 #
 
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 
 import cv2
 import numpy as np
 import pandas as pd
 
+from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, auxiliaryfunctions_3d
 
 
-# TODO: @deruyter92 2026-05-20: the function signature could be updated to match
-# other API (i.e. videotype: str -> video_extensions: str | Sequence[str] | None)
-# this requires updating get_camerawise_videos (matching `collect_video_paths`)
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="filterpredictions", new="filter_predictions", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(old="filtertype", new="filter_type", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="gputouse", new="device", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def triangulate(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     video_path: str | Path | list[str | Path] | list[list[str | Path]],
-    videotype="",
-    filterpredictions=True,
-    filtertype="median",
-    gputouse=None,
+    video_extensions: str | Sequence[str] | None = "",
+    filter_predictions=True,
+    filter_type="median",
+    device: str | None = None,
     destfolder=None,
     save_as_csv=False,
     track_method="",
@@ -39,16 +45,16 @@ def triangulate(
     Uses camera matrices from calibration.
 
     Args:
-        config (string): Full path of the config.yaml file as a string.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file as a string.
         video_path (string/list of list): Directory where videos are saved, or a list of video pairs,
             e.g. [['video1-camera-1.avi', 'video1-camera-2.avi']].
-        videotype (string, optional): When ``video_path`` is a directory, only videos with this extension
+        video_extensions (string, optional): When ``video_path`` is a directory, only videos with this extension
             are analyzed. If unspecified, common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
-        filterpredictions (bool, optional): Filter predictions with ``filtertype``.
+        filter_predictions (bool, optional): Filter predictions with ``filter_type``.
             Defaults to True.
-        filtertype (string): Filter to use: 'arima' or 'median' (currently supported).
-        gputouse (int, optional): GPU index (see nvidia-smi). Use None if no GPU.
-            See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+        filter_type (string): Filter to use: 'arima' or 'median' (currently supported).
+        device (str, optional): The device to use for video analysis (such as ``"cpu"``,
+            ``"cuda"``, ``"mps"``). Use None to pick automatically.
         destfolder (string, optional): Destination folder for analysis data.
             Defaults to the video path.
         save_as_csv (bool, optional): Save predictions as .csv. Defaults to False.
@@ -114,7 +120,7 @@ def triangulate(
     flag = False  # assumes that video path is a list
     if isinstance(video_path, str):
         flag = True
-        video_list = auxiliaryfunctions_3d.get_camerawise_videos(video_path, cam_names, videotype=videotype)
+        video_list = auxiliaryfunctions_3d.get_camerawise_videos(video_path, cam_names, videotype=video_extensions)
     else:
         video_list = video_path
 
@@ -126,7 +132,7 @@ def triangulate(
         )
         print(
             "perhaps the videotype is distinct from the videos in the path, I was looking for:",
-            videotype,
+            video_extensions,
         )
 
     print("List of pairs:", video_list)
@@ -238,24 +244,24 @@ def triangulate(
                         DLCscorer = analyze_videos(
                             config_2d,
                             [video],
-                            video_extensions=videotype,
+                            video_extensions=video_extensions,
                             shuffle=shuffle,
                             trainingsetindex=trainingsetindex,
-                            gputouse=gputouse,
+                            device=device,
                             destfolder=destfolder,
                         )
                         scorer_name[cam_names[j]] = DLCscorer
                         is_video_analyzed = False
                         run_triangulate = True
                         suffix = tr_method_suffix
-                        if filterpredictions:
+                        if filter_predictions:
                             filtering.filterpredictions(
                                 config_2d,
                                 [video],
-                                video_extensions=videotype,
+                                video_extensions=video_extensions,
                                 shuffle=shuffle,
                                 trainingsetindex=trainingsetindex,
-                                filtertype=filtertype,
+                                filter_type=filter_type,
                                 destfolder=destfolder,
                             )
                             suffix += "_filtered"
@@ -266,24 +272,24 @@ def triangulate(
                     DLCscorer = analyze_videos(
                         config_2d,
                         [video],
-                        video_extensions=videotype,
+                        video_extensions=video_extensions,
                         shuffle=shuffle,
                         trainingsetindex=trainingsetindex,
-                        gputouse=gputouse,
+                        device=device,
                         destfolder=destfolder,
                     )
                     scorer_name[cam_names[j]] = DLCscorer
                     run_triangulate = True
                     print(destfolder, vname, DLCscorer)
                     suffix = tr_method_suffix
-                    if filterpredictions:
+                    if filter_predictions:
                         filtering.filterpredictions(
                             config_2d,
                             [video],
-                            video_extensions=videotype,
+                            video_extensions=video_extensions,
                             shuffle=shuffle,
                             trainingsetindex=trainingsetindex,
-                            filtertype=filtertype,
+                            filter_type=filter_type,
                             destfolder=destfolder,
                         )
                         suffix += "_filtered"

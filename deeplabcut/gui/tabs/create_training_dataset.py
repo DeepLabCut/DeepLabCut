@@ -282,7 +282,7 @@ class CreateTrainingDataset(DefaultTab):
                     deeplabcut.create_multianimaltraining_dataset(
                         self.root.config_path,
                         shuffle,
-                        Shuffles=[self.shuffle.value()],
+                        shuffles=[self.shuffle.value()],
                         net_type=net_type,
                         detector_type=detector_type,
                         userfeedback=not overwrite,
@@ -294,7 +294,7 @@ class CreateTrainingDataset(DefaultTab):
                     deeplabcut.create_training_dataset(
                         self.root.config_path,
                         shuffle,
-                        Shuffles=[self.shuffle.value()],
+                        shuffles=[self.shuffle.value()],
                         net_type=net_type,
                         detector_type=detector_type,
                         augmenter_type=self.aug_choice.currentText(),

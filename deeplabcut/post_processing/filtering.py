@@ -68,11 +68,11 @@ def filterpredictions(
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
-    filtertype="median",
-    windowlength=5,
+    filter_type="median",
+    window_length=5,
     p_bound=0.001,
-    ARdegree=3,
-    MAdegree=1,
+    ar_degree=3,
+    ma_degree=1,
     alpha=0.01,
     save_as_csv=True,
     destfolder=None,
@@ -83,7 +83,7 @@ def filterpredictions(
 ):
     """Fits frame-by-frame pose predictions.
 
-    The pose predictions are fitted with ARIMA model (filtertype='arima') or median
+    The pose predictions are fitted with ARIMA model (filter_type='arima') or median
     filter (default).
 
     Args:
@@ -102,19 +102,19 @@ def filterpredictions(
             the labeled-dataset for the corresponding shuffle of training dataset. Defaults to 1.
         trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use.
             Note that TrainingFraction is a list in config.yaml. Defaults to 0.
-        filtertype (string, optional): The filter type - 'arima', 'median' or 'spline'. Defaults to "median".
-        windowlength (int, optional): For filtertype='median' filters the input array using a local window-size given
-            by windowlength. The array will automatically be zero-padded.
+        filter_type (string, optional): The filter type - 'arima', 'median' or 'spline'. Defaults to "median".
+        window_length (int, optional): For filter_type='median' filters the input array using a local window-size given
+            by window_length. The array will automatically be zero-padded.
             https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.medfilt.html.
             The windowlenght should be an odd number.
-            If filtertype='spline', windowlength is the maximal gap size to fill. Defaults to 5.
-        p_bound (float, optional): For filtertype 'arima' this parameter defines the likelihood below,
+            If filter_type='spline', window_length is the maximal gap size to fill. Defaults to 5.
+        p_bound (float, optional): For filter_type 'arima' this parameter defines the likelihood below,
             below which a body part will be consided as missing data for filtering purposes.
             Defaults to 0.001.
-        ARdegree (int, optional): For filtertype 'arima' Autoregressive degree of Sarimax model degree.
+        ar_degree (int, optional): For filter_type 'arima' Autoregressive degree of Sarimax model degree.
             see https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html.
             Defaults to 3.
-        MAdegree (int, optional): For filtertype 'arima' Moving Average degree of Sarimax model degree.
+        ma_degree (int, optional): For filter_type 'arima' Moving Average degree of Sarimax model degree.
             See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html.
             Defaults to 1.
         alpha (float, optional): Significance level for detecting outliers based on the
@@ -147,9 +147,9 @@ def filterpredictions(
                 'C:\\myproject\\reaching-task\\config.yaml',
                 ['C:\\myproject\\trailtracking-task\\test.mp4'],
                 shuffle=3,
-                filtertype='arima',
-                ARdegree=5,
-                MAdegree=2,
+                filter_type='arima',
+                ar_degree=5,
+                ma_degree=2,
             )
 
         Use median filter over 10 bins:
@@ -158,7 +158,7 @@ def filterpredictions(
                 'C:\\myproject\\reaching-task\\config.yaml',
                 ['C:\\myproject\\trailtracking-task\\test.mp4'],
                 shuffle=3,
-                windowlength=10,
+                window_length=10,
             )
 
         One can then use the filtered rather than the frame-by-frame predictions by calling:
@@ -201,7 +201,7 @@ def filterpredictions(
         if videofolder is None:
             videofolder = str(Path(video).parents[0])
 
-        print(f"Filtering with {filtertype} model {video}")
+        print(f"Filtering with {filter_type} model {video}")
         vname = Path(video).stem
 
         try:
@@ -226,13 +226,13 @@ def filterpredictions(
             continue
 
         nrows = df.shape[0]
-        if filtertype == "arima":
+        if filter_type == "arima":
             temp = df.values.reshape((nrows, -1, 3))
             placeholder = np.empty_like(temp)
             for i in range(temp.shape[1]):
                 x, y, p = temp[:, i].T
-                meanx, _ = FitSARIMAXModel(x, p, p_bound, alpha, ARdegree, MAdegree, False)
-                meany, _ = FitSARIMAXModel(y, p, p_bound, alpha, ARdegree, MAdegree, False)
+                meanx, _ = FitSARIMAXModel(x, p, p_bound, alpha, ar_degree, ma_degree, False)
+                meany, _ = FitSARIMAXModel(y, p, p_bound, alpha, ar_degree, ma_degree, False)
                 meanx[0] = x[0]
                 meany[0] = y[0]
                 placeholder[:, i] = np.c_[meanx, meany, p]
@@ -241,17 +241,17 @@ def filterpredictions(
                 columns=df.columns,
                 index=df.index,
             )
-        elif filtertype == "median":
+        elif filter_type == "median":
             data = df.copy()
             mask = data.columns.get_level_values("coords") != "likelihood"
-            data.loc[:, mask] = df.loc[:, mask].apply(signal.medfilt, args=(windowlength,), axis=0)
-        elif filtertype == "spline":
+            data.loc[:, mask] = df.loc[:, mask].apply(signal.medfilt, args=(window_length,), axis=0)
+        elif filter_type == "spline":
             data = df.copy()
             mask_data = data.columns.get_level_values("coords").isin(("x", "y"))
             xy = data.loc[:, mask_data].values
             prob = data.loc[:, ~mask_data].values
             missing = np.isnan(xy)
-            xy_filled = columnwise_spline_interp(xy, windowlength)
+            xy_filled = columnwise_spline_interp(xy, window_length)
             filled = ~np.isnan(xy_filled)
             xy[filled] = xy_filled[filled]
             inds = np.argwhere(missing & filled)
@@ -263,7 +263,7 @@ def filterpredictions(
                 data.loc[:, ~mask_data] = prob
             data.loc[:, mask_data] = xy
         else:
-            raise ValueError(f"Unknown filter type {filtertype}")
+            raise ValueError(f"Unknown filter type {filter_type}")
 
         video_to_filtered_df[video] = data
 

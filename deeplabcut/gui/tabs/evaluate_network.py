@@ -194,10 +194,10 @@ class EvaluateNetwork(DefaultTab):
 
             deeplabcut.evaluate_network(
                 config_path,
-                Shuffles=[shuffle],
+                shuffles=[shuffle],
                 plotting=plotting,
                 show_errors=True,
-                comparisonbodyparts=bodyparts_to_use,
+                comparison_bodyparts=bodyparts_to_use,
             )
 
             if plotting:

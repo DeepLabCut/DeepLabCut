@@ -41,7 +41,7 @@ def find_outliers_in_raw_data(
     pcutoff=0.1,
     percentiles=(5, 95),
     with_annotations=True,
-    extraction_algo="kmeans",
+    extraction_algorithm="kmeans",
     copy_videos=False,
 ):
     """Extract outlier frames from either raw detections or assemblies of multiple
@@ -60,14 +60,14 @@ def find_outliers_in_raw_data(
         with_annotations (bool, optional): If true, extract frames and the corresponding
             network predictions. Otherwise, only the frames are extracted. Defaults to
             True.
-        extraction_algo (string, optional): Outlier detection algorithm. Must be either
+        extraction_algorithm (string, optional): Outlier detection algorithm. Must be either
             ``uniform`` or ``kmeans``. Defaults to "kmeans".
         copy_videos (bool, optional): If True, newly-added videos (from which outlier
             frames are extracted) are copied to the project folder. By default, symbolic
             links are created instead. Defaults to False.
     """
-    if extraction_algo not in ("kmeans", "uniform"):
-        raise ValueError(f"Unsupported extraction algorithm {extraction_algo}.")
+    if extraction_algorithm not in ("kmeans", "uniform"):
+        raise ValueError(f"Unsupported extraction algorithm {extraction_algorithm}.")
 
     video_name = Path(video_file).stem
     pickle_name = Path(pickle_file).stem
@@ -97,12 +97,12 @@ def find_outliers_in_raw_data(
     cfg = auxiliaryfunctions.read_config(config)
     ExtractFramesbasedonPreselection(
         inds,
-        extraction_algo,
+        extraction_algorithm,
         data,
         video=video_file,
         cfg=cfg,
         config=config,
-        savelabeled=False,
+        save_labeled=False,
         with_annotations=with_annotations,
         copy_videos=copy_videos,
     )
@@ -187,20 +187,20 @@ def extract_outlier_frames(
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
-    outlieralgorithm="jump",
-    frames2use=None,
-    comparisonbodyparts="all",
+    outlier_algorithm="jump",
+    frames_to_use=None,
+    comparison_bodyparts="all",
     epsilon=20,
     p_bound=0.01,
-    ARdegree=3,
-    MAdegree=1,
+    ar_degree=3,
+    ma_degree=1,
     alpha=0.01,
-    extractionalgorithm="kmeans",
+    extraction_algorithm="kmeans",
     automatic=False,
-    cluster_resizewidth=30,
+    cluster_resize_width=30,
     cluster_color=False,
     opencv=True,
-    savelabeled=False,
+    save_labeled=False,
     copy_videos=False,
     destfolder=None,
     modelprefix="",
@@ -232,7 +232,7 @@ def extract_outlier_frames(
             of training dataset. Defaults to 1.
         trainingsetindex (int, optional): Integer specifying which TrainingsetFraction
             to use. Note that TrainingFraction is a list in config.yaml. Defaults to 0.
-        outlieralgorithm (str, optional): String specifying the algorithm used to detect
+        outlier_algorithm (str, optional): String specifying the algorithm used to detect
             the outliers.
 
             * ``'fitting'`` fits an Auto Regressive Integrated Moving Average model to
@@ -242,32 +242,32 @@ def extract_outlier_frames(
             * ``'uncertain'`` looks for frames with confidence below p_bound
             * ``'manual'`` launches a GUI from which the user can choose the frames
             * ``'list'`` looks for user to provide a list of frame numbers to use,
-              'frames2use'. In this case, ``'extractionalgorithm'`` is forced to be
+              'frames_to_use'. In this case, ``'extraction_algorithm'`` is forced to be
               ``'uniform.'``
 
             Defaults to "jump".
-        frames2use (list[str], optional): If ``'outlieralgorithm'`` is ``'list'``,
+        frames_to_use (list[str], optional): If ``'outlier_algorithm'`` is ``'list'``,
             provide the list of frames here. Defaults to None.
-        comparisonbodyparts (list[str] or str, optional): This selects the body parts for
+        comparison_bodyparts (list[str] or str, optional): This selects the body parts for
             which the comparisons with the outliers are carried out. If ``"all"``, then
             all body parts from config.yaml are used. If a list of strings that are a
             subset of the full list E.g. ['hand','Joystick'] for the demo
             Reaching-Mackenzie-2018-08-30/config.yaml to select only these body parts.
             Defaults to "all".
-        p_bound (float, optional): For outlieralgorithm ``'uncertain'`` this parameter
+        p_bound (float, optional): For outlier_algorithm ``'uncertain'`` this parameter
             defines the likelihood below which a body part will be flagged as a putative
             outlier. Defaults to 0.01.
-        epsilon (float, optional): If ``'outlieralgorithm'`` is ``'fitting'``, this is
+        epsilon (float, optional): If ``'outlier_algorithm'`` is ``'fitting'``, this is
             the float bound according to which frames are picked when the (average) body
-            part estimate deviates from model fit. If ``'outlieralgorithm'`` is
+            part estimate deviates from model fit. If ``'outlier_algorithm'`` is
             ``'jump'``, this is the float bound specifying the distance by which body
             points jump from one frame to next (Euclidean distance). Defaults to 20.
-        ARdegree (int, optional): For outlieralgorithm ``'fitting'``: Autoregressive
+        ar_degree (int, optional): For outlier_algorithm ``'fitting'``: Autoregressive
             degree of ARIMA model degree. (Note we use SARIMAX without exogeneous and
             seasonal part) See
             https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
             Defaults to 3.
-        MAdegree (int, optional): For outlieralgorithm ``'fitting'``: Moving Average
+        ma_degree (int, optional): For outlier_algorithm ``'fitting'``: Moving Average
             degree of ARIMA model degree. (Note we use SARIMAX without exogeneous and
             seasonal part) See
             https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
@@ -275,13 +275,13 @@ def extract_outlier_frames(
         alpha (float, optional): Significance level for detecting outliers based on
             confidence interval of fitted ARIMA model. Only the distance is used
             however. Defaults to 0.01.
-        extractionalgorithm (str, optional): String specifying the algorithm to use for
+        extraction_algorithm (str, optional): String specifying the algorithm to use for
             selecting the frames from the identified putatative outlier frames.
             Currently, deeplabcut supports either ``kmeans`` or ``uniform`` based
             selection (same logic as for extract_frames). Defaults to "kmeans".
         automatic (bool, optional): If ``True``, extract outliers without being asked
             for user feedback. Defaults to False.
-        cluster_resizewidth (number, optional): If ``"extractionalgorithm"`` is
+        cluster_resize_width (number, optional): If ``"extraction_algorithm"`` is
             ``"kmeans"``, one can change the width to which the images are downsampled
             (aspect ratio is fixed). Defaults to 30.
         cluster_color (bool, optional): If ``False``, each downsampled image is treated
@@ -290,7 +290,7 @@ def extract_outlier_frames(
             Defaults to False.
         opencv (bool, optional): Uses openCV for loading & extractiong (otherwise moviepy
             (legacy)). Defaults to True.
-        savelabeled (bool, optional): If ``True``, frame are saved with predicted labels
+        save_labeled (bool, optional): If ``True``, frame are saved with predicted labels
             in each folder. Defaults to False.
         copy_videos (bool, optional): If True, newly-added videos (from which outlier
             frames are extracted) are copied to the project folder. By default, symbolic
@@ -332,7 +332,7 @@ def extract_outlier_frames(
             deeplabcut.extract_outlier_frames(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/video/reachinvideo1.avi'],
-                extractionalgorithm='kmeans',
+                extraction_algorithm='kmeans',
             )
 
         Extract the frames using the "kmeans" algorithm and ``"epsilon=5"`` pixels.
@@ -341,12 +341,12 @@ def extract_outlier_frames(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/video/reachinvideo1.avi'],
                 epsilon=5,
-                extractionalgorithm='kmeans',
+                extraction_algorithm='kmeans',
             )
     """
 
     cfg = auxiliaryfunctions.read_config(config)
-    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts)
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparison_bodyparts)
     if not len(bodyparts):
         raise ValueError("No valid bodyparts were selected.")
 
@@ -395,18 +395,18 @@ def extract_outlier_frames(
             mask = df.columns.get_level_values("bodyparts").isin(bodyparts)
             df_temp = df.loc[:, mask]
             Indices = []
-            if outlieralgorithm == "uncertain":
+            if outlier_algorithm == "uncertain":
                 p = df_temp.xs("likelihood", level="coords", axis=1)
                 ind = df_temp.index[(p < p_bound).any(axis=1)].tolist()
                 Indices.extend(ind)
-            elif outlieralgorithm == "jump":
+            elif outlier_algorithm == "jump":
                 temp_dt = df_temp.diff(axis=0) ** 2
                 temp_dt.drop("likelihood", axis=1, level="coords", inplace=True)
                 sum_ = temp_dt.T.groupby(level="bodyparts").sum().T
                 ind = df_temp.index[(sum_ > epsilon**2).any(axis=1)].tolist()
                 Indices.extend(ind)
-            elif outlieralgorithm == "fitting":
-                d, o = compute_deviations(df_temp, dataname, p_bound, alpha, ARdegree, MAdegree)
+            elif outlier_algorithm == "fitting":
+                d, o = compute_deviations(df_temp, dataname, p_bound, alpha, ar_degree, ma_degree)
                 # Some heuristics for extracting frames based on distance:
                 ind = np.flatnonzero(d > epsilon)  # time points with at least average difference of epsilon
                 if (
@@ -414,7 +414,7 @@ def extract_outlier_frames(
                 ):  # if too few points qualify, extract the most distant ones.
                     ind = np.argsort(d)[::-1][: cfg["numframes2pick"] * 2]
                 Indices.extend(ind)
-            elif outlieralgorithm == "manual":
+            elif outlier_algorithm == "manual":
                 from deeplabcut.gui.widgets import launch_napari
 
                 added_video = attempt_to_add_video(
@@ -428,28 +428,28 @@ def extract_outlier_frames(
                     _ = launch_napari([project_video_path, dataname])
                 return
 
-            elif outlieralgorithm == "list":
-                if frames2use is not None:
+            elif outlier_algorithm == "list":
+                if frames_to_use is not None:
                     try:
-                        frames2use = np.array(frames2use).astype("int")
+                        frames_to_use = np.array(frames_to_use).astype("int")
                     except ValueError:
                         print(
-                            "Could not cast frames2use into np array, "
-                            "please check that frames2use is a simply a list of integers!"
+                            "Could not cast frames_to_use into np array, "
+                            "please check that frames_to_use is a simply a list of integers!"
                         )
                         raise
-                    Indices.extend(frames2use)
+                    Indices.extend(frames_to_use)
                 else:
-                    raise ValueError('Expected list of frames2use for outlieralgorithm "list"!')
+                    raise ValueError('Expected list of frames_to_use for outlier_algorithm "list"!')
             else:
-                raise ValueError(f"outlieralgorithm {outlieralgorithm} not recognized!")
+                raise ValueError(f"outlier_algorithm {outlier_algorithm} not recognized!")
 
-            # Run always except when the outlieralgorithm == manual.
-            if not outlieralgorithm == "manual":
+            # Run always except when the outlier_algorithm == manual.
+            if not outlier_algorithm == "manual":
                 Indices = np.sort(list(set(Indices)))  # remove repetitions.
                 print(
                     "Method ",
-                    outlieralgorithm,
+                    outlier_algorithm,
                     " found ",
                     len(Indices),
                     " putative outlier frames.",
@@ -459,15 +459,15 @@ def extract_outlier_frames(
                     cfg["numframes2pick"],
                     " of those?",
                 )
-                if outlieralgorithm == "uncertain" or outlieralgorithm == "jump":
+                if outlier_algorithm == "uncertain" or outlier_algorithm == "jump":
                     print(
                         "If this list is very large, perhaps consider changing the parameters "
-                        "(start, stop, p_bound, comparisonbodyparts) or use a different method."
+                        "(start, stop, p_bound, comparison_bodyparts) or use a different method."
                     )
-                elif outlieralgorithm == "fitting":
+                elif outlier_algorithm == "fitting":
                     print(
                         "If this list is very large, perhaps consider changing the parameters "
-                        "(start, stop, epsilon, ARdegree, MAdegree, alpha, comparisonbodyparts) "
+                        "(start, stop, epsilon, ar_degree, ma_degree, alpha, comparison_bodyparts) "
                         "or use a different method."
                     )
 
@@ -480,15 +480,15 @@ def extract_outlier_frames(
                     # Now extract from those Indices!
                     ExtractFramesbasedonPreselection(
                         Indices,
-                        extractionalgorithm,
+                        extraction_algorithm,
                         df,
                         video,
                         cfg,
                         config,
                         opencv,
-                        cluster_resizewidth,
+                        cluster_resize_width,
                         cluster_color,
-                        savelabeled,
+                        save_labeled,
                         copy_videos=copy_videos,
                     )
                 else:
@@ -516,7 +516,7 @@ def convertparms2start(pn):
         return 0
 
 
-def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=False):
+def FitSARIMAXModel(x, p, pcutoff, alpha, ar_degree, ma_degree, nforecast=0, disp=False):
     # Seasonal Autoregressive Integrated Moving-Average with eXogenous regressors (SARIMAX)
     # see
     # http://www.statsmodels.org/stable/statespace.html#seasonal-autoregressive-integrated-moving-average-with-exogenous-regressors-sarimax
@@ -527,12 +527,12 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
         # (however we do not use the seasonal etc. parameters!)
         mod = sm.tsa.statespace.SARIMAX(
             Y.flatten(),
-            order=(ARdegree, 0, MAdegree),
+            order=(ar_degree, 0, ma_degree),
             seasonal_order=(0, 0, 0, 0),
             simple_differencing=True,
         )
         # Autoregressive Moving Average ARMA(p,q) Model
-        # mod = sm.tsa.ARIMA(Y, order=(ARdegree,0,MAdegree)) #order=(ARdegree,0,MAdegree)
+        # mod = sm.tsa.ARIMA(Y, order=(ar_degree,0,ma_degree)) #order=(ar_degree,0,ma_degree)
         try:
             res = mod.fit(disp=disp)
         # https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
@@ -544,7 +544,7 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
             # Relaxing those constraints should do the job.
             mod = sm.tsa.statespace.SARIMAX(
                 Y.flatten(),
-                order=(ARdegree, 0, MAdegree),
+                order=(ar_degree, 0, ma_degree),
                 seasonal_order=(0, 0, 0, 0),
                 simple_differencing=True,
                 enforce_stationarity=False,
@@ -559,19 +559,19 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
         return np.nan * np.zeros(len(Y)), np.nan * np.zeros((len(Y), 2))
 
 
-def compute_deviations(Dataframe, dataname, p_bound, alpha, ARdegree, MAdegree, storeoutput=None):
+def compute_deviations(Dataframe, dataname, p_bound, alpha, ar_degree, ma_degree, storeoutput=None):
     """Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors
     model to data and computes confidence interval as well as mean fit."""
 
-    print("Fitting state-space models with parameters:", ARdegree, MAdegree)
+    print("Fitting state-space models with parameters:", ar_degree, ma_degree)
     df_x, df_y, df_likelihood = Dataframe.values.reshape((Dataframe.shape[0], -1, 3)).T
     preds = []
     for row in range(len(df_x)):
         x = df_x[row]
         y = df_y[row]
         p = df_likelihood[row]
-        meanx, CIx = FitSARIMAXModel(x, p, p_bound, alpha, ARdegree, MAdegree)
-        meany, CIy = FitSARIMAXModel(y, p, p_bound, alpha, ARdegree, MAdegree)
+        meanx, CIx = FitSARIMAXModel(x, p, p_bound, alpha, ar_degree, ma_degree)
+        meany, CIy = FitSARIMAXModel(y, p, p_bound, alpha, ar_degree, ma_degree)
         distance = np.sqrt((x - meanx) ** 2 + (y - meany) ** 2)
         significant = (x < CIx[:, 0]) + (x > CIx[:, 1]) + (y < CIy[:, 0]) + (y > CIy[:, 1])
         preds.append(np.c_[distance, significant, meanx, meany, CIx, CIy])
@@ -598,7 +598,7 @@ def compute_deviations(Dataframe, dataname, p_bound, alpha, ARdegree, MAdegree, 
         names=[n for n in columns.names if n != "coords"] + ["stats"],
     )
     data = pd.DataFrame(np.concatenate(preds, axis=1), columns=pdindex)  # preds (n_frames, n_stats * n_streams)
-    # average distance and average # significant differences avg. over comparisonbodyparts
+    # average distance and average # significant differences avg. over comparison_bodyparts
     d = data.xs("distance", axis=1, level=-1).mean(axis=1).values
     o = data.xs("sig", axis=1, level=-1).mean(axis=1).values
 
@@ -659,15 +659,15 @@ def attempt_to_add_video(
 
 def ExtractFramesbasedonPreselection(
     Index,
-    extractionalgorithm,
+    extraction_algorithm,
     data,
     video,
     cfg,
     config,
     opencv=True,
-    cluster_resizewidth=30,
+    cluster_resize_width=30,
     cluster_color=False,
-    savelabeled=True,
+    save_labeled=True,
     with_annotations=True,
     copy_videos=False,
 ):
@@ -707,7 +707,7 @@ def ExtractFramesbasedonPreselection(
     print("Cropping coords:", coords)
     print("Duration of video [s]: ", duration, ", recorded @ ", fps, "fps!")
     print("Overall # of frames: ", nframes, "with (cropped) frame dimensions: ")
-    if extractionalgorithm == "uniform":
+    if extraction_algorithm == "uniform":
         if opencv:
             if coords is not None:
                 vid.set_bbox(*coords)
@@ -721,7 +721,7 @@ def ExtractFramesbasedonPreselection(
                     x2=coords[1],
                 )
             frames2pick = frameselectiontools.UniformFrames(clip, numframes2extract, start, stop, Index)
-    elif extractionalgorithm == "kmeans":
+    elif extraction_algorithm == "kmeans":
         if opencv:
             if coords is not None:
                 vid.set_bbox(*coords)
@@ -731,7 +731,7 @@ def ExtractFramesbasedonPreselection(
                 start,
                 stop,
                 Index,
-                resizewidth=cluster_resizewidth,
+                resizewidth=cluster_resize_width,
                 color=cluster_color,
             )
         else:
@@ -748,7 +748,7 @@ def ExtractFramesbasedonPreselection(
                 start,
                 stop,
                 Index,
-                resizewidth=cluster_resizewidth,
+                resizewidth=cluster_resize_width,
                 color=cluster_color,
             )
 
@@ -774,7 +774,7 @@ def ExtractFramesbasedonPreselection(
                 cfg["alphavalue"],
                 colors,
                 strwidth,
-                savelabeled,
+                save_labeled,
             )
         else:
             PlottingSingleFrame(
@@ -788,7 +788,7 @@ def ExtractFramesbasedonPreselection(
                 cfg["alphavalue"],
                 colors,
                 strwidth,
-                savelabeled,
+                save_labeled,
             )
         plt.close("all")
 
@@ -908,7 +908,7 @@ def PlottingSingleFrame(
     alphavalue,
     colors,
     strwidth=4,
-    savelabeled=True,
+    save_labeled=True,
 ):
     """Label frame and save under imagename / this is already cropped (for clip)"""
     from skimage import io
@@ -921,7 +921,7 @@ def PlottingSingleFrame(
         image = img_as_ubyte(clip.get_frame(index * 1.0 / clip.fps))
         io.imsave(str(imagename1), image)
 
-        if savelabeled:
+        if save_labeled:
             if np.ndim(image) > 2:
                 h, w, nc = np.shape(image)
             else:
@@ -969,7 +969,7 @@ def PlottingSingleFramecv2(
     alphavalue,
     colors,
     strwidth=4,
-    savelabeled=True,
+    save_labeled=True,
 ):
     """Label frame and save under imagename / cap is not already cropped."""
     from skimage import io
@@ -987,7 +987,7 @@ def PlottingSingleFramecv2(
         image = img_as_ubyte(frame)
         io.imsave(imagename1, image)
 
-        if savelabeled:
+        if save_labeled:
             if np.ndim(image) > 2:
                 h, w, nc = np.shape(image)
             else:
@@ -1024,7 +1024,7 @@ def PlottingSingleFramecv2(
             plt.close("all")
 
 
-def merge_datasets(config: str | Path, forceiterate=None):
+def merge_datasets(config: str | Path, force_iterate=None):
     """Merge the original training dataset with the newly refined data.
 
     Checks if the original training dataset can be merged with the newly refined
@@ -1035,7 +1035,7 @@ def merge_datasets(config: str | Path, forceiterate=None):
 
     Args:
         config (str | Path): Full path of the config.yaml file.
-        forceiterate (int or None, optional): If an integer is given the iteration
+        force_iterate (int or None, optional): If an integer is given the iteration
             variable is set to this value. This is only done if all datasets were
             labeled or refined. Defaults to None.
 
@@ -1065,10 +1065,10 @@ def merge_datasets(config: str | Path, forceiterate=None):
     if not flagged:
         # updates iteration by 1
         iter_prev = cfg["iteration"]
-        if not forceiterate:
+        if not force_iterate:
             cfg["iteration"] = int(iter_prev + 1)
         else:
-            cfg["iteration"] = forceiterate
+            cfg["iteration"] = force_iterate
 
         auxiliaryfunctions.write_config(config, cfg)
 
