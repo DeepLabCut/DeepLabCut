@@ -248,8 +248,10 @@ def filterpredictions(
         elif filter_type == "spline":
             data = df.copy()
             mask_data = data.columns.get_level_values("coords").isin(("x", "y"))
-            xy = data.loc[:, mask_data].values
-            prob = data.loc[:, ~mask_data].values
+            # copy=True: under pandas 3 CoW, homogeneous float selections
+            # via .values/.to_numpy() are read-only views.
+            xy = data.loc[:, mask_data].to_numpy(copy=True)
+            prob = data.loc[:, ~mask_data].to_numpy(copy=True)
             missing = np.isnan(xy)
             xy_filled = columnwise_spline_interp(xy, window_length)
             filled = ~np.isnan(xy_filled)
