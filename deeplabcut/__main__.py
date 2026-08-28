@@ -8,10 +8,19 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import sys
 from importlib import import_module
 
 
 def main():
+    # `dlc <command> ...` (including `dlc --help`) dispatches to the Typer CLI;
+    # bare `dlc` keeps launching the GUI, unchanged.
+    if len(sys.argv) > 1:
+        from deeplabcut.cli import app
+
+        app()
+        return
+
     try:
         import_module("PySide6")
 
