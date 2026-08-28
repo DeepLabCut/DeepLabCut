@@ -15,7 +15,6 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
 from deeplabcut.generate_training_dataset import extract_frames
-from deeplabcut.generate_training_dataset.frame_extraction import normalize_video_path
 from deeplabcut.gui.components import (
     DefaultTab,
     VideoSelectionWidget,
@@ -72,7 +71,7 @@ def select_cropping_area(config, videos=None):
         video_sets_name = "video_sets_original" if cfg.get("video_sets_original") else "video_sets"
         video_sets = cfg[video_sets_name]
 
-        matching_keys = [key for key in video_sets if normalize_video_path(key) == normalize_video_path(video)]
+        matching_keys = [key for key in video_sets if Path(key) == Path(video)]
 
         if not matching_keys:
             raise KeyError(f"Video is not present in the project configuration: {video}")
