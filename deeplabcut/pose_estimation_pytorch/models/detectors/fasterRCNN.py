@@ -49,7 +49,7 @@ class FasterRCNN(TorchvisionDetectorAdaptor):
         freeze_bn_weights: bool = False,
         variant: str = "fasterrcnn_mobilenet_v3_large_fpn",
         pretrained: bool = False,
-        box_score_thresh: float = 0.01,
+        box_score_thresh: float | None = 0.01,
     ) -> None:
         if not variant.lower().startswith("fasterrcnn"):
             raise ValueError(

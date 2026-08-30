@@ -58,7 +58,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
         num_classes: int | None = 2,
         freeze_bn_stats: bool = False,
         freeze_bn_weights: bool = False,
-        box_score_thresh: float = 0.01,
+        box_score_thresh: float | None = 0.01,
         model_kwargs: dict | None = None,
     ) -> None:
         super().__init__(
@@ -66,6 +66,12 @@ class TorchvisionDetectorAdaptor(BaseDetector):
             freeze_bn_weights=freeze_bn_weights,
             pretrained=weights is not None,
         )
+
+        if box_score_thresh is None:
+            # Generated configs store ``box_score_thresh: null`` meaning "use
+            # the default"; torchvision's Faster R-CNN would keep the None and
+            # crash when comparing scores against it during inference.
+            box_score_thresh = 0.01
 
         # Load the model
         model_fn = getattr(detection, model)
