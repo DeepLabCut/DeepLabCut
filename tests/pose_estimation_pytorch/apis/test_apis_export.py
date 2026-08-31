@@ -224,10 +224,10 @@ def test_export_model(
 
 def _assert_plain_data(obj, path: str = "config") -> None:
     """Asserts that ``obj`` only contains primitive types, recursively."""
-    if isinstance(obj, dict):
+    if type(obj) is dict:
         for key, value in obj.items():
             _assert_plain_data(value, f"{path}[{key!r}]")
-    elif isinstance(obj, (list, tuple)):
+    elif type(obj) in (list, tuple):
         for index, value in enumerate(obj):
             _assert_plain_data(value, f"{path}[{index}]")
     else:
