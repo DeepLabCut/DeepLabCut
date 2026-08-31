@@ -16,10 +16,9 @@ from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import numpy as np
-
 if TYPE_CHECKING:
     import albumentations as A
+    import numpy as np
 
     from deeplabcut.core.config import ProjectConfig
     from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
