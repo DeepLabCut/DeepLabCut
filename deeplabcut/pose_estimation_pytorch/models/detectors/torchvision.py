@@ -15,7 +15,7 @@ from __future__ import annotations
 import torch
 import torchvision.models.detection as detection
 
-from deeplabcut.pose_estimation_pytorch.config.pose import DEFAULT_BOX_SCORE_THRESH
+from deeplabcut.pose_estimation_pytorch.config.model import DEFAULT_BOX_SCORE_THRESH
 from deeplabcut.pose_estimation_pytorch.models.detectors.base import (
     BaseDetector,
 )
