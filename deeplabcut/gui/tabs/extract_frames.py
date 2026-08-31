@@ -230,11 +230,7 @@ class ExtractFrames(DefaultTab):
             cluster_color=False,
             slider_width=slider_width,
             userfeedback=False,
-            videos_list=(
-                [str(video) for video in self.video_selection_widget.files]
-                if self.video_selection_widget.files
-                else None
-            ),
+            videos_list=list(self.video_selection_widget.files) or None,
         )
 
         self.worker, self.thread = move_to_separate_thread(func, capture_outputs=True)

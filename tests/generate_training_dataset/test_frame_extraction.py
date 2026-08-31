@@ -85,9 +85,9 @@ class TestFilterConfigVideos:
         assert result == configured
         assert isinstance(result[0], str)
 
-    def test_filter_config_videos_matches_string_to_path(self):
+    def test_filter_config_videos_matches_path_config_key(self):
         configured = [Path(r"C:\project\videos\video.mp4")]
-        selected = [r"C:\project\videos\video.mp4"]
+        selected = [Path(r"C:\project\videos\video.mp4")]
 
         result = _filter_config_videos(configured, selected)
 
