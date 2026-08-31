@@ -2,7 +2,7 @@ name: Docs / Deploy docs (main + dev-docs main)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ] # do not add dev/ here
 
 permissions:
   contents: write
