@@ -10,10 +10,12 @@
 #
 """Model configuration class for DeepLabCut pose estimation models."""
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from deeplabcut.core.config import DLCBaseConfig
 from deeplabcut.core.config.validation import Fraction
+
+DEFAULT_BOX_SCORE_THRESH = 0.01
 
 
 class ModelConfig(DLCBaseConfig):
@@ -48,4 +50,9 @@ class DetectorModelConfig(DLCBaseConfig):
     freeze_bn_stats: bool = False
     freeze_bn_weights: bool = False
     variant: str | None = None
-    box_score_thresh: Fraction | None = None
+    box_score_thresh: Fraction | None = DEFAULT_BOX_SCORE_THRESH
+
+    @field_validator("box_score_thresh", mode="before")
+    @classmethod
+    def normalize_box_score_thresh(cls, v):
+        return DEFAULT_BOX_SCORE_THRESH if v is None else v

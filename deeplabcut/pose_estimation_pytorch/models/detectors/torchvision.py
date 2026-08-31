@@ -15,6 +15,7 @@ from __future__ import annotations
 import torch
 import torchvision.models.detection as detection
 
+from deeplabcut.pose_estimation_pytorch.config.pose import DEFAULT_BOX_SCORE_THRESH
 from deeplabcut.pose_estimation_pytorch.models.detectors.base import (
     BaseDetector,
 )
@@ -58,7 +59,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
         num_classes: int | None = 2,
         freeze_bn_stats: bool = False,
         freeze_bn_weights: bool = False,
-        box_score_thresh: float | None = 0.01,
+        box_score_thresh: float | None = DEFAULT_BOX_SCORE_THRESH,
         model_kwargs: dict | None = None,
     ) -> None:
         super().__init__(
@@ -71,7 +72,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
             # Generated configs store ``box_score_thresh: null`` meaning "use
             # the default"; torchvision's Faster R-CNN would keep the None and
             # crash when comparing scores against it during inference.
-            box_score_thresh = 0.01
+            box_score_thresh = DEFAULT_BOX_SCORE_THRESH
 
         # Load the model
         model_fn = getattr(detection, model)
