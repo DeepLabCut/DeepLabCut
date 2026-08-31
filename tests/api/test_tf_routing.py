@@ -13,11 +13,13 @@
 from __future__ import annotations
 
 import inspect
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from deeplabcut.api import _tf_routing as tf_routing
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import DLCDeprecationWarning
 from deeplabcut.core.engine import Engine
 
@@ -203,14 +205,17 @@ def test_resolve_legacy_kwargs_does_not_mutate_renamed_params():
 # ---------------------------------------------------------------------------
 
 
-def test_resolve_engine_uses_explicit_engine():
+@patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.TF)
+def test_resolve_engine_uses_explicit_engine_without_metadata_lookup(mock_get_shuffle_engine):
+    """An explicit engine short-circuits resolution, so the config is never read."""
     engine = tf_routing._resolve_engine({"config": "cfg.yaml", "engine": Engine.PYTORCH})
+
     assert engine == Engine.PYTORCH
+    mock_get_shuffle_engine.assert_not_called()
 
 
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.PYTORCH)
-@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
-def test_resolve_engine_from_shuffle_metadata(mock_read_config, mock_get_shuffle_engine):
+def test_resolve_engine_from_shuffle_metadata(mock_get_shuffle_engine):
     engine = tf_routing._resolve_engine(
         {
             "config": "cfg.yaml",
@@ -221,23 +226,29 @@ def test_resolve_engine_from_shuffle_metadata(mock_read_config, mock_get_shuffle
     )
 
     assert engine == Engine.PYTORCH
-    mock_read_config.assert_called_once_with("cfg.yaml")
     mock_get_shuffle_engine.assert_called_once_with(
-        {"project_path": "/tmp"},
+        "cfg.yaml",
         trainingsetindex=1,
         shuffle=2,
         modelprefix="prefix",
     )
 
 
+@pytest.mark.parametrize(
+    "config",
+    ["cfg.yaml", Path("cfg.yaml"), {"project_path": "/tmp"}, ProjectConfig(project_path="/tmp")],
+    ids=["str", "path", "dict", "project_config"],
+)
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.PYTORCH)
-@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
-def test_resolve_engine_defaults_to_shuffle_one(mock_read_config, mock_get_shuffle_engine):
-    engine = tf_routing._resolve_engine({"config": "cfg.yaml"})
+def test_resolve_engine_forwards_config_as_is_and_defaults_to_shuffle_one(mock_get_shuffle_engine, config):
+    """Config is forwarded untouched, and shuffle defaults to 1 when none is given.
+    ``get_shuffle_engine`` accepts ProjectConfig | dict | Path | str
+    """
+    engine = tf_routing._resolve_engine({"config": config})
 
     assert engine == Engine.PYTORCH
     mock_get_shuffle_engine.assert_called_once_with(
-        {"project_path": "/tmp"},
+        config,
         trainingsetindex=0,
         shuffle=1,
         modelprefix="",
@@ -245,8 +256,7 @@ def test_resolve_engine_defaults_to_shuffle_one(mock_read_config, mock_get_shuff
 
 
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine")
-@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
-def test_resolve_engine_from_shuffles_list(mock_read_config, mock_get_shuffle_engine):
+def test_resolve_engine_from_shuffles_list(mock_get_shuffle_engine):
     mock_get_shuffle_engine.side_effect = [Engine.PYTORCH, Engine.PYTORCH]
 
     engine = tf_routing._resolve_engine({"config": "cfg.yaml", "shuffles": [1, 2]})
@@ -256,20 +266,19 @@ def test_resolve_engine_from_shuffles_list(mock_read_config, mock_get_shuffle_en
 
 
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.TF)
-@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
-def test_resolve_engine_accepts_legacy_shuffles_kwarg(mock_read_config, mock_get_shuffle_engine):
+def test_resolve_engine_accepts_legacy_shuffles_kwarg(mock_get_shuffle_engine):
     engine = tf_routing._resolve_engine({"config": "cfg.yaml", "Shuffles": [2, 3]})
 
     assert engine == Engine.TF
     assert mock_get_shuffle_engine.call_count == 2
     mock_get_shuffle_engine.assert_any_call(
-        {"project_path": "/tmp"},
+        "cfg.yaml",
         trainingsetindex=0,
         shuffle=2,
         modelprefix="",
     )
     mock_get_shuffle_engine.assert_any_call(
-        {"project_path": "/tmp"},
+        "cfg.yaml",
         trainingsetindex=0,
         shuffle=3,
         modelprefix="",
@@ -288,20 +297,11 @@ def test_resolve_engine_raises_on_emplty_shuffles(shuffles):
 
 
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine")
-@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
-def test_resolve_engine_raises_when_shuffles_have_different_engines(mock_read_config, mock_get_shuffle_engine):
+def test_resolve_engine_raises_when_shuffles_have_different_engines(mock_get_shuffle_engine):
     mock_get_shuffle_engine.side_effect = [Engine.PYTORCH, Engine.TF]
 
     with pytest.raises(ValueError, match="All shuffles must have the same engine"):
         tf_routing._resolve_engine({"config": "cfg.yaml", "shuffles": [1, 2]})
-
-
-@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
-def test_resolve_engine_reads_config_from_kwargs(mock_read_config):
-    with patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=Engine.PYTORCH):
-        tf_routing._resolve_engine({"config": "other.yaml", "engine": Engine.PYTORCH})
-
-    mock_read_config.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -598,12 +598,14 @@ def test_with_tensorflow_fallback_when_matches_positional_and_keyword():
 
 def test_with_tensorflow_fallback_forwards_legacy_alias_to_renamed_parameter():
     """Router must not swallow legacy alias before inner @renamed_parameter."""
-    from deeplabcut.core.deprecation import renamed_parameter
+    from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 
     pytorch_fn = MagicMock(return_value="pytorch")
 
     @tf_routing.with_tensorflow_fallback
-    @renamed_parameter(old="displayiters", new="display_iters", since="3.0.0")
+    @renamed_parameter(
+        old="displayiters", new="display_iters", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING
+    )
     def canonical_fn(config: str, display_iters: int | None = None):
         return pytorch_fn(config, display_iters=display_iters)
 

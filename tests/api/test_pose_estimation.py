@@ -707,26 +707,23 @@ def test_visualize_paf_delegates_to_core_visualization():
 # Unlike the tests above (which patch ``_resolve_engine`` directly), these
 # exercise the real ``with_tensorflow_fallback`` router through a real public
 # API function, with the filesystem/metadata lookups mocked:
-#   - ``read_config``        -> returns a canned config (no YAML on disk)
-#   - ``get_shuffle_engine`` -> returns the engine (no project metadata)
+#   - ``get_shuffle_engine`` -> returns the engine (no project metadata, no YAML on disk)
 #   - the downstream PyTorch impl -> MagicMock (no model loaded)
 # This is NOT an end-to-end test: nothing touches disk, weights, or the network.
 
 
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=_PYTORCH)
-@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 @pytest.mark.tf_routing_integration
-def test_analyze_videos_resolves_engine_from_config(mock_read_config, mock_get_shuffle_engine):
-    """analyze_videos drives the real router: config -> read_config -> get_shuffle_engine -> PyTorch."""
+def test_analyze_videos_resolves_engine_from_config(mock_get_shuffle_engine):
+    """analyze_videos drives the real router: config -> get_shuffle_engine -> PyTorch."""
     mock_impl = MagicMock(return_value="scorer")
     with patch("deeplabcut.pose_estimation_pytorch.apis.analyze_videos", mock_impl):
         from deeplabcut.api.pose_estimation import analyze_videos
 
         analyze_videos("cfg.yaml", ["video.mp4"], shuffle=2, save_as_csv=True)
 
-    mock_read_config.assert_called_once_with("cfg.yaml")
     mock_get_shuffle_engine.assert_called_once_with(
-        {"project_path": "/tmp"},
+        "cfg.yaml",
         trainingsetindex=0,
         shuffle=2,
         modelprefix="",
@@ -737,9 +734,8 @@ def test_analyze_videos_resolves_engine_from_config(mock_read_config, mock_get_s
 
 
 @patch("deeplabcut.generate_training_dataset.metadata.get_shuffle_engine", return_value=_PYTORCH)
-@patch("deeplabcut.core.config.utils.read_config", return_value={"project_path": "/tmp"})
 @pytest.mark.tf_routing_integration
-def test_export_model_cfg_path_alias_reaches_engine_resolution(mock_read_config, mock_get_shuffle_engine):
+def test_export_model_cfg_path_alias_reaches_engine_resolution(mock_get_shuffle_engine):
     """Legacy ``cfg_path`` is renamed to ``config`` *before* engine resolution, so the
     router can read the config (would KeyError without the rename)."""
     mock_impl = MagicMock(return_value=None)
@@ -751,8 +747,12 @@ def test_export_model_cfg_path_alias_reaches_engine_resolution(mock_read_config,
 
         export_model(cfg_path="cfg.yaml", shuffle=2, overwrite=True)
 
-    mock_read_config.assert_called_once_with("cfg.yaml")
-    mock_get_shuffle_engine.assert_called_once()
+    mock_get_shuffle_engine.assert_called_once_with(
+        "cfg.yaml",
+        trainingsetindex=0,
+        shuffle=2,
+        modelprefix="",
+    )
     mock_impl.assert_called_once()
     assert mock_impl.call_args.kwargs["config"] == "cfg.yaml"
     assert "cfg_path" not in mock_impl.call_args.kwargs
