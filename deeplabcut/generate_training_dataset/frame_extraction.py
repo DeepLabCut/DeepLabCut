@@ -17,18 +17,28 @@ def _filter_config_videos(
     configured_videos: Iterable[str | Path],
     selected_videos: Collection[str | Path] | None,
 ) -> list[str | Path]:
-    """Return config video keys matching the selected video paths.
+    """Return configured video keys matching the selected paths.
 
-    The original config keys are returned so they remain valid for subsequent
-    config dictionary lookups.
+    The original configuration keys are preserved so they remain valid for
+    subsequent dictionary lookups. If no selection is provided, all configured
+    videos are returned.
+
+    Raises:
+        ValueError: If a selection is provided but none of its paths match a
+            configured video.
     """
     configured_videos = list(configured_videos)
 
     if selected_videos is None:
         return configured_videos
 
-    selected = set(selected_videos)
-    return [video for video in configured_videos if Path(video) in selected]
+    selected = {Path(video) for video in selected_videos}
+    videos = [video for video in configured_videos if Path(video) in selected]
+
+    if not videos:
+        raise ValueError("None of the selected videos matched the video paths stored in the project configuration.")
+
+    return videos
 
 
 def select_cropping_area(config: str | Path, videos=None):
@@ -298,12 +308,6 @@ def extract_frames(
     configured_videos = list(cfg.get("video_sets_original") or cfg["video_sets"])
     videos = _filter_config_videos(configured_videos, videos_list)
 
-    if videos_list is not None and not videos:
-        raise ValueError(
-            "None of the selected videos matched the videos in the project "
-            "configuration. Selected videos may use a different path representation."
-        )
-
     if mode == "manual":
         from deeplabcut.gui.widgets import launch_napari
 
@@ -498,11 +502,6 @@ def extract_frames(
         print("Config file read successfully.")
 
         videos = _filter_config_videos(sorted(cfg["video_sets"]), videos_list)
-        if videos_list is not None and not videos:
-            raise ValueError(
-                "None of the selected videos matched the videos in the project "
-                "configuration. Selected videos may use a different path representation."
-            )
 
         project_path = Path(config).parents[0]
         labels_path = project_path / "labeled-data"

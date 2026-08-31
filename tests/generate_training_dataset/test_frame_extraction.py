@@ -107,11 +107,12 @@ class TestFilterConfigVideos:
 
         assert _filter_config_videos(configured, None) == configured
 
-    def test_filter_config_videos_returns_empty_for_nonmatching_selection(self):
+    def test_filter_config_videos_raises_for_nonmatching_selection(self):
         configured = ["video-a.mp4"]
         selected = [Path("video-b.mp4")]
 
-        assert _filter_config_videos(configured, selected) == []
+        with pytest.raises(ValueError):
+            _filter_config_videos(configured, selected)
 
     @pytest.mark.skipif(os.name != "nt", reason="Windows path semantics")
     def test_filter_config_videos_is_case_insensitive_on_windows(self):
