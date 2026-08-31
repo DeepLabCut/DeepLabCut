@@ -14,17 +14,23 @@ as None, which crashes ``postprocess_detections`` during inference."""
 
 import pytest
 
-from deeplabcut.pose_estimation_pytorch.models.detectors.base import DETECTORS
+from deeplabcut.pose_estimation_pytorch.config.pose import DetectorModelConfig
 
 
-@pytest.mark.parametrize("box_score_thresh, expected", [(None, 0.01), (0.4, 0.4)])
-def test_fasterrcnn_null_box_score_thresh_uses_default(box_score_thresh, expected):
-    detector = DETECTORS.build(
-        {
-            "type": "FasterRCNN",
-            "variant": "fasterrcnn_mobilenet_v3_large_fpn",
-            "pretrained": False,
-            "box_score_thresh": box_score_thresh,
-        }
-    )
-    assert detector.model.roi_heads.score_thresh == expected
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (None, 0.01),
+        (0.4, 0.4),
+    ],
+)
+def test_detector_box_score_thresh(value, expected):
+    config = DetectorModelConfig(box_score_thresh=value)
+
+    assert config.box_score_thresh == expected
+
+
+def test_detector_box_score_thresh_default():
+    config = DetectorModelConfig()
+
+    assert config.box_score_thresh == 0.01
