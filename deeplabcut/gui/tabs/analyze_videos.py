@@ -13,7 +13,7 @@ from functools import partial
 from pathlib import Path
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt
 
 import deeplabcut
 from deeplabcut.core.config import ProjectConfig
@@ -28,7 +28,6 @@ from deeplabcut.gui.components import (
     _create_vertical_layout,
 )
 from deeplabcut.gui.utils import move_to_separate_thread
-from deeplabcut.gui.widgets import ConfigEditor
 
 
 @dataclass(frozen=True)
@@ -53,11 +52,6 @@ class AnalyzeVideosOptions:
 class AnalyzeVideos(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super().__init__(root, parent, h1_description)
-
-        self._reload_timer = QTimer(self)
-        self._reload_timer.setSingleShot(True)
-        self._reload_timer.setInterval(0)
-        self._reload_timer.timeout.connect(self.root.reload_project_config)
 
         self._set_page()
 
@@ -101,7 +95,7 @@ class AnalyzeVideos(DefaultTab):
         self.analyze_videos_btn.clicked.connect(self.analyze_videos)
 
         self.edit_config_file_btn = QtWidgets.QPushButton("Edit config.yaml")
-        self.edit_config_file_btn.clicked.connect(self.edit_config_file)
+        self.edit_config_file_btn.clicked.connect(self.open_project_config_editor)
 
         self.main_layout.addWidget(self.analyze_videos_btn, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.edit_config_file_btn, alignment=Qt.AlignRight)
@@ -266,14 +260,6 @@ class AnalyzeVideos(DefaultTab):
             self.show_trajectory_plots.setEnabled(False)
             self.show_trajectory_plots.setCheckState(Qt.Unchecked)
             self.root.logger.info("Plot trajectories DISABLED.")
-
-    def edit_config_file(self):
-        if not self.root.config_path:
-            return
-        config = self.root.config_path
-        editor = ConfigEditor(config, parent=self.root)
-        editor.accepted.connect(self._reload_timer.start)
-        editor.show()
 
     def _collect_options(self) -> AnalyzeVideosOptions:
         config_path = self.root.config_path

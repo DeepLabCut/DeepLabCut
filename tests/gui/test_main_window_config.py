@@ -184,3 +184,58 @@ class TestReloadTimer:
             assert len(reloads) == 1
         finally:
             window.close()
+
+
+class TestTabConfigEditor:
+    """Tabs open the YAML editor through DefaultTab._open_config_editor."""
+
+    @pytest.fixture
+    def tab(self, main_window, tmp_path, write_project_config, monkeypatch):
+        """A tab whose project reload is stubbed out, plus the recorded reloads.
+
+        The stub is installed before the tab is built, since DefaultTab connects
+        to the bound method at construction time.
+        """
+        from deeplabcut.gui.tabs.manage_project import ManageProject
+
+        config_path = tmp_path / "config.yaml"
+        write_project_config(config_path, tmp_path)
+        main_window.config_path = config_path
+
+        reloads = []
+        monkeypatch.setattr(main_window, "reload_project_config", lambda: reloads.append(True))
+
+        return ManageProject(main_window, main_window, ""), reloads
+
+    def test_editor_outlives_the_call_that_opened_it(self, tab):
+        widget, _ = tab
+        widget.open_project_config_editor()
+
+        assert widget._config_editor is not None
+        assert widget._config_editor.config_path == widget.root.config_path
+
+    def test_saving_the_project_config_reloads_the_project(self, tab, qtbot):
+        widget, reloads = tab
+        widget.open_project_config_editor()
+
+        widget._config_editor.accept()
+        qtbot.wait(50)
+
+        assert len(reloads) == 1
+
+    def test_saving_another_config_leaves_the_project_untouched(self, tab, qtbot, tmp_path):
+        widget, reloads = tab
+        pose_cfg_path = tmp_path / "pose_cfg.yaml"
+        pose_cfg_path.write_text("net_type: resnet_50\n")
+
+        widget._open_config_editor(pose_cfg_path)
+        widget._config_editor.accept()
+        qtbot.wait(50)
+
+        assert reloads == []
+
+    def test_opening_without_a_config_is_a_no_op(self, tab):
+        widget, _ = tab
+        widget._open_config_editor(None)
+
+        assert widget._config_editor is None
