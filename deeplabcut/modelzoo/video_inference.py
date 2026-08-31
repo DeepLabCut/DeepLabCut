@@ -564,8 +564,10 @@ def _video_inference_superanimal_pytorch(
     )
 
 
-# TODO @deruyter92 2026-08-20: Deprecation marker needs to be updated to the correct version and PR.
-@deprecated(since="9.9.9", replacement="deeplabcut.video_inference_superanimal")
+@deprecated(
+    replacement="deeplabcut.video_inference_superanimal",
+    deprecation_round=DeprecationRound.INIT_TF_DEPRECATION,
+)
 def video_inference_superanimal(*args, **kwargs):
     """Deprecated alias for ``deeplabcut.video_inference_superanimal``.
     Public API is moved to ``deeplabcut.api.modelzoo_inference`` + exported at the top level.
