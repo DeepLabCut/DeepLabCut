@@ -149,6 +149,25 @@ def test_import_deeplabcut_is_lightweight() -> None:
     subprocess.run([sys.executable, "-c", code], check=True)
 
 
+def test_every_export_resolves() -> None:
+    """Resolve the whole public surface, so lazy loading cannot hide a breakage.
+
+    GUI exports are skipped when Qt is absent
+    """
+    gui_available = _module_available("PySide6") and _module_available("napari")
+    failures: dict[str, str] = {}
+    for name in deeplabcut.__all__:
+        if not gui_available and name in deeplabcut._GUI_EXPORTS:
+            continue
+        try:
+            getattr(deeplabcut, name)
+        except Exception as exc:  # noqa: BLE001 - report every failure
+            failures[name] = f"{type(exc).__name__}: {exc}"
+    assert not failures, "exports that fail to resolve:\n" + "\n".join(
+        f"  {name}: {error}" for name, error in sorted(failures.items())
+    )
+
+
 def test_gui_missing_dependency_is_translated(monkeypatch) -> None:
     def fake_lazy_getattr(name):
         raise ModuleNotFoundError("No module named 'PySide6'", name="PySide6")
