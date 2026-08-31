@@ -1017,7 +1017,9 @@ def create_video_with_keypoints_only(
     ny = int(np.nanmax(df.xs("y", axis=1, level="coords")))
 
     n_frames = df.shape[0]
-    xyp = df.values.reshape((n_frames, -1, 3))
+    # copy=True: `coords` is a view into `xyp` and is masked in place below;
+    # under pandas 3 CoW `.values` would return a read-only view.
+    xyp = df.to_numpy(copy=True).reshape((n_frames, -1, 3))
 
     if color_by == "bodypart":
         map_ = bodyparts.map(dict(zip(bodypart_names, range(n_bodyparts), strict=False)))
