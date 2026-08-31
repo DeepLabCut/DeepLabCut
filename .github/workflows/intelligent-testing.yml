@@ -2,10 +2,10 @@ name: Code / Intelligent Python Testing
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [ main ]
+    branches: [ main, dev ]
 
 concurrency:
   group: intelligent-${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
