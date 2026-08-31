@@ -120,3 +120,16 @@ class TestFilterConfigVideos:
         selected = [Path(r"c:\project\videos\video.mp4")]
 
         assert _filter_config_videos(configured, selected) == configured
+
+    def test_filter_config_videos_matches_string_to_path(self):
+        configured = [Path(r"C:\project\videos\video.mp4")]
+        selected = [r"C:\project\videos\video.mp4"]
+
+        result = _filter_config_videos(configured, selected)
+
+        assert result == configured
+        assert isinstance(result[0], Path)
+
+    def test_filter_config_videos_raises_for_empty_selection(self):
+        with pytest.raises(ValueError, match="None of the selected videos matched"):
+            _filter_config_videos(["video-a.mp4"], [])
