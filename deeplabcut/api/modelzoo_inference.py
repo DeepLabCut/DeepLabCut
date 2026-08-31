@@ -9,22 +9,32 @@
 
 from __future__ import annotations
 
+import functools
 import json
 from collections.abc import Sequence
 from pathlib import Path
 
 from deeplabcut.api._tf_routing import with_tensorflow_fallback
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
-from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
 
-with (get_deeplabcut_path() / "modelzoo" / "models_to_framework.json").open() as _f:
-    _MODELS_TO_FRAMEWORK = json.load(_f)
 
-_TENSORFLOW_MODELS = frozenset(name for name, framework in _MODELS_TO_FRAMEWORK.items() if framework == "tensorflow")
+@functools.cache
+def _tensorflow_models() -> frozenset[str]:
+    """Model names still served by the TensorFlow implementation.
+
+    Resolved on first call rather than at import: this is only needed to route a
+    call, and importing ``auxiliaryfunctions`` at module scope would pull cv2,
+    numba and matplotlib into every ``deeplabcut.api`` import.
+    """
+    from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
+
+    with (get_deeplabcut_path() / "modelzoo" / "models_to_framework.json").open() as file:
+        models_to_framework = json.load(file)
+    return frozenset(name for name, framework in models_to_framework.items() if framework == "tensorflow")
 
 
 @with_tensorflow_fallback(
-    when=lambda params: params.get("model_name") in _TENSORFLOW_MODELS,
+    when=lambda params: params.get("model_name") in _tensorflow_models(),
     tensorflow_module="deeplabcut.tensorflow_compat.superanimal_inference",
     tensorflow_name="video_inference_superanimal_tf",
 )
