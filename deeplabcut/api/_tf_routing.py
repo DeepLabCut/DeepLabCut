@@ -228,18 +228,14 @@ def _resolve_engine(unified_kwargs: dict) -> Engine:
     if engine is not None:
         return Engine(engine)
 
-    from deeplabcut.core.config.utils import read_config
-
     shuffles = _shuffles_from_kwargs(unified_kwargs)
     if not shuffles:
         raise ValueError("Shuffles must contain at least one index")
-    config = unified_kwargs["config"]
-    cfg = read_config(config)
     from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 
     engines = {
         get_shuffle_engine(
-            cfg,
+            unified_kwargs["config"],
             trainingsetindex=unified_kwargs.get("trainingsetindex", 0),
             shuffle=s,
             modelprefix=unified_kwargs.get("modelprefix", ""),
