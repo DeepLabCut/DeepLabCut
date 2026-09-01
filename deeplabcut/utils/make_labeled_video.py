@@ -510,8 +510,8 @@ def create_labeled_video(
             When True, f(x) = max(0, (x - pcutoff)/(1 - pcutoff)). Defaults to False.
         plot_bboxes (bool, optional): If using Pytorch and in Top-Down mode,
             setting this to true will also plot the bounding boxes. Defaults to True.
-        bboxes_pcutoff (float, optional): If plotting bounding boxes, this overrides the bboxes_pcutoff
-            set in the model configuration. Defaults to None.
+        bboxes_pcutoff (float, optional): Minimum bounding box confidence required for plotting.
+            When ``None``, the value is loaded from the project configuration. Defaults to None.
         max_workers (int | None): Maximum number of processes to use for multiprocessing.
             Set this parameter to limit the total RAM-usage of simultaneous processes.
             Default: no maximum (i.e. number of spawned processes is based on the number of

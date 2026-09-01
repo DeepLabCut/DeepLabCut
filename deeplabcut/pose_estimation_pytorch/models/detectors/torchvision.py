@@ -69,9 +69,8 @@ class TorchvisionDetectorAdaptor(BaseDetector):
         )
 
         if box_score_thresh is None:
-            # Generated configs store ``box_score_thresh: null`` meaning "use
-            # the default"; torchvision's Faster R-CNN would keep the None and
-            # crash when comparing scores against it during inference.
+            # Existing configs may store ``box_score_thresh: null``
+            # Normalize null values before passing the threshold
             box_score_thresh = DEFAULT_BOX_SCORE_THRESH
 
         # Load the model
