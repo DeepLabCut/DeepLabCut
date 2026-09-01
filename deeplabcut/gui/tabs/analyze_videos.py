@@ -59,6 +59,10 @@ class AnalyzeVideos(DefaultTab):
         self._reload_timer.setInterval(0)
         self._reload_timer.timeout.connect(self.root.reload_project_config)
 
+        self._pending_plot_timer = QTimer(self)
+        self._pending_plot_timer.setSingleShot(True)
+        self._pending_plot_timer.setInterval(0)
+        self._pending_plot_timer.timeout.connect(self._show_pending_trajectory_plots)
         self._pending_plot_options: AnalyzeVideosOptions | None = None
         self._pending_plot_batches: list[tuple[str, list[Path]]] | None = None
         self._analysis_failed = False
@@ -69,31 +73,57 @@ class AnalyzeVideos(DefaultTab):
     def files(self):
         return self.video_selection_widget.files
 
-    @Slot()
-    def _handle_analysis_error(self):
+    @Slot(object)
+    def _handle_analysis_error(self, _error):
         self._analysis_failed = True
+
+    def _show_trajectory_plots_safely(
+        self,
+        options: AnalyzeVideosOptions,
+        batches: list[tuple[str, list[Path]]],
+    ):
+        try:
+            self._show_trajectory_plots(options, batches)
+        except Exception as error:
+            self.root.logger.error(
+                "Failed to display trajectory plots.",
+                exc_info=True,
+            )
+            self.root.show_task_error(error)
+
+    @Slot()
+    def _show_pending_trajectory_plots(self):
+        options = self._pending_plot_options
+        batches = self._pending_plot_batches
+
+        self._pending_plot_options = None
+        self._pending_plot_batches = None
+
+        if options is None or batches is None:
+            return
+
+        self._show_trajectory_plots_safely(options, batches)
 
     @Slot()
     def _handle_analysis_finished(self):
-        try:
-            if (
-                not self._analysis_failed
-                and self._pending_plot_options is not None
-                and self._pending_plot_batches is not None
-                and self._pending_plot_options.plot_trajectories
-                and self._pending_plot_options.show_trajectory_plots
-            ):
-                self._show_trajectory_plots(
-                    self._pending_plot_options,
-                    self._pending_plot_batches,
-                )
-        finally:
+        should_show_plots = (
+            not self._analysis_failed
+            and self._pending_plot_options is not None
+            and self._pending_plot_batches is not None
+            and self._pending_plot_options.plot_trajectories
+            and self._pending_plot_options.show_trajectory_plots
+        )
+
+        self._analysis_failed = False
+
+        self.analyze_videos_btn.setEnabled(True)
+        self.root._progress_bar.hide()
+
+        if should_show_plots:
+            self._pending_plot_timer.start()
+        else:
             self._pending_plot_options = None
             self._pending_plot_batches = None
-            self._analysis_failed = False
-
-            self.analyze_videos_btn.setEnabled(True)
-            self.root._progress_bar.hide()
 
     def _set_page(self):
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
@@ -476,6 +506,8 @@ class AnalyzeVideos(DefaultTab):
             )
 
     def analyze_videos(self):
+        self._pending_plot_timer.stop()
+
         options = self._collect_options()
         batches = self._get_video_batches()
 
