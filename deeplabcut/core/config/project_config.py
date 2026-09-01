@@ -54,7 +54,6 @@ class ProjectConfig(DLCVersionedConfig):
         skeleton: Skeleton connectivity for plotting.
         skeleton_color: Skeleton color for plotting.
         pcutoff: Confidence cutoff for plotting.
-        bboxes_pcutoff: Confidence cutoff for plotting bounding boxes from detectors.
         dotsize: Dot size for visualization.
         alphavalue: Alpha value for visualization.
         colormap: Colormap for visualization.
@@ -131,7 +130,6 @@ class ProjectConfig(DLCVersionedConfig):
     )
     skeleton_color: str = "black"
     pcutoff: Fraction = 0.6
-    bboxes_pcutoff: Fraction = 0.6
     dotsize: NonNegativeInt = 12
     alphavalue: Fraction = 0.7
     colormap: str = "rainbow"
@@ -190,6 +188,19 @@ class ProjectConfig(DLCVersionedConfig):
         },
     )
     croppedtraining: bool | None = None
+
+    # TODO @deruyter92 2026-09-01: This should be included as field in the
+    # config. It requires a version bump of the schema version.
+    # see https://github.com/DeepLabCut/DeepLabCut/pull/3470
+    @property
+    def bboxes_pcutoff(self) -> Fraction:
+        """Default confidence cutoff for plotting bounding boxes from detectors.
+
+        Note: This property is introduced in v3.1.0 as prospective config
+        field, but is intentionally not yet defined as such in the schema to
+        avoid breaking compatibility with older configs.
+        """
+        return 0.6
 
     @property
     def bodyparts_list(self) -> list[str]:
