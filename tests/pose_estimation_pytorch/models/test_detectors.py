@@ -14,7 +14,8 @@ as None, which crashes ``postprocess_detections`` during inference."""
 
 import pytest
 
-from deeplabcut.pose_estimation_pytorch.config.pose import DetectorModelConfig
+from deeplabcut.pose_estimation_pytorch.config.model import DetectorModelConfig
+from deeplabcut.pose_estimation_pytorch.models.detectors.base import DETECTORS
 
 
 @pytest.mark.parametrize(
@@ -35,3 +36,23 @@ def test_detector_box_score_thresh_default():
     config = DetectorModelConfig()
 
     assert config.box_score_thresh == 0.01
+
+
+def test_build_from_config_with_null_threshold():
+    """The detector must not be built with torchvision's score_thresh set to None.
+
+    Nothing at the model layer normalizes the threshold any more, so this asserts
+    the property the config layer is relied upon for: a legacy ``null`` never
+    reaches the torchvision constructor.
+    """
+    config = DetectorModelConfig.from_dict(
+        {
+            "type": "FasterRCNN",
+            "variant": "fasterrcnn_mobilenet_v3_large_fpn",
+            "box_score_thresh": None,
+        }
+    )
+
+    detector = DETECTORS.build(config)
+
+    assert detector.model.roi_heads.score_thresh == 0.01
