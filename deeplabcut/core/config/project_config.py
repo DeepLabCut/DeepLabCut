@@ -54,6 +54,7 @@ class ProjectConfig(DLCVersionedConfig):
         skeleton: Skeleton connectivity for plotting.
         skeleton_color: Skeleton color for plotting.
         pcutoff: Confidence cutoff for plotting.
+        bboxes_pcutoff: Confidence cutoff for plotting bounding boxes from detectors.
         dotsize: Dot size for visualization.
         alphavalue: Alpha value for visualization.
         colormap: Colormap for visualization.
@@ -130,6 +131,7 @@ class ProjectConfig(DLCVersionedConfig):
     )
     skeleton_color: str = "black"
     pcutoff: Fraction = 0.6
+    bboxes_pcutoff: Fraction = 0.6
     dotsize: NonNegativeInt = 12
     alphavalue: Fraction = 0.7
     colormap: str = "rainbow"

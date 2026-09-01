@@ -585,6 +585,8 @@ def create_labeled_video(
         track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
         if pcutoff is None:
             pcutoff = cfg["pcutoff"]
+        if bboxes_pcutoff is None:
+            bboxes_pcutoff = cfg.bboxes_pcutoff
 
         # Get individuals from the config
         individuals = cfg.get("individuals", [""])
@@ -604,11 +606,6 @@ def create_labeled_video(
             model_config = PoseConfig.from_yaml(model_config_path)
             if model_config.select("train_settings.weight_init.memory_replay"):
                 superanimal_name = model_config["train_settings"]["weight_init"]["dataset"]
-            if bboxes_pcutoff is None:
-                bboxes_pcutoff = model_config.select("detector.model.box_score_thresh") or 0.6
-        else:
-            if bboxes_pcutoff is None:
-                bboxes_pcutoff = 0.6
 
     if init_weights == "":
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
