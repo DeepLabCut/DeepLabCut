@@ -42,6 +42,11 @@ class DetectorModelConfig(DLCBaseConfig):
         freeze_bn_stats: Whether to freeze batch normalization statistics
         freeze_bn_weights: Whether to freeze batch normalization weights
         variant: Specific variant of the detector model
+        box_score_thresh: The score below which the detector discards proposals
+            internally. ``null`` is normalized to the default. The value is
+            deliberately permissive, as raising this value silently drops
+            detections. Note the distinction with ``bboxes_pcutoff`` in the
+            project config, which is the cutoff used to *plot* bounding boxes.
     """
 
     type: str = ""
