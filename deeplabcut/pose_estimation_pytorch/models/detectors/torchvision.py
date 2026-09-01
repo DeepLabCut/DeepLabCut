@@ -15,7 +15,6 @@ from __future__ import annotations
 import torch
 import torchvision.models.detection as detection
 
-from deeplabcut.pose_estimation_pytorch.config.model import DEFAULT_BOX_SCORE_THRESH
 from deeplabcut.pose_estimation_pytorch.models.detectors.base import (
     BaseDetector,
 )
@@ -59,7 +58,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
         num_classes: int | None = 2,
         freeze_bn_stats: bool = False,
         freeze_bn_weights: bool = False,
-        box_score_thresh: float | None = DEFAULT_BOX_SCORE_THRESH,
+        box_score_thresh: float = 0.01,
         model_kwargs: dict | None = None,
     ) -> None:
         super().__init__(
@@ -67,11 +66,6 @@ class TorchvisionDetectorAdaptor(BaseDetector):
             freeze_bn_weights=freeze_bn_weights,
             pretrained=weights is not None,
         )
-
-        if box_score_thresh is None:
-            # Existing configs may store ``box_score_thresh: null``
-            # Normalize null values before passing the threshold
-            box_score_thresh = DEFAULT_BOX_SCORE_THRESH
 
         # Load the model
         model_fn = getattr(detection, model)

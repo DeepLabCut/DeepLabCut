@@ -28,7 +28,7 @@ class SSDLite(TorchvisionDetectorAdaptor):
         freeze_bn_weights: bool = False,
         pretrained: bool = False,
         pretrained_from_imagenet: bool = False,
-        box_score_thresh: float | None = 0.01,
+        box_score_thresh: float = 0.01,
     ) -> None:
         model_kwargs = dict(weights_backbone=None)
         if pretrained_from_imagenet:

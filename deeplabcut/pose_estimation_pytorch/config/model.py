@@ -15,8 +15,6 @@ from pydantic import Field, field_validator
 from deeplabcut.core.config import DLCBaseConfig
 from deeplabcut.core.config.validation import Fraction
 
-DEFAULT_BOX_SCORE_THRESH = 0.01
-
 
 class ModelConfig(DLCBaseConfig):
     """Complete model configuration.
@@ -50,9 +48,9 @@ class DetectorModelConfig(DLCBaseConfig):
     freeze_bn_stats: bool = False
     freeze_bn_weights: bool = False
     variant: str | None = None
-    box_score_thresh: Fraction = DEFAULT_BOX_SCORE_THRESH
+    box_score_thresh: Fraction = 0.01
 
     @field_validator("box_score_thresh", mode="before")
     @classmethod
     def normalize_box_score_thresh(cls, v):
-        return DEFAULT_BOX_SCORE_THRESH if v is None else v
+        return cls.model_fields["box_score_thresh"].default if v is None else v
