@@ -222,6 +222,39 @@ def test_export_model(
             assert exported_data["detector"] == detector_data[detector_idx]["model"]
 
 
+def _assert_plain_data(obj, path: str = "config") -> None:
+    """Asserts that ``obj`` only contains primitive types, recursively."""
+    if type(obj) is dict:
+        for key, value in obj.items():
+            _assert_plain_data(value, f"{path}[{key!r}]")
+    elif type(obj) in (list, tuple):
+        for index, value in enumerate(obj):
+            _assert_plain_data(value, f"{path}[{index}]")
+    else:
+        assert type(obj) in (bool, int, float, str, type(None)), f"{path} is a raw {type(obj)}: {obj!r}"
+
+
+def test_export_model_config_contains_no_raw_objects(project_dir):
+    """The exported config must be plain data (no Enum, Path, PoseConfig, ...)."""
+    mock_loader = _get_export_model_data(project_dir, 1, Task.BOTTOM_UP)[0]
+    mock_loader.model_cfg = _minimal_pose_config(project_dir)
+
+    def get_mock_loader(*args, **kwargs):
+        return mock_loader
+
+    with patch(
+        "deeplabcut.pose_estimation_pytorch.apis.export.dlc3_data.DLCLoader",
+        get_mock_loader,
+    ):
+        export.export_model(project_dir / "config.yaml")
+
+    exports = list((project_dir / "exported-models-pytorch").rglob("*.pt"))
+    assert len(exports) == 1
+
+    # ``weights_only=True`` only loads if no custom types were pickled.
+    _assert_plain_data(torch.load(exports[0], weights_only=True)["config"])
+
+
 @patch("deeplabcut.pose_estimation_pytorch.apis.export.wipe_paths_from_model_config")
 @pytest.mark.parametrize("task", [Task.BOTTOM_UP, Task.TOP_DOWN])
 def test_export_model_clear_paths(mock_wipe: Mock, project_dir, task: Task):
