@@ -85,13 +85,16 @@ class AnalyzeVideos(DefaultTab):
             )
             self.root.show_task_error(error)
 
+    def _clear_pending_trajectory_plots(self) -> None:
+        self._pending_plot_options = None
+        self._pending_plot_batches = None
+
     @Slot()
     def _show_pending_trajectory_plots(self):
         options = self._pending_plot_options
         batches = self._pending_plot_batches
 
-        self._pending_plot_options = None
-        self._pending_plot_batches = None
+        self._clear_pending_trajectory_plots()
 
         if options is None or batches is None:
             return
@@ -110,14 +113,13 @@ class AnalyzeVideos(DefaultTab):
 
         self._analysis_failed = False
 
-        self.analyze_videos_btn.setEnabled(True)
-        self.root._progress_bar.hide()
-
         if should_show_plots:
             self._pending_plot_timer.start()
         else:
-            self._pending_plot_options = None
-            self._pending_plot_batches = None
+            self._clear_pending_trajectory_plots()
+
+        self.analyze_videos_btn.setEnabled(True)
+        self.root._progress_bar.hide()
 
     def _set_page(self):
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
