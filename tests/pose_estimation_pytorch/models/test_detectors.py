@@ -21,6 +21,7 @@ from deeplabcut.pose_estimation_pytorch.config.pose import DetectorModelConfig
     ("value", "expected"),
     [
         (None, 0.01),
+        (0.0, 0.0),
         (0.4, 0.4),
     ],
 )

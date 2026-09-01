@@ -50,7 +50,7 @@ class DetectorModelConfig(DLCBaseConfig):
     freeze_bn_stats: bool = False
     freeze_bn_weights: bool = False
     variant: str | None = None
-    box_score_thresh: Fraction | None = DEFAULT_BOX_SCORE_THRESH
+    box_score_thresh: Fraction = DEFAULT_BOX_SCORE_THRESH
 
     @field_validator("box_score_thresh", mode="before")
     @classmethod

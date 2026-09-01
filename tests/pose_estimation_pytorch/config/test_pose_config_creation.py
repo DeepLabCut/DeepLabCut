@@ -168,7 +168,7 @@ def test_pose_config_creation(case: PoseConfigCase, tmp_path: Path) -> None:
         assert detector is not None
         assert detector["model"]["type"] == case.detector_type
         assert detector["device"] == "auto"
-        assert detector["model"].get("box_score_thresh") is DEFAULT_BOX_SCORE_THRESH
+        assert detector["model"].get("box_score_thresh") == DEFAULT_BOX_SCORE_THRESH
         assert cfg["data"]["train"].get("top_down_crop") is not None
     else:
         assert cfg.get("detector") is None
