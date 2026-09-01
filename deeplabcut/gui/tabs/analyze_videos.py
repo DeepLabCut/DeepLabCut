@@ -452,7 +452,7 @@ class AnalyzeVideos(DefaultTab):
                 track_method=options.track_method,
             )
 
-        if options.plot_trajectories:
+        if options.plot_trajectories and not options.show_trajectory_plots:
             deeplabcut.plot_trajectories(
                 options.config_path,
                 videos=videos,
