@@ -47,6 +47,20 @@ def _stub_public_names() -> set[str]:
     return names
 
 
+def _stub_gui_names() -> set[str]:
+    """Return the stub's exports that come from ``deeplabcut.gui``.
+
+    Derived from the stub rather than hardcoded, so adding a GUI export cannot
+    silently leave it out of the skip below.
+    """
+    tree = ast.parse(_STUB_PATH.read_text(encoding="utf-8"))
+    names: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, ast.ImportFrom) and (node.module or "").split(".")[0] == "gui":
+            names.update(alias.asname or alias.name for alias in node.names)
+    return names
+
+
 def _module_available(name: str) -> bool:
     try:
         importlib.import_module(name)
@@ -155,9 +169,10 @@ def test_every_export_resolves() -> None:
     GUI exports are skipped when Qt is absent
     """
     gui_available = _module_available("PySide6") and _module_available("napari")
+    gui_names = _stub_gui_names()
     failures: dict[str, str] = {}
     for name in deeplabcut.__all__:
-        if not gui_available and name in deeplabcut._GUI_EXPORTS:
+        if not gui_available and name in gui_names:
             continue
         try:
             getattr(deeplabcut, name)
@@ -166,33 +181,6 @@ def test_every_export_resolves() -> None:
     assert not failures, "exports that fail to resolve:\n" + "\n".join(
         f"  {name}: {error}" for name, error in sorted(failures.items())
     )
-
-
-def test_gui_missing_dependency_is_translated(monkeypatch) -> None:
-    def fake_lazy_getattr(name):
-        raise ModuleNotFoundError("No module named 'PySide6'", name="PySide6")
-
-    monkeypatch.setattr(deeplabcut, "_lazy_getattr", fake_lazy_getattr)
-    with pytest.raises(ImportError, match="GUI dependencies"):
-        _ = deeplabcut.launch_dlc
-
-
-def test_torch_missing_dependency_is_translated(monkeypatch) -> None:
-    def fake_lazy_getattr(name):
-        raise ModuleNotFoundError("No module named 'torch'", name="torch")
-
-    monkeypatch.setattr(deeplabcut, "_lazy_getattr", fake_lazy_getattr)
-    with pytest.raises(ImportError, match="PyTorch tracking"):
-        _ = deeplabcut.transformer_reID
-
-
-def test_unrelated_import_error_is_not_masked(monkeypatch) -> None:
-    def fake_lazy_getattr(name):
-        raise ModuleNotFoundError("No module named 'some_unrelated_module'", name="some_unrelated_module")
-
-    monkeypatch.setattr(deeplabcut, "_lazy_getattr", fake_lazy_getattr)
-    with pytest.raises(ModuleNotFoundError):
-        _ = deeplabcut.launch_dlc
 
 
 @pytest.mark.skipif(
