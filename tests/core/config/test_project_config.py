@@ -309,3 +309,26 @@ class TestProjectConfigVersioning:
         config_path.write_text(f"project_path: {tmp_path}\nengine: pytorch\n")
         cfg = ProjectConfig.from_yaml(config_path)
         assert cfg.config_version == CURRENT_CONFIG_VERSION
+
+
+# -----------------------------------------------------------------------------
+# Fields awaiting the next schema version bump
+#
+# Each test here describes a field that is exposed as a read-only property today
+# because promoting it to a real schema field requires bumping
+# CURRENT_CONFIG_VERSION and writing the migration. They are marked strict xfail
+# so that the migration landing turns them into failures, as a reminder to drop
+# the property and the marker together.
+# -----------------------------------------------------------------------------
+
+
+class TestFieldsPendingSchemaMigration:
+    @pytest.mark.xfail(
+        strict=True,
+        reason=(
+            "bboxes_pcutoff is a property until the schema version is bumped, "
+            "see https://github.com/DeepLabCut/DeepLabCut/pull/3470"
+        ),
+    )
+    def test_bboxes_pcutoff_is_a_schema_field(self):
+        assert "bboxes_pcutoff" in ProjectConfig.model_fields
