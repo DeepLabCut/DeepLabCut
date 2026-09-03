@@ -23,6 +23,7 @@ from deeplabcut.core.deprecation import DLCDeprecationWarning
 from deeplabcut.core.engine import Engine
 
 _TF_MODULE = "deeplabcut.tensorflow_compat"
+_TF_DEPRECATION_WARNED = False
 
 
 def _get_tensorflow_impl(name: str, module: str | None = None):
@@ -31,6 +32,12 @@ def _get_tensorflow_impl(name: str, module: str | None = None):
 
 
 def warn_deprecated_tensorflow():
+    """Warn that TensorFlow support is deprecated, once per session."""
+    global _TF_DEPRECATION_WARNED
+    if _TF_DEPRECATION_WARNED:
+        return
+    _TF_DEPRECATION_WARNED = True
+
     warnings.warn(
         "\n"
         "━" * 60 + "\n"
