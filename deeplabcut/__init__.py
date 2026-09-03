@@ -41,54 +41,8 @@ warnings.filterwarnings("once", category=DLCDeprecationWarning)
 # module is imported only when its top-level attribute is first accessed.
 # -----------------------------------------------------------------------------
 
-_lazy_getattr, __dir__, __all__ = lazy.attach_stub(__name__, __file__)
-
-# -----------------------------------------------------------------------------
-# Optional-dependency diagnostics
-# -----------------------------------------------------------------------------
-# A plain ``attach_stub`` raises ``ModuleNotFoundError`` when a GUI or PyTorch
-# tracking module is unavailable. Translate only those into actionable
-# ``ImportError`` messages and leave unrelated import failures untouched.
-# -----------------------------------------------------------------------------
-
-_GUI_EXPORTS = frozenset(
-    {
-        "launch_dlc",
-        "label_frames",
-        "refine_labels",
-        "refine_tracklets",
-        "SkeletonBuilder",
-    }
-)
-
-_TORCH_EXPORTS = frozenset({"transformer_reID"})
-
-_GUI_DEPENDENCY_MODULES = frozenset({"PySide6", "napari", "qdarkstyle"})
-_TORCH_DEPENDENCY_MODULES = frozenset({"torch", "torchvision"})
-
-
-def _is_missing_gui_dependency(exc: ModuleNotFoundError) -> bool:
-    """Return True if ``exc`` is caused by a missing GUI dependency."""
-    name = getattr(exc, "name", None)
-    return isinstance(name, str) and name.split(".")[0] in _GUI_DEPENDENCY_MODULES
-
-
-def _is_missing_torch_dependency(exc: ModuleNotFoundError) -> bool:
-    """Return True if ``exc`` is caused by a missing PyTorch dependency."""
-    name = getattr(exc, "name", None)
-    return isinstance(name, str) and name.split(".")[0] in _TORCH_DEPENDENCY_MODULES
-
-
-def __getattr__(name: str):
-    try:
-        return _lazy_getattr(name)
-    except ModuleNotFoundError as exc:
-        if name in _GUI_EXPORTS and _is_missing_gui_dependency(exc):
-            raise ImportError(
-                f"{name!r} requires the DeepLabCut GUI dependencies. Install the supported GUI extra."
-            ) from exc
-
-        if name in _TORCH_EXPORTS and _is_missing_torch_dependency(exc):
-            raise ImportError(f"{name!r} requires the PyTorch tracking dependencies.") from exc
-
-        raise
+# A missing optional dependency surfaces as a plain ``ModuleNotFoundError``
+# naming the module, which is accurate and points at the failing import. The
+# ``dlc`` entry point (see ``__main__.py``) is where a user without the GUI
+# extra actually lands, and it already tells them to install ``deeplabcut[gui]``.
+__getattr__, __dir__, __all__ = lazy.attach_stub(__name__, __file__)
