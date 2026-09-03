@@ -13,9 +13,9 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 
 from deeplabcut.core.config import DLCBaseConfig
 
@@ -56,6 +56,9 @@ class WandbLoggerConfig(LoggerConfig):  #
         wandb_kwargs: Additional keyword arguments to pass to wandb.init
     """
 
+    # These options are reserved since they are explicitly passed to wandb.init (from `project_name` and `run_name`)
+    _FORBIDDEN_WANDB_KWARGS: ClassVar[frozenset[str]] = frozenset({"project", "name"})
+
     type: Literal[LoggerType.WandbLogger]
     project_name: str = "deeplabcut"
     run_name: str = "tmp"
@@ -87,6 +90,16 @@ class WandbLoggerConfig(LoggerConfig):  #
 
         data["wandb_kwargs"] = {**nested, **extras}
         return data
+
+    @field_validator("wandb_kwargs")
+    @classmethod
+    def validate_wandb_kwargs(cls, v: dict | None) -> dict | None:
+        """Reject nested keys that collide with reserved wandb.init options."""
+        if not v:
+            return v
+        if set(v) & cls._FORBIDDEN_WANDB_KWARGS:
+            raise ValueError("wandb_kwargs can not include any of the reserved options: {cls._FORBIDDEN_WANDB_KWARGS}")
+        return v
 
 
 class CSVLoggerConfig(LoggerConfig):  #
