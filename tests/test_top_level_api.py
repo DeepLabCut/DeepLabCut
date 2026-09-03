@@ -82,7 +82,7 @@ def test_flat_import_remains_supported() -> None:
 
 
 def test_all_exports_appear_in_dir() -> None:
-    assert set(deeplabcut.__all__) <= set(dir(deeplabcut))
+    assert set(deeplabcut.__all__) == set(dir(deeplabcut))
 
 
 def test_lazy_export_returns_stable_object() -> None:
@@ -106,10 +106,8 @@ def test_stub_declares_every_runtime_export() -> None:
 
 
 def test_stub_declares_no_unexpected_exports() -> None:
-    # ``DEBUG`` is declared directly (``DEBUG: bool``) but is eagerly defined in
-    # ``__init__.py``, so ``lazy_loader`` does not add it to ``__all__``.
     extra = _stub_public_names() - set(deeplabcut.__all__)
-    assert extra <= {"DEBUG"}, f"Stub declares unexpected names: {sorted(extra)}"
+    assert not extra, f"Stub declares unexpected names: {sorted(extra)}"
 
 
 def test_stub_and_py_typed_ship_with_package() -> None:
