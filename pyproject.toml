@@ -220,7 +220,8 @@ ignore = [ "E741", "B007" ]
 "deeplabcut/pose_estimation_tensorflow/lib/inferenceutils.py" = [ "F403" ]
 "deeplabcut/pose_estimation_tensorflow/lib/trackingutils.py" = [ "F403" ]
 "*.ipynb" = [ "E402" ]
-"tests/typing/top_level_api.py" = [ "F821" ]
+# reveal_type is provided by the type checker, not at runtime.
+"tools/typing/top_level_api.py" = [ "F821" ]
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
