@@ -27,7 +27,7 @@ def export_model(
     config: ProjectConfig | dict | Path | str,
     shuffle: int = 1,
     trainingsetindex: int = 0,
-    snapshotindex: int | None = None,
+    snapshot_index: int | None = None,
     detector_snapshot_index: int | None = None,
     iteration: int | None = None,
     overwrite: bool = False,
@@ -45,10 +45,10 @@ def export_model(
         shuffle : The shuffle of the model to export.
         trainingsetindex: The index of the training fraction for the model you wish to
             export.
-        snapshotindex: The snapshot index for the weights you wish to export. If None,
-            uses the snapshotindex as defined in ``config.yaml``.
+        snapshot_index: The snapshot index for the weights you wish to export. If None,
+            uses the snapshot_index as defined in ``config.yaml``.
         detector_snapshot_index: Only for TD models. If defined, uses the detector with
-            the given index for pose estimation. If None, uses the snapshotindex as
+            the given index for pose estimation. If None, uses the snapshot_index as
             defined in the project ``config.yaml``.
         iteration: The project iteration (active learning loop) you wish to export. If
             None, the iteration listed in the project config file is used.
@@ -75,7 +75,7 @@ def export_model(
             deeplabcut.export_model(
                 "/analysis/project/reaching-task/config.yaml",
                 shuffle=3,
-                snapshotindex=-1,
+                snapshot_index=-1,
             )
     """
     cfg = ProjectConfig.from_any(config)
@@ -89,14 +89,14 @@ def export_model(
         modelprefix="" if modelprefix is None else modelprefix,
     )
 
-    if snapshotindex is None:
-        snapshotindex = loader.project_cfg["snapshotindex"]
-    snapshots = utils.get_model_snapshots(snapshotindex, loader.model_folder, loader.pose_task)
+    if snapshot_index is None:
+        snapshot_index = loader.project_cfg["snapshotindex"]
+    snapshots = utils.get_model_snapshots(snapshot_index, loader.model_folder, loader.pose_task)
 
     if len(snapshots) == 0:
         raise ValueError(
             f"Could not find any snapshots to export in ``{loader.model_folder}`` for "
-            f"``snapshotindex={snapshotindex}``."
+            f"``snapshot_index={snapshot_index}``."
         )
 
     detector_snapshots = [None]

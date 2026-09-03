@@ -17,13 +17,14 @@ import pandas as pd
 from tqdm import tqdm
 
 import deeplabcut as dlc
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 SUPPORTED_FILETYPES = "csv", "nwb"
 
 
-def convertcsv2h5(config: str | Path, userfeedback=True, scorer=None):
+def convertcsv2h5(config: ProjectConfig | dict | Path | str, userfeedback=True, scorer=None):
     """Convert annotation files in labeled-data from csv to h5.
 
     Allows the user to manually edit the csv
@@ -31,7 +32,7 @@ def convertcsv2h5(config: str | Path, userfeedback=True, scorer=None):
     WARNING: conversion might corrupt the data.
 
     Args:
-        config (str | Path): Full path of the config.yaml file as a string.
+        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file as a string.
         userfeedback (bool, optional): If true the user will be asked specifically
             for each folder in labeled-data if the containing csv shall be converted to hdf format.
         scorer (string, optional): If a string is given, then the scorer/annotator
@@ -246,7 +247,7 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
 
 # TODO: @deruyter92 2026-05-20: this function uses videotype instead of video_extensions.
 def analyze_videos_converth5_to_nwb(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     video_folder: str | Path,
     videotype=".mp4",
     listofvideos=False,
@@ -254,7 +255,7 @@ def analyze_videos_converth5_to_nwb(
     """Convert all h5 output data files in `video_folder` to NWB format.
 
     Args:
-        config (string): Absolute path to the project YAML config file.
+        config (ProjectConfig | dict | Path | str): Absolute path to the project YAML config file.
         video_folder (string): Absolute path of a folder containing videos and the corresponding h5 data files.
         videotype (string, optional): Only videos with this extension are screened. Defaults to .mp4.
 
