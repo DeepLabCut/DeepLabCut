@@ -275,7 +275,7 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
                 None, train/test inputs are never logged).
             model: The model to log. Defaults to None.
             train_folder: path to the train folder (used to store the W&B run identifiers)
-            wandb_kwargs: extra arguments to pass to ``wb.init``. These can be given as
+            wandb_kwargs: extra arguments to pass to ``wandb.init``. These can be given as
                 keyword arguments, or collected in a single ``wandb_kwargs`` mapping (as
                 declared by ``WandbLoggerConfig``).
 
