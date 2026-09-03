@@ -21,12 +21,13 @@ from __future__ import annotations
 
 import ast
 import importlib
-import os
+import importlib.metadata
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+from packaging.requirements import Requirement
 
 import deeplabcut
 
@@ -61,12 +62,29 @@ def _stub_gui_names() -> set[str]:
     return names
 
 
-def _module_available(name: str) -> bool:
+def _missing_requirements(extra: str = "") -> set[str]:
+    """Return the distributions DeepLabCut needs here that are not installed."""
     try:
-        importlib.import_module(name)
-    except ImportError:
-        return False
-    return True
+        requirements = importlib.metadata.requires("deeplabcut") or []
+    except importlib.metadata.PackageNotFoundError:
+        return {"deeplabcut"}  # not installed as a distribution; metadata unavailable
+
+    missing: set[str] = set()
+    for spec in requirements:
+        requirement = Requirement(spec)
+        if requirement.marker is not None and not requirement.marker.evaluate({"extra": extra}):
+            continue
+        try:
+            importlib.metadata.distribution(requirement.name)
+        except importlib.metadata.PackageNotFoundError:
+            missing.add(requirement.name)
+    return missing
+
+
+# Distributions from the [gui] extra that are absent here. The base requirements
+# are subtracted so this names only the GUI-specific gap: a broken base install
+# should fail the tests below, not quietly narrow them to the non-GUI surface.
+_MISSING_GUI_REQUIREMENTS = sorted(_missing_requirements("gui") - _missing_requirements())
 
 
 def test_expected_top_level_api() -> None:
@@ -161,16 +179,20 @@ def test_import_deeplabcut_is_lightweight() -> None:
     subprocess.run([sys.executable, "-c", code], check=True)
 
 
+def _unresolvable_names() -> set[str]:
+    """Exports that cannot resolve here, so tests cover the rest rather than skipping."""
+    return _stub_gui_names() if _MISSING_GUI_REQUIREMENTS else set()
+
+
 def test_every_export_resolves() -> None:
     """Resolve the whole public surface, so lazy loading cannot hide a breakage.
 
-    GUI exports are skipped when Qt is absent
+    GUI exports are excluded when the GUI extra is not installed.
     """
-    gui_available = _module_available("PySide6") and _module_available("napari")
-    gui_names = _stub_gui_names()
+    skip = _unresolvable_names()
     failures: dict[str, str] = {}
     for name in deeplabcut.__all__:
-        if not gui_available and name in gui_names:
+        if name in skip:
             continue
         try:
             getattr(deeplabcut, name)
@@ -181,10 +203,26 @@ def test_every_export_resolves() -> None:
     )
 
 
-@pytest.mark.skipif(
-    not (_module_available("torch") and _module_available("PySide6")),
-    reason="Full dependency set (torch + GUI) required for eager-import validation",
-)
-def test_eager_import_mode_resolves_all_exports() -> None:
-    env = {**os.environ, "EAGER_IMPORT": "1"}
-    subprocess.run([sys.executable, "-c", "import deeplabcut"], check=True, env=env)
+def test_all_exports_resolve_in_a_fresh_process() -> None:
+    """Resolve the public API in a clean interpreter.
+
+    Complements ``test_every_export_resolves``, which runs inside the pytest
+    process. GUI exports are excluded when the GUI extra is missing.
+    """
+    code = "\n".join(
+        [
+            "import deeplabcut",
+            f"skip = {sorted(_unresolvable_names())!r}",
+            "failures = []",
+            "for name in deeplabcut.__all__:",
+            "    if name in skip:",
+            "        continue",
+            "    try:",
+            "        getattr(deeplabcut, name)",
+            "    except Exception as exc:",
+            "        failures.append(f'  {name}: {type(exc).__name__}: {exc}')",
+            "if failures:",
+            "    raise SystemExit('exports that fail to resolve:\\n' + '\\n'.join(failures))",
+        ]
+    )
+    subprocess.run([sys.executable, "-c", code], check=True)
