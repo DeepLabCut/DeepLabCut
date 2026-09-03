@@ -226,3 +226,50 @@ def test_all_exports_resolve_in_a_fresh_process() -> None:
         ]
     )
     subprocess.run([sys.executable, "-c", code], check=True)
+
+
+# -----------------------------------------------------------------------------
+# Test for deeplabcut.utils namespace
+# -----------------------------------------------------------------------------
+# These tests are a smoke test for the deeplabcut.utils namespace which used to
+# be a flat namespace that was polluted by star imports. They currently lock
+# the previously existing behavior. We should consider removing (some of) these
+# symbols as public API.
+#
+# See https://github.com/DeepLabCut/DeepLabCut/pull/3459
+# -----------------------------------------------------------------------------
+
+
+def test_star_imported_names_remain_importable() -> None:
+    """A few names from each formerly star-imported module, as a smoke test."""
+    from deeplabcut.utils import (  # noqa: F401
+        CropVideo,
+        KmeansbasedFrameselection,
+        VideoProcessor,
+        VideoReader,
+        convert2_maDLC,
+        convertcsv2h5,
+        create_labeled_video,
+        plot_trajectories,
+        read_config,
+    )
+
+
+def test_star_import_pollution_is_not_restored() -> None:
+    """Star imports also leaked third-party modules; those stay gone."""
+    leaked = [name for name in ("np", "os", "pd", "cv2", "plt", "logger") if name in deeplabcut.utils.__all__]
+    assert not leaked, f"star-import leakage should not be re-exported: {leaked}"
+
+
+def test_namespace_stays_lazy() -> None:
+    """Importing the package must not pull in the submodules behind it."""
+    code = "\n".join(
+        [
+            "import sys",
+            "import deeplabcut.utils",
+            "assert 'deeplabcut.utils.make_labeled_video' not in sys.modules",
+            "_ = deeplabcut.utils.VideoReader",
+            "assert 'deeplabcut.utils.auxfun_videos' in sys.modules",
+        ]
+    )
+    subprocess.run([sys.executable, "-c", code], check=True)
