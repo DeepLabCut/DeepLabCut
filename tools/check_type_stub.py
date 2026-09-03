@@ -10,8 +10,10 @@
 #
 """Check that ``deeplabcut/__init__.pyi`` exposes the public API to type checkers.
 
-Runs Pyright over ``tests/typing/top_level_api.py`` and verifies that every
+Runs Pyright over ``tools/typing/top_level_api.py`` and verifies that every
 ``reveal_type`` resolves to a real declaration rather than ``Unknown``/``Any``.
+That file is an input to this tool, not a pytest module, so it lives here beside
+the tool rather than under ``tests/``.
 
 Runs without DeepLabCut or its dependencies installed, reading the source tree
 directly, which is what keeps it cheap enough for CI. That is also the right
@@ -32,7 +34,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-FIXTURE = REPO_ROOT / "tests" / "typing" / "top_level_api.py"
+FIXTURE = REPO_ROOT / "tools" / "typing" / "top_level_api.py"
 TYPE_CHECKERS = ("basedpyright", "pyright")
 
 NO_CHECKER = 2
