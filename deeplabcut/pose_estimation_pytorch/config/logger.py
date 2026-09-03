@@ -10,8 +10,12 @@
 #
 """Logger configuration classes for DeepLabCut training runs."""
 
+from __future__ import annotations
+
 from enum import Enum
-from typing import Literal
+from typing import Any, Literal
+
+from pydantic import model_validator
 
 from deeplabcut.core.config import DLCBaseConfig
 
@@ -37,6 +41,10 @@ class WandbLoggerConfig(LoggerConfig):  #
     This logger tracks experiments and logs data to Weights & Biases.
     Refer to: https://docs.wandb.ai/guides for more information.
 
+    Notes:
+        Different config versions might have top-level WandB options instead of
+        wandb_kwargs. Unknown top-level fields are scooped into wandb_kwargs.
+
     Attributes:
         type: Logger type (should be 'WandbLogger')
         project_name: The name of the wandb project
@@ -55,6 +63,30 @@ class WandbLoggerConfig(LoggerConfig):  #
     model: dict | None = None
     train_folder: str | None = None
     wandb_kwargs: dict | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def scoop_extra_wandb_kwargs(cls, data: Any) -> Any:
+        """Move unknown top-level keys into ``wandb_kwargs``"""
+        if not isinstance(data, dict):
+            return data
+
+        known = set(cls.model_fields)
+        provided = set(data)
+        extras = {key: data.pop(key) for key in provided - known}
+        if not extras:
+            return data
+
+        nested = data.get("wandb_kwargs") or {}
+        if not isinstance(nested, dict):
+            raise ValueError("wandb_kwargs must be a dictionary when provided")
+
+        overlap = set(extras) & set(nested)
+        if overlap:
+            raise ValueError(f"Duplicate wandb.init options at top-level and in wandb_kwargs: {sorted(overlap)}")
+
+        data["wandb_kwargs"] = {**nested, **extras}
+        return data
 
 
 class CSVLoggerConfig(LoggerConfig):  #
