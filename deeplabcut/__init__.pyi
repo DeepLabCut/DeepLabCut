@@ -63,6 +63,7 @@ from .api.refine_training import (
 )
 from .api.refine_training import merge_datasets as merge_datasets
 from .api.refine_training import stitch_tracklets as stitch_tracklets
+from .core.debug import DEBUG as DEBUG
 from .core.engine import Engine as Engine
 from .create_project import add_new_videos as add_new_videos
 from .create_project import create_new_project as create_new_project
@@ -150,6 +151,3 @@ from .utils.make_labeled_video import (
 from .utils.plotting import plot_trajectories as plot_trajectories
 from .version import VERSION as VERSION
 from .version import __version__ as __version__
-
-# DEBUG has no canonical declaration in another module, so declare it directly.
-DEBUG: bool
