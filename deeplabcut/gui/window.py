@@ -279,7 +279,7 @@ class MainWindow(QMainWindow):
                 msg.exec_()
                 return
             else:
-                msg = QtWidgets.QMessageBox()
+                msg = QtWidgets.QMessageBox(self)
                 msg.setIcon(QtWidgets.QMessageBox.Warning)
                 msg.setText("TensorFlow support is deprecated.")
                 msg.setInformativeText(
@@ -887,8 +887,17 @@ class MainWindow(QMainWindow):
         engines = [engine for engine in Engine]
 
         def _update_engine(index: int) -> None:
-            self.logger.info(f"Changed engine to {engines[index]}")
-            self.engine = engines[index]
+            requested = engines[index]
+            self.engine = requested
+            if self.engine is not requested:
+                blocked = change_engine_widget.blockSignals(True)
+                try:
+                    change_engine_widget.setCurrentIndex(engines.index(self.engine))
+                finally:
+                    change_engine_widget.blockSignals(blocked)
+                return
+
+            self.logger.info(f"Changed engine to {self.engine}")
             _update_icon("pt" if self.engine == Engine.PYTORCH else "tf")
 
         change_engine_widget = QComboBox()
