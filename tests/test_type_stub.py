@@ -10,55 +10,29 @@
 #
 """Runs a focused type-checker smoke test over the top-level public API.
 
-The fixture lives in ``tests/typing/top_level_api.py`` and is analyzed with
-Pyright (or basedpyright). The check is skipped when neither is installed so it
-never breaks a base CI job; run it where the checker is available to confirm
-``deeplabcut/__init__.pyi`` resolves every lazy export to a real signature.
+The check itself lives in ``tools/check_type_stub.py`` so CI can run it without
+installing DeepLabCut (see the ``typecheck`` job in ``.github/workflows/format.yml``).
+This test is the local entry point: run it with pytest to confirm
+``deeplabcut/__init__.pyi`` resolves every lazy export to a real signature. It is
+skipped when neither Pyright nor basedpyright is installed.
 """
 
 from __future__ import annotations
 
-import json
-import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
-_FIXTURE = Path(__file__).parent / "typing" / "top_level_api.py"
-_TYPE_CHECKERS = ("basedpyright", "pyright")
+_TOOL = Path(__file__).resolve().parent.parent / "tools" / "check_type_stub.py"
+_NO_CHECKER = 2
 
 
-def _find_type_checker() -> str | None:
-    for cmd in _TYPE_CHECKERS:
-        if shutil.which(cmd):
-            return cmd
-    return None
-
-
-@pytest.mark.skipif(_find_type_checker() is None, reason="No pyright/basedpyright available")
 def test_top_level_api_resolves_statically() -> None:
-    checker = _find_type_checker()
-    proc = subprocess.run(
-        [checker, str(_FIXTURE), "--outputjson"],
-        capture_output=True,
-        text=True,
-    )
-    data = json.loads(proc.stdout)
+    proc = subprocess.run([sys.executable, str(_TOOL)], capture_output=True, text=True)
 
-    errors = [diagnostic for diagnostic in data.get("generalDiagnostics", []) if diagnostic.get("severity") == "error"]
-    assert not errors, "\n".join(
-        f"{e.get('file')}:{e.get('range', {}).get('start', {}).get('line', '?')}: {e.get('message')}" for e in errors
-    )
+    if proc.returncode == _NO_CHECKER:
+        pytest.skip(proc.stdout.strip() or "no pyright/basedpyright available")
 
-    # ``reveal_type`` results must not degrade to ``Any`` or ``Unknown``, which
-    # would mean the stub failed to expose the name statically.
-    reveal_messages = [
-        diagnostic.get("message", "")
-        for diagnostic in data.get("generalDiagnostics", [])
-        if 'is "' in diagnostic.get("message", "")
-    ]
-    assert reveal_messages, "expected reveal_type output from the type checker"
-    for message in reveal_messages:
-        assert "Unknown" not in message, message
-        assert 'is "Any"' not in message, message
+    assert proc.returncode == 0, proc.stdout + proc.stderr
