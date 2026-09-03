@@ -17,7 +17,6 @@ from pathlib import Path
 
 from deeplabcut.core.config import ensure_plain_config, read_config_as_dict
 from deeplabcut.core.deprecation import DeprecationRound, deprecated
-from deeplabcut.utils import auxiliaryfunctions
 
 
 @ensure_plain_config
@@ -173,6 +172,8 @@ def update_config_by_dotpath(config: dict, updates: dict, copy_original: bool = 
 
 def get_config_folder_path() -> Path:
     """Returns: the Path to the folder containing the "configs" for DeepLabCut 3.0"""
+    from deeplabcut.utils import auxiliaryfunctions
+
     dlc_parent_path = auxiliaryfunctions.get_deeplabcut_path()
     return dlc_parent_path / "pose_estimation_pytorch" / "config"
 
