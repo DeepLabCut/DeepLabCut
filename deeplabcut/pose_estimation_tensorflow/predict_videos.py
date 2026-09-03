@@ -32,7 +32,7 @@ from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
 from deeplabcut.core import inferenceutils, trackingutils
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.core.openvino.session import (
@@ -48,7 +48,7 @@ from deeplabcut.utils.auxfun_videos import collect_video_paths
 ####################################################
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def create_tracking_dataset(
     config,
     videos,
@@ -253,7 +253,7 @@ def create_tracking_dataset(
         return DLCscorer
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def analyze_videos(
     config,
     videos,
@@ -1405,7 +1405,7 @@ def _convert_detections_to_tracklets(
         pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def convert_detections2tracklets(
     config,
     videos,

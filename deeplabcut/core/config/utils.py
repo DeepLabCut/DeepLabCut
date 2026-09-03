@@ -28,7 +28,7 @@ import ruamel.yaml.representer
 from pydantic import ValidationError
 from ruamel.yaml import YAML
 
-from deeplabcut.core.deprecation import deprecated
+from deeplabcut.core.deprecation import DeprecationRound, deprecated
 
 logger = logging.getLogger(__name__)
 
@@ -238,7 +238,9 @@ def ensure_plain_config(fn: Callable) -> Callable:
 # -----------------------------------------------------------------------------
 
 
-@deprecated(replacement="deeplabcut.core.config.ProjectConfig", since="3.0.1")
+@deprecated(
+    replacement="deeplabcut.core.config.ProjectConfig", deprecation_round=DeprecationRound.CONFIG_MODEL_MIGRATION
+)
 def create_config_template(multianimal: bool = False) -> tuple:
     """
     Creates a template for config.yaml file. This specific order is preserved while saving as yaml file.

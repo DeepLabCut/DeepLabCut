@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from deeplabcut.core.config import ProjectConfig, read_config_as_dict
-from deeplabcut.core.deprecation import deprecated
+from deeplabcut.core.deprecation import DeprecationRound, deprecated
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.config.enums import DetectorType, NetType
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
@@ -38,7 +38,10 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-@deprecated(replacement="pose_estimation_pytorch.config.TestConfig.build", since="3.0.1")
+@deprecated(
+    replacement="pose_estimation_pytorch.config.TestConfig.build",
+    deprecation_round=DeprecationRound.CONFIG_MODEL_MIGRATION,
+)
 def make_pytorch_test_config(
     model_config: PoseConfig | dict | str | Path,
     test_config_path: str | Path,
@@ -49,7 +52,10 @@ def make_pytorch_test_config(
     return TestConfig.build(model_config, test_config_path=test_config_path, save=save)
 
 
-@deprecated(replacement="pose_estimation_pytorch.config.PoseConfig.build", since="3.0.1")
+@deprecated(
+    replacement="pose_estimation_pytorch.config.PoseConfig.build",
+    deprecation_round=DeprecationRound.CONFIG_MODEL_MIGRATION,
+)
 def make_pytorch_pose_config(
     project_config: ProjectConfig | dict | Path | str,
     pose_config_path: str | Path,
@@ -74,7 +80,9 @@ def make_pytorch_pose_config(
     )
 
 
-@deprecated(replacement="pose_estimation_pytorch.config.PoseMetadata", since="3.0.1")
+@deprecated(
+    replacement="pose_estimation_pytorch.config.PoseMetadata", deprecation_round=DeprecationRound.CONFIG_MODEL_MIGRATION
+)
 def make_basic_project_config(
     dataset_path: Path | str,
     bodyparts: list[str],

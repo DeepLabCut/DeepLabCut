@@ -22,7 +22,7 @@ import deeplabcut.pose_estimation_pytorch.models as models
 import deeplabcut.pose_estimation_pytorch.runners as runners
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.core.config import read_config_as_dict
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.pose_estimation_pytorch.apis.videos import VideoIterator
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_tracking_pytorch import create_triplets_dataset
@@ -128,7 +128,7 @@ def extract_features_for_video(
     shelf_writer.close()
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def create_tracking_dataset(
     config: str | Path,
     videos: list[str] | list[Path],
