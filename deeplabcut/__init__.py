@@ -12,7 +12,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import warnings
 
 import lazy_loader as lazy
@@ -23,11 +22,7 @@ from .version import VERSION, __version__
 
 logger = logging.getLogger(__name__)
 
-# DEBUG="", "0", "false", "no" -> False
-DEBUG = os.environ.get("DEBUG", "").strip().lower() not in {"", "0", "false", "no"}
-
-if DEBUG:
-    logger.debug("Loading DLC %s", VERSION)
+logger.debug("Loading DLC %s", VERSION)
 
 # DeepLabCut deprecation warnings are shown only once per message instance.
 warnings.filterwarnings("once", category=DLCDeprecationWarning)
@@ -46,4 +41,3 @@ warnings.filterwarnings("once", category=DLCDeprecationWarning)
 # ``dlc`` entry point (see ``__main__.py``) is where a user without the GUI
 # extra actually lands, and it already tells them to install ``deeplabcut[gui]``.
 __getattr__, __dir__, __all__ = lazy.attach_stub(__name__, __file__)
-__all__ = [*__all__, "DEBUG"]
