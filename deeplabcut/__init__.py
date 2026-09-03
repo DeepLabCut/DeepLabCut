@@ -46,3 +46,4 @@ warnings.filterwarnings("once", category=DLCDeprecationWarning)
 # ``dlc`` entry point (see ``__main__.py``) is where a user without the GUI
 # extra actually lands, and it already tells them to install ``deeplabcut[gui]``.
 __getattr__, __dir__, __all__ = lazy.attach_stub(__name__, __file__)
+__all__ = [*__all__, "DEBUG"]
