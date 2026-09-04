@@ -38,16 +38,17 @@ def warn_deprecated_tensorflow():
         return
     _TF_DEPRECATION_WARNED = True
 
+    banner = "━" * 60
     warnings.warn(
         "\n"
-        "━" * 60 + "\n"
+        f"{banner}\n"
         "⚠️  DeepLabCut — TensorFlow support is deprecated\n"
-        "━" * 60 + "\n"
+        f"{banner}\n"
         "TensorFlow support will be removed in a future release.\n"
         "Your project config and annotated data are fully compatible with PyTorch.\n"
         "Please run create_training_dataset with any PyTorch model architecture to switch to PyTorch.\n"
         "See our docs for more information: https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html\n"
-        "━" * 60,
+        f"{banner}",
         DLCDeprecationWarning,
         stacklevel=3,
     )
