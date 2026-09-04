@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
-from deeplabcut.utils.matplotlib_compat import silence_axes_logger
+from deeplabcut.utils.matplotlib_utils import silence_axes_logger
 
 silence_axes_logger()
 

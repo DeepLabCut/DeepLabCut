@@ -19,7 +19,6 @@ from deeplabcut.core.visualization import (
     visualize_paf,
     visualize_scoremaps,
 )
-from deeplabcut.utils.matplotlib_compat import get_colormap
 
 
 def extract_maps(
@@ -401,7 +400,7 @@ def extract_save_all_maps(
                     else:
                         inds = [elem[0] for elem in list_of_inds]
                         n_inds = len(inds)
-                        cmap = get_colormap(cfg["colormap"], n_inds)
+                        cmap = plt.get_cmap(cfg["colormap"], n_inds)
                         colors = cmap(range(n_inds))
                         fig3, _ = visualize_paf(image, paf[:, :, inds], colors=colors)
                         temp = dest_path.format(

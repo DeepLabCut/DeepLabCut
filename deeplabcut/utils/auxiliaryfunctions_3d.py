@@ -27,8 +27,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from deeplabcut.utils.matplotlib_compat import get_colormap
-
 
 def Foldernames3Dproject(cfg_3d):
     """Definitions of subfolders in 3D projects."""
@@ -80,7 +78,7 @@ def compute_triangulation_calibration_images(
     P1 = stereo_matrix["P1"]
     P2 = stereo_matrix["P2"]
     cmap = cfg_3d["colormap"]
-    colormap = get_colormap(cmap)
+    colormap = plt.get_cmap(cmap)
     markerSize = cfg_3d["dotsize"]
     markerType = cfg_3d["markerType"]
 

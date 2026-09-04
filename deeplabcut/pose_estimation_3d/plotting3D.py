@@ -26,7 +26,7 @@ from deeplabcut.utils import (
     make_labeled_video,
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
-from deeplabcut.utils.matplotlib_compat import get_colormap, silence_axes_logger
+from deeplabcut.utils.matplotlib_utils import silence_axes_logger
 
 silence_axes_logger()
 
@@ -234,11 +234,11 @@ def create_labeled_video_3d(
             ind_links = tuple(zip(*links, strict=False))
 
             if color_by == "bodypart":
-                color = get_colormap(cmap, len(bodyparts2plot))
+                color = plt.get_cmap(cmap, len(bodyparts2plot))
                 colors_ = color(range(len(bodyparts2plot)))
                 colors = np.tile(colors_, (num_animals, 1))
             elif color_by == "individual":
-                color = get_colormap(cmap, num_animals)
+                color = plt.get_cmap(cmap, num_animals)
                 colors_ = color(range(num_animals))
                 colors = np.repeat(colors_, len(bodyparts2plot), axis=0)
 

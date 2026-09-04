@@ -50,7 +50,6 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.config import PoseConfig
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
-from deeplabcut.utils.matplotlib_compat import get_colormap
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
 )  # used to CreateVideo
@@ -1022,14 +1021,14 @@ def create_video_with_keypoints_only(
 
     if color_by == "bodypart":
         map_ = bodyparts.map(dict(zip(bodypart_names, range(n_bodyparts), strict=False)))
-        cmap = get_colormap(colormap, n_bodyparts)
+        cmap = plt.get_cmap(colormap, n_bodyparts)
     elif color_by == "individual":
         try:
             individuals = df.columns.get_level_values("individuals")[::3]
             individual_names = individuals.unique().to_list()
             n_individuals = len(individual_names)
             map_ = individuals.map(dict(zip(individual_names, range(n_individuals), strict=False)))
-            cmap = get_colormap(colormap, n_individuals)
+            cmap = plt.get_cmap(colormap, n_individuals)
         except KeyError as e:
             raise Exception("Coloring by individuals is only valid for multi-animal data") from e
     else:

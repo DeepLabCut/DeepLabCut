@@ -33,7 +33,6 @@ from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.utils.matplotlib_compat import get_colormap
 
 
 def create_labeled_images(
@@ -80,7 +79,7 @@ def create_labeled_images(
 
     color_by_individual = mode == "individual"
     if isinstance(cmap, str):
-        cmap = get_colormap(cmap)
+        cmap = plt.get_cmap(cmap)
 
     for image_path, image_predictions in predictions.items():
         # Load frame

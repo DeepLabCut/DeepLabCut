@@ -37,7 +37,6 @@ from deeplabcut.core.trackingutils import (
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
-from deeplabcut.utils.matplotlib_compat import get_colormap
 
 
 class Tracklet:
@@ -902,7 +901,7 @@ class TrackletStitcher:
                 spine.set_visible(False)
         for path in self.paths:
             length = len(path)
-            colors = get_colormap(colormap, length)(range(length))
+            colors = plt.get_cmap(colormap, length)(range(length))
             for tracklet, color in zip(path, colors, strict=False):
                 tracklet.plot(color=color, ax=ax)
 
@@ -915,7 +914,7 @@ class TrackletStitcher:
         for loc, spine in ax.spines.items():
             if loc != "bottom":
                 spine.set_visible(False)
-        colors = get_colormap(colormap, self.n_tracks)(range(self.n_tracks))
+        colors = plt.get_cmap(colormap, self.n_tracks)(range(self.n_tracks))
         for track, color in zip(self.tracks, colors, strict=False):
             track.plot(color=color, ax=ax)
 
@@ -927,7 +926,7 @@ class TrackletStitcher:
                 spine.set_visible(False)
         axes[1].axis("off")
 
-        cmap = get_colormap(colormap)
+        cmap = plt.get_cmap(colormap)
         colors = cycle(cmap.colors)
         line2tracklet = dict()
         tracklet2lines = dict()
