@@ -13,11 +13,11 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 
 from deeplabcut.pose_estimation_pytorch.data.utils import out_of_bounds_keypoints
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+from deeplabcut.utils.matplotlib_compat import get_colormap
 
 KEYPOINT_ENCODERS = Registry("kpt_encoders", build_func=build_from_cfg)
 
@@ -234,7 +234,7 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
         return condition
 
     def get_colors_from_cmap(self, cmap_name, num_colors):
-        cmap = plt.get_cmap(cmap_name)
+        cmap = get_colormap(cmap_name)
         colors_float = [cmap(i) for i in np.linspace(0, 256, num_colors, dtype=int)]
         colors = [(int(r * 255), int(g * 255), int(b * 255)) for r, g, b, _ in colors_float]
         return colors
