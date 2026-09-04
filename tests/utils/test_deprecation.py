@@ -8,16 +8,27 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import re
 import warnings
+from pathlib import Path
 
 import pytest
 from packaging.version import Version
 
+import deeplabcut
 from deeplabcut.core.deprecation import (
+    DeprecationInfo,
+    DeprecationRound,
+    DeprecationRoundInfo,
     DLCDeprecationWarning,
     deprecated,
     renamed_parameter,
 )
+
+# Real rounds used by the tests below, so the suite exercises shipped data rather than
+# fixtures. INIT_TF_DEPRECATION is the only round with a scheduled removal.
+ROUND_WITH_REMOVAL = DeprecationRound.INIT_TF_DEPRECATION
+ROUND_WITHOUT_REMOVAL = DeprecationRound.INIT_PARAMETER_ALIASING
 
 # ---------------------------------------------------------------------------
 # @deprecated
@@ -54,14 +65,27 @@ def test_deprecated_warning_contains_replacement():
 
 
 def test_deprecated_warning_contains_since_and_removed_in():
-    @deprecated(since="3.1", removed_in="4.0")
+    round_info = ROUND_WITH_REMOVAL.value
+
+    @deprecated(deprecation_round=ROUND_WITH_REMOVAL)
     def old_fn():
         pass
 
-    with pytest.warns(DLCDeprecationWarning, match="3.1") as record:
+    with pytest.warns(DLCDeprecationWarning, match=str(round_info.since)) as record:
         old_fn()
 
-    assert "4.0" in str(record[0].message)
+    assert str(round_info.removed_in) in str(record[0].message)
+
+
+def test_deprecated_warning_contains_pull_request_url():
+    @deprecated(deprecation_round=ROUND_WITH_REMOVAL)
+    def old_fn():
+        pass
+
+    with pytest.warns(DLCDeprecationWarning, match=ROUND_WITH_REMOVAL.value.url) as record:
+        old_fn()
+
+    assert "for more details" in str(record[0].message)
 
 
 def test_deprecated_preserves_return_value_and_args():
@@ -85,7 +109,9 @@ def test_deprecated_preserves_name_and_docstring():
 
 
 def test_deprecated_attaches_metadata():
-    @deprecated(replacement="new_fn", since="3.1", removed_in="4.0")
+    round_info = ROUND_WITH_REMOVAL.value
+
+    @deprecated(replacement="new_fn", deprecation_round=ROUND_WITH_REMOVAL)
     def old_fn():
         pass
 
@@ -93,30 +119,29 @@ def test_deprecated_attaches_metadata():
     assert info.kind == "callable"
     assert info.target.endswith("old_fn")
     assert info.replacement == "new_fn"
-    assert info.since == Version("3.1")
-    assert info.removed_in == Version("4.0")
+    assert info.deprecation_round is ROUND_WITH_REMOVAL
+    assert info.since == round_info.since
+    assert info.removed_in == round_info.removed_in
+    assert info.url == round_info.url
 
 
-def test_deprecated_invalid_since_raises():
-    with pytest.raises(ValueError, match="Invalid version"):
+def test_deprecated_without_round_has_no_version_metadata():
+    @deprecated(replacement="new_fn")
+    def old_fn():
+        pass
 
-        @deprecated(since="not-a-version")
-        def old_fn():
-            pass
-
-
-def test_deprecated_invalid_removed_in_raises():
-    with pytest.raises(ValueError, match="Invalid version"):
-
-        @deprecated(removed_in="definitely-not-a-version")
-        def old_fn():
-            pass
+    info = old_fn.__deprecated_info__
+    assert info.deprecation_round is None
+    assert info.since is None
+    assert info.removed_in is None
+    assert info.url is None
 
 
-def test_deprecated_removed_in_must_be_greater_than_since():
-    with pytest.raises(ValueError, match="must be greater than"):
+def test_deprecated_rejects_a_round_defined_outside_the_enum():
+    """Rounds must be registered in ``DeprecationRound``, not built at the call site."""
+    with pytest.raises(ValueError):
 
-        @deprecated(since="4.0", removed_in="4.0")
+        @deprecated(deprecation_round=DeprecationRoundInfo(since="9.9", summary="ad-hoc"))
         def old_fn():
             pass
 
@@ -160,7 +185,7 @@ def test_renamed_parameter_new_name_no_warning():
 
 
 def test_renamed_parameter_warning_contains_names():
-    @renamed_parameter(old="videotype", new="video_extensions", since="3.2")
+    @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=ROUND_WITHOUT_REMOVAL)
     def fn(video_extensions=None):
         return video_extensions
 
@@ -169,7 +194,7 @@ def test_renamed_parameter_warning_contains_names():
 
     message = str(record[0].message)
     assert "video_extensions" in message
-    assert "3.2" in message
+    assert str(ROUND_WITHOUT_REMOVAL.value.since) in message
 
 
 def test_renamed_parameter_preserves_name():
@@ -190,7 +215,7 @@ def test_renamed_parameter_old_and_new_together_raise():
 
 
 def test_renamed_parameter_attaches_metadata():
-    @renamed_parameter(old="videotype", new="video_extensions", since="3.2")
+    @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=ROUND_WITHOUT_REMOVAL)
     def fn(video_extensions=None):
         return video_extensions
 
@@ -202,15 +227,8 @@ def test_renamed_parameter_attaches_metadata():
     assert info.target.endswith("fn")
     assert info.old_parameter == "videotype"
     assert info.new_parameter == "video_extensions"
-    assert info.since == Version("3.2")
-
-
-def test_renamed_parameter_invalid_since_raises():
-    with pytest.raises(ValueError, match="Invalid version"):
-
-        @renamed_parameter(old="videotype", new="video_extensions", since="invalid-version")
-        def fn(video_extensions=None):
-            return video_extensions
+    assert info.deprecation_round is ROUND_WITHOUT_REMOVAL
+    assert info.since == ROUND_WITHOUT_REMOVAL.value.since
 
 
 def test_renamed_parameter_new_not_in_signature_raises():
@@ -277,8 +295,8 @@ def test_renamed_parameter_positional_arg_unaffected():
 
 
 def test_multiple_subsequent_renames_allowed():
-    @renamed_parameter(old="oldestname", new="newest", since="3.0.0")
-    @renamed_parameter(old="older_name", new="newest", since="4.0.0")
+    @renamed_parameter(old="oldestname", new="newest", deprecation_round=ROUND_WITHOUT_REMOVAL)
+    @renamed_parameter(old="older_name", new="newest", deprecation_round=DeprecationRound.CONFIG_MODEL_MIGRATION)
     def fn(*, newest):
         return newest
 
@@ -289,3 +307,84 @@ def test_multiple_subsequent_renames_allowed():
     with pytest.warns(DLCDeprecationWarning):
         result = fn(older_name=2)
     assert result == 2
+
+
+# ---------------------------------------------------------------------------
+# DeprecationInfo
+# ---------------------------------------------------------------------------
+
+
+def test_callable_info_rejects_parameter_names():
+    with pytest.raises(ValueError, match="cannot specify parameter names"):
+        DeprecationInfo(kind="callable", target="func", old_parameter="old", new_parameter="new")
+
+
+def test_parameter_info_requires_both_parameter_names():
+    with pytest.raises(ValueError, match="require both"):
+        DeprecationInfo(kind="parameter", target="func", old_parameter="old")
+
+
+def test_parameter_info_rejects_replacement():
+    with pytest.raises(ValueError, match="cannot specify 'replacement'"):
+        DeprecationInfo(
+            kind="parameter",
+            target="func",
+            replacement="not valid",
+            old_parameter="old",
+            new_parameter="new",
+        )
+
+
+# ---------------------------------------------------------------------------
+# DeprecationRound / DeprecationRoundInfo
+# ---------------------------------------------------------------------------
+
+
+# An enum accepts any value, so a member assigned a bare version string would only fail
+# later, when a marker reaches through .value.
+def test_every_round_holds_a_round_info():
+    assert list(DeprecationRound)
+
+    for member in DeprecationRound:
+        assert isinstance(member.value, DeprecationRoundInfo), member.name
+        assert isinstance(member.value.since, Version), member.name
+
+
+def test_round_url_points_at_the_pull_request():
+    assert DeprecationRoundInfo(since="3.1", pull_request=1234).url.endswith("/pull/1234")
+    assert DeprecationRoundInfo(since="3.1").url is None
+
+
+def test_round_invalid_since_raises():
+    with pytest.raises(ValueError, match="Invalid version"):
+        DeprecationRoundInfo(since="not-a-version")
+
+
+def test_round_invalid_removed_in_raises():
+    with pytest.raises(ValueError, match="Invalid version"):
+        DeprecationRoundInfo(since="3.1", removed_in="definitely-not-a-version")
+
+
+def test_round_removed_in_must_be_greater_than_since():
+    with pytest.raises(ValueError, match="must be greater than"):
+        DeprecationRoundInfo(since="4.0", removed_in="4.0")
+
+
+INLINE_ROUND = re.compile(r"deprecation_round\s*=\s*DeprecationRoundInfo\(")
+ROUND_FIELD_ACCESS = re.compile(r"DeprecationRound\.\w+\.value\.")
+
+
+def test_markers_reference_rounds_without_reaching_into_them():
+    """Markers must name a ``DeprecationRound`` member, not build or unpack a round."""
+    package_root = Path(deeplabcut.__file__).parent
+    exempt = {package_root / "core" / "deprecation.py"}
+
+    offenders = [
+        f"{path.relative_to(package_root)}:{lineno}"
+        for path in package_root.rglob("*.py")
+        if path not in exempt
+        for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1)
+        if INLINE_ROUND.search(line) or ROUND_FIELD_ACCESS.search(line)
+    ]
+
+    assert not offenders, "Pass a DeprecationRound member instead: " + ", ".join(offenders)

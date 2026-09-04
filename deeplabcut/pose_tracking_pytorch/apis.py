@@ -11,10 +11,10 @@
 
 from collections.abc import Sequence
 
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def transformer_reID(
     config: str,
     videos: list[str],
@@ -99,7 +99,7 @@ def transformer_reID(
         modelprefix=modelprefix,
     )
 
-    deeplabcut.compat.create_tracking_dataset(
+    deeplabcut.create_tracking_dataset(
         config,
         videos,
         track_method,
