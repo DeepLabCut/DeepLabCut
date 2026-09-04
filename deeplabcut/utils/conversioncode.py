@@ -18,7 +18,6 @@ from tqdm import tqdm
 
 import deeplabcut as dlc
 from deeplabcut.core.config import ProjectConfig
-from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 SUPPORTED_FILETYPES = "csv", "nwb"
@@ -32,7 +31,7 @@ def convertcsv2h5(config: ProjectConfig | dict | Path | str, userfeedback=True, 
     WARNING: conversion might corrupt the data.
 
     Args:
-        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file as a string.
+        config (ProjectConfig | dict | Path | str): Config object or path to the config.yaml file.
         userfeedback (bool, optional): If true the user will be asked specifically
             for each folder in labeled-data if the containing csv shall be converted to hdf format.
         scorer (string, optional): If a string is given, then the scorer/annotator
@@ -48,10 +47,11 @@ def convertcsv2h5(config: ProjectConfig | dict | Path | str, userfeedback=True, 
 
             deeplabcut.convertcsv2h5("/analysis/project/reaching-task/config.yaml", scorer="Albert")
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path()
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
-    folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
+    folders = [cfg.project_path / "labeled-data" / Path(i) for i in video_names]
     if not scorer:
         scorer = cfg["scorer"]
 
@@ -255,7 +255,7 @@ def analyze_videos_converth5_to_nwb(
     """Convert all h5 output data files in `video_folder` to NWB format.
 
     Args:
-        config (ProjectConfig | dict | Path | str): Absolute path to the project YAML config file.
+        config (ProjectConfig | dict | Path | str): Config object or path to the project YAML config file.
         video_folder (string): Absolute path of a folder containing videos and the corresponding h5 data files.
         videotype (string, optional): Only videos with this extension are screened. Defaults to .mp4.
 
@@ -269,6 +269,11 @@ def analyze_videos_converth5_to_nwb(
                 ".mp4",
             )
     """
+    # dlc2nwb.convert_h5_to_nwb still expects a config.yaml path
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path()
+    config_path = cfg.config_yaml_path
+
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
@@ -279,7 +284,7 @@ def analyze_videos_converth5_to_nwb(
         h5_files = collect_video_paths(video_folder, extensions=".h5")
         videos = collect_video_paths(video_folder, extensions=videotype)
 
-    _convert_h5_files_to("nwb", config, h5_files, videos)
+    _convert_h5_files_to("nwb", config_path, h5_files, videos)
 
 
 def _convert_h5_files_to(filetype, config, h5_files, videos):
