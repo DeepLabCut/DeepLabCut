@@ -593,6 +593,7 @@ def test_with_tensorflow_fallback_when_matches_positional_and_keyword():
 
     assert result_kw == "tensorflow"
 
+    tf_routing._TF_DEPRECATION_WARNED = False
     with (
         patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl),
         pytest.warns(DLCDeprecationWarning),
