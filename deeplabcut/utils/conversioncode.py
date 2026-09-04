@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+from collections.abc import Sequence
 from itertools import islice
 from pathlib import Path
 
@@ -18,6 +19,7 @@ from tqdm import tqdm
 
 import deeplabcut as dlc
 from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 SUPPORTED_FILETYPES = "csv", "nwb"
@@ -245,11 +247,11 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
     _convert_h5_files_to("csv", None, h5_files, videos)
 
 
-# TODO: @deruyter92 2026-05-20: this function uses videotype instead of video_extensions.
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def analyze_videos_converth5_to_nwb(
     config: ProjectConfig | dict | Path | str,
     video_folder: str | Path,
-    videotype=".mp4",
+    video_extensions: str | Sequence[str] | None = None,
     listofvideos=False,
 ):
     """Convert all h5 output data files in `video_folder` to NWB format.
@@ -257,7 +259,7 @@ def analyze_videos_converth5_to_nwb(
     Args:
         config (ProjectConfig | dict | Path | str): Config object or path to the project YAML config file.
         video_folder (string): Absolute path of a folder containing videos and the corresponding h5 data files.
-        videotype (string, optional): Only videos with this extension are screened. Defaults to .mp4.
+        video_extensions (string, optional): Only videos with this extension are screened. Defaults to .mp4.
 
     Examples:
         Converts all pose-output files belonging to mp4 videos in the folder
@@ -282,7 +284,7 @@ def analyze_videos_converth5_to_nwb(
             h5_files = []
     else:
         h5_files = collect_video_paths(video_folder, extensions=".h5")
-        videos = collect_video_paths(video_folder, extensions=videotype)
+        videos = collect_video_paths(video_folder, extensions=video_extensions)
 
     _convert_h5_files_to("nwb", config_path, h5_files, videos)
 
