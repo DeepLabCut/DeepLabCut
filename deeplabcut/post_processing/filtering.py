@@ -18,6 +18,7 @@ import pandas as pd
 from scipy import signal
 from scipy.interpolate import CubicSpline
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
@@ -63,7 +64,7 @@ def columnwise_spline_interp(data, max_gap=0):
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def filterpredictions(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     video: str | Path,
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
@@ -177,7 +178,7 @@ def filterpredictions(
                 filtered=True,
             )
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
