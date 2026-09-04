@@ -100,3 +100,85 @@ def test_csv_logger_resume(tmp_path: Path) -> None:
     logger2.log({"loss": 0.3, "accuracy": 0.95}, step=3)
     assert len(logger2._steps) == 3
     assert logger2._steps == [1, 2, 3]
+
+
+class _FakeRun:
+    """Minimal stand-in for a wandb Run."""
+
+    entity = "test-entity"
+    project = "test-project"
+    id = "test-id"
+
+    def watch(self, model: Any) -> None:
+        pass
+
+
+class _FakeWandb:
+    """Fake ``wandb`` module recording ``init`` calls."""
+
+    def __init__(self) -> None:
+        self.run = None
+        self.init_calls: list[dict[str, Any]] = []
+        self.init_error: Exception | None = None
+
+    def init(self, **kwargs: Any) -> _FakeRun:
+        self.init_calls.append(kwargs)
+        if self.init_error is not None:
+            raise self.init_error
+        return _FakeRun()
+
+    def finish(self) -> None:
+        self.run = None
+
+
+@pytest.fixture
+def fake_wandb(monkeypatch: pytest.MonkeyPatch) -> _FakeWandb:
+    fake = _FakeWandb()
+    monkeypatch.setattr(logging, "wandb", fake, raising=False)
+    monkeypatch.setattr(logging, "has_wandb", True)
+    return fake
+
+
+def test_wandb_logger_reports_unknown_init_option(fake_wandb: _FakeWandb, tmp_path: Path) -> None:
+    """An option wandb.init rejects must be reported against the project config."""
+    cause = TypeError("init() got an unexpected keyword argument 'run_nmae'")
+    fake_wandb.init_error = cause
+
+    with pytest.raises(ValueError) as excinfo:
+        logging.WandbLogger(model=object(), train_folder=str(tmp_path), run_nmae="typo")
+
+    message = str(excinfo.value)
+    assert "run_nmae" in message
+    assert "wandb_kwargs" in message
+    assert excinfo.value.__cause__ is cause
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"train_folder": "folder"}, "Specify the model to track!"),
+        ({"model": object()}, "Specify the train folder!"),
+    ],
+    ids=["no-model", "no-train-folder"],
+)
+def test_wandb_logger_validates_before_opening_a_run(
+    fake_wandb: _FakeWandb, kwargs: dict[str, Any], match: str
+) -> None:
+    """Unusable arguments must be rejected before a run is created, to avoid orphans."""
+    with pytest.raises(ValueError, match=match):
+        logging.WandbLogger(**kwargs)
+
+    assert fake_wandb.init_calls == []
+
+
+def test_wandb_logger_forwards_options_to_init(fake_wandb: _FakeWandb, tmp_path: Path) -> None:
+    logging.WandbLogger(
+        project_name="mice",
+        run_name="exp1",
+        model=object(),
+        train_folder=str(tmp_path),
+        tags=["a"],
+    )
+
+    assert fake_wandb.init_calls == [{"project": "mice", "name": "exp1", "tags": ["a"]}]
+    assert (tmp_path / "wandb_info.yaml").exists()
