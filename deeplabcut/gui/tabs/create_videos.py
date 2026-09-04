@@ -243,7 +243,7 @@ class CreateVideos(DefaultTab):
         config_path = self.root.config_path
         shuffle = self.root.shuffle_value
         videos = self.files
-        trailpoints = self.trail_points.value()
+        trail_points = self.trail_points.value()
         if hasattr(self, "color_by_widget"):
             # Multianimal scenario.
             # Color is based on individual or bodypart.
@@ -266,9 +266,9 @@ class CreateVideos(DefaultTab):
             filtered=filtered,
             save_frames=self.create_high_quality_video.isChecked(),
             pcutoff=self.pcutoff_selector.value(),
-            displayedbodyparts=bodyparts,
+            displayed_bodyparts=bodyparts,
             draw_skeleton=self.draw_skeleton_checkbox.isChecked(),
-            trailpoints=trailpoints,
+            trail_points=trail_points,
             color_by=color_by,
             overwrite=self.overwrite_videos.isChecked(),
         )
@@ -285,7 +285,7 @@ class CreateVideos(DefaultTab):
                 videos=videos,
                 shuffle=shuffle,
                 filtered=filtered,
-                displayedbodyparts=bodyparts,
+                displayed_bodyparts=bodyparts,
                 pcutoff=self.pcutoff_selector.value(),
             )
 

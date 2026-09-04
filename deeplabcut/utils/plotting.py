@@ -34,6 +34,7 @@ import numpy as np
 import pandas as pd
 
 from deeplabcut.core import crossvalutils
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
 from deeplabcut.utils.auxfun_videos import collect_video_paths
@@ -54,7 +55,7 @@ def PlottingResults(
     cfg,
     bodyparts2plot,
     individuals2plot,
-    showfigures=False,
+    show_figures=False,
     suffix=".png",
     resolution=100,
     linewidth=1.0,
@@ -160,7 +161,7 @@ def PlottingResults(
     )
     fig4.savefig(Path(tmpfolder) / ("hist" + suffix), bbox_inches="tight", dpi=resolution)
 
-    if showfigures:
+    if show_figures:
         plt.show()
 
 
@@ -170,16 +171,23 @@ def PlottingResults(
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(
+    old="displayedbodyparts", new="displayed_bodyparts", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(
+    old="displayedindividuals", new="displayed_individuals", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(old="showfigures", new="show_figures", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def plot_trajectories(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     filtered=False,
-    displayedbodyparts="all",
-    displayedindividuals="all",
-    showfigures=False,
+    displayed_bodyparts="all",
+    displayed_individuals="all",
+    show_figures=False,
     destfolder=None,
     modelprefix="",
     imagetype=".png",
@@ -192,7 +200,7 @@ def plot_trajectories(
     """Plots the trajectories of various bodyparts across the video.
 
     Args:
-        config (str | Path): Full path of the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Config object or path to the config.yaml file.
         videos (list[str | Path]): Full paths to videos for analysis or a path to the directory, where all the
             videos with same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -209,12 +217,12 @@ def plot_trajectories(
         filtered (bool, optional): Boolean variable indicating if filtered output should be plotted rather than
             frame-by-frame predictions. Filtered version can be calculated with
             ``deeplabcut.filterpredictions``. Defaults to False.
-        displayedbodyparts (list[str] or str, optional): This select the body parts that are plotted in the video.
+        displayed_bodyparts (list[str] or str, optional): This select the body parts that are plotted in the video.
             Either ``all``, then all body parts from config.yaml are used,
             or a list of strings that are a subset of the full list.
             E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml
             to select only these two body parts. Defaults to "all".
-        showfigures (bool, optional): If ``True`` then plots are also displayed. Defaults to False.
+        show_figures (bool, optional): If ``True`` then plots are also displayed. Defaults to False.
         destfolder (string or None, optional): Destination folder for analysis data. If
             ``None``, the path of the video is used. Defaults to None.
         modelprefix (str, optional): Directory containing the deeplabcut models to use when evaluating the network.
@@ -245,10 +253,9 @@ def plot_trajectories(
                 ['/home/alex/analysis/project/videos/reachingvideo1.avi'],
             )
     """
-    config = Path(config)
+    cfg = ProjectConfig.from_any(config)
     if destfolder is not None:
         destfolder = Path(destfolder)
-    cfg = auxiliaryfunctions.read_config(config)
 
     if pcutoff is None:
         pcutoff = cfg["pcutoff"]
@@ -263,8 +270,8 @@ def plot_trajectories(
         modelprefix=modelprefix,
         **kwargs,
     )  # automatically loads corresponding model (even training iteration based on snapshot index)
-    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, displayedbodyparts)
-    individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, displayed_bodyparts)
+    individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayed_individuals)
     Videos = collect_video_paths(videos, extensions=video_extensions)
     if not len(Videos):
         print("No videos found. Make sure you passed a list of videos and that the video_extensions filter is right.")
@@ -288,7 +295,7 @@ def plot_trajectories(
                 filepath,
                 bodyparts,
                 individuals,
-                showfigures,
+                show_figures,
                 resolution,
                 linewidth,
                 cfg["colormap"],

@@ -22,6 +22,7 @@ from tqdm import tqdm
 import deeplabcut.pose_estimation_pytorch.apis.visualization as visualization
 import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.engine import Engine
 from deeplabcut.modelzoo.utils import get_superanimal_colormaps
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
@@ -231,7 +232,7 @@ def superanimal_analyze_images(
 
 
 def analyze_images(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     images: str | Path | list[str] | list[Path],
     frame_type: str | None = None,
     output_dir: str | Path | None = None,
@@ -290,7 +291,8 @@ def analyze_images(
         A dictionary mapping each image filename to the different types of predictions
         for it (e.g. "bodyparts", "unique_bodyparts", "bboxes", "bbox_scores")
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path()
     train_frac = cfg["TrainingFraction"][trainingsetindex]
     model_folder = cfg.project_path / auxiliaryfunctions.get_model_folder(
         train_frac,
@@ -309,7 +311,8 @@ def analyze_images(
         ctd_conditions = model_cfg.inference.conditions if ctd_conditions is None else ctd_conditions
         if ctd_conditions is None:
             raise ValueError("CTD conditions are required for image analysis with cond-top-down models")
-        ctd_conditions = ConditionsModelConfig.resolve_from_conditions(ctd_conditions, config=config)
+        # ConditionsModelConfig still requires a filesystem path to config.yaml
+        ctd_conditions = ConditionsModelConfig.resolve_from_conditions(ctd_conditions, config=cfg.config_yaml_path)
 
     # get the snapshots to analyze images with
     snapshot_index, detector_snapshot_index = parse_snapshot_index_for_analysis(

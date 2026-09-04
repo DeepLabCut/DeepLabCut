@@ -23,6 +23,7 @@ from tqdm import tqdm
 import deeplabcut.utils.auxfun_multianimal as auxfun_multianimal
 import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
 from deeplabcut.core import trackingutils
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.inferenceutils import Assembly
@@ -35,8 +36,9 @@ from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="inferencecfg", new="inference_cfg", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def convert_detections2tracklets(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: str | list[str],
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
@@ -44,7 +46,7 @@ def convert_detections2tracklets(
     overwrite: bool = False,
     destfolder: str | Path | None = None,
     ignore_bodyparts: list[str] | None = None,
-    inferencecfg: dict | None = None,
+    inference_cfg: dict | None = None,
     modelprefix="",
     greedy: bool = False,  # TODO(niels): implement greedy assembly during video analysis
     calibrate: bool = False,  # TODO(niels): implement assembly calibration during video analysis
@@ -55,15 +57,16 @@ def convert_detections2tracklets(
     detector_snapshot_index: int | str | None = None,
 ):
     """TODO: Documentation, clean & remove code duplication (with analyze video)"""
-    cfg = auxiliaryfunctions.read_config(config)
-    inference_cfg = inferencecfg
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path()
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
         warnings.warn("Switching to `box` tracker for single point tracking...", stacklevel=2)
         track_method = "box"
         cfg["default_track_method"] = track_method
-        auxiliaryfunctions.write_config(config, cfg)
+        # Persist changes to disk.
+        cfg.to_yaml(cfg.config_yaml_path, overwrite=True, log_changes=True)
 
     train_fraction = cfg["TrainingFraction"][trainingsetindex]
     start_path = Path.cwd()  # record cwd to return to this directory in the end
@@ -107,7 +110,7 @@ def convert_detections2tracklets(
         inference_cfg["boundingboxslack"] = max(inference_cfg["boundingboxslack"], 40)
 
     loader = DLCLoader(
-        config,
+        cfg,
         trainset_index=trainingsetindex,
         shuffle=shuffle,
         modelprefix=modelprefix,

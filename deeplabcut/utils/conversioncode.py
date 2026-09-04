@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+from collections.abc import Sequence
 from itertools import islice
 from pathlib import Path
 
@@ -17,13 +18,14 @@ import pandas as pd
 from tqdm import tqdm
 
 import deeplabcut as dlc
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 SUPPORTED_FILETYPES = "csv", "nwb"
 
 
-def convertcsv2h5(config: str | Path, userfeedback=True, scorer=None):
+def convertcsv2h5(config: ProjectConfig | dict | Path | str, userfeedback=True, scorer=None):
     """Convert annotation files in labeled-data from csv to h5.
 
     Allows the user to manually edit the csv
@@ -31,7 +33,7 @@ def convertcsv2h5(config: str | Path, userfeedback=True, scorer=None):
     WARNING: conversion might corrupt the data.
 
     Args:
-        config (str | Path): Full path of the config.yaml file as a string.
+        config (ProjectConfig | dict | Path | str): Config object or path to the config.yaml file.
         userfeedback (bool, optional): If true the user will be asked specifically
             for each folder in labeled-data if the containing csv shall be converted to hdf format.
         scorer (string, optional): If a string is given, then the scorer/annotator
@@ -47,10 +49,11 @@ def convertcsv2h5(config: str | Path, userfeedback=True, scorer=None):
 
             deeplabcut.convertcsv2h5("/analysis/project/reaching-task/config.yaml", scorer="Albert")
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path()
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
-    folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
+    folders = [cfg.project_path / "labeled-data" / Path(i) for i in video_names]
     if not scorer:
         scorer = cfg["scorer"]
 
@@ -208,8 +211,9 @@ def adapt_labeled_data_to_new_project(
     convertcsv2h5(config_path, userfeedback=userfeedback)
 
 
-# TODO: @deruyter92 2026-05-20: this function uses videotype instead of video_extensions.
-def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos=False):
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="listofvideos", new="list_of_videos", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+def analyze_videos_converth5_to_csv(video_folder, video_extensions=".mp4", list_of_videos=False):
     """By default the output poses (when running analyze_videos) are stored as
     MultiIndex Pandas Array, which contains the name of the network, body part name, (x,
     y) label position in pixels, and the likelihood for each frame per body part.
@@ -220,7 +224,7 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
 
     Args:
         video_folder (string): Absolute path of a folder containing videos and the corresponding h5 data files.
-        videotype (string, optional): Only videos with this extension are screened. Defaults to .mp4.
+        video_extensions (string, optional): Only videos with this extension are screened. Defaults to .mp4.
 
     Examples:
         Converts all pose-output files belonging to mp4 videos in the folder
@@ -231,7 +235,7 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
                 ".mp4",
             )
     """
-    if listofvideos:  # can also be called with a list of videos (from GUI)
+    if list_of_videos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
             h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5")
@@ -239,24 +243,25 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
             h5_files = []
     else:
         h5_files = collect_video_paths(video_folder, extensions=".h5")
-        videos = collect_video_paths(video_folder, extensions=videotype)
+        videos = collect_video_paths(video_folder, extensions=video_extensions)
 
     _convert_h5_files_to("csv", None, h5_files, videos)
 
 
-# TODO: @deruyter92 2026-05-20: this function uses videotype instead of video_extensions.
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="listofvideos", new="list_of_videos", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def analyze_videos_converth5_to_nwb(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     video_folder: str | Path,
-    videotype=".mp4",
-    listofvideos=False,
+    video_extensions: str | Sequence[str] | None = None,
+    list_of_videos=False,
 ):
     """Convert all h5 output data files in `video_folder` to NWB format.
 
     Args:
-        config (string): Absolute path to the project YAML config file.
+        config (ProjectConfig | dict | Path | str): Config object or path to the project YAML config file.
         video_folder (string): Absolute path of a folder containing videos and the corresponding h5 data files.
-        videotype (string, optional): Only videos with this extension are screened. Defaults to .mp4.
+        video_extensions (string, optional): Only videos with this extension are screened. Defaults to .mp4.
 
     Examples:
         Converts all pose-output files belonging to mp4 videos in the folder
@@ -268,7 +273,12 @@ def analyze_videos_converth5_to_nwb(
                 ".mp4",
             )
     """
-    if listofvideos:  # can also be called with a list of videos (from GUI)
+    # dlc2nwb.convert_h5_to_nwb still expects a config.yaml path
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path()
+    config_path = cfg.config_yaml_path
+
+    if list_of_videos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
             h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5")
@@ -276,9 +286,9 @@ def analyze_videos_converth5_to_nwb(
             h5_files = []
     else:
         h5_files = collect_video_paths(video_folder, extensions=".h5")
-        videos = collect_video_paths(video_folder, extensions=videotype)
+        videos = collect_video_paths(video_folder, extensions=video_extensions)
 
-    _convert_h5_files_to("nwb", config, h5_files, videos)
+    _convert_h5_files_to("nwb", config_path, h5_files, videos)
 
 
 def _convert_h5_files_to(filetype, config, h5_files, videos):

@@ -167,6 +167,7 @@ def return_train_network_path(
 
 @with_tensorflow_fallback(normalize_gputouse=True, dropped_params=["rescale"])
 @renamed_parameter(old="Shuffles", new="shuffles", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="snapshotindex", new="snapshot_index", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 @renamed_parameter(
     old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING
 )
@@ -174,7 +175,7 @@ def evaluate_network(
     config: ProjectConfig | dict | Path | str,
     shuffles: Iterable[int] = (1,),
     trainingsetindex: int | str = 0,
-    snapshotindex: int | str | None = None,
+    snapshot_index: int | str | None = None,
     device: str | None = None,
     plotting: bool | str = False,
     show_errors: bool = True,
@@ -196,9 +197,9 @@ def evaluate_network(
         shuffles: Iterable of integers specifying the shuffle indices to evaluate.
         trainingsetindex: Integer specifying which training set fraction to use.
             Evaluates all fractions if set to ``"all"``.
-        snapshotindex: Index (starting at 0) of the snapshot to load. To evaluate the
+        snapshot_index: Index (starting at 0) of the snapshot to load. To evaluate the
             last one, use ``-1``. To evaluate all snapshots, use ``"all"``. If ``None``,
-            the snapshotindex is loaded from the project configuration.
+            the snapshot_index is loaded from the project configuration.
         device: The device to run evaluation on.
         plotting: Plots the predictions on the train and test images. If provided it
             must be either ``True``, ``False``, ``"bodypart"``, or ``"individual"``.
@@ -207,7 +208,7 @@ def evaluate_network(
         transform: Transformation pipeline for evaluation. Should normalise the data
             the same way it was normalised during training.
         snapshots_to_evaluate: List of snapshot names to evaluate (e.g.
-            ``["snapshot-50", "snapshot-75"]``). If defined, ``snapshotindex`` will be
+            ``["snapshot-50", "snapshot-75"]``). If defined, ``snapshot_index`` will be
             ignored.
         comparison_bodyparts: A subset of the bodyparts for which to compute the
             evaluation metrics.
@@ -255,7 +256,7 @@ def evaluate_network(
         config=config,
         shuffles=shuffles,
         trainingsetindex=trainingsetindex,
-        snapshotindex=snapshotindex,
+        snapshot_index=snapshot_index,
         device=device,
         plotting=plotting,
         show_errors=show_errors,
@@ -273,18 +274,23 @@ def evaluate_network(
 @renamed_parameter(
     old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING
 )
-@renamed_parameter(old="Snapindex", new="snapshotindex", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="Snapindex", new="snapshot_index", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="snapshotindex", new="snapshot_index", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="fulldata", new="full_data", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="returnjustfns", new="return_just_fns", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
 def return_evaluate_network_data(
     config: ProjectConfig | dict | Path | str,
     shuffle: int = 0,
     trainingsetindex: int = 0,
     comparison_bodyparts: str | list[str] = "all",
-    snapshotindex: str | int | None = None,
+    snapshot_index: str | int | None = None,
     rescale: bool = False,
-    fulldata: bool = False,
+    full_data: bool = False,
     show_errors: bool = True,
     modelprefix: str = "",
-    returnjustfns: bool = True,
+    return_just_fns: bool = True,
 ):
     """Deprecated TensorFlow-only function."""
     raise NotImplementedError("This function is not implemented for PyTorch")
@@ -642,6 +648,7 @@ def analyze_time_lapse_frames(
 
 @with_tensorflow_fallback(normalize_gputouse=True)
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="inferencecfg", new="inference_cfg", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def convert_detections2tracklets(
     config: ProjectConfig | dict | Path | str,
     videos: str | list[str],
@@ -651,7 +658,7 @@ def convert_detections2tracklets(
     overwrite: bool = False,
     destfolder: str | None = None,
     ignore_bodyparts: list[str] | None = None,
-    inferencecfg: dict | None = None,
+    inference_cfg: dict | None = None,
     modelprefix="",
     identity_only=False,
     track_method="",
@@ -671,7 +678,7 @@ def convert_detections2tracklets(
         overwrite: Whether to overwrite existing tracklet files.
         destfolder: Destination folder for tracklet data.
         ignore_bodyparts: Body parts to ignore during assembly.
-        inferencecfg: Inference configuration dictionary.
+        inference_cfg: Inference configuration dictionary.
         modelprefix: Directory containing the deeplabcut models to use.
         identity_only: If ``True`` and animal identity was learned by the model,
             assembly and tracking rely exclusively on identity prediction.
@@ -693,7 +700,7 @@ def convert_detections2tracklets(
         overwrite=overwrite,
         destfolder=destfolder,
         ignore_bodyparts=ignore_bodyparts,
-        inferencecfg=inferencecfg,
+        inference_cfg=inference_cfg,
         modelprefix=modelprefix,
         identity_only=identity_only,
         track_method=track_method,
@@ -924,11 +931,12 @@ def extract_save_all_maps(
     dropped_params=["TFGPUinference", "make_tar"],
     renamed_params={"wipepaths": "wipe_paths", "cfg_path": "config"},
 )
+@renamed_parameter(old="snapshotindex", new="snapshot_index", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def export_model(
     config: ProjectConfig | dict | Path | str,
     shuffle: int = 1,
     trainingsetindex: int = 0,
-    snapshotindex: int | None = None,
+    snapshot_index: int | None = None,
     detector_snapshot_index: int | None = None,
     iteration: int | None = None,
     overwrite: bool = False,
@@ -946,10 +954,10 @@ def export_model(
             instance.
         shuffle: The shuffle of the model to export.
         trainingsetindex: The index of the training fraction for the model to export.
-        snapshotindex: The snapshot index for the weights to export. If ``None``, uses
-            the snapshotindex as defined in ``config.yaml``.
+        snapshot_index: The snapshot index for the weights to export. If ``None``, uses
+            the snapshot_index as defined in ``config.yaml``.
         detector_snapshot_index: Only for TD models. The detector snapshot index. If
-            ``None``, uses the snapshotindex as defined in the project ``config.yaml``.
+            ``None``, uses the snapshot_index as defined in the project ``config.yaml``.
         iteration: The project iteration (active learning loop) to export. If ``None``,
             the iteration listed in the project config file is used.
         overwrite: Whether to overwrite if the model has already been exported.
@@ -971,7 +979,7 @@ def export_model(
         >>> deeplabcut.export_model(
         ...     "/analysis/project/reaching-task/config.yaml",
         ...     shuffle=3,
-        ...     snapshotindex=-1,
+        ...     snapshot_index=-1,
         ... )
     """
     from deeplabcut.pose_estimation_pytorch.apis.export import export_model
@@ -980,7 +988,7 @@ def export_model(
         config=config,
         shuffle=shuffle,
         trainingsetindex=trainingsetindex,
-        snapshotindex=snapshotindex,
+        snapshot_index=snapshot_index,
         detector_snapshot_index=detector_snapshot_index,
         iteration=iteration,
         overwrite=overwrite,

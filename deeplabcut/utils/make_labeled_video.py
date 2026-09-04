@@ -45,6 +45,7 @@ from skimage.draw import disk, line_aa, rectangle_perimeter, set_color
 from skimage.util import img_as_ubyte
 from tqdm import trange
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.config import PoseConfig
@@ -78,7 +79,7 @@ def CreateVideo(
     dotsize,
     colormap,
     bodyparts2plot,
-    trailpoints,
+    trail_points,
     cropping,
     x1,
     x2,
@@ -87,7 +88,7 @@ def CreateVideo(
     bodyparts2connect,
     skeleton_color,
     draw_skeleton,
-    displaycropped,
+    display_cropped,
     color_by,
     confidence_to_alpha=None,
     plot_bboxes=True,
@@ -103,7 +104,7 @@ def CreateVideo(
         # recode the bodyparts2connect into indices for df_x and df_y for speed
         bpts2connect = get_segment_indices(bodyparts2connect, all_bpts)
 
-    if displaycropped:
+    if display_cropped:
         ny, nx = y2 - y1, x2 - x1
     else:
         ny, nx = clip.height, clip.width
@@ -121,7 +122,7 @@ def CreateVideo(
 
     df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
 
-    if cropping and not displaycropped:
+    if cropping and not display_cropped:
         df_x += x1
         df_y += y1
     colorclass = plt.cm.ScalarMappable(cmap=colormap)
@@ -154,7 +155,7 @@ def CreateVideo(
     with np.errstate(invalid="ignore"):
         for index in trange(min(nframes, len(Dataframe))):
             image = clip.load_frame()
-            if displaycropped:
+            if display_cropped:
                 image = image[y1:y2, x1:x2]
 
             # Draw bounding boxes if required and present
@@ -199,8 +200,8 @@ def CreateVideo(
                         color = colors[num_bp]
                     else:
                         color = colors[num_ind]
-                    if trailpoints > 0:
-                        for k in range(1, min(trailpoints, index + 1)):
+                    if trail_points > 0:
+                        for k in range(1, min(trail_points, index + 1)):
                             rr, cc = disk(
                                 (df_y[ind, index - k], df_x[ind, index - k]),
                                 dotsize,
@@ -227,7 +228,7 @@ def CreateVideoSlow(
     colormap,
     alphavalue,
     pcutoff,
-    trailpoints,
+    trail_points,
     cropping,
     x1,
     x2,
@@ -235,12 +236,12 @@ def CreateVideoSlow(
     y2,
     save_frames,
     bodyparts2plot,
-    outputframerate,
-    Frames2plot,
+    output_framerate,
+    frames_to_plot,
     bodyparts2connect,
     skeleton_color,
     draw_skeleton,
-    displaycropped,
+    display_cropped,
     color_by,
     plot_bboxes=True,
     bboxes_list=None,
@@ -248,14 +249,14 @@ def CreateVideoSlow(
     bboxes_color: str | None = None,
 ):
     """Creating individual frames with labeled body parts and making a video."""
-    if displaycropped:
+    if display_cropped:
         ny, nx = y2 - y1, x2 - x1
     else:
         ny, nx = clip.height, clip.width
 
     fps = clip.fps
-    if outputframerate is None:  # by def. same as input rate.
-        outputframerate = fps
+    if output_framerate is None:  # by def. same as input rate.
+        output_framerate = fps
 
     nframes = clip.nframes
     duration = nframes / fps
@@ -264,7 +265,7 @@ def CreateVideoSlow(
     print(f"Overall # of frames: {nframes} with cropped frame dimensions: {nx} {ny}")
     print("Generating frames and creating video.")
     df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
-    if cropping and not displaycropped:
+    if cropping and not display_cropped:
         df_x += x1
         df_y += y1
 
@@ -300,10 +301,10 @@ def CreateVideoSlow(
     if nframes_digits > 9:
         raise Exception("Your video has more than 10**9 frames, we recommend chopping it up.")
 
-    if Frames2plot is None:
+    if frames_to_plot is None:
         Index = set(range(nframes))
     else:
-        Index = {int(k) for k in Frames2plot if 0 <= k < nframes}
+        Index = {int(k) for k in frames_to_plot if 0 <= k < nframes}
 
     # Prepare figure
     prev_backend = plt.get_backend()
@@ -312,13 +313,13 @@ def CreateVideoSlow(
     fig = plt.figure(frameon=False, figsize=(nx / dpi, ny / dpi))
     ax = fig.add_subplot(111)
 
-    writer = FFMpegWriter(fps=outputframerate, codec="h264")
+    writer = FFMpegWriter(fps=output_framerate, codec="h264")
     with writer.saving(fig, videooutname, dpi=dpi), np.errstate(invalid="ignore"):
         for index in trange(min(nframes, len(Dataframe))):
             imagename = Path(tmpfolder) / f"file{index:0{nframes_digits}d}.png"
             image = img_as_ubyte(clip.load_frame())
             if index in Index:  # then extract the frame!
-                if cropping and displaycropped:
+                if cropping and display_cropped:
                     image = image[y1:y2, x1:x2]
                 ax.imshow(image)
 
@@ -361,10 +362,10 @@ def CreateVideoSlow(
                             color = colors(num_bp)
                         else:
                             color = colors(num_ind)
-                        if trailpoints > 0:
+                        if trail_points > 0:
                             ax.scatter(
-                                df_x[ind][max(0, index - trailpoints) : index],
-                                df_y[ind][max(0, index - trailpoints) : index],
+                                df_x[ind][max(0, index - trail_points) : index],
+                                df_y[ind][max(0, index - trail_points) : index],
                                 s=dotsize**2,
                                 color=color,
                                 alpha=alphavalue * 0.75,
@@ -391,25 +392,40 @@ def CreateVideoSlow(
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="fastmode", new="fast_mode", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="Frames2plot", new="frames_to_plot", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="displayedbodyparts", new="displayed_bodyparts", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(
+    old="displayedindividuals", new="displayed_individuals", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(
+    old="outputframerate", new="output_framerate", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(old="trailpoints", new="trail_points", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="displaycropped", new="display_cropped", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
 def create_labeled_video(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     filtered: bool = False,
-    fastmode: bool = True,
+    fast_mode: bool = True,
     save_frames: bool = False,
     keypoints_only: bool = False,
-    Frames2plot: list[int] | None = None,
-    displayedbodyparts: list[str] | str = "all",
-    displayedindividuals: list[str] | str = "all",
+    frames_to_plot: list[int] | None = None,
+    displayed_bodyparts: list[str] | str = "all",
+    displayed_individuals: list[str] | str = "all",
     codec: str = "mp4v",
-    outputframerate: int | None = None,
+    output_framerate: int | None = None,
     destfolder: Path | str | None = None,
     draw_skeleton: bool = False,
-    trailpoints: int = 0,
-    displaycropped: bool = False,
+    trail_points: int = 0,
+    display_cropped: bool = False,
     color_by: str = "bodypart",
     modelprefix: str = "",
     init_weights: str = "",
@@ -434,7 +450,7 @@ def create_labeled_video(
     ``deeplabcut.analyze_videos``.
 
     Args:
-        config (str | Path): Full path of the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Config object or path to the config.yaml file.
         videos (list[str | Path]): A list of strings containing the full paths to videos for analysis or a path
             to the directory, where all the videos with same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -451,7 +467,7 @@ def create_labeled_video(
         filtered (bool, optional): If True, plot filtered output rather than
             frame-by-frame predictions. Filtered version can be calculated with
             ``deeplabcut.filterpredictions``. Defaults to False.
-        fastmode (bool, optional): If ``True``, uses openCV (much faster but less customization of video) instead
+        fast_mode (bool, optional): If ``True``, uses openCV (much faster but less customization of video) instead
             of matplotlib if ``False``. You can also "save_frames" individually or not in
             the matplotlib mode (if you set the "save_frames" variable accordingly).
             However, using matplotlib to create the frames it therefore allows much more
@@ -463,28 +479,28 @@ def create_labeled_video(
             see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal
             paper: "Visual perception of biological motion and a model for its analysis"
             by Gunnar Johansson in Perception & Psychophysics 1973. Defaults to False.
-        Frames2plot (List[int] or None, optional): If not ``None`` and ``save_frames=True``,
-            plot frames at the given indices. E.g. ``Frames2plot=[0,11]`` plots the first
+        frames_to_plot (List[int] or None, optional): If not ``None`` and ``save_frames=True``,
+            plot frames at the given indices. E.g. ``frames_to_plot=[0,11]`` plots the first
             and 12th frame. Defaults to None.
-        displayedbodyparts (list[str] or str, optional): Body parts plotted in the video. If ``all``, then all
+        displayed_bodyparts (list[str] or str, optional): Body parts plotted in the video. If ``all``, then all
             body parts from config.yaml are used. If a list of strings that are a subset of
             the full list. E.g. ['hand','Joystick'] for the demo
             Reaching-Mackenzie-2018-08-30/config.yaml to select only these body parts. Defaults to "all".
-        displayedindividuals (list[str] or str, optional): Individuals plotted in the video.
+        displayed_individuals (list[str] or str, optional): Individuals plotted in the video.
             By default, all individuals present in the config will be shown. Defaults to "all".
         codec (str, optional): Codec for labeled video. For available options, see
             http://www.fourcc.org/codecs.php. Note that this depends on your ffmpeg
             installation. Defaults to "mp4v".
-        outputframerate (int or None, optional): Output frame rate for labeled video (only
+        output_framerate (int or None, optional): Output frame rate for labeled video (only
             when saving frames). If ``None``, uses the original video rate. Defaults to None.
         destfolder (Path, string or None, optional): Destination folder used for storing analysis data. If
             ``None``, the path of the video file is used. Defaults to None.
         draw_skeleton (bool, optional): If ``True`` adds a line connecting the body parts making a skeleton on each
             frame. The body parts to be connected and the color of these connecting lines
             are specified in the config file. Defaults to False.
-        trailpoints (int, optional): Number of previous frames whose body parts are plotted in a frame
+        trail_points (int, optional): Number of previous frames whose body parts are plotted in a frame
             (for displaying history). Defaults to 0.
-        displaycropped (bool, optional): Specifies whether only cropped frame is displayed (with labels analyzed
+        display_cropped (bool, optional): Specifies whether only cropped frame is displayed (with labels analyzed
             therein), or the original frame with the labels analyzed in the cropped subset. Defaults to False.
         color_by (string, optional): Coloring rule. By default, each bodypart is colored differently.
             If set to 'individual', points belonging to a single individual are colored the
@@ -536,7 +552,7 @@ def create_labeled_video(
             deeplabcut.create_labeled_video(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/videos/reachingvideo1.avi'],
-                fastmode=True,
+                fast_mode=True,
                 save_frames=True,
             )
 
@@ -565,13 +581,14 @@ def create_labeled_video(
                 video_extensions='mp4',
             )
     """
-    if config != "":
-        config = Path(config)
+    # TODO @deruyter92 2026-09-04: this function can still be refactored
+    # substantially by leveraging the ProjectConfig class and simplifying the API.
     if destfolder is not None:
         destfolder = Path(destfolder)
     if skeleton is None:
         skeleton = []
     if config == "":
+        # Project-less SuperAnimal / modelzoo path: no config.yaml is available.
         if pcutoff is None:
             pcutoff = 0.6
         if bboxes_pcutoff is None:
@@ -580,7 +597,8 @@ def create_labeled_video(
         individuals = [""]
         uniquebodyparts = []
     else:
-        cfg = auxiliaryfunctions.read_config(config)
+        cfg = ProjectConfig.from_any(config)
+        cfg.validate_project_path()
         train_fraction = cfg["TrainingFraction"][trainingsetindex]
         track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
         if pcutoff is None:
@@ -601,7 +619,7 @@ def create_labeled_video(
             modelprefix,
             engine=Engine.PYTORCH,
         )
-        model_config_path = Path(config).parent / model_folder / "train" / Engine.PYTORCH.pose_cfg_name
+        model_config_path = cfg.project_path / model_folder / "train" / Engine.PYTORCH.pose_cfg_name
         if model_config_path.exists():
             model_config = PoseConfig.from_yaml(model_config_path)
             if model_config.select("train_settings.weight_init.memory_replay"):
@@ -620,7 +638,7 @@ def create_labeled_video(
         DLCscorerlegacy = "DLC_" + Path(init_weights).stem
 
     if save_frames:
-        fastmode = False  # otherwise one cannot save frames
+        fast_mode = False  # otherwise one cannot save frames
         keypoints_only = False
 
     # parse the alpha selection function
@@ -647,13 +665,13 @@ def create_labeled_video(
             "uniquebodyparts": uniquebodyparts,
         }
     else:
-        bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, displayedbodyparts)
+        bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, displayed_bodyparts)
 
     if draw_skeleton:
         bodyparts2connect = cfg["skeleton"]
-        if displayedbodyparts != "all":
+        if displayed_bodyparts != "all":
             bodyparts2connect = [
-                pair for pair in bodyparts2connect if all(element in displayedbodyparts for element in pair)
+                pair for pair in bodyparts2connect if all(element in displayed_bodyparts for element in pair)
             ]
         skeleton_color = cfg["skeleton_color"]
     else:
@@ -675,19 +693,19 @@ def create_labeled_video(
         DLCscorerlegacy,
         track_method,
         cfg,
-        displayedindividuals,
+        displayed_individuals,
         color_by,
         bodyparts,
         codec,
         bodyparts2connect,
-        trailpoints,
+        trail_points,
         save_frames,
-        outputframerate,
-        Frames2plot,
+        output_framerate,
+        frames_to_plot,
         draw_skeleton,
         skeleton_color,
-        displaycropped,
-        fastmode,
+        display_cropped,
+        fast_mode,
         keypoints_only,
         overwrite,
         init_weights=init_weights,
@@ -723,14 +741,14 @@ def proc_video(
     bodyparts,
     codec,
     bodyparts2connect,
-    trailpoints,
+    trail_points,
     save_frames,
-    outputframerate,
-    Frames2plot,
+    output_framerate,
+    frames_to_plot,
     draw_skeleton,
     skeleton_color,
-    displaycropped,
-    fastmode,
+    display_cropped,
+    fast_mode,
     keypoints_only,
     overwrite,
     video,
@@ -825,7 +843,7 @@ def proc_video(
                 if bodyparts2connect:
                     all_bpts = df.columns.get_level_values("bodyparts")[::3]
                     inds = get_segment_indices(bodyparts2connect, all_bpts)
-                clip = vp(fname=video, fps=outputframerate)
+                clip = vp(fname=video, fps=output_framerate)
                 create_video_with_keypoints_only(
                     df,
                     videooutname,
@@ -839,7 +857,7 @@ def proc_video(
                     fps=clip.fps,
                 )
                 clip.close()
-            elif not fastmode:
+            elif not fast_mode:
                 tmpfolder = str(Path(str(videofolder)) / ("temp-" + vname))
                 if save_frames:
                     auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
@@ -853,7 +871,7 @@ def proc_video(
                     cfg["colormap"],
                     cfg["alphavalue"],
                     pcutoff,
-                    trailpoints,
+                    trail_points,
                     cropping,
                     x1,
                     x2,
@@ -861,12 +879,12 @@ def proc_video(
                     y2,
                     save_frames,
                     labeled_bpts,
-                    outputframerate,
-                    Frames2plot,
+                    output_framerate,
+                    frames_to_plot,
                     bodyparts2connect,
                     skeleton_color,
                     draw_skeleton,
-                    displaycropped,
+                    display_cropped,
                     color_by,
                     plot_bboxes=plot_bboxes,
                     bboxes_list=bboxes_list,
@@ -888,9 +906,9 @@ def proc_video(
                     color_by=color_by,
                     skeleton_edges=bodyparts2connect,
                     skeleton_color=skeleton_color,
-                    trailpoints=trailpoints,
-                    fps=outputframerate,
-                    display_cropped=displaycropped,
+                    trail_points=trail_points,
+                    fps=output_framerate,
+                    display_cropped=display_cropped,
                     confidence_to_alpha=confidence_to_alpha,
                     plot_bboxes=plot_bboxes,
                     bboxes_list=bboxes_list,
@@ -915,7 +933,7 @@ def create_video(
     cmap="rainbow",
     color_by="bodypart",
     skeleton_color="k",
-    trailpoints=0,
+    trail_points=0,
     bbox=None,
     display_cropped=False,
     codec="mp4v",
@@ -969,7 +987,7 @@ def create_video(
         dotsize,
         cmap,
         kpts,
-        trailpoints,
+        trail_points,
         cropping,
         x1,
         x2,
@@ -1069,13 +1087,16 @@ def create_video_with_keypoints_only(
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(
+    old="displayedbodyparts", new="displayed_bodyparts", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
 def create_video_with_all_detections(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
-    displayedbodyparts="all",
+    displayed_bodyparts="all",
     cropping: list[int] | None = None,
     destfolder=None,
     modelprefix="",
@@ -1087,7 +1108,7 @@ def create_video_with_all_detections(
     """Create a video labeled with all the detections stored in a '*_full.pickle' file.
 
     Args:
-        config (str | Path): Absolute path to the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Config object or path to the config.yaml file.
         videos (list[str | Path]): Full paths to videos for analysis, or a directory where all
             videos with the same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -1101,7 +1122,7 @@ def create_video_with_all_detections(
         shuffle (int, optional): Number of shuffles of training dataset. Defaults to 1.
         trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use.
             By default the first (note that TrainingFraction is a list in config.yaml).
-        displayedbodyparts (list of strings, optional): Body parts plotted in the video.
+        displayed_bodyparts (list of strings, optional): Body parts plotted in the video.
             Either ``all``, then all body parts from config.yaml are used or
             a list of strings that are a subset of the full list.
             E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml
@@ -1127,8 +1148,7 @@ def create_video_with_all_detections(
 
     from deeplabcut.core.inferenceutils import Assembler
 
-    # TODO @deruyter92 2026-09-01: This should be refactored to ProjectConfig.from_any()
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorername, _ = auxiliaryfunctions.get_scorer_name(
         cfg,
@@ -1177,13 +1197,13 @@ def create_video_with_all_detections(
             header = data.pop("metadata")
             all_jointnames = header["all_joints_names"]
 
-            if displayedbodyparts == "all":
+            if displayed_bodyparts == "all":
                 numjoints = len(all_jointnames)
                 bpts = range(numjoints)
-            else:  # select only "displayedbodyparts"
+            else:  # select only "displayed_bodyparts"
                 bpts = []
                 for bptindex, bp in enumerate(all_jointnames):
-                    if bp in displayedbodyparts:
+                    if bp in displayed_bodyparts:
                         bpts.append(bptindex)
                 numjoints = len(bpts)
             frame_names = list(data)
@@ -1296,7 +1316,7 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
             fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             plt.savefig(image_output)
 
-    outputframerate = 30
+    output_framerate = 30
     os.chdir(destfolder)
 
     subprocess.call(
@@ -1307,7 +1327,7 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
             "-i",
             f"frame%0{strwidth}d.png",
             "-r",
-            str(outputframerate),
+            str(output_framerate),
             output_name,
         ]
     )

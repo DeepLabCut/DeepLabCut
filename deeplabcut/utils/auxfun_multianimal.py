@@ -30,6 +30,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxiliaryfunctions, conversioncode
 
@@ -231,14 +232,14 @@ def returnlabelingdata(config):
             return Data
 
 
-def convert2_maDLC(config: str | Path, userfeedback=True, forceindividual=None):
+def convert2_maDLC(config: ProjectConfig | dict | Path | str, userfeedback=True, forceindividual=None):
     """Convert a single-animal annotation file into a multianimal annotation file.
 
     Introduces an individuals column with either the first individual
     in individuals list in config.yaml or whatever is passed via "forceindividual".
 
     Args:
-        config (str | Path): Full path of the config.yaml file as a string.
+        config (ProjectConfig | dict | Path | str): Config object or path to the config.yaml file.
         userfeedback (bool, optional): If false, all folders are processed without prompting.
             If true, the user is asked for each folder whether to convert. Use this, e.g. if you have already labeled
             some folders and want to convert data for new videos only.
@@ -256,10 +257,11 @@ def convert2_maDLC(config: str | Path, userfeedback=True, forceindividual=None):
 
             deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml", forceindividual="mus17")
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path()
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
-    folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
+    folders = [cfg.project_path / "labeled-data" / Path(i) for i in video_names]
 
     individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(cfg)
 

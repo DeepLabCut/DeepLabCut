@@ -130,7 +130,7 @@ def parse_snapshot_index_for_analysis(
 
 
 def return_train_network_path(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     modelprefix: str = "",
@@ -138,7 +138,7 @@ def return_train_network_path(
     """Return the train network path.
 
     Args:
-        config: Full path of the config.yaml file as a string.
+        config: config object or path to the config.yaml file.
         shuffle: The shuffle index to select for training
         trainingsetindex: Which TrainingsetFraction to use (note that TrainingFraction
             is a list in config.yaml)
@@ -149,16 +149,16 @@ def return_train_network_path(
         the path to the test pytorch pose configuration file
         the path to the folder containing the snapshots
     """
-    cfg = auxiliaryfunctions.read_config(config)
-    project_path = cfg.project_path
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path()
     train_frac = cfg["TrainingFraction"][trainingsetindex]
     model_folder = auxiliaryfunctions.get_model_folder(
         train_frac, shuffle, cfg, engine=Engine.PYTORCH, modelprefix=modelprefix
     )
     return (
-        project_path / model_folder / "train" / "pytorch_config.yaml",
-        project_path / model_folder / "test" / "pose_cfg.yaml",
-        project_path / model_folder / "train",
+        cfg.project_path / model_folder / "train" / "pytorch_config.yaml",
+        cfg.project_path / model_folder / "test" / "pose_cfg.yaml",
+        cfg.project_path / model_folder / "train",
     )
 
 

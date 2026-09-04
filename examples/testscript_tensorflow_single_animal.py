@@ -363,7 +363,7 @@ if __name__ == "__main__":
         path_config_file,
         [newvideo2],
         destfolder=DESTFOLDER,
-        displaycropped=True,
+        display_cropped=True,
         filtered=True,
     )
     assert all(successful), "Failed to create a labeled video!"

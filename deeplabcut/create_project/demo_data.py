@@ -13,22 +13,26 @@ import os
 from pathlib import Path
 
 import deeplabcut
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 
 
+@renamed_parameter(
+    old="createtrainingset", new="create_trainingset", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
 def load_demo_data(
-    config: str | Path,
-    createtrainingset: bool = True,
+    config: Path | str,
+    create_trainingset: bool = True,
     engine: Engine = Engine.PYTORCH,
 ):
     """Loads the demo data -- subset from trail-tracking data in Mathis et al. 2018.
     When loading, it sets paths correctly to run this project on your system.
 
     Args:
-        config (str | Path): Full path of the config.yaml file of the provided demo
-            dataset.
-        createtrainingset (bool): Boolean variable indicating if a training set shall be
+        config (Path | str): Full path of the config.yaml file of the provided demo
+            dataset. This function rewrites demo placeholders on disk.
+        create_trainingset (bool): Boolean variable indicating if a training set shall be
             created.
         engine (Engine): The Engine to create the training set for if a training set
             shall be created.
@@ -39,7 +43,7 @@ def load_demo_data(
     config = Path(config).absolute()
 
     transform_data(config)
-    if createtrainingset:
+    if create_trainingset:
         print("Loaded, now creating training data...")
         deeplabcut.create_training_dataset(config, num_shuffles=1, engine=engine)
 
