@@ -193,7 +193,7 @@ def plot_trajectories(
     """Plots the trajectories of various bodyparts across the video.
 
     Args:
-        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Config object or path to the config.yaml file.
         videos (list[str | Path]): Full paths to videos for analysis or a path to the directory, where all the
             videos with same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -246,10 +246,9 @@ def plot_trajectories(
                 ['/home/alex/analysis/project/videos/reachingvideo1.avi'],
             )
     """
-    config = Path(config)
+    cfg = ProjectConfig.from_any(config)
     if destfolder is not None:
         destfolder = Path(destfolder)
-    cfg = auxiliaryfunctions.read_config(config)
 
     if pcutoff is None:
         pcutoff = cfg["pcutoff"]
