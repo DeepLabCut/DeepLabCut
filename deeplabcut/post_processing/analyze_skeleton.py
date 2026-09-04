@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import distance
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
@@ -175,7 +176,7 @@ def analyzebone(bp1, bp2):
 # MAIN FUNC
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def analyzeskeleton(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
@@ -238,7 +239,7 @@ def analyzeskeleton(
           None.
     """
     # Load config file, scorer and videos
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
     if not cfg["skeleton"]:
         raise ValueError("No skeleton defined in the config.yaml.")
 
