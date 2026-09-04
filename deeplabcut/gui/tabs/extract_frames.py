@@ -219,7 +219,7 @@ class ExtractFrames(DefaultTab):
             algo,
             crop=crop,
             cluster_step=clusterstep,
-            cluster_resizewidth=30,
+            cluster_resize_width=30,
             cluster_color=False,
             slider_width=slider_width,
             userfeedback=False,

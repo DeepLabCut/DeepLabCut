@@ -276,6 +276,10 @@ def evaluate_network(
 )
 @renamed_parameter(old="Snapindex", new="snapshot_index", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 @renamed_parameter(old="snapshotindex", new="snapshot_index", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="fulldata", new="full_data", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="returnjustfns", new="return_just_fns", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
 def return_evaluate_network_data(
     config: ProjectConfig | dict | Path | str,
     shuffle: int = 0,
@@ -283,10 +287,10 @@ def return_evaluate_network_data(
     comparison_bodyparts: str | list[str] = "all",
     snapshot_index: str | int | None = None,
     rescale: bool = False,
-    fulldata: bool = False,
+    full_data: bool = False,
     show_errors: bool = True,
     modelprefix: str = "",
-    returnjustfns: bool = True,
+    return_just_fns: bool = True,
 ):
     """Deprecated TensorFlow-only function."""
     raise NotImplementedError("This function is not implemented for PyTorch")

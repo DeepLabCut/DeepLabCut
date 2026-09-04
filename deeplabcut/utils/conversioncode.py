@@ -211,8 +211,9 @@ def adapt_labeled_data_to_new_project(
     convertcsv2h5(config_path, userfeedback=userfeedback)
 
 
-# TODO: @deruyter92 2026-05-20: this function uses videotype instead of video_extensions.
-def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos=False):
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="listofvideos", new="list_of_videos", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+def analyze_videos_converth5_to_csv(video_folder, video_extensions=".mp4", list_of_videos=False):
     """By default the output poses (when running analyze_videos) are stored as
     MultiIndex Pandas Array, which contains the name of the network, body part name, (x,
     y) label position in pixels, and the likelihood for each frame per body part.
@@ -223,7 +224,7 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
 
     Args:
         video_folder (string): Absolute path of a folder containing videos and the corresponding h5 data files.
-        videotype (string, optional): Only videos with this extension are screened. Defaults to .mp4.
+        video_extensions (string, optional): Only videos with this extension are screened. Defaults to .mp4.
 
     Examples:
         Converts all pose-output files belonging to mp4 videos in the folder
@@ -234,7 +235,7 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
                 ".mp4",
             )
     """
-    if listofvideos:  # can also be called with a list of videos (from GUI)
+    if list_of_videos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
             h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5")
@@ -242,17 +243,18 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
             h5_files = []
     else:
         h5_files = collect_video_paths(video_folder, extensions=".h5")
-        videos = collect_video_paths(video_folder, extensions=videotype)
+        videos = collect_video_paths(video_folder, extensions=video_extensions)
 
     _convert_h5_files_to("csv", None, h5_files, videos)
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="listofvideos", new="list_of_videos", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def analyze_videos_converth5_to_nwb(
     config: ProjectConfig | dict | Path | str,
     video_folder: str | Path,
     video_extensions: str | Sequence[str] | None = None,
-    listofvideos=False,
+    list_of_videos=False,
 ):
     """Convert all h5 output data files in `video_folder` to NWB format.
 
@@ -276,7 +278,7 @@ def analyze_videos_converth5_to_nwb(
     cfg.validate_project_path()
     config_path = cfg.config_yaml_path
 
-    if listofvideos:  # can also be called with a list of videos (from GUI)
+    if list_of_videos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
             h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5")

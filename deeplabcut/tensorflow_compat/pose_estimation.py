@@ -478,6 +478,10 @@ def evaluate_network(
     old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING
 )
 @renamed_parameter(old="Snapindex", new="snapshotindex", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="fulldata", new="full_data", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="returnjustfns", new="return_just_fns", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
 def return_evaluate_network_data(
     config: str,
     shuffle: int = 0,
@@ -485,10 +489,10 @@ def return_evaluate_network_data(
     comparison_bodyparts: str | list[str] = "all",
     snapshotindex: str | int | None = None,
     rescale: bool = False,
-    fulldata: bool = False,
+    full_data: bool = False,
     show_errors: bool = True,
     modelprefix: str = "",
-    returnjustfns: bool = True,
+    return_just_fns: bool = True,
     engine: Engine | None = None,
 ):
     """Returns the results for (previously evaluated) network.
@@ -499,7 +503,7 @@ def return_evaluate_network_data(
     This function is only implemented for tensorflow models/shuffles, and will throw
     an error if called with a PyTorch shuffle.
 
-    If fulldata=True, also returns (the complete annotation and prediction array)
+    If full_data=True, also returns (the complete annotation and prediction array)
     Returns list of:
        (DataMachine, Data, data, trainIndices,
        testIndices, trainFraction, DLCscorer,
@@ -556,10 +560,10 @@ def return_evaluate_network_data(
         comparisonbodyparts=comparison_bodyparts,
         Snapindex=snapshotindex,
         rescale=rescale,
-        fulldata=fulldata,
+        fulldata=full_data,
         show_errors=show_errors,
         modelprefix=modelprefix,
-        returnjustfns=returnjustfns,
+        returnjustfns=return_just_fns,
     )
 
 

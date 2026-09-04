@@ -396,11 +396,11 @@ class AnalyzeVideos(DefaultTab):
             deeplabcut.plot_trajectories(
                 options.config_path,
                 videos=videos,
-                displayedbodyparts=options.displayed_bodyparts,
+                displayed_bodyparts=options.displayed_bodyparts,
                 video_extensions=videotype,
                 shuffle=options.shuffle,
                 filtered=options.filter_data,
-                showfigures=options.show_trajectory_plots,
+                show_figures=options.show_trajectory_plots,
                 track_method=options.track_method,
             )
 
@@ -411,7 +411,7 @@ class AnalyzeVideos(DefaultTab):
             self.root.logger.info(f"Converting H5 outputs to CSV in folder: {folder}")
             deeplabcut.analyze_videos_converth5_to_csv(
                 folder,
-                listofvideos=False,
+                list_of_videos=False,
             )
 
     def analyze_videos(self):

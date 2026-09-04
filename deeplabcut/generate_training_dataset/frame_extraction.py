@@ -12,6 +12,7 @@
 from pathlib import Path
 
 from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 
 
 def _select_cropping_area(cfg: ProjectConfig, videos=None) -> ProjectConfig:
@@ -59,6 +60,9 @@ def _select_cropping_area(cfg: ProjectConfig, videos=None) -> ProjectConfig:
     return cfg
 
 
+@renamed_parameter(
+    old="cluster_resizewidth", new="cluster_resize_width", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
 def extract_frames(
     config: ProjectConfig | dict | Path | str,
     mode="automatic",
@@ -66,7 +70,7 @@ def extract_frames(
     crop=False,
     userfeedback=True,
     cluster_step=1,
-    cluster_resizewidth=30,
+    cluster_resize_width=30,
     cluster_color=False,
     opencv=True,
     slider_width=25,
@@ -125,7 +129,7 @@ def extract_frames(
             a dialog, where the user is asked for each video if (additional/any) frames
             from this video should be extracted. Use this, e.g. if you have already labeled
             some folders and want to extract data for new videos. Defaults to True.
-        cluster_resizewidth (int): For ``"k-means"`` one can change the width to which the images are downsampled
+        cluster_resize_width (int): For ``"k-means"`` one can change the width to which the images are downsampled
             (aspect ratio is fixed). Defaults to 30.
         cluster_step (int): By default each frame is used for clustering, but for long videos one could
             only use every nth frame (set using this parameter). This saves memory before
@@ -346,7 +350,7 @@ def extract_frames(
                             start,
                             stop,
                             step=cluster_step,
-                            resizewidth=cluster_resizewidth,
+                            resizewidth=cluster_resize_width,
                             color=cluster_color,
                         )
                     else:
@@ -356,7 +360,7 @@ def extract_frames(
                             start,
                             stop,
                             step=cluster_step,
-                            resizewidth=cluster_resizewidth,
+                            resizewidth=cluster_resize_width,
                             color=cluster_color,
                         )
                 else:
