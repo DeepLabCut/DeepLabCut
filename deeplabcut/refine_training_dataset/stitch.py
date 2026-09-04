@@ -29,12 +29,13 @@ from scipy.stats import mode
 from tqdm import trange
 
 import deeplabcut
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.core.trackingutils import (
     TRACK_METHODS,
     calc_iou,
 )
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils import auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
 
 
@@ -975,7 +976,7 @@ class TrackletStitcher:
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 @renamed_parameter(old="config_path", new="config", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def stitch_tracklets(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
@@ -1071,7 +1072,7 @@ def stitch_tracklets(
         print("No video(s) found. Please check your path!")
         return
 
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
     if track_method == "ctd":
         raise ValueError(
