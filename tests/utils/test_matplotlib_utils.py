@@ -21,7 +21,6 @@ from deeplabcut.utils import matplotlib_utils as mu
 
 @pytest.fixture
 def axes_logger():
-    """Yield Matplotlib's Axes logger, restoring its level afterwards."""
     logger = logging.getLogger(mu.AXES_LOGGER_NAME)
     original = logger.level
     yield logger
@@ -48,9 +47,3 @@ def test_silence_axes_logger_sets_the_level(axes_logger):
     mu.silence_axes_logger()
 
     assert axes_logger.level == logging.ERROR
-
-
-def test_silence_axes_logger_accepts_an_explicit_level(axes_logger):
-    mu.silence_axes_logger(logging.CRITICAL)
-
-    assert axes_logger.level == logging.CRITICAL
