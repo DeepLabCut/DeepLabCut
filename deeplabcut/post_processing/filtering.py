@@ -63,6 +63,10 @@ def columnwise_spline_interp(data, max_gap=0):
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="filtertype", new="filter_type", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="windowlength", new="window_length", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="ARdegree", new="ar_degree", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="MAdegree", new="ma_degree", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def filterpredictions(
     config: ProjectConfig | dict | Path | str,
     video: str | Path,

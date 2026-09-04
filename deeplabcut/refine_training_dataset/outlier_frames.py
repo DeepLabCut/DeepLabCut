@@ -35,6 +35,9 @@ from deeplabcut.utils import (
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
 
 
+@renamed_parameter(
+    old="extraction_algo", new="extraction_algorithm", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
 def find_outliers_in_raw_data(
     config: ProjectConfig | dict | Path | str,
     pickle_file: str | Path,
@@ -185,6 +188,22 @@ def _read_video_specific_cropping_margins(
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(
+    old="outlieralgorithm", new="outlier_algorithm", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(old="frames2use", new="frames_to_use", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(old="ARdegree", new="ar_degree", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="MAdegree", new="ma_degree", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="extractionalgorithm", new="extraction_algorithm", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(
+    old="cluster_resizewidth", new="cluster_resize_width", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
+@renamed_parameter(old="savelabeled", new="save_labeled", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def extract_outlier_frames(
     config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
@@ -1029,6 +1048,7 @@ def PlottingSingleFramecv2(
             plt.close("all")
 
 
+@renamed_parameter(old="forceiterate", new="force_iterate", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def merge_datasets(config: ProjectConfig | dict | Path | str, force_iterate=None):
     """Merge the original training dataset with the newly refined data.
 

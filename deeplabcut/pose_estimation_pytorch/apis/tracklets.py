@@ -36,6 +36,7 @@ from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
+@renamed_parameter(old="inferencecfg", new="inference_cfg", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 def convert_detections2tracklets(
     config: ProjectConfig | dict | Path | str,
     videos: str | list[str],

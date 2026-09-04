@@ -24,6 +24,7 @@ import deeplabcut.core.metrics as metrics
 import deeplabcut.pose_estimation_pytorch.apis.ctd as ctd
 import deeplabcut.pose_estimation_pytorch.apis.prune_paf_graph as prune_paf_graph
 from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch import utils
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
@@ -652,6 +653,11 @@ def evaluate_snapshot(
     return df_predictions
 
 
+@renamed_parameter(old="Shuffles", new="shuffles", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(old="snapshotindex", new="snapshot_index", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
+@renamed_parameter(
+    old="comparisonbodyparts", new="comparison_bodyparts", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302
+)
 def evaluate_network(
     config: ProjectConfig | dict | Path | str,
     shuffles: Iterable[int] = (1,),

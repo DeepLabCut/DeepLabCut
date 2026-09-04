@@ -241,6 +241,7 @@ def video_inference(
     return predictions
 
 
+@renamed_parameter(old="batchsize", new="batch_size", deprecation_round=DeprecationRound.PARAMETER_ALIASING_302)
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def analyze_videos(
     config: ProjectConfig | dict | Path | str,
