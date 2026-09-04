@@ -49,14 +49,20 @@ torchvision 0.29.0 (pytorch/vision#9510) but not validated here yet.
 def torch_meets_detector_mps_floor() -> bool:
     """Whether the installed torch is a release >= ``MIN_TORCH_FOR_DETECTOR_MPS``.
 
-    Pre-releases and unparsable version strings do not qualify.
+    Official pre-releases and unparsable version strings do not qualify. A pre-release
+    tag paired with a ``"+git..."`` local segment marks a from-source build of that
+    release (PyTorch's own versioning convention, e.g. ``"2.13.0a0+git1234567"``); those
+    still qualify, since the source tree already has the release's fixes.
     """
     floor = Version(".".join(str(v) for v in MIN_TORCH_FOR_DETECTOR_MPS))
     try:
         installed = Version(torch.__version__)
     except InvalidVersion:
         return False
-    return not installed.is_prerelease and installed >= floor
+    from_source_build = installed.local is not None and installed.local.startswith("git")
+    if installed.is_prerelease and not from_source_build:
+        return False
+    return installed >= floor
 
 
 def is_mps_device(device: str | torch.device | None) -> bool:
