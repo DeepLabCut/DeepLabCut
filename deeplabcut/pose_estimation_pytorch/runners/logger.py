@@ -275,7 +275,9 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
                 None, train/test inputs are never logged).
             model: The model to log. Defaults to None.
             train_folder: path to the train folder (used to store the W&B run identifiers)
-            wandb_kwargs: extra arguments to pass to ``wb.init``
+            wandb_kwargs: extra arguments to pass to ``wandb.init``. These can be given as
+                keyword arguments, or collected in a single ``wandb_kwargs`` mapping (as
+                declared by ``WandbLoggerConfig``).
 
         Example:
             logger = WandbLogger(project_name="mice", run_name="exp1", model=my_model)
@@ -290,6 +292,9 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
 
         if wandb.run is not None:
             wandb.finish()
+
+        # A nested ``wandb_kwargs`` mapping must be flattened
+        wandb_kwargs.update(wandb_kwargs.pop("wandb_kwargs", None) or {})
 
         self.run = wandb.init(
             project=project_name,
