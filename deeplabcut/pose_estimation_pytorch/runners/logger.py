@@ -293,7 +293,7 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
         if wandb.run is not None:
             wandb.finish()
 
-        # A nested ``wandb_kwargs``mapping must be flattened
+        # A nested ``wandb_kwargs`` mapping must be flattened
         wandb_kwargs.update(wandb_kwargs.pop("wandb_kwargs", None) or {})
 
         self.run = wandb.init(
