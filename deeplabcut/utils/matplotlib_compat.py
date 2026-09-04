@@ -65,6 +65,11 @@ def unregister_colormap(name: str) -> None:
     _legacy_unregister_colormap(name)
 
 
+def _get_legacy_colormap_names() -> list[str]:
+    """Return registered colormap names without emitting a DLC warning."""
+    return list(plt.colormaps())
+
+
 @deprecated(
     replacement="matplotlib.colormaps",
     since=DLC_MATPLOTLIB_LEGACY_DEPRECATED_SINCE,
@@ -73,7 +78,7 @@ def unregister_colormap(name: str) -> None:
 )
 def _legacy_get_colormap_names() -> list[str]:
     """Return registered colormap names using the legacy API."""
-    return list(plt.colormaps())
+    return _get_legacy_colormap_names()
 
 
 @deprecated(
@@ -89,6 +94,9 @@ def _legacy_register_colormap(
     force: bool = False,
 ) -> None:
     """Register a colormap using the legacy Matplotlib API."""
+    effective_name = name or cmap.name
+    if not force and effective_name in _get_legacy_colormap_names():
+        raise ValueError(f"A colormap named {effective_name!r} is already registered.")
     matplotlib.cm.register_cmap(
         name=name,
         cmap=cmap,
