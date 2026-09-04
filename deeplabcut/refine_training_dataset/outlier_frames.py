@@ -23,6 +23,7 @@ import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
 from deeplabcut.core import inferenceutils
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.utils import (
     auxfun_multianimal,
@@ -35,7 +36,7 @@ from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
 
 
 def find_outliers_in_raw_data(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     pickle_file: str | Path,
     video_file: str | Path,
     pcutoff=0.1,
@@ -94,7 +95,8 @@ def find_outliers_in_raw_data(
     else:
         raise OSError(f"Raw data file {pickle_file} could not be parsed.")
 
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path()
     ExtractFramesbasedonPreselection(
         inds,
         extraction_algorithm,
@@ -155,10 +157,12 @@ def find_outliers_in_raw_detections(pickled_data, algo="uncertain", threshold=0.
     return candidates, data
 
 
-def _read_video_specific_cropping_margins(config: str | Path | dict, video_path: str | Path) -> tuple[int, int]:
-    if isinstance(config, (str, Path)):
-        config = auxiliaryfunctions.read_config(config)
-    output_crop = config["video_sets"].get(str(video_path), {}).get("crop")
+def _read_video_specific_cropping_margins(
+    config: ProjectConfig | dict | Path | str,
+    video_path: str | Path,
+) -> tuple[int, int]:
+    cfg = ProjectConfig.from_any(config)
+    output_crop = cfg["video_sets"].get(str(video_path), {}).get("crop")
     if output_crop is None:
         x1, _, y1, _ = (0, 0, 0, 0)
     else:
@@ -182,7 +186,7 @@ def _read_video_specific_cropping_margins(config: str | Path | dict, video_path:
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def extract_outlier_frames(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
@@ -345,7 +349,8 @@ def extract_outlier_frames(
             )
     """
 
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path()
     bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparison_bodyparts)
     if not len(bodyparts):
         raise ValueError("No valid bodyparts were selected.")
@@ -424,7 +429,7 @@ def extract_outlier_frames(
                     coords=None,
                 )
                 if added_video:
-                    project_video_path = Path(cfg["project_path"]) / "videos" / Path(video).name
+                    project_video_path = cfg.project_path / "videos" / Path(video).name
                     _ = launch_napari([project_video_path, dataname])
                 return
 
@@ -678,7 +683,7 @@ def ExtractFramesbasedonPreselection(
 
     str(Path(video).parents[0])
     vname = str(Path(video).stem)
-    tmpfolder = Path(cfg["project_path"]) / "labeled-data" / vname
+    tmpfolder = cfg.project_path / "labeled-data" / vname
     if tmpfolder.is_dir():
         print("Frames from video", vname, " already extracted (more will be added)!")
     else:
@@ -1024,7 +1029,7 @@ def PlottingSingleFramecv2(
             plt.close("all")
 
 
-def merge_datasets(config: str | Path, force_iterate=None):
+def merge_datasets(config: ProjectConfig | dict | Path | str, force_iterate=None):
     """Merge the original training dataset with the newly refined data.
 
     Checks if the original training dataset can be merged with the newly refined
@@ -1032,6 +1037,8 @@ def merge_datasets(config: str | Path, force_iterate=None):
     were relabeled.
 
     If this is the case then the ``"iteration"`` variable is advanced by 1.
+
+    Notes: This function can modify the config.yaml file in place and persist the changes to disk.
 
     Args:
         config (str | Path): Full path of the config.yaml file.
@@ -1044,10 +1051,10 @@ def merge_datasets(config: str | Path, force_iterate=None):
             deeplabcut.merge_datasets("/analysis/project/reaching-task/config.yaml")
     """
 
-    cfg = auxiliaryfunctions.read_config(config)
-    config_path = Path(config).parents[0]
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path()
 
-    bf = config_path / "labeled-data"
+    bf = cfg.project_path / "labeled-data"
     allfolders = [
         p for p in bf.iterdir() if "_labeled" not in p.name and not p.name.startswith(".")
     ]  # exclude labeled data folders and temporary files
@@ -1070,7 +1077,8 @@ def merge_datasets(config: str | Path, force_iterate=None):
         else:
             cfg["iteration"] = force_iterate
 
-        auxiliaryfunctions.write_config(config, cfg)
+        # Persist changes to disk.
+        cfg.to_yaml(cfg.config_yaml_path, overwrite=True, log_changes=True)
 
         print("Merged data sets and updated refinement iteration to " + str(cfg["iteration"]) + ".")
         print("Now you can create a new training set for the expanded annotated images (use create_training_dataset).")
