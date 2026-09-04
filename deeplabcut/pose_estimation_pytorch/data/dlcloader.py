@@ -51,9 +51,11 @@ class DLCLoader(Loader):
         """
         provided_root_dir = Path(config).parent if isinstance(config, (str, Path)) else None
         self._project_config: ProjectConfig = ProjectConfig.from_any(config)
-        self._project_root = provided_root_dir or self._project_config.project_path
-        if self._project_root is None:
-            raise ValueError("`config` must contain a `project_path` field.")
+        if provided_root_dir is None:
+            self._project_config.validate_project_path()
+            self._project_root = self._project_config.project_path
+        else:
+            self._project_root = provided_root_dir
 
         self._shuffle = shuffle
         self._trainset_index = trainset_index
