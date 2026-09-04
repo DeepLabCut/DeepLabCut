@@ -74,6 +74,7 @@ class WandbLoggerConfig(LoggerConfig):  #
         if not isinstance(data, dict):
             return data
 
+        data = dict(data)
         known = set(cls.model_fields) | set(cls._alias_map())
         provided = set(data)
         extras = {key: data.pop(key) for key in provided - known}
