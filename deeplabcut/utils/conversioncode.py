@@ -209,7 +209,7 @@ def adapt_labeled_data_to_new_project(
 
 
 # TODO: @deruyter92 2026-05-20: this function uses videotype instead of video_extensions.
-def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos=False):
+def analyze_videos_converth5_to_csv(video_folder, videotype=None, listofvideos=False):
     """By default the output poses (when running analyze_videos) are stored as
     MultiIndex Pandas Array, which contains the name of the network, body part name, (x,
     y) label position in pixels, and the likelihood for each frame per body part.
@@ -220,7 +220,8 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
 
     Args:
         video_folder (string): Absolute path of a folder containing videos and the corresponding h5 data files.
-        videotype (string, optional): Only videos with this extension are screened. Defaults to .mp4.
+        videotype (string, optional): Only videos with this extension are screened.
+            Defaults to None, i.e. every supported video extension is screened.
 
     Examples:
         Converts all pose-output files belonging to mp4 videos in the folder
@@ -232,13 +233,13 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
             )
     """
     if listofvideos:  # can also be called with a list of videos (from GUI)
-        videos = video_folder  # GUI gives a list of videos
+        videos = [Path(video) for video in video_folder]  # GUI gives a list of videos
         if len(videos) > 0:
-            h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5")
+            h5_files = collect_video_paths(videos[0].parent, extensions=".h5", warn_on_unsupported_ext=False)
         else:
             h5_files = []
     else:
-        h5_files = collect_video_paths(video_folder, extensions=".h5")
+        h5_files = collect_video_paths(video_folder, extensions=".h5", warn_on_unsupported_ext=False)
         videos = collect_video_paths(video_folder, extensions=videotype)
 
     _convert_h5_files_to("csv", None, h5_files, videos)
@@ -248,7 +249,7 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
 def analyze_videos_converth5_to_nwb(
     config: str | Path,
     video_folder: str | Path,
-    videotype=".mp4",
+    videotype=None,
     listofvideos=False,
 ):
     """Convert all h5 output data files in `video_folder` to NWB format.
@@ -256,7 +257,8 @@ def analyze_videos_converth5_to_nwb(
     Args:
         config (string): Absolute path to the project YAML config file.
         video_folder (string): Absolute path of a folder containing videos and the corresponding h5 data files.
-        videotype (string, optional): Only videos with this extension are screened. Defaults to .mp4.
+        videotype (string, optional): Only videos with this extension are screened.
+            Defaults to None, i.e. every supported video extension is screened.
 
     Examples:
         Converts all pose-output files belonging to mp4 videos in the folder
@@ -269,13 +271,13 @@ def analyze_videos_converth5_to_nwb(
             )
     """
     if listofvideos:  # can also be called with a list of videos (from GUI)
-        videos = video_folder  # GUI gives a list of videos
+        videos = [Path(video) for video in video_folder]  # GUI gives a list of videos
         if len(videos) > 0:
-            h5_files = collect_video_paths(Path(videos[0]).parent, extensions=".h5")
+            h5_files = collect_video_paths(videos[0].parent, extensions=".h5", warn_on_unsupported_ext=False)
         else:
             h5_files = []
     else:
-        h5_files = collect_video_paths(video_folder, extensions=".h5")
+        h5_files = collect_video_paths(video_folder, extensions=".h5", warn_on_unsupported_ext=False)
         videos = collect_video_paths(video_folder, extensions=videotype)
 
     _convert_h5_files_to("nwb", config, h5_files, videos)
@@ -295,6 +297,7 @@ def _convert_h5_files_to(filetype, config, h5_files, videos):
         except ImportError as e:
             raise ImportError("The package `dlc2nwb` is missing. Please run `pip install dlc2nwb`.") from e
 
+    converted = set()
     for video in videos:
         if "_labeled" in video.name:
             continue
@@ -310,8 +313,19 @@ def _convert_h5_files_to(filetype, config, h5_files, videos):
                         df.to_csv(file.with_suffix(".csv"))
                     else:
                         convert_h5_to_nwb(config, file)
+                    converted.add(file)
 
-    print(f"All H5 files were converted to {filetype.upper()}.")
+    if converted:
+        print(f"{len(converted)} H5 file(s) were converted to {filetype.upper()}.")
+    elif h5_files:
+        # Reporting success here would hide the most common cause: the videos the H5
+        # files belong to were filtered out by `videotype`, so nothing was screened.
+        print(
+            f"No H5 files were converted to {filetype.upper()}: none of the {len(h5_files)} H5 file(s) "
+            f"found belong to any of the {len(videos)} screened video(s)."
+        )
+    else:
+        print(f"No H5 files were found to convert to {filetype.upper()}.")
 
 
 def merge_windowsannotationdataONlinuxsystem(cfg):
