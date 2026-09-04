@@ -102,6 +102,7 @@ class WandbLoggerConfig(LoggerConfig):  #
             raise ValueError(
                 f"wandb_kwargs cannot include any of the reserved options: {sorted(cls._FORBIDDEN_WANDB_KWARGS)}"
             )
+        return v
 
 
 class CSVLoggerConfig(LoggerConfig):  #
