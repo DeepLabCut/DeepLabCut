@@ -42,7 +42,7 @@ augmentation variables defined in the:
 - PyTorch Engine: [docs for the `pytorch_config.yaml` file](dlc3-pytorch-config)
 - TensorFlow Engine: [default pose_cfg.yaml file](https://github.com/DeepLabCut/DeepLabCut/blob/main/deeplabcut/pose_cfg.yaml#L23-L74)
 
-For the single-animal TensorFlow models, [you have several options](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html#f-create-training-dataset-s-and-selection-of-your-neural-network)
+For the single-animal TensorFlow models, [you have several options](https://deeplabcut.github.io/DeepLabCut/docs/main-workflows/user-guide.html)
 for image augmentation when calling `create_training_dataset`
 
 An in-depth tutorial on image augmentation and training hyperparameters can be found [

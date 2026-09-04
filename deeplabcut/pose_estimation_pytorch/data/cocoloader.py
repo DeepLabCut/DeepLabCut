@@ -16,7 +16,7 @@ from pathlib import Path
 
 import numpy as np
 
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.pose_estimation_pytorch.config import MethodType, PoseConfig
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
@@ -45,7 +45,9 @@ class COCOLoader(Loader):
         )
     """
 
-    @renamed_parameter(old="model_config_path", new="model_config", since="3.0.0")
+    @renamed_parameter(
+        old="model_config_path", new="model_config", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING
+    )
     def __init__(
         self,
         project_root: str | Path,

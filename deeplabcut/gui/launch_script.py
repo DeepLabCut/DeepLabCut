@@ -27,6 +27,7 @@ import qdarkstyle
 from PySide6.QtCore import Qt
 
 from deeplabcut.gui.gui_assets import get_style_qss, icon_from_resource, pixmap_from_resource
+from deeplabcut.gui.warmup import start_warmup
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,11 @@ def launch_dlc():
     # logger.addHandler(handler)
 
     from deeplabcut.gui.window import MainWindow
+
+    # Warm the GUI's lazily-imported dependencies on a background thread
+    # Started *after* the MainWindow import on purpose: that import is
+    # what pulls in napari and matplotlib's Qt backend from the main thread.
+    start_warmup()
 
     window = MainWindow(app)
     window.receiver.start()

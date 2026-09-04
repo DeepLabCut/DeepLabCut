@@ -15,6 +15,7 @@ repos:
         stages: [pre-commit, manual]
       - id: name-tests-test
         args: [--pytest-test-first]
+        exclude: ^tests/typing/
         stages: [pre-commit, manual]
       - id: check-json
         stages: [pre-commit, manual]
