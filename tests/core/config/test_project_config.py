@@ -166,6 +166,79 @@ class TestPostYamlLoadUpdates:
 
 
 # -----------------------------------------------------------------------------
+# Legacy empty / null values (normalize_legacy_empty_values)
+# -----------------------------------------------------------------------------
+
+
+class TestNormalizeLegacyEmptyValues:
+    def test_none_for_non_optional_field_uses_default(self):
+        """Bare/null YAML values become None in dicts; non-optional fields use defaults."""
+        cfg = ProjectConfig.from_dict({"multianimalproject": None, "engine": "pytorch"})
+        assert cfg.multianimalproject is False
+
+    def test_none_for_optional_field_kept_as_none(self):
+        """Optional fields (T | None) accept None; it is not rewritten to a non-None default."""
+        cfg = ProjectConfig.from_dict({"identity": None, "engine": "pytorch"})
+        assert cfg.identity is None
+
+    def test_empty_string_for_legacy_list_fields_uses_default(self):
+        cfg = ProjectConfig.from_dict(
+            {
+                "skeleton": "",
+                "TrainingFraction": "",
+                "video_sets": "",
+                "bodyparts": "",
+                "engine": "pytorch",
+            }
+        )
+        defaults = ProjectConfig()
+        assert cfg.skeleton == defaults.skeleton
+        assert cfg.TrainingFraction == defaults.TrainingFraction
+        assert cfg.video_sets == defaults.video_sets
+        assert cfg.bodyparts == defaults.bodyparts
+
+    def test_from_dict_and_from_yaml_agree_on_null_keys(self, tmp_path):
+        """Dict path (legacy scripts) must match YAML path for bare/null keys."""
+        config_path = tmp_path / "config.yaml"
+        config_path.write_text(
+            "\n".join(
+                [
+                    f"project_path: {tmp_path}",
+                    "engine: pytorch",
+                    "multianimalproject:",
+                    "identity:",
+                    "bodyparts:",
+                    "  - snout",
+                    "",
+                ]
+            )
+        )
+        from_yaml = ProjectConfig.from_yaml(config_path)
+        from_dict = ProjectConfig.from_dict(read_config_as_dict(config_path))
+        assert from_dict.multianimalproject == from_yaml.multianimalproject is False
+        assert from_dict.identity == from_yaml.identity is None
+        assert from_dict.bodyparts == from_yaml.bodyparts == ["snout"]
+
+    def test_openfield_example_loads_via_dict_and_yaml(self):
+        """Example project configs with empty fields must load via both entrypoints."""
+        config_path = Path(__file__).resolve().parents[3] / "examples" / "openfield-Pranav-2018-10-30" / "config.yaml"
+        assert config_path.is_file()
+        raw = read_config_as_dict(config_path)
+        assert raw["multianimalproject"] is None
+        assert raw["identity"] is None
+
+        from_dict = ProjectConfig.from_dict(raw)
+        from_yaml = ProjectConfig.from_yaml(config_path)
+        assert from_dict.multianimalproject == from_yaml.multianimalproject is False
+        assert from_dict.identity == from_yaml.identity is None
+
+    def test_null_non_optional_emits_warning(self, caplog):
+        with caplog.at_level(logging.WARNING, logger="deeplabcut.core.config.project_config"):
+            ProjectConfig.from_dict({"multianimalproject": None, "engine": "pytorch"})
+        assert any("multianimalproject" in r.message for r in caplog.records)
+
+
+# -----------------------------------------------------------------------------
 # YAML round-trip
 # -----------------------------------------------------------------------------
 
@@ -236,3 +309,26 @@ class TestProjectConfigVersioning:
         config_path.write_text(f"project_path: {tmp_path}\nengine: pytorch\n")
         cfg = ProjectConfig.from_yaml(config_path)
         assert cfg.config_version == CURRENT_CONFIG_VERSION
+
+
+# -----------------------------------------------------------------------------
+# Fields awaiting the next schema version bump
+#
+# Each test here describes a field that is exposed as a read-only property today
+# because promoting it to a real schema field requires bumping
+# CURRENT_CONFIG_VERSION and writing the migration. They are marked strict xfail
+# so that the migration landing turns them into failures, as a reminder to drop
+# the property and the marker together.
+# -----------------------------------------------------------------------------
+
+
+class TestFieldsPendingSchemaMigration:
+    @pytest.mark.xfail(
+        strict=True,
+        reason=(
+            "bboxes_pcutoff is a property until the schema version is bumped, "
+            "see https://github.com/DeepLabCut/DeepLabCut/pull/3470"
+        ),
+    )
+    def test_bboxes_pcutoff_is_a_schema_field(self):
+        assert "bboxes_pcutoff" in ProjectConfig.model_fields

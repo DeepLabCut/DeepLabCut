@@ -464,7 +464,7 @@ def plot_edge_affinity_distributions(
         i1, i2 = graph[ind]
         w_tr = w_train[ind]
         b_tr = b_train[ind]
-        sep, _ = crossvalutils._calc_separability(b_tr, w_tr, metric="auc")
+        sep, _ = crossvalutils.calc_separability(b_tr, w_tr, metric="auc")
         axes[n].text(
             0.5,
             0.8,

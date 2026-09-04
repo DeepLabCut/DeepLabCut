@@ -3,10 +3,10 @@ name: Code / Codespell
 
 on:
   push:
-    branches: [main]
+    branches: [ main, dev ]
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [ main ]
+    branches: [ main, dev ]
 
 jobs:
   codespell:

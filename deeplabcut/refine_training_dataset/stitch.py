@@ -22,7 +22,6 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pandas as pd
-import scipy.linalg.interpolative as sli
 from networkx.algorithms.flow import preflow_push
 from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
@@ -384,11 +383,11 @@ class Tracklet:
         4/sqrt(3)
         """
         mat = self.to_hankelet()
-        if np.any(mat):  # check that the matrix contains non-zero entries
+        if np.any(mat):
             # nrows, ncols = mat.shape
             # beta = nrows / ncols
             # omega = 0.56 * beta ** 3 - 0.95 * beta ** 2 + 1.82 * beta + 1.43
-            _, s, _ = sli.svd(mat, min(10, min(mat.shape)))
+            s = np.linalg.svd(mat, compute_uv=False)[:10]
         else:
             s = np.zeros(min(10, min(mat.shape)))
 
@@ -670,12 +669,18 @@ class TrackletStitcher:
             # Preflow push seems to work slightly better than shortest
             # augmentation path..., and is more computationally efficient.
             paths = []
-            for path in nx.node_disjoint_paths(self.G, "source", "sink", preflow_push, self.n_tracks):
-                temp = set()
-                for node in path[1:-1]:
-                    self.G.remove_node(node)
-                    temp.add(self._mapping_inv[node])
-                paths.append(list(temp))
+            try:
+                for path in nx.node_disjoint_paths(self.G, "source", "sink", preflow_push, self.n_tracks):
+                    temp = set()
+                    for node in path[1:-1]:
+                        self.G.remove_node(node)
+                        temp.add(self._mapping_inv[node])
+                    paths.append(list(temp))
+            except nx.exception.NetworkXNoPath:
+                warnings.warn(
+                    "Could not find disjoint paths connecting all tracklets. Continuing with partial results.",
+                    stacklevel=2,
+                )
             incomplete_tracks = self.n_tracks - len(paths)
             remaining_nodes = set(self._mapping_inv[node] for node in self.G if node not in ("source", "sink"))
             if len(remaining_nodes) > 0:
@@ -709,8 +714,17 @@ class TrackletStitcher:
                     self.build_graph(list(remaining_nodes), max_gap=np.inf)
                     self.G.nodes["source"]["demand"] = -incomplete_tracks
                     self.G.nodes["sink"]["demand"] = incomplete_tracks
-                    _, self.flow = nx.capacity_scaling(self.G)
-                    paths += self.reconstruct_paths()
+                    try:
+                        _, self.flow = nx.capacity_scaling(self.G)
+                        paths += self.reconstruct_paths()
+                    except nx.exception.NetworkXUnfeasible:
+                        warnings.warn(
+                            "The fallback flow problem is also infeasible. "
+                            f"Could not reconstruct {incomplete_tracks} "
+                            f"remaining tracks from {len(remaining_nodes)} "
+                            f"remaining tracklets.",
+                            stacklevel=2,
+                        )
             self.paths = paths
             if len(self.paths) != self.n_tracks:
                 warnings.warn(f"Only {len(self.paths)} tracks could be reconstructed.", stacklevel=2)

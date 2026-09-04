@@ -11,7 +11,14 @@
 import numpy as np
 import pytest
 
-from deeplabcut.pose_estimation_tensorflow.modelzoo.api import superanimal_inference
+tf = pytest.importorskip(
+    "tensorflow",
+    reason="TensorFlow not installed (use a project extra such as .[tf])",
+)
+
+from deeplabcut.pose_estimation_tensorflow.modelzoo.api import (  # noqa: E402
+    superanimal_inference,
+)
 
 
 def test_get_multi_scale_frames():
