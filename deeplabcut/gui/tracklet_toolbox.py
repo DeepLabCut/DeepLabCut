@@ -744,7 +744,7 @@ class TrackletVisualizer:
             self.clean_collections()
 
     def clean_collections(self):
-        for coll in self.ax2.collections + self.ax3.collections + self.ax_slider.collections:
+        for coll in [*self.ax2.collections, *self.ax3.collections, *self.ax_slider.collections]:
             coll.remove()
 
     def display_points(self, val):

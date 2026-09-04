@@ -285,7 +285,7 @@ def create_minimal_figure(dpi=100):
 
 
 def erase_artists(ax):
-    for artist in ax.lines + ax.collections + ax.artists + ax.patches + ax.images:
+    for artist in [*ax.lines, *ax.collections, *ax.artists, *ax.patches, *ax.images]:
         artist.remove()
     ax.figure.canvas.draw_idle()
 
