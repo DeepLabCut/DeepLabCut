@@ -13,6 +13,10 @@
 surfaces mutation patterns that should be guarded by ``copy=True``.
 """
 
+# NOTE: @C-Achard 2026-09-04 : [CLEANUP-COLLECTEDDATA-FIXTURES] _make_dlc_df below is another variant of the
+# CollectedData frame that at least six test modules each build for themselves, this one without a row
+# index. Reuse target: the collected_data fixture in tests/utils/test_skeleton.py, once it
+# is promoted to a shared conftest.
 import numpy as np
 import pandas as pd
 import pytest

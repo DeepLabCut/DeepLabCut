@@ -8,6 +8,12 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+# NOTE: @C-Achard 2026-09-04 : [CLEANUP-COLLECTEDDATA-FIXTURES] this module builds a CollectedData frame inline and
+# writes it with key="df_with_missing", while tests/utils/test_skeleton.py writes the same file with
+# key="df". Production reads "df_with_missing" in places (see
+# deeplabcut/refine_training_dataset/outlier_frames.py), so the tests do not all exercise
+# the real on-disk format. For the frame building
+# itself, the reuse target is the fixtures in tests/utils/test_skeleton.py.
 import os
 
 import numpy as np
