@@ -1,3 +1,8 @@
+# NOTE: @C-Achard 2026-09-04 : [CLEANUP-COLLECTEDDATA-FIXTURES] sparse_multianimal_df / dense_multianimal_df below
+# duplicate the prediction-shaped CollectedData frame that several other test modules also build by
+# hand, and the patch_hdf_write mock is a pattern re-defined elsewhere too. Reuse target:
+# the collected_data fixture in tests/utils/test_skeleton.py, once it is promoted to a
+# shared conftest.
 from unittest.mock import MagicMock
 
 import numpy as np

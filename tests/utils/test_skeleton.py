@@ -1,3 +1,11 @@
+# NOTE: @C-Achard 2026-09-04 : [CLEANUP-COLLECTEDDATA-FIXTURES] the collected_data / write_collected_data / project
+# fixtures below are duplicated, in some shape, by at least six other test modules, see
+# tests/test_trainingsetmanipulation.py, tests/utils/test_pandas_cow.py,
+# tests/utils/test_visualization.py, tests/pose_estimation_pytorch/data/ and
+# tests/test_refine_train_dataset/test_outlierframes.py. They should likely be promoted to a
+# shared conftest, with examples/utils.py (gen_fake_data / create_fake_project) as the
+# reference implementation. Note also that this module writes CollectedData h5 with
+# key="df" while other modules and production code use key="df_with_missing".
 import warnings
 from types import SimpleNamespace
 
