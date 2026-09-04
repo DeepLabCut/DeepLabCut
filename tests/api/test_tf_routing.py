@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import inspect
+import warnings
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -312,6 +313,17 @@ def test_resolve_engine_raises_when_shuffles_have_different_engines(mock_get_shu
 def test_warn_deprecated_tensorflow_emits_deprecation_warning():
     with pytest.warns(DLCDeprecationWarning, match="TensorFlow support is deprecated"):
         tf_routing.warn_deprecated_tensorflow()
+
+
+def test_warn_deprecated_tensorflow_emits_only_once():
+    with pytest.warns(DLCDeprecationWarning, match="TensorFlow support is deprecated"):
+        tf_routing.warn_deprecated_tensorflow()
+
+    with warnings.catch_warnings(record=True) as recorded:
+        warnings.simplefilter("always")
+        tf_routing.warn_deprecated_tensorflow()
+
+    assert recorded == []
 
 
 # ---------------------------------------------------------------------------
