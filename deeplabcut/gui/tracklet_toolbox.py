@@ -25,7 +25,7 @@ from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.refine_training_dataset.tracklets import TrackletManager
 from deeplabcut.utils.auxfun_videos import VideoReader
 from deeplabcut.utils.auxiliaryfunctions import attempt_to_make_folder
-from deeplabcut.utils.matplotlib_compat import get_colormap
+from deeplabcut.utils.matplotlib_compat import get_colormap, remove_artists
 
 
 class DraggablePoint:
@@ -745,8 +745,8 @@ class TrackletVisualizer:
             self.clean_collections()
 
     def clean_collections(self):
-        for coll in self.ax2.collections + self.ax3.collections + self.ax_slider.collections:
-            coll.remove()
+        for ax in (self.ax2, self.ax3, self.ax_slider):
+            remove_artists(ax, "collections")
 
     def display_points(self, val):
         data = self.manager.xy[:, val]
