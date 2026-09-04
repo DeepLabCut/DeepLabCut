@@ -243,7 +243,7 @@ def video_inference(
 
 @renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def analyze_videos(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     videos: str | Path | list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
@@ -412,7 +412,6 @@ def analyze_videos(
     Returns:
         The scorer used to analyze the videos
     """
-    config = Path(config)
     destfolder = Path(destfolder) if destfolder is not None else None
     # Create the output folder
     _validate_destfolder(destfolder)
@@ -492,7 +491,9 @@ def analyze_videos(
         ctd_conditions = loader.model_cfg.inference.conditions if ctd_conditions is None else ctd_conditions
         if ctd_conditions is None:
             raise ValueError("CTD conditions are required for video analysis with cond-top-down models")
-        cond_provider = ConditionsModelConfig.resolve_from_conditions(ctd_conditions, config=config)
+        # ConditionsModelConfig still requires a filesystem path to config.yaml
+        config_path = Path(config) if isinstance(config, (str, Path)) else loader.project_cfg.config_yaml_path
+        cond_provider = ConditionsModelConfig.resolve_from_conditions(ctd_conditions, config=config_path)
 
     if isinstance(ctd_tracking, dict):
         # FIXME(niels) - add video FPS setting
