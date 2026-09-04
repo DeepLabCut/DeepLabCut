@@ -47,6 +47,52 @@ def attach_fake_canvas(builder):
     builder.fig.canvas.draw_idle = lambda: None
 
 
+def make_collected_data(folder_name, values, bodyparts=("nose", "tail"), individuals=None):
+    """One-row CollectedData frame. NaN values stand for unlabeled bodyparts."""
+    index = pd.MultiIndex.from_tuples(
+        [("labeled-data", folder_name, "img001.png")],
+        names=["root", "folder", "image"],
+    )
+    levels = [["TestScorer"]]
+    names = ["scorer"]
+    if individuals is not None:
+        levels.append(list(individuals))
+        names.append("individuals")
+    levels += [list(bodyparts), ["x", "y"]]
+    names += ["bodyparts", "coords"]
+    columns = pd.MultiIndex.from_product(levels, names=names)
+    return pd.DataFrame([values], index=index, columns=columns)
+
+
+def write_collected_data(folder, df, scorer="TestScorer"):
+    folder.mkdir(parents=True, exist_ok=True)
+    df.to_hdf(folder / f"CollectedData_{scorer}.h5", key="df", mode="w")
+    return folder
+
+
+def make_project(tmp_path, skeleton=None, scorer="TestScorer"):
+    """Create a project directory with an empty labeled-data folder."""
+    project_path = tmp_path / "project"
+    (project_path / "labeled-data").mkdir(parents=True)
+    cfg_path = project_path / "config.yaml"
+    write_config(cfg_path, make_config(project_path, scorer=scorer, skeleton=skeleton))
+    return project_path, cfg_path
+
+
+def patch_builder_ui(monkeypatch, imread_calls=None):
+    """Stub out the interactive parts of SkeletonBuilder.__init__."""
+
+    def fake_imread(path):
+        if imread_calls is not None:
+            imread_calls.append(path)
+        return np.zeros((5, 5, 3), dtype=np.uint8)
+
+    monkeypatch.setattr(skeleton_mod.io, "imread", fake_imread)
+    monkeypatch.setattr(SkeletonBuilder, "build_ui", lambda self: None)
+    monkeypatch.setattr(SkeletonBuilder, "display", lambda self: None)
+    monkeypatch.setattr(np.random, "shuffle", lambda x: None)
+
+
 # ---------------------------------------------------------------------
 # pick_labeled_frame
 # ---------------------------------------------------------------------
@@ -83,6 +129,32 @@ def test_pick_labeled_frame_multi_animal_drops_single(monkeypatch):
 
     assert picked_row == ("labeled-data/session1", "img001.png")
     assert picked_col == "mouseA"
+
+
+def test_pick_labeled_frame_returns_none_when_nothing_is_labeled():
+    builder = make_test_builder()
+    builder.df = make_collected_data("session1", [np.nan] * 4)
+
+    assert builder.pick_labeled_frame() is None
+
+
+def test_pick_labeled_frame_returns_none_for_an_empty_frame():
+    builder = make_test_builder()
+    builder.df = make_collected_data("session1", [np.nan] * 4).iloc[:0]
+
+    assert builder.pick_labeled_frame() is None
+
+
+def test_pick_labeled_frame_returns_none_when_only_single_is_labeled():
+    """'single' is dropped before counting, leaving nothing to pick."""
+    builder = make_test_builder()
+    builder.df = make_collected_data(
+        "session1",
+        [1.0, 2.0, 3.0, 4.0] + [np.nan] * 4,
+        individuals=["single", "mouseA"],
+    )
+
+    assert builder.pick_labeled_frame() is None
 
 
 def test_pick_labeled_frame_without_individuals(monkeypatch):
@@ -376,3 +448,175 @@ def test_init_raises_if_no_labeled_data_found(tmp_path, monkeypatch):
 
     with pytest.raises(IOError, match="No labeled data were found"):
         SkeletonBuilder(str(cfg_path))
+
+
+# ---------------------------------------------------------------------
+# __init__ labeled-data folder search
+#
+# The search loop skips folders it cannot use instead of letting the
+# first unusable one abort the whole search. The tests below pin down
+# both the unchanged selection behaviour and the skipping.
+# ---------------------------------------------------------------------
+
+
+def test_init_prefers_a_fully_labeled_folder_over_a_partial_one(tmp_path, monkeypatch):
+    """Selection is by completeness, not by folder order."""
+    project_path, cfg_path = make_project(tmp_path)
+    labeled_data = project_path / "labeled-data"
+    write_collected_data(
+        labeled_data / "aaa_partial",
+        make_collected_data("aaa_partial", [1.0, 2.0, np.nan, np.nan]),
+    )
+    write_collected_data(
+        labeled_data / "zzz_complete",
+        make_collected_data("zzz_complete", [0.0, 0.0, 10.0, 0.0]),
+    )
+    patch_builder_ui(monkeypatch)
+
+    with warnings.catch_warnings(record=True) as record:
+        warnings.simplefilter("always")
+        builder = SkeletonBuilder(str(cfg_path))
+
+    assert not np.isnan(builder.xy).any()
+    assert not any("fully labeled animal could not be found" in str(w.message) for w in record)
+
+
+def test_init_loads_the_image_of_the_picked_frame(tmp_path, monkeypatch):
+    """The image path is rebuilt from the picked row, relative to project_path."""
+    project_path, cfg_path = make_project(tmp_path)
+    write_collected_data(
+        project_path / "labeled-data" / "session1",
+        make_collected_data("session1", [0.0, 0.0, 10.0, 0.0]),
+    )
+    imread_calls = []
+    patch_builder_ui(monkeypatch, imread_calls=imread_calls)
+
+    builder = SkeletonBuilder(str(cfg_path))
+
+    assert builder.image.shape == (5, 5, 3)
+    assert imread_calls == [project_path / "labeled-data" / "session1" / "img001.png"]
+
+
+def test_init_drops_the_individuals_level_for_multi_animal_data(tmp_path, monkeypatch):
+    """self.df is narrowed to the picked individual, so bpts excludes it."""
+    project_path, cfg_path = make_project(tmp_path)
+    write_collected_data(
+        project_path / "labeled-data" / "session1",
+        make_collected_data(
+            "session1",
+            [np.nan] * 4 + [0.0, 0.0, 10.0, 0.0],
+            individuals=["single", "mouseA"],
+        ),
+    )
+    patch_builder_ui(monkeypatch)
+
+    builder = SkeletonBuilder(str(cfg_path))
+
+    assert "individuals" not in builder.df.columns.names
+    assert list(builder.bpts) == ["nose", "tail"]
+    assert builder.xy.shape == (2, 2)
+
+
+def test_init_skips_a_folder_without_collected_data(tmp_path, monkeypatch, caplog):
+    """Frames extracted but never labeled must not abort the search."""
+    project_path, cfg_path = make_project(tmp_path)
+    labeled_data = project_path / "labeled-data"
+    (labeled_data / "aaa_not_labeled_yet").mkdir()
+    write_collected_data(
+        labeled_data / "zzz_complete",
+        make_collected_data("zzz_complete", [0.0, 0.0, 10.0, 0.0]),
+    )
+    patch_builder_ui(monkeypatch)
+
+    with caplog.at_level("WARNING"):
+        builder = SkeletonBuilder(str(cfg_path))
+
+    assert list(builder.bpts) == ["nose", "tail"]
+    assert "aaa_not_labeled_yet" in caplog.text
+
+
+def test_init_skips_a_folder_with_no_labeled_rows(tmp_path, monkeypatch, caplog):
+    project_path, cfg_path = make_project(tmp_path)
+    labeled_data = project_path / "labeled-data"
+    write_collected_data(
+        labeled_data / "aaa_all_nan",
+        make_collected_data("aaa_all_nan", [np.nan] * 4),
+    )
+    write_collected_data(
+        labeled_data / "zzz_complete",
+        make_collected_data("zzz_complete", [0.0, 0.0, 10.0, 0.0]),
+    )
+    patch_builder_ui(monkeypatch)
+
+    with caplog.at_level("WARNING"):
+        builder = SkeletonBuilder(str(cfg_path))
+
+    assert not np.isnan(builder.xy).any()
+    assert "aaa_all_nan" in caplog.text
+
+
+def test_init_skips_a_folder_whose_image_is_missing(tmp_path, monkeypatch):
+    """A row pointing at a deleted frame skips that folder, not the search."""
+    project_path, cfg_path = make_project(tmp_path)
+    labeled_data = project_path / "labeled-data"
+    write_collected_data(
+        labeled_data / "aaa_image_gone",
+        make_collected_data("aaa_image_gone", [1.0, 2.0, 3.0, 4.0]),
+    )
+    write_collected_data(
+        labeled_data / "zzz_complete",
+        make_collected_data("zzz_complete", [0.0, 0.0, 10.0, 0.0]),
+    )
+
+    def fake_imread(path):
+        if "aaa_image_gone" in str(path):
+            raise FileNotFoundError(path)
+        return np.zeros((5, 5, 3), dtype=np.uint8)
+
+    monkeypatch.setattr(skeleton_mod.io, "imread", fake_imread)
+    monkeypatch.setattr(SkeletonBuilder, "build_ui", lambda self: None)
+    monkeypatch.setattr(SkeletonBuilder, "display", lambda self: None)
+    monkeypatch.setattr(np.random, "shuffle", lambda x: None)
+
+    builder = SkeletonBuilder(str(cfg_path))
+
+    assert builder.xy.tolist() == [[0.0, 0.0], [10.0, 0.0]]
+
+
+def test_init_error_reports_inspected_and_skipped_folders(tmp_path, monkeypatch):
+    project_path, cfg_path = make_project(tmp_path)
+    labeled_data = project_path / "labeled-data"
+    (labeled_data / "no_h5_a").mkdir()
+    (labeled_data / "no_h5_b").mkdir()
+    write_collected_data(
+        labeled_data / "all_nan",
+        make_collected_data("all_nan", [np.nan] * 4),
+    )
+    patch_builder_ui(monkeypatch)
+
+    with pytest.raises(IOError, match="No labeled data were found") as excinfo:
+        SkeletonBuilder(str(cfg_path))
+
+    message = str(excinfo.value)
+    assert "3 folder(s) were inspected" in message
+    assert "3 of which had to be skipped" in message
+
+
+def test_init_still_ignores_cropped_and_labeled_folders(tmp_path, monkeypatch):
+    """Derived output folders are not annotation sources."""
+    project_path, cfg_path = make_project(tmp_path)
+    labeled_data = project_path / "labeled-data"
+    write_collected_data(
+        labeled_data / "session1_labeled",
+        make_collected_data("session1_labeled", [0.0, 0.0, 10.0, 0.0]),
+    )
+    write_collected_data(
+        labeled_data / "session1cropped",
+        make_collected_data("session1cropped", [0.0, 0.0, 10.0, 0.0]),
+    )
+    patch_builder_ui(monkeypatch)
+
+    with pytest.raises(IOError, match="No labeled data were found") as excinfo:
+        SkeletonBuilder(str(cfg_path))
+
+    assert "0 folder(s) were inspected" in str(excinfo.value)
