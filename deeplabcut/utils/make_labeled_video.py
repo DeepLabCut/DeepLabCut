@@ -1090,7 +1090,7 @@ def create_video_with_all_detections(
     """Create a video labeled with all the detections stored in a '*_full.pickle' file.
 
     Args:
-        config (ProjectConfig | dict | Path | str): Absolute path to the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Config object or path to the config.yaml file.
         videos (list[str | Path]): Full paths to videos for analysis, or a directory where all
             videos with the same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -1130,8 +1130,7 @@ def create_video_with_all_detections(
 
     from deeplabcut.core.inferenceutils import Assembler
 
-    # TODO @deruyter92 2026-09-01: This should be refactored to ProjectConfig.from_any()
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorername, _ = auxiliaryfunctions.get_scorer_name(
         cfg,
