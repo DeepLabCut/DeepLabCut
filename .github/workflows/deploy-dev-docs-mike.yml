@@ -54,34 +54,60 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # Unsafe free-text inputs are read from the environment inside `run:`
+    # rather than spliced in as `${{ }}`.
+    env:
+      VERSION_LABEL: ${{ inputs.version_label }}
+      ALIASES: ${{ inputs.aliases }}
+      DEFAULT_LABEL: ${{ inputs.default_label }}
+      GIT_TAG: ${{ inputs.git_tag }}
+      CONFIG_FILE: ${{ inputs.config-file }}
+      DEPLOY_PREFIX: ${{ inputs.deploy-prefix }}
 
     steps:
-      - name: Validate inputs
+      - name: Reject unknown action
+        if: inputs.action != 'deploy' && inputs.action != 'delete'
         shell: bash
         run: |
-          case "${{ inputs.action }}" in
-            deploy|delete)
-              ;;
-            *)
-              echo "::error::Unsupported action '${{ inputs.action }}'. Expected 'deploy' or 'delete'."
-              exit 1
-              ;;
-          esac
+          echo "::error::Unsupported action. Expected 'deploy' or 'delete'."
+          exit 1
 
-          if [ "${{ inputs.action }}" = "deploy" ] && [ -z "${{ inputs.git_tag }}" ] && [ "${{ inputs.version_label }}" != "main" ]; then
-            echo "::error::git_tag is required when deploying non-'main' versions."
-            exit 1
-          fi
+      - name: Require git_tag for release versions
+        if: inputs.action == 'deploy' && inputs.version_label != 'main' && inputs.git_tag == ''
+        shell: bash
+        run: |
+          echo "::error::git_tag is required when deploying a version other than main."
+          exit 1
+
+      - name: Refuse to delete the main version
+        if: inputs.action == 'delete' && inputs.version_label == 'main'
+        shell: bash
+        run: |
+          echo "::error::'main' tracks the repository's latest state and is redeployed on every push; it cannot be deleted."
+          exit 1
 
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
+      # remove existing checkout to prevent merging a new version into it
       - name: Check out tagged package source
         if: inputs.git_tag != ''
         shell: bash
         run: |
-          git checkout "${{ inputs.git_tag }}" -- deeplabcut
+          rm -rf deeplabcut
+          git checkout "$GIT_TAG" -- deeplabcut
+
+      - name: Check the version is deployed before attempting a delete
+        if: inputs.action == 'delete'
+        shell: bash
+        run: |
+          git fetch --depth=1 origin gh-pages
+          versions=$(git show "origin/gh-pages:$DEPLOY_PREFIX/versions.json" | jq -r '.[].version')
+          if ! grep -qxF "$VERSION_LABEL" <<<"$versions"; then
+            echo "::error::'$VERSION_LABEL' is not deployed under $DEPLOY_PREFIX/. Deployed: $(tr '\n' ' ' <<<"$versions")"
+            exit 1
+          fi
 
       - name: Set up dev-docs environment
         uses: ./.github/actions/setup-dev-docs
@@ -99,24 +125,26 @@ jobs:
         if: inputs.action == 'deploy'
         shell: bash
         run: |
-          if [ -n "${{ inputs.aliases }}" ]; then
+          if [ -n "$ALIASES" ]; then
+            # Unquoted on purpose: aliases is a space-separated list and each
+            # word becomes its own mike argument.
             mike deploy --push \
-              --config-file "${{ inputs.config-file }}" \
-              --deploy-prefix "${{ inputs.deploy-prefix }}" \
+              --config-file "$CONFIG_FILE" \
+              --deploy-prefix "$DEPLOY_PREFIX" \
               --update-aliases \
-              "${{ inputs.version_label }}" ${{ inputs.aliases }}
+              "$VERSION_LABEL" $ALIASES
           else
             mike deploy --push \
-              --config-file "${{ inputs.config-file }}" \
-              --deploy-prefix "${{ inputs.deploy-prefix }}" \
-              "${{ inputs.version_label }}"
+              --config-file "$CONFIG_FILE" \
+              --deploy-prefix "$DEPLOY_PREFIX" \
+              "$VERSION_LABEL"
           fi
 
-          if [ -n "${{ inputs.default_label }}" ]; then
+          if [ -n "$DEFAULT_LABEL" ]; then
             mike set-default --push \
-              --config-file "${{ inputs.config-file }}" \
-              --deploy-prefix "${{ inputs.deploy-prefix }}" \
-              "${{ inputs.default_label }}"
+              --config-file "$CONFIG_FILE" \
+              --deploy-prefix "$DEPLOY_PREFIX" \
+              "$DEFAULT_LABEL"
           fi
 
       - name: Delete dev-docs version
@@ -124,6 +152,18 @@ jobs:
         shell: bash
         run: |
           mike delete --push \
-            --config-file "${{ inputs.config-file }}" \
-            --deploy-prefix "${{ inputs.deploy-prefix }}" \
-            "${{ inputs.version_label }}"
+            --config-file "$CONFIG_FILE" \
+            --deploy-prefix "$DEPLOY_PREFIX" \
+            "$VERSION_LABEL"
+
+  knowledge-index:
+    # api.jsonl only; docs.jsonl/llms.txt are built by deploy-docs.yml instead.
+    needs: mike
+    uses: ./.github/workflows/deploy-knowledge-index.yml
+    with:
+      action: ${{ inputs.action }}
+      version_label: ${{ inputs.version_label }}
+      git_tag: ${{ inputs.git_tag }}
+      skip_docs: true
+      python-version: ${{ inputs.python-version }}
+    secrets: inherit
