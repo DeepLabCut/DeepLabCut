@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import inspect
 import warnings
 
 import pytest
@@ -95,6 +96,52 @@ def test_deprecated_attaches_metadata():
     assert info.replacement == "new_fn"
     assert info.since == Version("3.1")
     assert info.removed_in == Version("4.0")
+
+
+def test_deprecated_name_overrides_reported_target():
+    """``name`` reports the public API, not the private shim implementing it."""
+
+    @deprecated(name="public_api")
+    def _private_shim():
+        pass
+
+    with pytest.warns(DLCDeprecationWarning, match=r"^public_api") as record:
+        _private_shim()
+
+    assert "_private_shim" not in str(record[0].message)
+    assert _private_shim.__deprecated_info__.target == "public_api"
+
+
+def test_deprecated_default_stacklevel_blames_immediate_caller():
+    @deprecated()
+    def legacy_shim():
+        pass
+
+    def public_wrapper():
+        legacy_shim()
+
+    with pytest.warns(DLCDeprecationWarning) as record:
+        public_wrapper()
+
+    # stacklevel=2 stops inside public_wrapper, on the line calling the shim.
+    assert record[0].lineno == public_wrapper.__code__.co_firstlineno + 1
+
+
+def test_deprecated_stacklevel_can_blame_the_callers_caller():
+    """``stacklevel=3`` skips a wrapper that should not be blamed for the warning."""
+
+    @deprecated(stacklevel=3)
+    def legacy_shim():
+        pass
+
+    def public_wrapper():
+        legacy_shim()
+
+    with pytest.warns(DLCDeprecationWarning) as record:
+        call_line = inspect.currentframe().f_lineno + 1
+        public_wrapper()
+
+    assert record[0].lineno == call_line
 
 
 def test_deprecated_invalid_since_raises():

@@ -79,7 +79,7 @@ def create_labeled_images(
 
     color_by_individual = mode == "individual"
     if isinstance(cmap, str):
-        cmap = plt.cm.get_cmap(cmap)
+        cmap = plt.get_cmap(cmap)
 
     for image_path, image_predictions in predictions.items():
         # Load frame

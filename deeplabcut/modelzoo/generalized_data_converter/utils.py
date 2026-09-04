@@ -259,7 +259,7 @@ def customized_colormap(config_path):
 
     import matplotlib.pyplot as plt
 
-    cmap = plt.cm.get_cmap("rainbow", n_bodyparts)
+    cmap = plt.get_cmap("rainbow", n_bodyparts)
 
     colors = [cmap(i) for i in range(n_bodyparts)]
 
