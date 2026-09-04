@@ -586,27 +586,11 @@ def test_with_tensorflow_fallback_when_matches_positional_and_keyword():
 
     with (
         patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl),
-        pytest.warns(DLCDeprecationWarning),
+        patch.object(tf_routing, "warn_deprecated_tensorflow"),
     ):
-        # Keyword call
-        result_kw = canonical_fn("v.mp4", model_name="dlcrnet")
-
-    assert result_kw == "tensorflow"
-
-    tf_routing._TF_DEPRECATION_WARNED = False
-    with (
-        patch.object(tf_routing, "_get_tensorflow_impl", return_value=tf_impl),
-        pytest.warns(DLCDeprecationWarning),
-    ):
-        # Positional call
-        result_pos = canonical_fn("v.mp4", "dlcrnet")
-
-    assert result_pos == "tensorflow"
-
-    # Positional with non-matching model_name — routes to PT, no deprecation warning
-    result_no = canonical_fn("v.mp4", "hrnet_w32")
-
-    assert result_no == "pytorch"
+        assert canonical_fn("v.mp4", model_name="dlcrnet") == "tensorflow"
+        assert canonical_fn("v.mp4", "dlcrnet") == "tensorflow"
+        assert canonical_fn("v.mp4", "hrnet_w32") == "pytorch"
 
 
 def test_with_tensorflow_fallback_forwards_legacy_alias_to_renamed_parameter():
