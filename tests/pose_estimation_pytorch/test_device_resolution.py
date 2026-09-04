@@ -115,10 +115,12 @@ def test_is_mps_device(device, expected):
         ("2.12.0", True),
         ("2.13.0+cu128", True),
         ("2.11.9", False),
-        ("2.13.0a0+git1234", True),  # from-source build of the 2.13.0 release
-        ("2.12.0a0+git1234", True),  # from-source build of the floor release itself
+        ("2.13.0a0+git1234", True),  # from-source build targeting a release past the floor
+        ("2.12.1a0+git1234", True),  # from-source build of a patch release past the floor
+        ("2.12.0a0+git1234", False),  # from-source build of the floor release itself: unproven
         ("2.12.0+git1234", True),  # from-source build, tagged (not pre-release)
         ("2.11.9a0+git1234", False),  # from-source build, but below the floor
+        ("2.11.9+git1234", False),  # from-source build, tagged, but below the floor
         ("2.13.0rc1", False),  # official pre-release, not a from-source build
         ("2.13.0.dev20260101+cu124", False),  # nightly wheel, not a from-source build
         ("2.13.0.dev20260101", False),  # macOS-style nightly wheel, no local segment at all

@@ -50,12 +50,12 @@ def torch_meets_detector_mps_floor() -> bool:
     """Whether the installed torch is a release >= ``MIN_TORCH_FOR_DETECTOR_MPS``.
 
     Official pre-releases and unparsable version strings do not qualify. A pre-release
-    tag paired with a ``"+git..."`` local segment marks a from-source build of that
-    release (PyTorch's own versioning convention, e.g. ``"2.13.0a0+git1234567"``); those
-    still qualify, since the source tree already has the release's fixes. Such builds are
-    compared by release number alone: PEP 440 orders a pre-release below its final release,
-    so a from-source build of the floor version itself (e.g. ``"2.12.0a0+git1234567"``)
-    would otherwise be rejected.
+    tag paired with a ``"+git..."`` local segment marks a from-source build (PyTorch's
+    own versioning convention, e.g. ``"2.13.0a0+git1234567"``); such a build only
+    qualifies when its target release is strictly newer than the floor. A from-source
+    build tagged with the floor release itself (e.g. ``"2.12.0a0+git1234567"``) may be
+    checked out from anywhere in that release's development, so it cannot be assumed to
+    already contain the fixes the floor exists for.
     """
     floor = Version(".".join(str(v) for v in MIN_TORCH_FOR_DETECTOR_MPS))
     try:
@@ -63,10 +63,10 @@ def torch_meets_detector_mps_floor() -> bool:
     except InvalidVersion:
         return False
     from_source_build = installed.local is not None and installed.local.startswith("git")
-    if installed.is_prerelease and not from_source_build:
-        return False
-    if from_source_build:
-        return installed.release >= floor.release
+    if installed.is_prerelease:
+        if not from_source_build:
+            return False
+        return Version(installed.base_version) > floor
     return installed >= floor
 
 
