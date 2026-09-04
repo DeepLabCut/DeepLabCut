@@ -435,7 +435,7 @@ def create_labeled_video(
     ``deeplabcut.analyze_videos``.
 
     Args:
-        config (ProjectConfig | dict | Path | str): Full path of the config.yaml file.
+        config (ProjectConfig | dict | Path | str): Config object or path to the config.yaml file.
         videos (list[str | Path]): A list of strings containing the full paths to videos for analysis or a path
             to the directory, where all the videos with same extension are stored.
         video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
@@ -566,13 +566,14 @@ def create_labeled_video(
                 video_extensions='mp4',
             )
     """
-    if config != "":
-        config = Path(config)
+    # TODO @deruyter92 2026-09-04: this function can still be refactored
+    # substantially by leveraging the ProjectConfig class and simplifying the API.
     if destfolder is not None:
         destfolder = Path(destfolder)
     if skeleton is None:
         skeleton = []
     if config == "":
+        # Project-less SuperAnimal / modelzoo path: no config.yaml is available.
         if pcutoff is None:
             pcutoff = 0.6
         if bboxes_pcutoff is None:
@@ -581,7 +582,8 @@ def create_labeled_video(
         individuals = [""]
         uniquebodyparts = []
     else:
-        cfg = auxiliaryfunctions.read_config(config)
+        cfg = ProjectConfig.from_any(config)
+        cfg.validate_project_path()
         train_fraction = cfg["TrainingFraction"][trainingsetindex]
         track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
         if pcutoff is None:
@@ -602,7 +604,7 @@ def create_labeled_video(
             modelprefix,
             engine=Engine.PYTORCH,
         )
-        model_config_path = Path(config).parent / model_folder / "train" / Engine.PYTORCH.pose_cfg_name
+        model_config_path = cfg.project_path / model_folder / "train" / Engine.PYTORCH.pose_cfg_name
         if model_config_path.exists():
             model_config = PoseConfig.from_yaml(model_config_path)
             if model_config.select("train_settings.weight_init.memory_replay"):
