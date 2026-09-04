@@ -16,7 +16,6 @@ import numpy as np
 import pandas as pd
 from matplotlib import gridspec
 from matplotlib.animation import FFMpegWriter
-from matplotlib.axes._axes import _log as matplotlib_axes_logger
 from matplotlib.collections import LineCollection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from tqdm import tqdm
@@ -27,9 +26,9 @@ from deeplabcut.utils import (
     make_labeled_video,
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
-from deeplabcut.utils.matplotlib_compat import get_colormap
+from deeplabcut.utils.matplotlib_compat import get_colormap, silence_axes_logger
 
-matplotlib_axes_logger.setLevel("ERROR")
+silence_axes_logger()
 
 
 def set_up_grid(figsize, xlim, ylim, zlim, view):
