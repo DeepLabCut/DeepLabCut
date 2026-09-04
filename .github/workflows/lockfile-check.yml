@@ -6,14 +6,14 @@ on:
       - "pyproject.toml"
       - "uv.lock"
       # - ".python-version"
-      - ".github/workflows/uv-lockfile-check.yml"
+      - ".github/workflows/lockfile-check.yml"
   push:
-    branches: [main]
+    branches: [ main, dev ]
     paths:
       - "pyproject.toml"
       - "uv.lock"
       # - ".python-version"
-      - ".github/workflows/uv-lockfile-check.yml"
+      - ".github/workflows/lockfile-check.yml"
 
 jobs:
   uv-lockfile-check:

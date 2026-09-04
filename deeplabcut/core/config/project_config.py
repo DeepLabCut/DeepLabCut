@@ -192,6 +192,19 @@ class ProjectConfig(DLCVersionedConfig):
     )
     croppedtraining: bool | None = None
 
+    # TODO @deruyter92 2026-09-01: This should be included as field in the
+    # config. It requires a version bump of the schema version.
+    # see https://github.com/DeepLabCut/DeepLabCut/pull/3470
+    @property
+    def bboxes_pcutoff(self) -> Fraction:
+        """Default confidence cutoff for plotting bounding boxes from detectors.
+
+        Note: This property is introduced in v3.1.0 as prospective config
+        field, but is intentionally not yet defined as such in the schema to
+        avoid breaking compatibility with older configs.
+        """
+        return 0.6
+
     @property
     def bodyparts_list(self) -> list[str]:
         # Animal-count agnostic; Always return a list (never "MULTI!", None, etc.)
