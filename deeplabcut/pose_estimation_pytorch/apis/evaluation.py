@@ -40,7 +40,7 @@ from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameter
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
+from deeplabcut.utils import auxfun_videos
 from deeplabcut.utils.visualization import (
     create_minimal_figure,
     erase_artists,
@@ -528,7 +528,7 @@ def evaluate_snapshot(
         if weight_init.memory_replay:
             bodyparts = weight_init.bodyparts
             if bodyparts is None:
-                bodyparts = auxiliaryfunctions.get_bodyparts(cfg)
+                bodyparts = cfg.bodyparts_list
 
             parameters = PoseDatasetParameters(
                 bodyparts=bodyparts,
@@ -653,7 +653,7 @@ def evaluate_snapshot(
 
 
 def evaluate_network(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     shuffles: Iterable[int] = (1,),
     trainingsetindex: int | str = 0,
     snapshot_index: int | str | None = None,
@@ -735,7 +735,8 @@ def evaluate_network(
                 plotting="individual",
             )
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path()
 
     if isinstance(trainingsetindex, int):
         train_set_indices = [trainingsetindex]
@@ -753,7 +754,7 @@ def evaluate_network(
     for train_set_index in train_set_indices:
         for shuffle in shuffles:
             loader = DLCLoader(
-                config=config,
+                config=cfg,
                 shuffle=shuffle,
                 trainset_index=train_set_index,
                 modelprefix=modelprefix,
