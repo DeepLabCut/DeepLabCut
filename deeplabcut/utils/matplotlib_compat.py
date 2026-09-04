@@ -9,6 +9,7 @@ Matplotlib versions without ``matplotlib.colormaps``.
 from __future__ import annotations
 
 import matplotlib
+import matplotlib.cm  # noqa: F401
 import matplotlib.pyplot as plt
 from matplotlib.colors import Colormap
 
