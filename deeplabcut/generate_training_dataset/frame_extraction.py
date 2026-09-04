@@ -11,25 +11,28 @@
 
 from pathlib import Path
 
+from deeplabcut.core.config import ProjectConfig
 
-def select_cropping_area(config: str | Path, videos=None):
+
+def _select_cropping_area(cfg: ProjectConfig, videos=None) -> ProjectConfig:
     """Interactively select the cropping area of all videos in the config. A user
     interface pops up with a frame to select the cropping parameters. Use the left click
     to draw a box and hit the button 'set cropping parameters' to store the cropping
     parameters for a video in the config.yaml file.
 
+    Notes: The config is modified in place.
+
     Args:
-        config (string): Full path of the config.yaml file as a string.
+        config (ProjectConfig): Project configuration object.
         videos (list, optional): List of videos whose cropping areas are to be defined.
             Full paths are required. By default, all videos in the config are loaded.
             Defaults to None.
 
     Returns:
-        dict: Updated project configuration
+        ProjectConfig: Updated project configuration (modified in place)
     """
-    from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
+    from deeplabcut.utils import auxfun_videos
 
-    cfg = auxiliaryfunctions.read_config(config)
     if videos is None:
         videos = list(cfg.get("video_sets_original") or cfg["video_sets"])
 
@@ -53,13 +56,11 @@ def select_cropping_area(config: str | Path, videos=None):
                 cfg["video_sets"][video] = temp
             except KeyError:
                 cfg["video_sets_original"][video] = temp
-
-    auxiliaryfunctions.write_config(config, cfg)
     return cfg
 
 
 def extract_frames(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     mode="automatic",
     algo="kmeans",
     crop=False,
@@ -90,6 +91,8 @@ def extract_frames(
     Please refer to the user guide for more details on methods and parameters
     https://www.nature.com/articles/s41596-019-0176-0 or the preprint:
     https://www.biorxiv.org/content/biorxiv/early/2018/11/24/476531.full.pdf
+
+    Notes: The config is modified in place and persisted to disk.
 
     Args:
         config (string): Full path of the config.yaml file as a string.
@@ -230,8 +233,8 @@ def extract_frames(
 
     from deeplabcut.utils import auxiliaryfunctions, frameselectiontools
 
-    config_file = Path(config)
-    cfg = auxiliaryfunctions.read_config(config_file)
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path(write=False)
     print("Config file read successfully.")
 
     if videos_list is None:
@@ -296,7 +299,7 @@ def extract_frames(
                 indexlength = int(np.ceil(np.log10(nframes)))
 
                 fname = Path(video)
-                output_path = Path(config).parents[0] / "labeled-data" / fname.stem
+                output_path = cfg.project_path / "labeled-data" / fname.stem
 
                 if output_path.exists():
                     if any(output_path.iterdir()):
@@ -308,7 +311,9 @@ def extract_frames(
                             sys.exit("Delete the frames and try again later!")
 
                 if crop == "GUI":
-                    cfg = select_cropping_area(config, [video])
+                    # Modify the config in place + persist to disk
+                    _select_cropping_area(cfg, [video])
+                    cfg.to_yaml(cfg.config_yaml_path, overwrite=True, log_changes=True)
                 try:
                     coords = cfg["video_sets"][video]["crop"].split(",")
                 except KeyError:
@@ -365,7 +370,7 @@ def extract_frames(
                     print("Frame selection failed...")
                     return []
 
-                output_path = Path(config).parents[0] / "labeled-data" / Path(video).stem
+                output_path = cfg.project_path / "labeled-data" / Path(video).stem
                 output_path.mkdir(parents=True, exist_ok=True)
                 is_valid = []
                 if opencv:
@@ -424,14 +429,11 @@ def extract_frames(
     elif mode == "match":
         import cv2
 
-        config_file = Path(config)
-        cfg = auxiliaryfunctions.read_config(config_file)
         print("Config file read successfully.")
         videos = sorted(cfg["video_sets"].keys())
         if videos_list is not None:  # filter video_list by the ones in the config file
             videos = [v for v in videos if v in videos_list]
-        project_path = Path(config).parents[0]
-        labels_path = project_path / "labeled-data"
+        labels_path = cfg.project_path / "labeled-data"
         try:
             cfg_3d = auxiliaryfunctions.read_config(config3d)
         except Exception as e:
@@ -448,7 +450,9 @@ def extract_frames(
         for video in videos:
             if extCam_name in video:
                 if crop == "GUI":
-                    cfg = select_cropping_area(config, [video])
+                    # Modify the config in place
+                    _select_cropping_area(cfg, [video])
+                    cfg.to_yaml(cfg.config_yaml_path, overwrite=True, log_changes=True)
                     print("in gui code")
                 coords = cfg["video_sets"][video]["crop"].split(",")
 

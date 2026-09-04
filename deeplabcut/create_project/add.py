@@ -15,7 +15,6 @@ from pathlib import Path
 
 from deeplabcut.core.config import ProjectConfig
 from deeplabcut.generate_training_dataset import frame_extraction
-from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoReader
 
 
@@ -29,7 +28,7 @@ def add_new_videos(
     """Add new videos to the config file at any stage of the project.
 
     Args:
-        config (ProjectConfig | dict | Path | str): String containing the full path of the config file in the project.
+        config (ProjectConfig | dict | Path | str): Project configuration object or path to the config file.
         videos (list): A list of strings containing the full paths of the videos to include in the project.
         copy_videos (bool, optional): If True, the videos will be copied to your
             project/videos directory. If False, symlinks of the videos are copied
@@ -66,17 +65,16 @@ def add_new_videos(
                 coords=[[0, 100, 0, 200], [0, 100, 0, 250]],
             )
     """
-    config = Path(config).absolute()
-
-    # Read the config file
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config)
+    cfg.validate_project_path(write=False)
+    project_path = cfg.project_path
 
     # deal with user passing a single video to add
     if isinstance(videos, str):
         videos = [videos]
 
-    video_path = config.parent / "videos"
-    data_path = config.parent / "labeled-data"
+    video_path = project_path / "videos"
+    data_path = project_path / "labeled-data"
     videos = [Path(vp).absolute() for vp in videos]
 
     dirs = [data_path / i.stem for i in videos]
@@ -130,10 +128,10 @@ def add_new_videos(
             cfg["video_sets"].update(params)
         else:
             cfg["video_sets_original"].update(params)
-    auxiliaryfunctions.write_config(config, cfg)
+    cfg.to_yaml(cfg.config_yaml_path, overwrite=True, log_changes=True)
     if extract_frames:
         frame_extraction.extract_frames(
-            config,
+            cfg,
             userfeedback=False,
             videos_list=[os.fspath(video) for video in videos],
         )

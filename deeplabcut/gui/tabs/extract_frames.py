@@ -14,6 +14,7 @@ from pathlib import Path
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.generate_training_dataset import extract_frames
 from deeplabcut.gui.components import (
     DefaultTab,
@@ -26,7 +27,8 @@ from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import launch_napari
 
 
-def select_cropping_area(config, videos=None):
+# TODO @deruyter92 2026-09-04: This is largely duplicated in frame_extraction.py.
+def _select_cropping_area(cfg: ProjectConfig, videos=None):
     """Interactively select the cropping area of all videos in the config. A user
     interface pops up with a frame to select the cropping parameters. Use the left click
     to draw a box and hit the button 'set cropping parameters' to store the cropping
@@ -42,9 +44,7 @@ def select_cropping_area(config, videos=None):
         dict: Updated project configuration.
     """
     from deeplabcut.gui.widgets import FrameCropper
-    from deeplabcut.utils import auxiliaryfunctions
 
-    cfg = auxiliaryfunctions.read_config(config)
     if videos is None:
         videos = list(cfg.get("video_sets_original") or cfg["video_sets"])
 
@@ -70,7 +70,6 @@ def select_cropping_area(config, videos=None):
             except KeyError:
                 cfg["video_sets_original"][video] = temp
 
-    auxiliaryfunctions.write_config(config, cfg)
     return cfg
 
 
@@ -182,7 +181,7 @@ class ExtractFrames(DefaultTab):
         self.root.logger.info(f"Cropping set to '{cropping_option}'")
 
     def extract_frames(self):
-        config_path = self.root.config_path
+        cfg: ProjectConfig = self.root.cfg
         mode = self.extraction_method_widget.currentText()
         if mode == "manual":
             videos = list(self.video_selection_widget.files)
@@ -206,14 +205,16 @@ class ExtractFrames(DefaultTab):
 
         crop = False  # default value
         if self.frame_cropping_widget.currentText() == "GUI":
-            _ = select_cropping_area(config_path)
+            # Modify the config in place + persist to disk
+            _select_cropping_area(cfg)
+            cfg.to_yaml(cfg.config_yaml_path, overwrite=True, log_changes=True)
             crop = True
         elif self.frame_cropping_widget.currentText() == "read from config":
             crop = True
 
         func = partial(
             extract_frames,
-            config_path,
+            cfg,
             mode,
             algo,
             crop=crop,
