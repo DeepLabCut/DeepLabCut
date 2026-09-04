@@ -26,7 +26,7 @@ class TestCfgCaching:
         config_path = tmp_path / "config.yaml"
         write_project_config(config_path, tmp_path)
 
-        main_window.config = str(config_path)
+        main_window.config_path = config_path
 
         first = main_window.cfg
         assert first is not None
@@ -35,7 +35,7 @@ class TestCfgCaching:
     def test_external_edit_does_not_silently_reload(self, main_window, tmp_path, write_project_config):
         config_path = tmp_path / "config.yaml"
         write_project_config(config_path, tmp_path)
-        main_window.config = str(config_path)
+        main_window.config_path = config_path
         first = main_window.cfg
 
         write_project_config(config_path, tmp_path, task="edited")
@@ -47,18 +47,18 @@ class TestCfgCaching:
     def test_assigning_config_invalidates_cache(self, main_window, tmp_path, write_project_config):
         config_path = tmp_path / "config.yaml"
         write_project_config(config_path, tmp_path)
-        main_window.config = str(config_path)
+        main_window.config_path = config_path
         first = main_window.cfg
 
         write_project_config(config_path, tmp_path, task="edited")
-        main_window.config = str(config_path)  # explicit reload boundary
+        main_window.config_path = config_path  # explicit reload boundary
 
         reloaded = main_window.cfg
         assert reloaded is not first
         assert reloaded.Task == "edited"
 
     def test_cfg_is_none_without_a_project(self, main_window):
-        main_window.config = None
+        main_window.config_path = None
         assert main_window.cfg is None
 
 
@@ -84,7 +84,7 @@ class TestRecoveryLoop:
             return ConfigErrorAction.CANCEL
 
         stubbed_window._handle_config_error = cancel
-        stubbed_window.config = str(config_path)
+        stubbed_window.config_path = config_path
 
         assert stubbed_window._build_project_ui_from_current_config() is False
         assert len(handled) == 1
@@ -101,7 +101,7 @@ class TestRecoveryLoop:
             return ConfigErrorAction.RETRY
 
         stubbed_window._handle_config_error = fix_file_and_retry
-        stubbed_window.config = str(config_path)
+        stubbed_window.config_path = config_path
 
         assert stubbed_window._build_project_ui_from_current_config() is True
         assert stubbed_window._built_tabs == [True]
@@ -116,7 +116,7 @@ class TestRecoveryLoop:
             raise AssertionError(f"error handler should not be called: {error}")
 
         stubbed_window._handle_config_error = unexpected
-        stubbed_window.config = str(config_path)
+        stubbed_window.config_path = config_path
 
         assert stubbed_window._build_project_ui_from_current_config() is True
         assert stubbed_window._built_tabs == [True]
@@ -126,7 +126,7 @@ class TestConfigCacheInvalidation:
     def test_invalidate_drops_cache_for_next_access(self, main_window, tmp_path, write_project_config):
         config_path = tmp_path / "config.yaml"
         write_project_config(config_path, tmp_path)
-        main_window.config = str(config_path)
+        main_window.config_path = config_path
 
         first = main_window.cfg
         assert first is not None
@@ -140,7 +140,7 @@ class TestConfigCacheInvalidation:
 
     def test_invalidate_is_idempotent(self, main_window):
         # Must not raise even with no config loaded.
-        main_window.config = None
+        main_window.config_path = None
         main_window.invalidate_config_cache()
         assert main_window.cfg is None
 
@@ -166,7 +166,7 @@ class TestReloadTimer:
 
         window = MainWindow(qapp)
         try:
-            window.config = str(config_path)
+            window.config_path = config_path
 
             reloads = []
             monkeypatch.setattr(
