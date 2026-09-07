@@ -122,11 +122,14 @@ def _own_kind(member: Member) -> str:
 
 
 def _symbols(module: griffe.Module, package: str, base_url: str = "") -> tuple[Symbol, ...]:
-    """Documented functions and classes belonging to `module`.
+    """Documented functions, classes and methods belonging to `module`.
 
     Members defined elsewhere are skipped, except on the package root, where the
     public API consists entirely of re-exports: `analyze_videos` belongs under
     `deeplabcut` rather than under `deeplabcut.compat`.
+
+    A class's own public methods are recorded too, so a caller can find a
+    signature without opening the class's reference page.
     """
     is_root = module.path == package
     symbols = []
@@ -158,7 +161,32 @@ def _symbols(module: griffe.Module, package: str, base_url: str = "") -> tuple[S
             )
         )
 
+        if kind == "class":
+            symbols.extend(_methods(target, module.path, name, base_url))
+
     return tuple(sorted(symbols, key=lambda symbol: symbol.name))
+
+
+def _methods(cls: griffe.Class, module_path: str, class_name: str, base_url: str = "") -> Iterator[Symbol]:
+    """Documented public methods a class declares itself.
+
+    `cls.members` excludes inherited members, which the base class documents.
+    """
+    for name, member in sorted(cls.members.items()):
+        if name.startswith("_") or member.is_alias or not member.is_function:
+            continue
+        if not member.docstring:
+            continue
+
+        qualified = f"{class_name}.{name}"
+        yield Symbol(
+            name=qualified,
+            kind="method",
+            summary=_summary(member),
+            signature=_signature(member),
+            source=_source(member),
+            docs_url=_docs_url(module_path, f"{module_path}.{qualified}", base_url),
+        )
 
 
 def _resolve(alias: griffe.Alias, package: str) -> griffe.Object | None:
