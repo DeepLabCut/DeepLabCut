@@ -99,8 +99,15 @@ jobs:
 
       # --system: setup-python provides no virtualenv to install into.
       - name: Install knowledge-index dependencies
+        if: inputs.action == 'deploy'
         shell: bash
         run: uv pip install --system --group knowledge-index
+
+      # A delete only rewrites JSON under knowledge - does not require griffe or the markdown stack
+      - name: Install knowledge-index delete dependency
+        if: inputs.action == 'delete'
+        shell: bash
+        run: uv pip install --system pyyaml
 
       - name: Check out published knowledge index
         uses: actions/checkout@v6
