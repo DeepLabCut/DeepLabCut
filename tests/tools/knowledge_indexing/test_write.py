@@ -5,9 +5,17 @@ from pathlib import Path
 
 import pytest
 
-from tools.knowledge_indexing.api_index import ApiNode, Symbol
-from tools.knowledge_indexing.docs_index import DocsPageNode, Section
-from tools.knowledge_indexing.schemas import API_FILE, DOCS_FILE, KNOWLEDGE_DIR, TOP_MANIFEST, VERSION_MANIFEST
+from tools.knowledge_indexing.schemas import (
+    API_FILE,
+    DOCS_FILE,
+    KNOWLEDGE_DIR,
+    TOP_MANIFEST,
+    VERSION_MANIFEST,
+    ApiNode,
+    DocsPageNode,
+    Section,
+    Symbol,
+)
 from tools.knowledge_indexing.write import (
     _check_unique_ids,
     _read_json,

@@ -12,25 +12,23 @@ import shutil
 from collections.abc import Iterable, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from .schemas import (
     API_FILE,
     DOCS_FILE,
     TOP_MANIFEST,
     VERSION_MANIFEST,
+    ApiNode,
     ApiProvenance,
     ApiRecord,
     DocPageRecord,
     DocSectionRecord,
+    DocsPageNode,
     DocsProvenance,
     TopManifest,
     VersionManifest,
 )
-
-if TYPE_CHECKING:
-    from .api_index import ApiNode
-    from .docs_index import DocsPageNode
 
 
 def write_version(

@@ -1,20 +1,20 @@
-"""On-disk schema of the knowledge index.
+"""On-disk schema and intermediate build-time trees of the knowledge index.
 
+**Schemas**
 Everything the index publishes is defined here: the JSONL record shapes
 written to `docs.jsonl` and `api.jsonl`, and the two manifest shapes --
 `manifest.json` (one per version) and the top-level `knowledge/manifest.json`
 that enumerates every version. Each is a frozen dataclass that renders itself
 as a plain dict, so `write.py` only has to serialise what it is handed.
 
-Structures used while *reading* inputs are not schema and live with the code
-that reads them: `TocEntry` in `toc.py` describes an entry of `_toc.yml`,
-`ParsedPage` in `docs_index.py` is a page held between its two parsing
-passes, and `ApiNode` / `Symbol` (api_index.py) and `DocsPageNode` / `Section`
-(docs_index.py) are the build-time trees `write.py` flattens into the records
-below. None of them is ever written out directly.
-
 Ids are namespaced by node type (`docs:`, `api:`), which makes a reference
 unambiguous about what it points at.
+
+**Build-time trees**
+Intermediate tries flattened by `write.py` into the published records. They are
+never written to disk, and nothing downstream sees them.
+- `DocsPageNode` and `Section` (for the user documentation)
+- `ApiNode` and `Symbol` (for the API reference)
 """
 
 from __future__ import annotations
@@ -262,3 +262,85 @@ class TopManifest:
                 "versions": list(self.api_versions),
             },
         }
+
+
+# ---------------------------------------------------------------------------
+# Build-time trees -- NOT published.
+#
+# What the readers hand to `write.py`, which flattens them into the records
+# above. Nothing below is ever serialised: no `to_dict`, no `content_hash`, no
+# `SCHEMA_VERSION`. They can be freely renamed without breaking the schema
+# contract (unlike the records above!).
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Symbol:
+    """A documented function or class, as published on an API reference page."""
+
+    name: str
+    kind: str
+    summary: str
+    signature: str
+    source: str
+    docs_url: str
+
+
+@dataclass(frozen=True)
+class ApiNode:
+    """One published module and the symbols documented on its reference page.
+
+    Built by `api_index.py`; flattened into `ApiRecord` rows.
+    """
+
+    id: str
+    module: str
+    summary: str
+    source: str
+    docs_url: str
+    symbols: tuple[Symbol, ...] = ()
+
+
+@dataclass(frozen=True)
+class Section:
+    """A heading within a docs page, retrievable in its own right.
+
+    `anchor` addresses it on the published page; `excerpt` is the first paragraph
+    of prose beneath the heading.
+    """
+
+    id: str
+    title: str
+    level: int
+    anchor: str
+    docs_url: str
+    excerpt: str = ""
+
+
+@dataclass(frozen=True)
+class DocsPageNode:
+    """One page of the user documentation.
+
+    Built by `docs_index.py`; flattened into `DocPageRecord` /
+    `DocSectionRecord` rows.
+
+    `part`, `parent` and `children` come from `_toc.yml` and place the page in
+    the published navigation. `status` and `last_verified` are copied from the
+    page's audit frontmatter; nothing is filtered on them. `labels` are the
+    MyST targets the page defines, which is what a `{ref}` elsewhere in the
+    docs resolves against.
+    """
+
+    id: str
+    title: str
+    docs_url: str
+    source_file: str
+    part: str = ""
+    parent: str = ""
+    children: tuple[str, ...] = ()
+    summary: str = ""
+    status: str = ""
+    last_verified: str = ""
+    sections: tuple[Section, ...] = ()
+    related_pages: tuple[str, ...] = ()
+    labels: tuple[str, ...] = ()

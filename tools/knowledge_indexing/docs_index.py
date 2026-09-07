@@ -32,54 +32,12 @@ from docutils.nodes import make_id
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
 
-from .schemas import DOCS_NAMESPACE
+from .schemas import DOCS_NAMESPACE, DocsPageNode, Section
 from .toc import TOC_FILE, TocEntry, read_toc
 
 # Audit `visibility` values that keep a page out of the index, even though it
 # is listed in `_toc.yml`. Anything else (including unset) is included.
 HIDDEN_VISIBILITY = frozenset({"orphaned"})
-
-
-@dataclass(frozen=True)
-class Section:
-    """A heading within a docs page, retrievable in its own right.
-
-    `anchor` addresses it on the published page; `excerpt` is the first paragraph
-    of prose beneath the heading.
-    """
-
-    id: str
-    title: str
-    level: int
-    anchor: str
-    docs_url: str
-    excerpt: str = ""
-
-
-@dataclass(frozen=True)
-class DocsPageNode:
-    """One page of the user documentation.
-
-    `part`, `parent` and `children` come from `_toc.yml` and place the page in
-    the published navigation. `status` and `last_verified` are copied from the
-    page's audit frontmatter; nothing is filtered on them. `labels` are the
-    MyST targets the page defines, which is what a `{ref}` elsewhere in the
-    docs resolves against.
-    """
-
-    id: str
-    title: str
-    docs_url: str
-    source_file: str
-    part: str = ""
-    parent: str = ""
-    children: tuple[str, ...] = ()
-    summary: str = ""
-    status: str = ""
-    last_verified: str = ""
-    sections: tuple[Section, ...] = ()
-    related_pages: tuple[str, ...] = ()
-    labels: tuple[str, ...] = ()
 
 
 # Ids are relative to this directory, so `docs/installation` becomes
