@@ -61,5 +61,7 @@ jobs:
       action: deploy
       version_label: main
       skip_api: true
+      # Same artifact deploy-main-docs published; anchors are read from it.
+      docs_html_artifact: built-book
       python-version: "3.10"
     secrets: inherit

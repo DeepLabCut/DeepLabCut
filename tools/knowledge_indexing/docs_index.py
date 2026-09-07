@@ -25,6 +25,7 @@ import re
 from collections import Counter
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
+from html.parser import HTMLParser
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -38,6 +39,9 @@ from .toc import TOC_FILE, TocEntry, read_toc
 # Audit `visibility` values that keep a page out of the index, even though it
 # is listed in `_toc.yml`. Anything else (including unset) is included.
 HIDDEN_VISIBILITY = frozenset({"orphaned"})
+
+# Heading elements a built page wraps its sections around.
+_HEADING_TAGS = frozenset({"h1", "h2", "h3", "h4", "h5", "h6"})
 
 
 # Ids are relative to this directory, so `docs/installation` becomes
@@ -107,17 +111,19 @@ class ParsedPage:
     audit: dict[str, Any] = field(default_factory=dict)
 
 
-def build_docs_nodes(repo: Path, base_url: str = "") -> list[DocsPageNode]:
+def build_docs_nodes(repo: Path, base_url: str = "", html_dir: Path | None = None) -> list[DocsPageNode]:
     """Build one node per published markdown page listed in `_toc.yml`.
 
-    `base_url` is prepended to every published URL.
+    `base_url` is prepended to every published URL. `html_dir` is the root of a
+    built docs site (`_build/html`), which section anchors are read from; without
+    it, sections link to their page instead of to a heading.
     """
     pages = []
     for entry in read_toc(repo / TOC_FILE):
         path = repo / f"{entry.file}.md"
         # Notebook entries have no markdown source.
         if path.is_file():
-            page = _parse_page(path, entry, base_url)
+            page = _parse_page(path, entry, base_url, html_dir)
             if page is not None:
                 pages.append(page)
 
@@ -126,7 +132,7 @@ def build_docs_nodes(repo: Path, base_url: str = "") -> list[DocsPageNode]:
     return [_to_node(page, labels, local_ids, base_url) for page in pages]
 
 
-def _parse_page(path: Path, entry: TocEntry, base_url: str) -> ParsedPage | None:
+def _parse_page(path: Path, entry: TocEntry, base_url: str, html_dir: Path | None = None) -> ParsedPage | None:
     """Parse one page, or None if its frontmatter keeps it out of the index."""
     frontmatter, body = _split_frontmatter(path.read_text(encoding="utf-8"))
     raw_audit = frontmatter.get("deeplabcut")
@@ -138,7 +144,12 @@ def _parse_page(path: Path, entry: TocEntry, base_url: str) -> ParsedPage | None
 
     local_id = _local_id(entry.file)
     tokens = _MARKDOWN.parse(body)
-    title, summary, sections = _read_structure(tokens, f"{DOCS_NAMESPACE}:{local_id}", _page_url(entry, base_url))
+    title, summary, sections = _read_structure(
+        tokens,
+        f"{DOCS_NAMESPACE}:{local_id}",
+        _page_url(entry, base_url),
+        _page_anchors(html_dir, entry),
+    )
 
     return ParsedPage(
         entry=entry,
@@ -182,20 +193,110 @@ def _page_url(entry: TocEntry, base_url: str) -> str:
     return f"{base_url}{entry.file}.html"
 
 
-def _read_structure(tokens: list[Token], page_id: str, docs_url: str) -> tuple[str, str, tuple[Section, ...]]:
-    """Page title, page summary, and one section per heading below the title."""
+class _PublishedAnchors(HTMLParser):
+    """Section ids of a built page, keyed by `(heading text, occurrence)`.
+
+    Tracks open `<section>` elements and captures the heading opening each one.
+    `convert_charrefs` (on by default) resolves `&amp;` and friends, so the text
+    compares equal to the markdown heading it came from.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.anchors: dict[tuple[str, int], str] = {}
+        self._seen: Counter[str] = Counter()
+        self._sections: list[str] = []
+        self._heading: list[str] | None = None
+        self._skip = 0
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attributes = dict(attrs)
+        if tag == "section":
+            self._sections.append(attributes.get("id") or "")
+        elif tag in _HEADING_TAGS and self._sections:
+            self._heading = []
+        elif self._heading is not None and tag == "a" and "headerlink" in (attributes.get("class") or ""):
+            # The "#" permalink Sphinx appends inside every heading.
+            self._skip += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "section":
+            if self._sections:
+                self._sections.pop()
+        elif tag in _HEADING_TAGS and self._heading is not None:
+            title = " ".join("".join(self._heading).split())
+            anchor = self._sections[-1] if self._sections else ""
+            if title and anchor:
+                self._seen[title] += 1
+                self.anchors.setdefault((title, self._seen[title]), anchor)
+            self._heading = None
+        elif tag == "a" and self._skip:
+            self._skip -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self._heading is not None and not self._skip:
+            self._heading.append(data)
+
+
+def read_published_anchors(html: str) -> dict[tuple[str, int], str]:
+    """Anchors a built docs page publishes, keyed by `(heading text, occurrence)`.
+
+    Read rather than derived: a heading's id depends on Sphinx and docutils
+    settings and transforms, not on its text alone. Keyed by text rather than by
+    position, so a heading either side disagrees about shifts nothing around it.
+    """
+    parser = _PublishedAnchors()
+    parser.feed(html)
+    return parser.anchors
+
+
+def _page_anchors(html_dir: Path | None, entry: TocEntry) -> dict[tuple[str, int], str]:
+    """Published anchors for one page.
+
+    Raises if `html_dir` is given but the page is not in it: asking for anchors
+    and silently getting page-level links back is the failure this is meant to
+    prevent. Without `html_dir` there is nothing to read and no anchors.
+    """
+    if html_dir is None:
+        return {}
+    path = html_dir / f"{entry.file}.html"
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"{path} not found: --docs-html is set, so every page in {TOC_FILE} must be built. "
+            "Check the directory is the docs build root and mirrors the source layout."
+        )
+    return read_published_anchors(path.read_text(encoding="utf-8", errors="replace"))
+
+
+def _read_structure(
+    tokens: list[Token],
+    page_id: str,
+    docs_url: str,
+    anchors: dict[tuple[str, int], str] | None = None,
+) -> tuple[str, str, tuple[Section, ...]]:
+    """Page title, page summary, and one section per heading below the title.
+
+    `anchors` comes from `read_published_anchors`; a heading missing from it
+    links to its page rather than to a fragment. Record ids come from the source
+    alone, so they are the same with or without it.
+    """
+    anchors = anchors or {}
     starts = [index for index, token in enumerate(tokens) if token.type == "heading_open"]
     bounds = [*starts, len(tokens)]
 
     title = ""
     summary = _first_paragraph(tokens[: bounds[0]]) if starts else ""
     sections = []
-    seen: Counter[str] = Counter()
+    seen_text: Counter[str] = Counter()
+    seen_slug: Counter[str] = Counter()
 
     for start, end in zip(bounds, bounds[1:], strict=False):
         heading = tokens[start]
         text = _inline_text(tokens[start + 1])
         excerpt = _first_paragraph(tokens[start + 2 : end])
+
+        # The title counts towards occurrences, because `anchors` counts it too.
+        seen_text[text] += 1
 
         if heading.tag == "h1" and not title:
             # The first H1 titles the page; its lead paragraph summarises it.
@@ -204,19 +305,19 @@ def _read_structure(tokens: list[Token], page_id: str, docs_url: str) -> tuple[s
             summary = summary or excerpt
             continue
 
-        anchor = _anchor(text)
+        anchor = anchors.get((text, seen_text[text]), "")
+
         slug = _section_slug(text)
-        seen[slug] += 1
-        # Sphinx registers only the first occurrence of a repeated heading, so
-        # the anchor is shared and the id is suffixed to stay unique.
-        suffix = "" if seen[slug] == 1 else f"-{seen[slug]}"
+        seen_slug[slug] += 1
+        suffix = "" if seen_slug[slug] == 1 else f"~{seen_slug[slug]}"
+
         sections.append(
             Section(
                 id=f"{page_id}#{slug}{suffix}",
                 title=text,
                 level=int(heading.tag[1]),
                 anchor=anchor,
-                docs_url=f"{docs_url}#{anchor}",
+                docs_url=f"{docs_url}#{anchor}" if anchor else docs_url,
                 excerpt=excerpt,
             )
         )

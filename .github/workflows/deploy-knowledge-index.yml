@@ -31,6 +31,16 @@ on:
         default: false
         type: boolean
 
+      docs_html_artifact:
+        description: >-
+          Artifact holding the built user docs, from a job earlier in this run.
+          Section anchors are read from it, since only the docs build knows what
+          id it gave a heading. Without it, docs sections link to their page
+          rather than to a heading.
+        required: false
+        default: ""
+        type: string
+
       python-version:
         description: Python version used to build the knowledge index.
         required: false
@@ -117,20 +127,38 @@ jobs:
           sparse-checkout: |
             knowledge
 
+      # Section anchors are read from the built pages rather than derived from
+      # the markdown: only the docs build knows which id a heading was given.
+      - name: Download built user docs
+        if: inputs.action == 'deploy' && !inputs.skip_docs && inputs.docs_html_artifact != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.docs_html_artifact }}
+          path: _docs-html
+
       - name: Build knowledge index
         if: inputs.action == 'deploy'
         shell: bash
         env:
           REVISION: ${{ steps.revision.outputs.sha }}
+          DOCS_HTML_ARTIFACT: ${{ inputs.docs_html_artifact }}
         run: |
           mkdir -p _build/knowledge-index
           if [ -d gh-pages/knowledge ]; then
             cp -r gh-pages/knowledge _build/knowledge-index/
           fi
+          # Passed whenever an artifact was named, so a download that produced
+          # the wrong layout fails the build instead of quietly publishing an
+          # index with no anchors.
+          docs_html=()
+          if [ -n "$DOCS_HTML_ARTIFACT" ]; then
+            docs_html=(--docs-html _docs-html)
+          fi
           python -m tools.knowledge_indexing \
             --output _build/knowledge-index \
             --version-label "$VERSION_LABEL" \
             --revision "$REVISION" \
+            "${docs_html[@]}" \
             ${{ inputs.skip_api && '--skip-api' || '' }} \
             ${{ inputs.skip_docs && '--skip-docs' || '' }}
 

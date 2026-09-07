@@ -15,6 +15,7 @@ python -m tools.knowledge_indexing
 | `--output` | Directory mirroring the gh-pages site root to write into (default: `<repo>/_build/knowledge-index`) |
 | `--repo` | Repository root, containing `_toc.yml`, `docs/` and `deeplabcut/` (default: cwd) |
 | `--version-label` | Developer-docs version label the API URLs point at, one of the labels mike deploys (default: `main`) |
+| `--docs-html` | Root of a built docs site (e.g. `_build/html`) to read published section anchors from. Without it, docs sections link to their page instead of to a heading |
 | `--revision` | Commit the source was read at, recorded in the manifest (default: `HEAD` of `--repo`) |
 | `--skip-api` | Don't rebuild `api.jsonl` this run; keep it and its manifest provenance as already on disk |
 | `--skip-docs` | Don't rebuild `docs.jsonl`/`llms.txt` this run; keep them and their manifest provenance as already on disk |
@@ -113,9 +114,21 @@ tool generates no concepts at all — see "Known gaps".
 
 Each page is one `type: "page"` row in `docs.jsonl`; each heading below its title
 is its own `type: "section"` row, carrying an `anchor` and a `url` pointing at
-it, plus a `summary`: the first paragraph of prose under the heading. Anchors
-come from `docutils.nodes.make_id`, the function docutils uses to build section
-ids. A heading whose body is only a subheading, a figure or code has no summary.
+it, plus a `summary`: the first paragraph of prose under the heading. A heading
+whose body is only a subheading, a figure or code has no summary.
+
+Anchors are **read from the built docs, not derived from the markdown**. Which id
+a heading gets is decided by Sphinx and docutils together: `make_id(title)` for
+the first heading of a name, a document-wide `id1`, `id2`, … for every repeat
+(including headings differing only in punctuation, which `make_id` strips), an
+explicit id where a MyST target supplies one, and no section at all where a title
+is promoted to the page title. Those depend on toolchain settings, so deriving
+them from source would break silently whenever the docs stack changes. Pass
+`--docs-html` to get the published anchors; without it, sections link to their
+page. Record `id`s come from the source either way, so they match across modes.
+`tests/tools/knowledge_indexing/test_docs_anchors_regression.py` builds a page
+with the repo's own `_config.yml` and checks every anchor we publish is really
+on it.
 A section row denormalises its page's `section` (toc part) so it stands on its
 own, but everything else about the page — `status`, `parent`, `children`,
 `related_pages`, `labels` — lives only on the page row, reachable via the
@@ -200,8 +213,12 @@ user-docs half can never get built by the wrong trigger:
 - **Notebooks are not indexed.** `_toc.yml` lists notebooks under `examples/`,
   which would need a reader for `.ipynb` markdown cells.
 - **Validation is minimal.** Duplicate record ids abort the write, but there is
-  no `--check` mode, so anchors, dangling references and unresolvable URLs are
-  not caught.
+  no `--check` mode, so dangling references and unresolvable URLs are not
+  caught.
+- **Section anchors need the built docs.** A run without `--docs-html` publishes
+  page-level links for every section. That is correct but less precise, and the
+  two modes produce different `url`s (record ids are unaffected). CI passes the
+  built book, so the deployed index always has anchors.
 - **`knowledge/manifest.json` is rebuilt by rescanning disk**, not by tracking
   state across separate builds -- see "Deployment" below for how CI seeds that
   rescan. `api.latest` currently always points at `main`; resolving "latest

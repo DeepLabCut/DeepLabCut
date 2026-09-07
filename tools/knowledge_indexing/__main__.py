@@ -81,6 +81,15 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--docs-html",
+        type=Path,
+        help=(
+            "Root of a built docs site (e.g. _build/html) to read published "
+            "section anchors from. Without it, docs sections link to their page "
+            "instead of to a heading -- only the build knows a heading's id."
+        ),
+    )
+    parser.add_argument(
         "--revision",
         default="",
         help=(
@@ -206,8 +215,33 @@ def main(argv: list[str] | None = None) -> int:
         from .docs_index import build_docs_nodes
 
         print(f"Reading user docs listed in {repo / TOC_FILE} ...")
-        docs_pages = build_docs_nodes(repo, DOCS_BASE_URL)
-        print(f"  {len(docs_pages)} pages, {sum(len(page.sections) for page in docs_pages)} sections")
+        if args.docs_html is None:
+            print("  No --docs-html: sections will link to their page, not to a heading anchor")
+        elif not args.docs_html.is_dir():
+            print(f"Error: --docs-html {args.docs_html} is not a directory.", file=sys.stderr)
+            return 1
+        try:
+            docs_pages = build_docs_nodes(repo, DOCS_BASE_URL, args.docs_html)
+        except FileNotFoundError as error:
+            print(f"Error: {error}", file=sys.stderr)
+            return 1
+
+        total = sum(len(page.sections) for page in docs_pages)
+        unanchored = [
+            f"{page.source_file}: {section.title}"
+            for page in docs_pages
+            for section in page.sections
+            if not section.anchor
+        ]
+        print(f"  {len(docs_pages)} pages, {total} sections, {total - len(unanchored)} with a published anchor")
+        if args.docs_html is not None and unanchored:
+            # The page was built, so these headings are ones whose markdown text
+            # did not match any heading in the HTML. They link to their page.
+            print(f"  {len(unanchored)} headings matched no published anchor:", file=sys.stderr)
+            for item in unanchored[:10]:
+                print(f"    {item}", file=sys.stderr)
+            if len(unanchored) > 10:
+                print(f"    ... and {len(unanchored) - 10} more", file=sys.stderr)
     elif args.skip_docs:
         print("Skipping user docs: --skip-docs")
     else:
