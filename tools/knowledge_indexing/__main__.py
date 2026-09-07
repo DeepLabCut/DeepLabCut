@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 from .llms_txt import build_llms_txt
-from .schemas import KNOWLEDGE_DIR, LLMS_TXT
+from .schemas import KNOWLEDGE_DIR, LATEST_RELEASE_ALIAS, LLMS_TXT
 from .toc import TOC_FILE
 from .write import delete_version, write_top_manifest, write_version
 
@@ -78,6 +78,16 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
             "Developer-docs version label the API URLs point at, also recorded "
             "as api_version_label in the manifest. One of the labels mike "
             f"deploys, e.g. main or 3.0 (default: {DOCS_VERSION_LABEL})."
+        ),
+    )
+    parser.add_argument(
+        "--aliases",
+        default="",
+        help=(
+            "Space-separated aliases this version carries, mirroring the ones "
+            "mike assigns, e.g. 'latest-release'. Whichever version carries "
+            f"'{LATEST_RELEASE_ALIAS}' becomes api.latest in the top manifest; "
+            "an alias is taken from the version that held it."
         ),
     )
     parser.add_argument(
@@ -196,6 +206,17 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Error: {required} not found; is --repo the repository root?", file=sys.stderr)
             return 1
 
+    # Aliases are recorded in the manifest and resolved to a version by
+    # consumers, so they are restricted exactly as a version label is.
+    try:
+        aliases = [_version_label(alias) for alias in args.aliases.split()]
+    except argparse.ArgumentTypeError as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
+    if args.version_label in aliases:
+        print(f"Error: {args.version_label!r} cannot be an alias of itself.", file=sys.stderr)
+        return 1
+
     api_base_url = API_BASE_URL.format(version=args.version_label)
     include_api = not args.skip_api
     include_docs = args.version_label == DOCS_VERSION_LABEL and not args.skip_docs
@@ -254,6 +275,7 @@ def main(argv: list[str] | None = None) -> int:
         docs_pages,
         package_version=_package_version(repo),
         revision=args.revision or _git_revision(repo),
+        aliases=aliases,
     )
     write_top_manifest(knowledge_dir, docs_version_label=DOCS_VERSION_LABEL)
 

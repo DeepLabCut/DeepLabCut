@@ -31,6 +31,15 @@ on:
         default: false
         type: boolean
 
+      aliases:
+        description: >-
+          Space-separated aliases this version carries, matching the ones passed
+          to mike, e.g. latest-release. Whichever version carries latest-release
+          becomes api.latest in knowledge/manifest.json.
+        required: false
+        default: ""
+        type: string
+
       docs_html_artifact:
         description: >-
           Artifact holding the built user docs, from a job earlier in this run.
@@ -142,6 +151,7 @@ jobs:
         env:
           REVISION: ${{ steps.revision.outputs.sha }}
           DOCS_HTML_ARTIFACT: ${{ inputs.docs_html_artifact }}
+          ALIASES: ${{ inputs.aliases }}
         run: |
           mkdir -p _build/knowledge-index
           if [ -d gh-pages/knowledge ]; then
@@ -157,6 +167,7 @@ jobs:
           python -m tools.knowledge_indexing \
             --output _build/knowledge-index \
             --version-label "$VERSION_LABEL" \
+            --aliases "$ALIASES" \
             --revision "$REVISION" \
             "${docs_html[@]}" \
             ${{ inputs.skip_api && '--skip-api' || '' }} \

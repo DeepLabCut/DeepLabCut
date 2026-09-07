@@ -17,6 +17,7 @@ from typing import Any
 from .schemas import (
     API_FILE,
     DOCS_FILE,
+    LATEST_RELEASE_ALIAS,
     TOP_MANIFEST,
     VERSION_MANIFEST,
     ApiNode,
@@ -38,6 +39,7 @@ def write_version(
     docs_pages: Sequence[DocsPageNode] | None,
     package_version: str = "",
     revision: str = "",
+    aliases: Sequence[str] = (),
 ) -> tuple[int, int]:
     """Write `api.jsonl` and/or `docs.jsonl` for one version, plus its manifest.
 
@@ -45,6 +47,10 @@ def write_version(
     file and manifest provenance are kept exactly as already on disk under
     `knowledge_dir/version_label`. Returns the number of api and docs records
     written this run (0 for an untouched half).
+
+    `aliases` are taken from whichever version held them, the way mike's
+    `--update-aliases` moves `latest-release` onto the version being deployed.
+    Passing none leaves this version's aliases as they are on disk.
     """
     version_dir = knowledge_dir / version_label
     version_dir.mkdir(parents=True, exist_ok=True)
@@ -81,22 +87,61 @@ def write_version(
     if api_provenance is None:
         raise ValueError(f"No api provenance for {version_label!r}: apis was skipped and no manifest.json exists yet")
 
-    manifest = VersionManifest(api_version_label=version_label, api=api_provenance, docs=docs_provenance)
+    kept = tuple(existing.get("api_aliases") or ()) if existing else ()
+    api_aliases = tuple(dict.fromkeys([*kept, *aliases]))
+    manifest = VersionManifest(
+        api_version_label=version_label,
+        api=api_provenance,
+        docs=docs_provenance,
+        api_aliases=api_aliases,
+    )
     _write_json(version_dir / VERSION_MANIFEST, manifest.to_dict())
+    _revoke_aliases(knowledge_dir, keep=version_label, aliases=aliases)
 
     return api_count, docs_count
+
+
+def _revoke_aliases(knowledge_dir: Path, keep: str, aliases: Sequence[str]) -> None:
+    """Drop `aliases` from every version but `keep`, so each has one holder."""
+    if not aliases:
+        return
+    for child in knowledge_dir.iterdir():
+        if not child.is_dir() or child.name == keep:
+            continue
+        manifest = _read_json(child / VERSION_MANIFEST)
+        if not manifest:
+            continue
+        held = list(manifest.get("api_aliases") or ())
+        remaining = [alias for alias in held if alias not in set(aliases)]
+        if remaining != held:
+            manifest["api_aliases"] = remaining
+            _write_json(child / VERSION_MANIFEST, manifest)
 
 
 def write_top_manifest(knowledge_dir: Path, docs_version_label: str) -> None:
     """Rebuild `knowledge/manifest.json` from the version directories under `knowledge_dir`."""
     versions = sorted(child.name for child in knowledge_dir.iterdir() if child.is_dir() and _has_api(child))
     has_docs = (knowledge_dir / docs_version_label / DOCS_FILE).is_file()
+    aliases = _read_aliases(knowledge_dir, versions)
     manifest = TopManifest(
         docs_path=f"{docs_version_label}/{DOCS_FILE}" if has_docs else "",
-        api_latest=docs_version_label,
+        # The release an agent should read by default, or the rolling build
+        # while no release carries the alias.
+        api_latest=aliases.get(LATEST_RELEASE_ALIAS, docs_version_label),
         api_versions=tuple(versions),
+        api_aliases=aliases,
     )
     _write_json(knowledge_dir / TOP_MANIFEST, manifest.to_dict())
+
+
+def _read_aliases(knowledge_dir: Path, versions: Sequence[str]) -> dict[str, str]:
+    """Alias -> version, from the per-version manifests."""
+    aliases: dict[str, str] = {}
+    for version in versions:
+        manifest = _read_json(knowledge_dir / version / VERSION_MANIFEST)
+        for alias in (manifest or {}).get("api_aliases") or ():
+            aliases[str(alias)] = version
+    return aliases
 
 
 def delete_version(knowledge_dir: Path, version_label: str) -> None:

@@ -15,6 +15,7 @@ python -m tools.knowledge_indexing
 | `--output` | Directory mirroring the gh-pages site root to write into (default: `<repo>/_build/knowledge-index`) |
 | `--repo` | Repository root, containing `_toc.yml`, `docs/` and `deeplabcut/` (default: cwd) |
 | `--version-label` | Developer-docs version label the API URLs point at, one of the labels mike deploys (default: `main`) |
+| `--aliases` | Space-separated aliases this version carries, matching the ones passed to mike, e.g. `latest-release`. Whichever version carries `latest-release` becomes `api.latest` |
 | `--docs-html` | Root of a built docs site (e.g. `_build/html`) to read published section anchors from. Without it, docs sections link to their page instead of to a heading |
 | `--revision` | Commit the source was read at, recorded in the manifest (default: `HEAD` of `--repo`) |
 | `--skip-api` | Don't rebuild `api.jsonl` this run; keep it and its manifest provenance as already on disk |
@@ -77,6 +78,14 @@ markdown from an old git tag would be worse than the live rendered page (and
 redundant with git itself). So `docs.jsonl` and `llms.txt` are only ever
 written for `--version-label main`; every other version's directory holds
 `api.jsonl` alone.
+
+`api.latest` in `knowledge/manifest.json` is the version to read when no
+specific one is wanted. It follows the `latest-release` alias, which
+`manage-dev-docs.yml` already hands to mike when a release is marked, and falls
+back to `main` while no release carries it — so an agent asking for the current
+release API gets released signatures rather than the rolling build. Each
+version records its own aliases, `api.aliases` maps them to versions, and
+claiming an alias takes it from whichever version held it.
 
 ## Where the data comes from
 
@@ -221,8 +230,7 @@ user-docs half can never get built by the wrong trigger:
   built book, so the deployed index always has anchors.
 - **`knowledge/manifest.json` is rebuilt by rescanning disk**, not by tracking
   state across separate builds -- see "Deployment" below for how CI seeds that
-  rescan. `api.latest` currently always points at `main`; resolving "latest
-  stable release" numbering is left for later.
+  rescan. Aliases survive the rescan because each version records its own.
 - **`content_hash` is not used for incremental building.** It lets a consumer
   detect that a record changed, but nothing here uses it to skip re-extracting
   or re-writing unchanged records -- every run reads and writes everything.

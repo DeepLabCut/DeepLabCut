@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 # Bumped when a published file changes shape, so a consumer can refuse an
@@ -33,6 +33,10 @@ GENERATED_BY = "tools/knowledge_indexing"
 NAMESPACE_SEPARATOR = ":"
 DOCS_NAMESPACE = "docs"
 API_NAMESPACE = "api"
+
+# The alias mike gives the current release (`mark_latest_release` in
+# manage-dev-docs.yml). Whichever version carries it is `api.latest`.
+LATEST_RELEASE_ALIAS = "latest-release"
 
 # Layout under the output directory: <output>/knowledge/<version>/{api,docs}.jsonl
 # plus <output>/llms.txt. See README.md.
@@ -222,16 +226,22 @@ class VersionManifest:
     `api` and `docs` are stamped independently, since they can be rebuilt at
     different times. Every published version has an api index; `docs` is None
     for a version with no indexed user docs (every label other than `main`).
+
+    `api_aliases` are the aliases this version carries, mirroring the ones mike
+    assigns to the same dev-docs version -- `latest-release` above all. They are
+    recorded per version so the top-level manifest can be rebuilt by rescanning.
     """
 
     api_version_label: str
     api: ApiProvenance
     docs: DocsProvenance | None = None
+    api_aliases: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "schema_version": SCHEMA_VERSION,
             "api_version_label": self.api_version_label,
+            "api_aliases": list(self.api_aliases),
             "api": self.api.to_dict(),
             "docs": self.docs.to_dict() if self.docs else None,
             "extractor_version": EXTRACTOR_VERSION,
@@ -246,11 +256,17 @@ class TopManifest:
     gh-pages gives no directory listing, so this is how a consumer discovers
     which api versions exist and which one is current. `docs_path` is "" for
     an index with no unversioned docs build yet.
+
+    `api_latest` is the version an agent should read unless it wants a specific
+    one: whichever carries `latest-release`, falling back to the rolling `main`
+    build while no release is aliased. `api_aliases` maps every alias to its
+    version, so `latest-release` resolves without knowing the version number.
     """
 
     docs_path: str
     api_latest: str
     api_versions: tuple[str, ...]
+    api_aliases: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -260,6 +276,7 @@ class TopManifest:
                 "versioned": True,
                 "latest": self.api_latest,
                 "versions": list(self.api_versions),
+                "aliases": dict(sorted(self.api_aliases.items())),
             },
         }
 

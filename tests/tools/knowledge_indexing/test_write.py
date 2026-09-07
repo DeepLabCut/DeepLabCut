@@ -169,6 +169,64 @@ def test_write_top_manifest_and_delete_version(tmp_path: Path):
     assert top_after["api"]["versions"] == ["main"]
 
 
+def test_latest_release_alias_decides_api_latest(tmp_path: Path):
+    knowledge_dir = tmp_path / KNOWLEDGE_DIR
+    write_version(knowledge_dir, "main", _sample_api(), _sample_docs(), revision="r1")
+    write_version(knowledge_dir, "3.0", _sample_api(), None, revision="r2", aliases=["latest-release"])
+    write_top_manifest(knowledge_dir, docs_version_label="main")
+
+    top = json.loads((knowledge_dir / TOP_MANIFEST).read_text(encoding="utf-8"))
+    # Without this an agent asking for the current release API gets `main`,
+    # whose urls point at unreleased signatures.
+    assert top["api"]["latest"] == "3.0"
+    assert top["api"]["aliases"] == {"latest-release": "3.0"}
+
+
+def test_api_latest_falls_back_to_main_without_an_aliased_release(tmp_path: Path):
+    knowledge_dir = tmp_path / KNOWLEDGE_DIR
+    write_version(knowledge_dir, "main", _sample_api(), _sample_docs(), revision="r1")
+    write_version(knowledge_dir, "3.0", _sample_api(), None, revision="r2")
+    write_top_manifest(knowledge_dir, docs_version_label="main")
+
+    top = json.loads((knowledge_dir / TOP_MANIFEST).read_text(encoding="utf-8"))
+    assert top["api"]["latest"] == "main"
+    assert top["api"]["aliases"] == {}
+
+
+def test_an_alias_moves_to_the_version_that_claims_it(tmp_path: Path):
+    knowledge_dir = tmp_path / KNOWLEDGE_DIR
+    write_version(knowledge_dir, "main", _sample_api(), _sample_docs(), revision="r1")
+    write_version(knowledge_dir, "3.0", _sample_api(), None, revision="r2", aliases=["latest-release"])
+    write_version(knowledge_dir, "3.1", _sample_api(), None, revision="r3", aliases=["latest-release"])
+    write_top_manifest(knowledge_dir, docs_version_label="main")
+
+    old = json.loads((knowledge_dir / "3.0" / VERSION_MANIFEST).read_text(encoding="utf-8"))
+    top = json.loads((knowledge_dir / TOP_MANIFEST).read_text(encoding="utf-8"))
+    assert old["api_aliases"] == []
+    assert top["api"]["latest"] == "3.1"
+
+
+def test_rebuilding_a_version_keeps_its_aliases(tmp_path: Path):
+    knowledge_dir = tmp_path / KNOWLEDGE_DIR
+    write_version(knowledge_dir, "3.0", _sample_api(), None, revision="r1", aliases=["latest-release"])
+    write_version(knowledge_dir, "3.0", _sample_api(), None, revision="r2")
+    write_top_manifest(knowledge_dir, docs_version_label="main")
+
+    top = json.loads((knowledge_dir / TOP_MANIFEST).read_text(encoding="utf-8"))
+    assert top["api"]["latest"] == "3.0"
+
+
+def test_deleting_the_aliased_version_returns_latest_to_main(tmp_path: Path):
+    knowledge_dir = tmp_path / KNOWLEDGE_DIR
+    write_version(knowledge_dir, "main", _sample_api(), _sample_docs(), revision="r1")
+    write_version(knowledge_dir, "3.0", _sample_api(), None, revision="r2", aliases=["latest-release"])
+    delete_version(knowledge_dir, "3.0")
+    write_top_manifest(knowledge_dir, docs_version_label="main")
+
+    top = json.loads((knowledge_dir / TOP_MANIFEST).read_text(encoding="utf-8"))
+    assert top["api"]["latest"] == "main"
+
+
 def test_delete_version_missing_raises(tmp_path: Path):
     with pytest.raises(FileNotFoundError):
         delete_version(tmp_path / KNOWLEDGE_DIR, "3.0")

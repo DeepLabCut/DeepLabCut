@@ -164,6 +164,8 @@ jobs:
       action: ${{ inputs.action }}
       version_label: ${{ inputs.version_label }}
       git_tag: ${{ inputs.git_tag }}
+      # The same aliases mike was given, so api.latest follows latest-release.
+      aliases: ${{ inputs.aliases }}
       skip_docs: true
       python-version: ${{ inputs.python-version }}
     secrets: inherit
