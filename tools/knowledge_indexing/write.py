@@ -221,7 +221,9 @@ def _api_records(apis: Sequence[ApiNode]) -> list[ApiRecord]:
         for symbol in node.symbols:
             records.append(
                 ApiRecord(
-                    id=f"{node.id}.{symbol.name}",
+                    # `#` rather than `.`: a dotted module path has no `#`,
+                    # so a symbol id cannot collide with a submodule's.
+                    id=f"{node.id}#{symbol.name}",
                     kind=symbol.kind,
                     name=symbol.name,
                     module=node.module,

@@ -115,7 +115,7 @@ def test_write_version_writes_jsonl_and_manifest(tmp_path: Path):
     docs_rows = _read_jsonl(version_dir / DOCS_FILE)
     manifest = json.loads((version_dir / VERSION_MANIFEST).read_text(encoding="utf-8"))
 
-    assert {row["id"] for row in api_rows} == {"api:deeplabcut.demo", "api:deeplabcut.demo.run"}
+    assert {row["id"] for row in api_rows} == {"api:deeplabcut.demo", "api:deeplabcut.demo#run"}
     assert all(len(row["content_hash"]) == 64 for row in api_rows)
     assert {row["id"] for row in docs_rows} == {"docs:install", "docs:install#requirements"}
     assert manifest["api_version_label"] == "main"
@@ -167,6 +167,46 @@ def test_write_top_manifest_and_delete_version(tmp_path: Path):
     assert (knowledge_dir / "main" / DOCS_FILE).is_file()
     top_after = json.loads((knowledge_dir / TOP_MANIFEST).read_text(encoding="utf-8"))
     assert top_after["api"]["versions"] == ["main"]
+
+
+def test_a_symbol_cannot_collide_with_a_submodule_of_the_same_name(tmp_path: Path):
+    # `pkg/foo.py` defining `foo`, re-exported from `pkg/__init__.py`, is an
+    # ordinary layout. With `.` joining symbol ids, both would be
+    # `api:deeplabcut.foo` and the duplicate-id check would abort the build.
+    package = ApiNode(
+        id="api:deeplabcut",
+        module="deeplabcut",
+        summary="Package.",
+        source="deeplabcut/__init__.py:1",
+        docs_url="https://example.test/reference/deeplabcut/",
+        symbols=(
+            Symbol(
+                name="demo",
+                kind="function",
+                summary="Re-exported.",
+                signature="demo() -> None",
+                source="deeplabcut/demo.py:1",
+                docs_url="https://example.test/reference/deeplabcut/#deeplabcut.demo",
+            ),
+        ),
+    )
+    submodule = ApiNode(
+        id="api:deeplabcut.demo",
+        module="deeplabcut.demo",
+        summary="Submodule of the same name.",
+        source="deeplabcut/demo.py:1",
+        docs_url="https://example.test/reference/deeplabcut/demo/",
+    )
+
+    knowledge_dir = tmp_path / KNOWLEDGE_DIR
+    write_version(knowledge_dir, "main", [package, submodule], None, revision="r1")
+
+    rows = _read_jsonl(knowledge_dir / "main" / API_FILE)
+    assert {row["id"] for row in rows} == {
+        "api:deeplabcut",
+        "api:deeplabcut#demo",
+        "api:deeplabcut.demo",
+    }
 
 
 def test_latest_release_alias_decides_api_latest(tmp_path: Path):

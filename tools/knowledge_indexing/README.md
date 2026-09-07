@@ -63,9 +63,10 @@ but not for `main`, where only `revision` pins the build exactly. `docs` is
 absent for a version that has never indexed user docs (every label other
 than `main`).
 
-Ids are namespaced by type — `docs:`, `docs:<page>#<anchor>`, `api:` — so a
-reference is unambiguous about what it points at. Every `url` is absolute, so a
-record carries a working link on its own.
+Ids are namespaced by type — `docs:<page>`, `docs:<page>#<anchor>`,
+`api:<module>`, `api:<module>#<symbol>` — so a reference is unambiguous about
+what it points at. The `#` keeps a symbol distinct from a submodule of the same
+name. Every `url` is absolute, so a record carries a working link on its own.
 
 ### Versioning — docs and api are not symmetric
 
@@ -101,6 +102,10 @@ dotted path, following the layout `mkdocs-api-autonav` generates. Only documente
 symbols are indexed, because `mkdocstrings` omits undocumented members from the
 reference pages, so an entry for one would have neither a summary nor a URL that
 resolves. A module gets its own `kind: "module"` row only if it has a docstring.
+
+A class's own public methods are recorded as `kind: "method"` rows named
+`Class.method`, anchored by dotted path like any other symbol. Inherited
+methods, attributes and properties are not recorded.
 
 Two constants in `api_index.py` mirror `dev-docs/mkdocs.yml` and must be kept in
 sync with it: `EXCLUDED_MODULES` and `API_ROOT_URI`.
