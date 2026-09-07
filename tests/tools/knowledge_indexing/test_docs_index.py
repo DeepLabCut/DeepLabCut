@@ -1,6 +1,24 @@
 from __future__ import annotations
 
-from tools.knowledge_indexing.docs_index import _split_frontmatter
+from markdown_it import MarkdownIt
+
+from tools.knowledge_indexing.docs_index import _read_structure, _split_frontmatter
+
+PAGE_URL = "https://example.test/docs/page.html"
+
+
+def _sections(markdown: str):
+    tokens = MarkdownIt("commonmark").parse(markdown)
+    _, _, sections = _read_structure(tokens, "docs:page", PAGE_URL)
+    return sections
+
+
+def test_only_the_first_h1_is_the_page_title():
+    # Some pages use h1 throughout, so only the first may be taken as the title.
+    sections = _sections("# Title\n\nLead.\n\n# Second\n\nA.\n\n# Third\n\nB.\n")
+
+    assert [s.title for s in sections] == ["Second", "Third"]
+    assert [s.level for s in sections] == [1, 1]
 
 
 def test_frontmatter_is_split_from_body():

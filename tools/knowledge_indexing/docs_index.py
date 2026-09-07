@@ -193,9 +193,10 @@ def _read_structure(tokens: list[Token], page_id: str, docs_url: str) -> tuple[s
         text = _inline_text(tokens[start + 1])
         excerpt = _first_paragraph(tokens[start + 2 : end])
 
-        if heading.tag == "h1":
+        if heading.tag == "h1" and not title:
             # The first H1 titles the page; its lead paragraph summarises it.
-            title = title or text
+            # Later H1s are sections, as some pages use H1 throughout.
+            title = text
             summary = summary or excerpt
             continue
 
