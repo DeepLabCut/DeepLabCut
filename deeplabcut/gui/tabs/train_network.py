@@ -12,8 +12,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, Slot
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt, Slot
 
 import deeplabcut.compat as compat
 from deeplabcut.core.engine import Engine

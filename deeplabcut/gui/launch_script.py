@@ -22,9 +22,9 @@ Licensed under GNU Lesser General Public License v3.0
 import logging
 import sys
 
-import PySide6.QtWidgets as QtWidgets
 import qdarkstyle
-from PySide6.QtCore import Qt
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt
 
 from deeplabcut.gui.gui_assets import get_style_qss, icon_from_resource, pixmap_from_resource
 

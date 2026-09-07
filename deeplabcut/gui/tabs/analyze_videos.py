@@ -12,8 +12,8 @@ from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 
-from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt
 
 import deeplabcut
 from deeplabcut.core.config import ProjectConfig

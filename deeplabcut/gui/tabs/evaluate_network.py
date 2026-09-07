@@ -17,8 +17,8 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, Slot
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt, Slot
 
 import deeplabcut
 from deeplabcut.core.engine import Engine

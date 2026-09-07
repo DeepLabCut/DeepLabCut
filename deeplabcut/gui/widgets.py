@@ -19,8 +19,9 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from matplotlib.figure import Figure
 from matplotlib.widgets import Button, LassoSelector, RectangleSelector
-from PySide6 import QtCore, QtWidgets
-from PySide6.QtGui import QAction, QCursor, QStandardItem, QStandardItemModel, Qt
+from qtpy import QtCore, QtWidgets
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QAction, QCursor, QStandardItem, QStandardItemModel
 
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter

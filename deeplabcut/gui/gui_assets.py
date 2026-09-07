@@ -13,7 +13,7 @@ from __future__ import annotations
 from importlib.resources import files
 from pathlib import Path
 
-from PySide6.QtGui import QIcon, QPixmap
+from qtpy.QtGui import QIcon, QPixmap
 
 ASSETS_DIR = files("deeplabcut.gui").joinpath("assets")
 

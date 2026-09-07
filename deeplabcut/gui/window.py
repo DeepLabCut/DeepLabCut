@@ -21,10 +21,10 @@ from pathlib import Path
 import qdarkstyle
 from napari_deeplabcut import __version__ as NAPARI_DLC_VERSION
 from pydantic import ValidationError
-from PySide6 import QtCore, QtGui, QtWidgets
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QDesktopServices, QPixmap
-from PySide6.QtWidgets import (
+from qtpy import QtCore, QtGui, QtWidgets
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QAction, QDesktopServices, QPixmap
+from qtpy.QtWidgets import (
     QComboBox,
     QLabel,
     QMainWindow,

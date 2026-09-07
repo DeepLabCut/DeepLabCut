@@ -11,8 +11,8 @@
 import os
 from pathlib import Path
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import (
     QFileDialog,
     QLabel,
     QLineEdit,

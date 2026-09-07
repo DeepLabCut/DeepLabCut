@@ -18,8 +18,8 @@ import numpy as np
 import pandas as pd
 from matplotlib.path import Path as MPLPath
 from matplotlib.widgets import Button, CheckButtons, LassoSelector, Slider, TextBox
-from PySide6.QtCore import QMutex
-from PySide6.QtWidgets import QMessageBox
+from qtpy.QtCore import QMutex
+from qtpy.QtWidgets import QMessageBox
 
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.refine_training_dataset.tracklets import TrackletManager

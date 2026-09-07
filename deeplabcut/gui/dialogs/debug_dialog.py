@@ -13,10 +13,10 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 
-from PySide6 import QtGui
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QFontDatabase, QKeySequence, QTextCursor
-from PySide6.QtWidgets import (
+from qtpy import QtGui
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QAction, QFontDatabase, QKeySequence, QTextCursor
+from qtpy.QtWidgets import (
     QApplication,
     QDialog,
     QHBoxLayout,
