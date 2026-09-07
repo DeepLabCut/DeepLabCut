@@ -1234,7 +1234,9 @@ class MainWindow(QMainWindow):
             return True
 
     def darkmode(self):
-        dark_stylesheet = qdarkstyle.load_stylesheet_pyside2()
+        from qdarkstyle.dark.palette import DarkPalette
+
+        dark_stylesheet = qdarkstyle.load_stylesheet(palette=DarkPalette)
         self.app.setStyleSheet(dark_stylesheet)
 
         names = ["new_project2.png", "open2.png", "help2.png"]
