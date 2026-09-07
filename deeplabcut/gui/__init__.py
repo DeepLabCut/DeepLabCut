@@ -31,13 +31,31 @@ _MODULE_TO_QT_API = (
 _VALID_QT_APIS = tuple(api for _, api in _MODULE_TO_QT_API)
 _GPL_QT_APIS = ("pyqt5", "pyqt6")
 
-_NO_BINDING_MESSAGE = (
-    "The DeepLabCut GUI requires a Qt binding, but none could be imported. "
-    "PySide6 is the supported binding; install the GUI dependencies with "
-    "`pip install 'deeplabcut[gui]'`. "
-    "If PySide6 is already installed, it could not be loaded: on Linux this "
-    "usually means the Qt system libraries are missing."
-)
+_INSTALL_DOCS_URL = "https://deeplabcut.github.io/DeepLabCut/docs/installation.html"
+
+
+def _no_binding_message() -> str:
+    if find_spec("PySide6") is None:
+        cause = (
+            "The DeepLabCut GUI could not start: the graphics libraries it needs are not installed.\n\n"
+            "Install the GUI dependencies with\n"
+            "    pip install 'deeplabcut[gui]'"
+        )
+    else:
+        cause = (
+            "The DeepLabCut GUI could not start: PySide6 is installed but could not be loaded.\n\n"
+            "The installation is likely incomplete. Try\n"
+            "    pip install --force-reinstall pyside6"
+        )
+
+    return (
+        f"{cause}\n\n"
+        f"Python currently in use:\n    {sys.executable}\n\n"
+        "If that is not the environment you expected, activate the correct conda environment "
+        "(for example `conda activate DEEPLABCUT`) and try again.\n\n"
+        f"Installation help: {_INSTALL_DOCS_URL}"
+    )
+
 
 _user_qt_api = (os.environ.get("QT_API") or "").lower()
 if _user_qt_api and _user_qt_api not in _VALID_QT_APIS:
@@ -58,7 +76,7 @@ if not _user_qt_api:
 try:
     import qtpy  # noqa: F401  imported side effect: binding selection
 except ImportError as err:
-    raise ImportError(_NO_BINDING_MESSAGE) from err
+    raise ImportError(_no_binding_message()) from err
 
 # qtpy rewrites QT_API to the binding it actually loaded, but be explicit:
 # matplotlib's backends/qt_compat.py also reads QT_API and must not end up on a
