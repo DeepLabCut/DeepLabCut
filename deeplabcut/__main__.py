@@ -13,23 +13,16 @@ from importlib import import_module
 
 def main():
     try:
-        import_module("PySide6")
-
-        lite = False
-    except ModuleNotFoundError:
-        lite = True
+        import_module("deeplabcut.gui")
+    except ImportError as err:
+        print(err)
+        return
 
     # if module is executed directly (i.e. `python -m deeplabcut.__init__`) launch straight into the GUI
-    if not lite:
-        print("Starting GUI...")
-        from deeplabcut.gui.launch_script import launch_dlc
+    print("Starting GUI...")
+    from deeplabcut.gui.launch_script import launch_dlc
 
-        launch_dlc()
-    else:
-        print(
-            "You installed DLC lite, thus GUI's cannot be used. If you need GUI support please: pip install"
-            "'deeplabcut[gui]''"
-        )
+    launch_dlc()
 
 
 if __name__ == "__main__":
