@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
+from tools.knowledge_indexing.api_index import ApiNode, Symbol
+from tools.knowledge_indexing.docs_index import DocsPageNode, Section
 from tools.knowledge_indexing.schemas import API_FILE, DOCS_FILE, KNOWLEDGE_DIR, TOP_MANIFEST, VERSION_MANIFEST
 from tools.knowledge_indexing.write import (
     _check_unique_ids,
@@ -16,16 +17,16 @@ from tools.knowledge_indexing.write import (
 )
 
 
-def _sample_api():
+def _sample_api() -> list[ApiNode]:
     return [
-        SimpleNamespace(
+        ApiNode(
             id="api:deeplabcut.demo",
             module="deeplabcut.demo",
             summary="Demo module.",
             source="deeplabcut/demo.py:1",
             docs_url="https://example.test/dev/main/reference/deeplabcut/demo/",
             symbols=(
-                SimpleNamespace(
+                Symbol(
                     name="run",
                     kind="function",
                     summary="Run demo.",
@@ -38,9 +39,9 @@ def _sample_api():
     ]
 
 
-def _sample_docs():
+def _sample_docs() -> list[DocsPageNode]:
     return [
-        SimpleNamespace(
+        DocsPageNode(
             id="docs:install",
             title="Install",
             docs_url="https://example.test/docs/install.html",
@@ -54,7 +55,7 @@ def _sample_docs():
             related_pages=(),
             labels=(),
             sections=(
-                SimpleNamespace(
+                Section(
                     id="docs:install#requirements",
                     title="Requirements",
                     level=2,
@@ -158,6 +159,22 @@ def test_write_top_manifest_and_delete_version(tmp_path: Path):
     assert (knowledge_dir / "main" / DOCS_FILE).is_file()
     top_after = json.loads((knowledge_dir / TOP_MANIFEST).read_text(encoding="utf-8"))
     assert top_after["api"]["versions"] == ["main"]
+
+
+def test_delete_version_missing_raises(tmp_path: Path):
+    with pytest.raises(FileNotFoundError):
+        delete_version(tmp_path / KNOWLEDGE_DIR, "3.0")
+
+
+def test_delete_missing_version_via_cli_is_a_noop(tmp_path: Path, capsys):
+    from tools.knowledge_indexing.__main__ import main
+
+    knowledge_dir = tmp_path / KNOWLEDGE_DIR
+    write_version(knowledge_dir, "main", _sample_api(), None, revision="r1")
+
+    code = main(["--delete", "--version-label", "3.0", "--output", str(tmp_path)])
+    assert code == 0
+    assert "Nothing to delete" in capsys.readouterr().out
 
 
 def test_top_manifest_skips_version_dir_without_api_file(tmp_path: Path):
