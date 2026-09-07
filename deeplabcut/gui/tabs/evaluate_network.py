@@ -13,7 +13,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import matplotlib.image as mpimg
-from matplotlib.backends.backend_qt5agg import (
+from matplotlib.backends.backend_qtagg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
