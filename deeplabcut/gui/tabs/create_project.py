@@ -12,8 +12,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from PySide6 import QtCore, QtWidgets
-from PySide6.QtGui import QBrush, QColor, QDesktopServices, QPainter, QPen
+from qtpy import QtCore, QtWidgets
+from qtpy.QtGui import QBrush, QColor, QDesktopServices, QPainter, QPen
 
 from deeplabcut.create_project import create_new_project, create_new_project_3d
 from deeplabcut.gui.dlc_params import DLCParams

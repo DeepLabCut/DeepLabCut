@@ -11,7 +11,7 @@
 import os
 from pathlib import Path
 
-from PySide6 import QtCore, QtWidgets
+from qtpy import QtCore, QtWidgets
 
 from deeplabcut.gui.gui_assets import icon_from_resource
 

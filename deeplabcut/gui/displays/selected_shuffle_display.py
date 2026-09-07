@@ -14,10 +14,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import PySide6.QtCore as QtCore
-from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QSizePolicy
+from qtpy import QtCore, QtWidgets
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QSizePolicy
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
