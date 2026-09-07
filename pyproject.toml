@@ -237,6 +237,8 @@ generate_python_version_classifiers = true
 table_format = "long"
 
 [tool.pytest.ini_options]
+# Put repo root on sys.path, so pytest can import `tools`
+pythonpath = [ "." ]
 markers = [
   "require_models: mark test as requiring models to run",
   "fmpose3d: tests for fmpose3d integration",
