@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+import pytest
 from markdown_it import MarkdownIt
 
-from tools.knowledge_indexing.docs_index import _read_structure, _split_frontmatter
+from tools.knowledge_indexing.docs_index import _parse_page, _read_structure, _split_frontmatter
+from tools.knowledge_indexing.toc import TocEntry
 
 PAGE_URL = "https://example.test/docs/page.html"
 
@@ -19,6 +23,23 @@ def test_only_the_first_h1_is_the_page_title():
 
     assert [s.title for s in sections] == ["Second", "Third"]
     assert [s.level for s in sections] == [1, 1]
+
+
+def test_heading_that_slugs_to_nothing_still_gets_a_usable_id():
+    # make_id strips these entirely, leaving the record named "docs:page#".
+    first, second = _sections("# Title\n\n## ???\n\nA.\n\n## !!!\n\nB.\n")
+
+    for section in (first, second):
+        assert section.id.startswith("docs:page#section-")
+    assert first.id != second.id
+
+
+def test_non_mapping_audit_frontmatter_is_rejected(tmp_path: Path):
+    page = tmp_path / "page.md"
+    page.write_text("---\ndeeplabcut: true\n---\n# Title\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="must be a mapping"):
+        _parse_page(page, TocEntry(file="docs/page"), "")
 
 
 def test_frontmatter_is_split_from_body():

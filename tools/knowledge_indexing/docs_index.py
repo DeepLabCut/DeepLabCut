@@ -19,10 +19,11 @@ into the `DocPageRecord` / `DocSectionRecord` rows published in `docs.jsonl`
 
 from __future__ import annotations
 
+import hashlib
 import posixpath
 import re
 from collections import Counter
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -128,7 +129,10 @@ def build_docs_nodes(repo: Path, base_url: str = "") -> list[DocsPageNode]:
 def _parse_page(path: Path, entry: TocEntry, base_url: str) -> ParsedPage | None:
     """Parse one page, or None if its frontmatter keeps it out of the index."""
     frontmatter, body = _split_frontmatter(path.read_text(encoding="utf-8"))
-    audit = frontmatter.get("deeplabcut") or {}
+    raw_audit = frontmatter.get("deeplabcut")
+    if raw_audit is not None and not isinstance(raw_audit, Mapping):
+        raise ValueError(f"{path}: frontmatter 'deeplabcut' must be a mapping, got {type(raw_audit).__name__}")
+    audit = dict(raw_audit) if raw_audit else {}
     if audit.get("ignore") or audit.get("visibility") in HIDDEN_VISIBILITY:
         return None
 
@@ -201,13 +205,14 @@ def _read_structure(tokens: list[Token], page_id: str, docs_url: str) -> tuple[s
             continue
 
         anchor = _anchor(text)
-        seen[anchor] += 1
+        slug = _section_slug(text)
+        seen[slug] += 1
         # Sphinx registers only the first occurrence of a repeated heading, so
         # the anchor is shared and the id is suffixed to stay unique.
-        suffix = "" if seen[anchor] == 1 else f"-{seen[anchor]}"
+        suffix = "" if seen[slug] == 1 else f"-{seen[slug]}"
         sections.append(
             Section(
-                id=f"{page_id}#{anchor}{suffix}",
+                id=f"{page_id}#{slug}{suffix}",
                 title=text,
                 level=int(heading.tag[1]),
                 anchor=anchor,
@@ -312,6 +317,18 @@ def _anchor(text: str) -> str:
     from docutils.nodes import make_id
 
     return make_id(text)
+
+
+def _section_slug(text: str) -> str:
+    """`_anchor(text)`, or a digest when it slugs to nothing.
+
+    `make_id` returns "" for a heading of only punctuation or non-ASCII, which
+    would leave records named `docs:page#`.
+    """
+    slug = _anchor(text)
+    if slug:
+        return slug
+    return f"section-{hashlib.sha1(text.encode('utf-8')).hexdigest()[:10]}"
 
 
 def _shorten(text: str, limit: int = EXCERPT_MAX_CHARS) -> str:
