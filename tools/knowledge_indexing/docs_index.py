@@ -28,7 +28,6 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 import yaml
-from docutils.nodes import make_id
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
 
@@ -304,7 +303,13 @@ def _anchor(text: str) -> str:
     non-ASCII, collapses everything else to hyphens and trims leading digits, so
     "(1) Create a New 3D Project:" anchors as `create-a-new-3d-project` and
     "DeepLabCut's role" as `deeplabcuts-role`.
+
+    Imported here rather than at module level: docutils is the one build
+    dependency a plain dev install does not already have, and it is needed only
+    to run a build, not to import this module.
     """
+    from docutils.nodes import make_id
+
     return make_id(text)
 
 
