@@ -42,9 +42,6 @@ def launch_dlc():
 
     app.setStyleSheet(get_style_qss())
     try:
-        # Always pass `palette=`: the zero-argument load_stylesheet() and the
-        # load_stylesheet_<binding>() helpers overwrite os.environ["QT_API"],
-        # which desynchronises matplotlib from the binding qtpy loaded.
         app.setStyleSheet(qdarkstyle.load_stylesheet(palette=DarkPalette))
     except Exception:
         logger.warning("Could not load the qdarkstyle stylesheet; keeping the bundled style.qss.", exc_info=True)
