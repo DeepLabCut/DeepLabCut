@@ -358,18 +358,21 @@ def _shorten(text: str, limit: int = EXCERPT_MAX_CHARS) -> str:
     return text[:limit].rsplit(" ", 1)[0].rstrip(",;:") + "…"
 
 
+_FRONTMATTER = re.compile(r"\A---[^\S\n]*\n(.*?)^---[^\S\n]*(?:\n|\Z)", re.DOTALL | re.MULTILINE)
+
+
 def _split_frontmatter(text: str) -> tuple[dict[str, Any], str]:
     """Split YAML frontmatter from the markdown body."""
-    if not text.startswith("---"):
-        return {}, text
-    parts = text.split("---", 2)
-    if len(parts) < 3:
+    match = _FRONTMATTER.match(text)
+    if match is None:
         return {}, text
     try:
-        frontmatter = yaml.safe_load(parts[1])
+        frontmatter = yaml.safe_load(match.group(1))
     except yaml.YAMLError:
-        return {}, parts[2]
-    return (frontmatter if isinstance(frontmatter, dict) else {}), parts[2]
+        return {}, text
+    if not isinstance(frontmatter, dict):
+        return {}, text
+    return frontmatter, text[match.end() :]
 
 
 def _local_id(toc_file: str) -> str:
