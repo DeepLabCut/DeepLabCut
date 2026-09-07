@@ -102,8 +102,11 @@ def write_top_manifest(knowledge_dir: Path, docs_version_label: str) -> None:
 
 
 def delete_version(knowledge_dir: Path, version_label: str) -> None:
-    """Remove a released version's API index (only releases; "main" cannot be deleted)."""
-    shutil.rmtree(knowledge_dir / version_label, ignore_errors=True)
+    """Remove a released version's API index (only releases; "main" cannot be deleted).
+
+    Raises if the directory is absent or cannot be removed.
+    """
+    shutil.rmtree(knowledge_dir / version_label)
 
 
 def _has_api(version_dir: Path) -> bool:
