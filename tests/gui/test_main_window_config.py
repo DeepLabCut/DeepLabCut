@@ -13,10 +13,10 @@ the error dialog, so no DLC project on disk and no user interaction is needed.
 
 import pytest
 
-pytest.importorskip("PySide6")
+pytest.importorskip("qtpy.QtWidgets")
 pytest.importorskip("pytestqt")
 
-from PySide6 import QtWidgets
+from qtpy import QtWidgets
 
 pytestmark = pytest.mark.functional
 

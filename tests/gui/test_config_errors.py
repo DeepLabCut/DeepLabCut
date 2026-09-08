@@ -9,7 +9,7 @@
 
 import pytest
 
-pytest.importorskip("PySide6")  # deeplabcut.gui imports qtpy at package level
+pytest.importorskip("qtpy.QtWidgets")  # deeplabcut.gui imports qtpy at package level
 
 from pathlib import Path
 
