@@ -9,12 +9,12 @@
 
 import pytest
 
-pytest.importorskip("PySide6")
+pytest.importorskip("qtpy.QtWidgets")
 pytest.importorskip("pytestqt")
 
 
 from pydantic import ValidationError
-from PySide6 import QtWidgets
+from qtpy import QtWidgets
 
 from deeplabcut.core.config import ProjectConfig
 
