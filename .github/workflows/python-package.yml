@@ -22,6 +22,14 @@ on:
         required: false
         type: boolean
         default: false
+      pip_overrides:
+        required: false
+        type: string
+        default: ""
+      continue_on_error:
+        required: false
+        type: boolean
+        default: false
 
   workflow_dispatch:
     inputs:
@@ -49,15 +57,31 @@ on:
         required: false
         type: boolean
         default: false
+      pip_overrides:
+        description: "Space-separated pip specs to force-install after normal deps (e.g. 'numpy>=2,<3' or 'numpy>=2,<3 pandas>=3')"
+        required: false
+        type: string
+        default: ""
+      continue_on_error:
+        description: "Allow test steps to fail without marking the job as failed"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    # Matrix cell wins when set (canary lane); otherwise fall back to the workflow
+    # input so callers / workflow_dispatch can apply one override to every cell.
+    env:
+      PIP_OVERRIDES: ${{ matrix.pip_overrides || inputs.pip_overrides || '' }}
     # Cancel outdated runs on the same OS and Python version when new commits are pushed
     # Only cancels on PRs.
     # Use a stable concurrency key only when one is explicitly provided
     # (e.g. PR/workflow_call/manual dedupe). Otherwise fall back to github.run_id
     # so pushes to main never cancel each other.
+    # Use matrix.id (not full pip_overrides) so canary cells that share os/python
+    # do not cancel each other.
     concurrency:
       group: >-
         tests-${{ github.workflow }}-
@@ -65,6 +89,7 @@ jobs:
             || github.event_name == 'workflow_dispatch' && inputs.concurrency_key
             || github.run_id }}-
         ${{ matrix.os }}-${{ matrix.python-version }}
+        ${{ matrix.id && format('-{0}', matrix.id) || '' }}
       cancel-in-progress: true
 
     strategy:
@@ -103,6 +128,18 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install dependency-groups
           python -m pip install --no-cache-dir -e ".${{ matrix.extras }}" --group dev
+
+      - name: Force-install upgrade packages
+        if: ${{ env.PIP_OVERRIDES != '' }}
+        shell: bash -el {0}
+        run: |
+          # Split on whitespace (not commas): pip version specs legitimately
+          # contain commas to combine constraints, e.g. "numpy>=2,<3".
+          read -ra pkgs <<< "$PIP_OVERRIDES"
+          for pkg in "${pkgs[@]}"; do
+            echo "Force-installing (--no-deps): $pkg"
+            python -m pip install --no-cache-dir --upgrade --no-deps "$pkg"
+          done
 
       - name: Install ffmpeg (Linux/macOS)
         if: runner.os != 'Windows'
@@ -179,6 +216,8 @@ jobs:
           ffprobe -version
 
       - name: Run pytest
+        id: run_pytest
+        continue-on-error: ${{ inputs.continue_on_error }}
         shell: bash -el {0}
         env:
           FULL_SUITE: ${{ inputs.full_suite }}
@@ -207,6 +246,8 @@ jobs:
           PY
 
       - name: Run functional scripts
+        id: run_functional_scripts
+        continue-on-error: ${{ inputs.continue_on_error }}
         shell: bash -el {0}
         env:
           FULL_SUITE: ${{ inputs.full_suite }}
@@ -248,3 +289,24 @@ jobs:
               if rc != 0:
                   raise SystemExit(rc)
           PY
+
+      - name: Report continue-on-error failures
+        # continue-on-error hides failures behind a small icon on the step itself and
+        # reports the job as passing overall, so make failures hard to miss: emit a
+        # workflow annotation and a job-summary entry whenever this happens.
+        if: >-
+          ${{ inputs.continue_on_error &&
+              (steps.run_pytest.outcome == 'failure' || steps.run_functional_scripts.outcome == 'failure') }}
+        shell: bash
+        run: |
+          MATRIX_DESC="${{ matrix.os }}, py${{ matrix.python-version }}, pip_overrides='$PIP_OVERRIDES'"
+          echo "::warning title=Non-blocking test failure::[$MATRIX_DESC] pytest=${{ steps.run_pytest.outcome }}, functional_scripts=${{ steps.run_functional_scripts.outcome }}. This job uses continue-on-error and will still report success overall, but the failure should be investigated."
+          {
+            echo "### :warning: Non-blocking test failure"
+            echo ""
+            echo "This job runs with \`continue_on_error: true\`, so it will still report as **passing** overall -- but at least one test step actually failed and should be investigated."
+            echo ""
+            echo "| Matrix | pytest | functional scripts |"
+            echo "| --- | --- | --- |"
+            echo "| $MATRIX_DESC | ${{ steps.run_pytest.outcome }} | ${{ steps.run_functional_scripts.outcome }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
