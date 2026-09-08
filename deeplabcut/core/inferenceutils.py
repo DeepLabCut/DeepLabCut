@@ -1085,7 +1085,7 @@ def find_outlier_assemblies(dict_of_assemblies, criterion="area", qs=(5, 95)):
             tuples.append((frame_ind, getattr(assembly, criterion)))
     frame_inds, vals = zip(*tuples, strict=False)
     vals = np.asarray(vals)
-    lo, up = np.percentile(vals, qs, interpolation="nearest")
+    lo, up = np.percentile(vals, qs, method="nearest")
     inds = np.flatnonzero((vals < lo) | (vals > up)).tolist()
     return list(set(frame_inds[i] for i in inds))
 

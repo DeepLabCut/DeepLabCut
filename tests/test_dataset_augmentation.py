@@ -8,16 +8,17 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import imgaug.augmenters as iaa
 import numpy as np
 import pytest
-
-from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 
 tf = pytest.importorskip(
     "tensorflow",
     reason="TensorFlow not installed (use a project extra such as .[tf])",
 )
+
+import imgaug.augmenters as iaa  # noqa: E402
+
+from deeplabcut.pose_estimation_tensorflow.datasets import augmentation  # noqa: E402
 
 
 @pytest.mark.parametrize(

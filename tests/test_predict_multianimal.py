@@ -11,12 +11,12 @@
 import numpy as np
 import pytest
 
-from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal
-
 tf = pytest.importorskip(
     "tensorflow",
     reason="TensorFlow not installed (use a project extra such as .[tf])",
 )
+
+from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal  # noqa: E402
 
 RADIUS = 5
 THRESHOLD = 0.01

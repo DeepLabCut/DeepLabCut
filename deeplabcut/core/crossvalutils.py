@@ -30,6 +30,8 @@ from deeplabcut.core.inferenceutils import (
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
+_trapz = getattr(np, "trapezoid", np.trapz)  # NumPy 2.0+ compat; drop once NumPy 1 unsupported
+
 
 def _set_up_evaluation(data):
     params = dict()
@@ -84,7 +86,13 @@ def find_closest_neighbors(query: np.ndarray, ref: np.ndarray, k: int = 3) -> np
     return neighbors
 
 
-def _calc_separability(vals_left, vals_right, n_bins=101, metric="jeffries", max_sensitivity=False):
+def calc_separability(
+    vals_left: np.ndarray,
+    vals_right: np.ndarray,
+    n_bins: int = 101,
+    metric: str = "jeffries",
+    max_sensitivity: bool = False,
+) -> tuple[float, float]:
     if metric not in ("jeffries", "auc"):
         raise ValueError("`metric` should be either 'jeffries' or 'auc'.")
 
@@ -97,7 +105,7 @@ def _calc_separability(vals_left, vals_right, n_bins=101, metric="jeffries", max
     if metric == "jeffries":
         sep = np.sqrt(2 * (1 - np.sum(np.sqrt(hist_left * hist_right))))  # Jeffries-Matusita distance
     else:
-        sep = np.trapz(np.cumsum(hist_left), tpr)
+        sep = _trapz(np.cumsum(hist_left), tpr)
     if max_sensitivity:
         threshold = bins[max(1, np.argmax(tpr > 0))]
     else:
@@ -344,7 +352,7 @@ def _get_n_best_paf_graphs(
         return ([existing_edges], dict(zip(existing_edges, [0] * len(existing_edges), strict=False)))
 
     scores, _ = zip(
-        *[_calc_separability(between_train[n], within_train[n], metric=metric) for n in existing_edges], strict=False
+        *[calc_separability(between_train[n], within_train[n], metric=metric) for n in existing_edges], strict=False
     )
 
     # Find minimal skeleton

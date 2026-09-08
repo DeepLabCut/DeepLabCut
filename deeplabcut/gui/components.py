@@ -13,7 +13,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, QTimer, Slot
 
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.gui.dlc_params import DLCParams
@@ -666,7 +666,36 @@ class DefaultTab(QtWidgets.QWidget):
         self.scroll_area.setWidget(self.content_widget)
         outer_layout.addWidget(self.scroll_area)
 
+        # Reloading rebuilds the tabs, so it must not run while the dialog that
+        # requested it is still emitting. Deferring to the next event loop
+        # iteration lets that dialog finish closing first.
+        self._reload_timer = QTimer(self)
+        self._reload_timer.setSingleShot(True)
+        self._reload_timer.setInterval(0)
+        self._reload_timer.timeout.connect(self.root.reload_project_config)
+
+        self._config_editor: ConfigEditor | None = None
+
         self._init_default_layout()
+
+    def _open_config_editor(self, config_path: PathInput | None, reload_project: bool = False) -> None:
+        """Open the YAML editor for ``config_path``.
+
+        The editor is kept referenced so it stays alive for as long as the tab
+        that opened it. Set ``reload_project`` for files whose contents shape the
+        project UI, so that saving them rebuilds the tabs.
+        """
+        if config_path is None:
+            return
+
+        self._config_editor = ConfigEditor(config_path, parent=self.root)
+        if reload_project:
+            self._config_editor.accepted.connect(self._reload_timer.start)
+        self._config_editor.show()
+
+    def open_project_config_editor(self) -> None:
+        """Edit the active project config and reload the project once saved."""
+        self._open_config_editor(self.root.config_path, reload_project=True)
 
     def _init_default_layout(self):
         # Add tab header

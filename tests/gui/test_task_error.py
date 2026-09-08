@@ -49,7 +49,7 @@ class TestShowTaskError:
         """Non-config exceptions get a generic 'Task failed' dialog."""
         config_path = tmp_path / "config.yaml"
         write_project_config(config_path, tmp_path)
-        main_window.config = str(config_path)
+        main_window.config_path = config_path
 
         main_window.show_task_error(ValueError("config is empty or null"))
 
@@ -67,7 +67,7 @@ class TestShowTaskError:
         """Config validation errors show an 'Open configuration' button."""
         config_path = tmp_path / "config.yaml"
         write_project_config(config_path, tmp_path)
-        main_window.config = str(config_path)
+        main_window.config_path = config_path
 
         error = _make_validation_error({"multianimalproject": "banana"})
 

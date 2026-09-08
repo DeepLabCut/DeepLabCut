@@ -8,20 +8,13 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
-
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
+from typing import Literal
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -33,6 +26,11 @@ from skimage import color, io
 from tqdm import trange
 
 from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
+
+PlotMode = Literal["bodypart", "individual"]
+BoundingBoxColor = Colormap | str | None
+
+logger = logging.getLogger(__name__)
 
 
 def get_cmap(n: int, name: str = "hsv") -> Colormap:
@@ -71,13 +69,10 @@ def make_labeled_image(
     dotsize = cfg["dotsize"]  # =15
 
     if ax is None:
-        if np.ndim(frame) > 2:  # color image!
-            h, w, numcolors = np.shape(frame)
-        else:
-            h, w = np.shape(frame)
+        h, w = np.shape(frame)[:2]
         _, ax = prepare_figure_axes(w, h, scaling)
     ax.imshow(frame, "gray")
-    for _scorerindex, loopscorer in enumerate(Scorers):
+    for loopscorer in Scorers:
         for bpindex, bp in enumerate(bodyparts):
             if np.isfinite(
                 DataCombined[loopscorer][bp]["y"].iloc[imagenr] + DataCombined[loopscorer][bp]["x"].iloc[imagenr]
@@ -132,6 +127,7 @@ def make_multianimal_labeled_image(
     bounding_boxes: tuple[np.ndarray, np.ndarray] | None = None,
     bboxes_cutoff: float = 0.6,
     bboxes_color: Colormap | str | None = None,
+    color_offset: int = 0,
 ) -> plt.Axes:
     """Plots groundtruth labels and predictions onto the matplotlib's axes, with the
     specified graphical parameters.
@@ -154,6 +150,7 @@ def make_multianimal_labeled_image(
             If Colormap is passed -> each bounding box will be colored into its own color from the colormap.
             If string is passed -> all bboxes will be of string's defined color.
             If None -> all bboxes will be colored into a default color.
+        color_offset: Index offset applied when selecting colors from the colormap.
 
     Returns:
         matplotlib Axes object with plotted labels and predictions.
@@ -161,7 +158,7 @@ def make_multianimal_labeled_image(
     if labels is None:
         labels = ["+", ".", "x"]
     if ax is None:
-        h, w, _ = np.shape(frame)
+        h, w = frame.shape[:2]
         _, ax = prepare_figure_axes(w, h)
     ax.imshow(frame, "gray")
 
@@ -187,7 +184,7 @@ def make_multianimal_labeled_image(
             ax.add_patch(rectangle)
 
     for n, data in enumerate(zip(coords_truth, coords_pred, probs_pred, strict=False)):
-        color = colors(n)
+        color = colors(n + color_offset)
         coord_gt, coord_pred, prob_pred = data
 
         ax.plot(*coord_gt.T, labels[0], ms=dotsize, alpha=alphavalue, color=color)
@@ -231,10 +228,7 @@ def plot_and_save_labeled_frame(
     else:
         image_path = Path(cfg["project_path"]) / DataCombined.index[ind]
     frame = io.imread(os.fspath(image_path))
-    if np.ndim(frame) > 2:  # color image!
-        h, w, numcolors = np.shape(frame)
-    else:
-        h, w = np.shape(frame)
+    h, w = np.shape(frame)[:2]
     fig.set_size_inches(w / 100, h / 100)
     ax.set_xlim(0, w)
     ax.set_ylim(0, h)
@@ -261,6 +255,11 @@ def save_labeled_frame(
     dest_folder: Path,
     belongs_to_train: bool,
 ) -> None:
+    """Save the labeled frame to disk.
+
+    Note: folder creation is handled upstream.
+    This function assumes that the destination folder already exists.
+    """
     imagename = image_path.parts[-1]
     imfoldername = image_path.parts[-2]
     if belongs_to_train:
@@ -313,128 +312,198 @@ def make_labeled_images_from_dataframe(
     """Write labeled frames to disk from a DataFrame.
 
     Args:
-        df (pd.DataFrame): DataFrame containing the labeled data. Typically, the
-            DataFrame is obtained through pandas.read_csv() or pandas.read_hdf().
+        df (pd.DataFrame): DataFrame containing the labeled data.
         cfg (dict): Project configuration.
-        destfolder (str or Path, optional): Destination folder into which images will be
-            stored. By default, same location as the labeled data. Note that the folder
-            will be created if it does not exist.
-        scale (float, optional): Up/downscale the output dimensions. By default, outputs
-            are of the same dimensions as the original images.
-        dpi (int, optional): Output resolution. 100 dpi by default.
-        keypoint (str, optional): Keypoint appearance. By default, keypoints are marked
-            by a + sign. Refer to https://matplotlib.org/3.2.1/api/markers_api.html for
-            a list of all possible options.
-        draw_skeleton (bool, optional): Whether to draw the animal skeleton as defined in
-            *cfg*. True by default.
-        color_by (str, optional): Color scheme of the keypoints. Must be either
-            'bodypart' or 'individual'. By default, keypoints are colored relative to
-            the bodypart they represent.
+        destfolder (str or Path, optional): Destination folder for labeled images.
+        scale (float, optional): Output dimension scaling factor.
+        dpi (int, optional): Output resolution.
+        keypoint (str, optional): Matplotlib marker used for keypoints.
+        draw_skeleton (bool, optional): Whether to draw the configured skeleton.
+        color_by (str, optional): Either "bodypart" or "individual".
     """
-    bodyparts = df.columns.get_level_values("bodyparts")
-    bodypart_names = bodyparts.unique()
-    nbodyparts = len(bodypart_names)
-    bodyparts = bodyparts[::2]
-    draw_skeleton = draw_skeleton and cfg["skeleton"]  # Only draw if a skeleton is defined
+    columns = df.columns
+    bodypart_columns = columns.get_level_values("bodyparts")
+    bodypart_names = bodypart_columns.unique()
+    bodyparts = bodypart_columns[::2]
 
+    colors = _get_labeled_image_colors(
+        columns=columns,
+        bodyparts=bodyparts,
+        bodypart_names=bodypart_names,
+        color_by=color_by,
+        colormap=cfg["colormap"],
+    )
+
+    should_draw_skeleton = bool(draw_skeleton and cfg["skeleton"])
+    ind_bones = _get_bone_indices(bodyparts, cfg["skeleton"]) if should_draw_skeleton else ()
+
+    images_list = [str(Path(cfg["project_path"]).joinpath(*index)) for index in df.index.tolist()]
+
+    # Preserve list.index() behavior by retaining the first occurrence.
+    image_indices = {}
+    for index, filename in enumerate(images_list):
+        image_indices.setdefault(filename, index)
+
+    destfolder = Path(images_list[0]).parent if destfolder is None else Path(destfolder)
+    tmpfolder = destfolder.parent / f"{destfolder.name}_labeled"
+    auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
+
+    images = io.imread_collection(images_list)
+    all_same_shape = _images_have_same_shape(images)
+
+    xy = df.values.reshape(df.shape[0], -1, 2)
+    segments = xy[:, ind_bones].swapaxes(1, 2)
+
+    marker_size = cfg["dotsize"]
+    alpha = cfg["alphavalue"]
+    skeleton_color = cfg["skeleton_color"]
+
+    def output_path(filename):
+        stem = Path(filename).stem
+        out_name = f"{stem}_{color_by}.png"
+        return tmpfolder / out_name
+
+    def save_figure(fig, filename):
+        fig.subplots_adjust(
+            left=0,
+            bottom=0,
+            right=1,
+            top=1,
+            wspace=0,
+            hspace=0,
+        )
+        fig.savefig(output_path(filename), dpi=dpi)
+
+    if all_same_shape:
+        h, w = images[0].shape[:2]
+        fig, ax = prepare_figure_axes(w, h, scale, dpi)
+
+        image_artist = ax.imshow(np.zeros((h, w)), "gray")
+        point_artists = [
+            ax.plot(
+                [],
+                [],
+                keypoint,
+                ms=marker_size,
+                alpha=alpha,
+                color=color,
+            )[0]
+            for color in colors
+        ]
+        skeleton_artist = LineCollection(
+            [],
+            colors=skeleton_color,
+            alpha=alpha,
+        )
+        ax.add_collection(skeleton_artist)
+
+        for i in trange(len(images)):
+            filename = images.files[i]
+            index = image_indices[filename]
+            image = images[i]
+
+            if image.ndim == 2 or image.shape[-1] == 1:
+                image = color.gray2rgb(image)
+
+            image_artist.set_data(image)
+
+            for artist, coord in zip(point_artists, xy[index], strict=False):
+                artist.set_data(*np.expand_dims(coord, axis=1))
+
+            if ind_bones:
+                skeleton_artist.set_segments(segments[index])
+
+            save_figure(fig, filename)
+
+        plt.close(fig)
+        return
+
+    for i in trange(len(images)):
+        filename = images.files[i]
+        index = image_indices[filename]
+        image = images[i]
+        h, w = image.shape[:2]
+
+        fig, ax = prepare_figure_axes(w, h, scale, dpi)
+        ax.imshow(image)
+
+        for coord, point_color in zip(xy[index], colors, strict=False):
+            ax.plot(
+                *coord,
+                keypoint,
+                ms=marker_size,
+                alpha=alpha,
+                color=point_color,
+            )
+
+        if ind_bones:
+            ax.add_collection(
+                LineCollection(
+                    segments[index],
+                    colors=skeleton_color,
+                    alpha=alpha,
+                )
+            )
+
+        save_figure(fig, filename)
+        plt.close(fig)
+
+
+def _get_labeled_image_colors(
+    columns,
+    bodyparts,
+    bodypart_names,
+    color_by,
+    colormap,
+):
+    """Return one color per keypoint column."""
     if color_by == "bodypart":
-        map_ = bodyparts.map(dict(zip(bodypart_names, range(nbodyparts), strict=False)))
-        cmap = get_cmap(nbodyparts, cfg["colormap"])
-        colors = cmap(map_)
+        names = bodypart_names
+        values = bodyparts
     elif color_by == "individual":
         try:
-            individuals = df.columns.get_level_values("individuals")
-            individual_names = individuals.unique().to_list()
-            nindividuals = len(individual_names)
-            individuals = individuals[::2]
-            map_ = individuals.map(dict(zip(individual_names, range(nindividuals), strict=False)))
-            cmap = get_cmap(nindividuals, cfg["colormap"])
-            colors = cmap(map_)
-        except KeyError as e:
-            raise Exception("Coloring by individuals is only valid for multi-animal data") from e
+            individual_columns = columns.get_level_values("individuals")
+        except KeyError as exc:
+            raise ValueError("Coloring by individuals requires an 'individuals' column level") from exc
+
+        names = individual_columns.unique()
+        values = individual_columns[::2]
     else:
         raise ValueError("`color_by` must be either `bodypart` or `individual`.")
 
+    name_to_index = {name: index for index, name in enumerate(names)}
+    color_indices = values.map(name_to_index)
+    return get_cmap(len(names), colormap)(color_indices)
+
+
+def _get_bone_indices(bodyparts, skeleton):
+    """Return transposed endpoint indices for all configured bones."""
+    positions_by_bodypart = {}
+
+    for index, bodypart in enumerate(bodyparts):
+        positions_by_bodypart.setdefault(bodypart, []).append(index)
+
     bones = []
-    if draw_skeleton:
-        for bp1, bp2 in cfg["skeleton"]:
-            match1, match2 = [], []
-            for j, bp in enumerate(bodyparts):
-                if bp == bp1:
-                    match1.append(j)
-                elif bp == bp2:
-                    match2.append(j)
-            bones.extend(zip(match1, match2, strict=False))
-    ind_bones = tuple(zip(*bones, strict=False))
+    for bodypart1, bodypart2 in skeleton:
+        # Preserve the original if/elif behavior for identical endpoints.
+        if bodypart1 == bodypart2:
+            continue
 
-    images_list = [str(Path(cfg["project_path"]).joinpath(*tuple_)) for tuple_ in df.index.tolist()]
-    if destfolder is None:
-        destfolder = Path(images_list[0]).parent
-    else:
-        destfolder = Path(destfolder)
-    tmpfolder = destfolder.parent / (destfolder.name + "_labeled")
-    auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
-    ic = io.imread_collection(images_list)
-
-    h, w = ic[0].shape[:2]
-    all_same_shape = True
-    for array in ic[1:]:
-        if array.shape[:2] != (h, w):
-            all_same_shape = False
-            break
-
-    xy = df.values.reshape((df.shape[0], -1, 2))
-    segs = xy[:, ind_bones].swapaxes(1, 2)
-
-    s = cfg["dotsize"]
-    alpha = cfg["alphavalue"]
-    if all_same_shape:  # Very efficient, avoid re-drawing the whole plot
-        fig, ax = prepare_figure_axes(w, h, scale, dpi)
-        im = ax.imshow(np.zeros((h, w)), "gray")
-        pts = [ax.plot([], [], keypoint, ms=s, alpha=alpha, color=c)[0] for c in colors]
-        coll = LineCollection([], colors=cfg["skeleton_color"], alpha=alpha)
-        ax.add_collection(coll)
-        for i in trange(len(ic)):
-            filename = ic.files[i]
-            ind = images_list.index(filename)
-            coords = xy[ind]
-            img = ic[i]
-            if img.ndim == 2 or img.shape[-1] == 1:
-                img = color.gray2rgb(ic[i])
-            im.set_data(img)
-            for pt, coord in zip(pts, coords, strict=False):
-                pt.set_data(*np.expand_dims(coord, axis=1))
-            if ind_bones:
-                coll.set_segments(segs[ind])
-            imagename = Path(filename).name
-            fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-            fig.savefig(
-                tmpfolder / imagename.replace(".png", f"_{color_by}.png"),
-                dpi=dpi,
+        bones.extend(
+            zip(
+                positions_by_bodypart.get(bodypart1, ()),
+                positions_by_bodypart.get(bodypart2, ()),
+                strict=False,
             )
-        plt.close(fig)
+        )
 
-    else:  # Good old inelegant way
-        for i in trange(len(ic)):
-            filename = ic.files[i]
-            ind = images_list.index(filename)
-            coords = xy[ind]
-            image = ic[i]
-            h, w = image.shape[:2]
-            fig, ax = prepare_figure_axes(w, h, scale, dpi)
-            ax.imshow(image)
-            for coord, c in zip(coords, colors, strict=False):
-                ax.plot(*coord, keypoint, ms=s, alpha=alpha, color=c)
-            if ind_bones:
-                coll = LineCollection(segs[ind], colors=cfg["skeleton_color"], alpha=alpha)
-                ax.add_collection(coll)
-            imagename = Path(filename).name
-            fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-            fig.savefig(
-                tmpfolder / imagename.replace(".png", f"_{color_by}.png"),
-                dpi=dpi,
-            )
-            plt.close(fig)
+    return tuple(zip(*bones, strict=False))
+
+
+def _images_have_same_shape(images):
+    """Return whether all images have the same height and width."""
+    expected_shape = images[0].shape[:2]
+    return all(image.shape[:2] == expected_shape for image in images[1:])
 
 
 def plot_evaluation_results(
@@ -445,14 +514,14 @@ def plot_evaluation_results(
     output_folder: Path,
     in_train_set: bool,
     plot_unique_bodyparts: bool = False,
-    mode: str = "bodypart",
+    mode: PlotMode = "bodypart",
     colormap: str = "rainbow",
     dot_size: int = 12,
     alpha_value: float = 0.7,
     p_cutoff: float = 0.6,
     bounding_boxes: dict | None = None,
     bboxes_cutoff: float = 0.6,
-    bounding_boxes_color: str = "auto",
+    bounding_boxes_color: BoundingBoxColor = "auto",
 ) -> None:
     """Creates labeled images using the results of inference, and saves them to an
     output folder.
@@ -485,7 +554,11 @@ def plot_evaluation_results(
     if bounding_boxes is None:
         bounding_boxes = {}
 
+    if mode not in {"bodypart", "individual"}:
+        raise ValueError(f"Invalid mode: {mode}. Must be one of 'bodypart' or 'individual'.")
+
     for row_index, row in df_combined.iterrows():
+        plot_unique_for_row = plot_unique_bodyparts
         if isinstance(row_index, str):
             image_rel_path = Path(row_index)
             data_folder = image_rel_path.parent.parent.name
@@ -497,11 +570,37 @@ def plot_evaluation_results(
         image_path = project_root / data_folder / video / image
         frame = auxfun_videos.imread(str(image_path), mode="skimage")
 
-        row_multi = row.loc[(slice(None), row.index.get_level_values("individuals") != "single")]
-        individuals = len(row_multi.index.get_level_values("individuals").unique())
-        bodyparts = len(row_multi.index.get_level_values("bodyparts").unique())
+        row_multi = row.loc[row.index.get_level_values("individuals") != "single"]
+
         df_gt = row_multi[scorer]
         df_predictions = row_multi[model_name]
+
+        gt_individuals = df_gt.index.get_level_values("individuals").unique()
+        pred_individuals = df_predictions.index.get_level_values("individuals").unique()
+
+        gt_bodyparts = df_gt.index.get_level_values("bodyparts").unique()
+        pred_bodyparts = df_predictions.index.get_level_values("bodyparts").unique()
+
+        if len(gt_individuals) != len(pred_individuals):
+            logger.warning(
+                f"Warning: Individual count mismatch for {image}\n"
+                f"  Ground truth individual count: {len(gt_individuals)}\n"
+                f"  Predictions individual count: {len(pred_individuals)}\n"
+                "  Skipping visualization for this image"
+            )
+            continue
+
+        if list(gt_bodyparts) != list(pred_bodyparts):  # keep ordering of bodyparts
+            logger.warning(
+                f"Warning: Bodypart mismatch for {image}\n"
+                f"  Ground truth: {list(gt_bodyparts)}\n"
+                f"  Predictions: {list(pred_bodyparts)}\n"
+                "  Skipping visualization for this image"
+            )
+            continue
+
+        individuals = len(gt_individuals)
+        bodyparts = len(gt_bodyparts)
 
         # Shape (num_individuals, num_bodyparts, xy)
         try:
@@ -514,93 +613,105 @@ def plot_evaluation_results(
             expected_size_gt = individuals * bodyparts * 2
             expected_size_pred = individuals * bodyparts * 3
 
-            print(f"Warning: DataFrame reshape failed for {image}")
-            print(f"  Expected: {individuals} individuals, {bodyparts} bodyparts")
-            print(f"  Ground truth: {actual_size_gt} elements (expected {expected_size_gt})")
-            print(f"  Predictions: {actual_size_pred} elements (expected {expected_size_pred})")
-            print("  Skipping visualization for this image")
+            logger.warning(
+                f"Warning: DataFrame reshape failed for {image}\n"
+                f"  Expected: {individuals} individual(s), {bodyparts} bodypart(s)\n"
+                f"  Ground truth: {actual_size_gt} elements (expected {expected_size_gt})\n"
+                f"  Predictions: {actual_size_pred} elements (expected {expected_size_pred})\n"
+                "  Skipping visualization for this image"
+            )
             continue
 
         bboxes = bounding_boxes.get(row_index)
 
-        if plot_unique_bodyparts:
-            row_unique = row.loc[(slice(None), row.index.get_level_values("individuals") == "single")]
-            unique_individuals = 1
-            unique_bodyparts = len(row_unique.index.get_level_values("bodyparts").unique())
-            try:
-                unique_ground_truth = row_unique[scorer].to_numpy().reshape((unique_individuals, unique_bodyparts, 2))
-                unique_predictions = (
-                    row_unique[model_name].to_numpy().reshape((unique_individuals, unique_bodyparts, 3))
-                )
-            except ValueError:
-                # Handle cases where unique bodyparts reshape fails
-                print(f"Warning: Unique bodyparts reshape failed for {image}, skipping unique bodyparts")
-                plot_unique_bodyparts = False
+        if plot_unique_for_row:
+            row_unique = row.loc[row.index.get_level_values("individuals") == "single"]
+            if row_unique.empty:
+                plot_unique_for_row = False
+            else:
+                unique_gt = row_unique[scorer]
+                unique_pred = row_unique[model_name]
+
+                gt_unique_bodyparts = unique_gt.index.get_level_values("bodyparts").unique()
+                pred_unique_bodyparts = unique_pred.index.get_level_values("bodyparts").unique()
+
+                if list(gt_unique_bodyparts) != list(pred_unique_bodyparts):
+                    logger.warning(f"Warning: Unique bodypart mismatch for {image}, skipping unique bodyparts")
+                    plot_unique_for_row = False
+                else:
+                    unique_bodyparts = len(gt_unique_bodyparts)
+
+                    try:
+                        unique_ground_truth = unique_gt.to_numpy().reshape((1, unique_bodyparts, 2))
+                        unique_predictions = unique_pred.to_numpy().reshape((1, unique_bodyparts, 3))
+                    except ValueError:
+                        # Handle cases where unique bodyparts reshape fails
+                        logger.warning(
+                            f"Warning: Unique bodyparts reshape failed for {image}, skipping unique bodyparts"
+                        )
+                        plot_unique_for_row = False
 
         fig, ax = create_minimal_figure()
-        h, w, _ = np.shape(frame)
-        fig.set_size_inches(w / 100, h / 100)
-        ax.set_xlim(0, w)
-        ax.set_ylim(0, h)
-        ax.invert_yaxis()
+        try:
+            h, w = frame.shape[:2]
+            fig.set_size_inches(w / 100, h / 100)
+            ax.set_xlim(0, w)
+            ax.set_ylim(h, 0)
+            # ax.invert_yaxis()
 
-        if mode == "bodypart":
-            num_colors = bodyparts
-            if plot_unique_bodyparts:
-                num_colors += unique_bodyparts
-
-            colors = get_cmap(num_colors, name=colormap)
-            predictions = predictions.swapaxes(0, 1)
-            ground_truth = ground_truth.swapaxes(0, 1)
-        elif mode == "individual":
-            colors = get_cmap(individuals + 1, name=colormap)
-        else:
-            colors = []
-
-        if bounding_boxes_color == "auto":
             if mode == "bodypart":
-                bboxes_color = None
-            elif mode == "individual":
-                bboxes_color = get_cmap(individuals + 1, name=colormap)
-            else:
-                raise ValueError(f"Invalid mode: {mode}")
-        else:
-            bboxes_color = bounding_boxes_color
+                num_colors = bodyparts
+                if plot_unique_for_row:
+                    num_colors += unique_bodyparts
 
-        ax = make_multianimal_labeled_image(
-            frame=frame,
-            coords_truth=ground_truth,
-            coords_pred=predictions[:, :, :2],
-            probs_pred=predictions[:, :, 2:],
-            colors=colors,
-            dotsize=dot_size,
-            alphavalue=alpha_value,
-            pcutoff=p_cutoff,
-            ax=ax,
-            bounding_boxes=bboxes,
-            bboxes_cutoff=bboxes_cutoff,
-            bboxes_color=bboxes_color,
-        )
-        if plot_unique_bodyparts:
-            unique_predictions = unique_predictions.swapaxes(0, 1)
-            unique_ground_truth = unique_ground_truth.swapaxes(0, 1)
+                colors = get_cmap(num_colors, name=colormap)
+                predictions = predictions.swapaxes(0, 1)
+                ground_truth = ground_truth.swapaxes(0, 1)
+            else:
+                colors = get_cmap(individuals + 1, name=colormap)
+
+            if bounding_boxes_color == "auto":
+                bboxes_color = None if mode == "bodypart" else get_cmap(individuals + 1, name=colormap)
+            else:
+                bboxes_color = bounding_boxes_color
+
             ax = make_multianimal_labeled_image(
                 frame=frame,
-                coords_truth=unique_ground_truth,
-                coords_pred=unique_predictions[:, :, :2],
-                probs_pred=unique_predictions[:, :, 2:],
+                coords_truth=ground_truth,
+                coords_pred=predictions[:, :, :2],
+                probs_pred=predictions[:, :, 2:],
                 colors=colors,
                 dotsize=dot_size,
                 alphavalue=alpha_value,
                 pcutoff=p_cutoff,
                 ax=ax,
+                bounding_boxes=bboxes,
+                bboxes_cutoff=bboxes_cutoff,
+                bboxes_color=bboxes_color,
             )
+            if plot_unique_for_row:
+                if mode == "bodypart":
+                    unique_predictions = unique_predictions.swapaxes(0, 1)
+                    unique_ground_truth = unique_ground_truth.swapaxes(0, 1)
+                ax = make_multianimal_labeled_image(
+                    frame=frame,
+                    coords_truth=unique_ground_truth,
+                    coords_pred=unique_predictions[:, :, :2],
+                    probs_pred=unique_predictions[:, :, 2:],
+                    colors=colors,
+                    color_offset=bodyparts if mode == "bodypart" else individuals,
+                    dotsize=dot_size,
+                    alphavalue=alpha_value,
+                    pcutoff=p_cutoff,
+                    ax=ax,
+                )
 
-        save_labeled_frame(
-            fig,
-            image_path,
-            output_folder,
-            belongs_to_train=in_train_set,
-        )
-        erase_artists(ax)
-        plt.close()
+            save_labeled_frame(
+                fig,
+                image_path,
+                output_folder,
+                belongs_to_train=in_train_set,
+            )
+            erase_artists(ax)
+        finally:
+            plt.close(fig)

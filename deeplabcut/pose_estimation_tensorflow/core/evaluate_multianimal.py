@@ -328,7 +328,7 @@ def evaluate_multianimal_full(
                             )
 
                         temp["sample"] = 0
-                        peaks_gt = temp.loc[:, ["sample", "y", "x", "bodyparts"]].to_numpy()
+                        peaks_gt = temp.loc[:, ["sample", "y", "x", "bodyparts"]].to_numpy(copy=True)
                         peaks_gt[:, 1:3] = (peaks_gt[:, 1:3] - stride // 2) / stride
 
                         pred = predictma.predict_batched_peaks_and_costs(

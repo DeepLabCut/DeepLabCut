@@ -136,7 +136,7 @@ def export_model(
             # Convert typed config to plain dict so torch.save doesn't pickle
             # custom types (which require weights_only=False to load)
             if isinstance(model_cfg, PoseConfig):
-                model_cfg = model_cfg.to_dict()
+                model_cfg = model_cfg.to_dict(normalize=True)
 
             pose_weights = torch.load(snapshot.path, **load_kwargs)["model"]
             export_dict = dict(config=model_cfg, pose=pose_weights)
