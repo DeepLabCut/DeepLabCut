@@ -40,7 +40,7 @@ class TestShowTaskError:
                 captured["exec_called"] = True
                 return 0
 
-        monkeypatch.setattr(QtWidgets, "QMessageBox", _Box)
+        monkeypatch.setattr("deeplabcut.gui.window.QMessageBox", _Box)
         return captured
 
     def test_generic_error_shows_task_failed_dialog(
