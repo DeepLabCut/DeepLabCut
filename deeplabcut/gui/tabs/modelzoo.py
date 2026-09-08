@@ -13,9 +13,9 @@ from functools import partial
 from pathlib import Path
 
 import dlclibrary
-from PySide6 import QtWidgets
-from PySide6.QtCore import QRegularExpression, QSize, Qt, QTimer, Signal, Slot
-from PySide6.QtGui import QRegularExpressionValidator
+from qtpy import QtWidgets
+from qtpy.QtCore import QRegularExpression, QSize, Qt, QTimer, Signal, Slot
+from qtpy.QtGui import QRegularExpressionValidator
 
 import deeplabcut
 from deeplabcut.core.engine import Engine

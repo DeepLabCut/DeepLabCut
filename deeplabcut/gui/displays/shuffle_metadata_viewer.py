@@ -14,8 +14,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt
 
 import deeplabcut.generate_training_dataset.metadata as metadata
 

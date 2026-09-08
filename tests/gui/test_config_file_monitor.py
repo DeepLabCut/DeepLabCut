@@ -9,10 +9,10 @@
 
 import pytest
 
-pytest.importorskip("PySide6")
+pytest.importorskip("qtpy.QtWidgets")
 pytest.importorskip("pytestqt")
 
-from PySide6 import QtWidgets
+from qtpy import QtWidgets
 
 from deeplabcut.gui.config_file_monitor import ConfigFileMonitor
 

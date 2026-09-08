@@ -9,7 +9,7 @@
 
 import pytest
 
-pytest.importorskip("PySide6")
+pytest.importorskip("qtpy.QtWidgets")
 pytest.importorskip("pytestqt")
 
 from deeplabcut.gui.widgets import ConfigEditor

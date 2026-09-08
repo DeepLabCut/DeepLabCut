@@ -15,7 +15,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
 
-pytest.importorskip("PySide6")
+pytest.importorskip("qtpy.QtWidgets")
 pytest.importorskip("pytestqt")
 
 
@@ -47,7 +47,7 @@ def write_project_config():
 @pytest.fixture
 def main_window(qapp, monkeypatch):
     """A real MainWindow, constructed off-screen and torn down cleanly."""
-    from PySide6 import QtWidgets
+    from qtpy import QtWidgets
 
     from deeplabcut.gui.window import MainWindow
 

@@ -9,10 +9,10 @@
 
 import pytest
 
-pytest.importorskip("PySide6")
+pytest.importorskip("qtpy.QtWidgets")
 pytest.importorskip("pytestqt")
 
-import PySide6.QtCore as QtCore
+from qtpy import QtCore
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay

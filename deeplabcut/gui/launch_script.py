@@ -22,9 +22,10 @@ Licensed under GNU Lesser General Public License v3.0
 import logging
 import sys
 
-import PySide6.QtWidgets as QtWidgets
 import qdarkstyle
-from PySide6.QtCore import Qt
+from qdarkstyle.dark.palette import DarkPalette
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt
 
 from deeplabcut.gui.gui_assets import get_style_qss, icon_from_resource, pixmap_from_resource
 
@@ -39,13 +40,11 @@ def launch_dlc():
     splash = QtWidgets.QSplashScreen(pixmap)
     splash.show()
 
-    app.setStyleSheet(get_style_qss())  # this gets overridden immediately?
+    app.setStyleSheet(get_style_qss())
     try:
-        dark_stylesheet = qdarkstyle.load_stylesheet_pyside6()
-    except Exception as e:
-        logger.warning(f"Could not load qdarkstyle stylesheet for PySide6: {e}. Falling back to PySide2 stylesheet.")
-        dark_stylesheet = qdarkstyle.load_stylesheet_pyside2()
-    app.setStyleSheet(dark_stylesheet)
+        app.setStyleSheet(qdarkstyle.load_stylesheet(palette=DarkPalette))
+    except Exception:
+        logger.warning("Could not load the qdarkstyle stylesheet; keeping the bundled style.qss.", exc_info=True)
 
     # Set up a logger and add an stdout handler.
     # A single logger can have many handlers:

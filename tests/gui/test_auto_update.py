@@ -2,7 +2,7 @@ import sys
 
 import pytest
 
-pytest.importorskip("PySide6")
+pytest.importorskip("qtpy.QtWidgets")
 
 from deeplabcut.gui.utils import _build_update_commands, _package_specs_for_update
 

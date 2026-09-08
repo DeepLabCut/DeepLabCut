@@ -9,7 +9,7 @@
 
 import pytest
 
-pytest.importorskip("PySide6")
+pytest.importorskip("qtpy.QtWidgets")
 pytest.importorskip("pytestqt")
 
 from deeplabcut.gui.utils import CaptureWorker, Worker, move_to_separate_thread

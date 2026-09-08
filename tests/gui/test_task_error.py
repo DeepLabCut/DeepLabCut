@@ -9,12 +9,12 @@
 
 import pytest
 
-pytest.importorskip("PySide6")
+pytest.importorskip("qtpy.QtWidgets")
 pytest.importorskip("pytestqt")
 
 
 from pydantic import ValidationError
-from PySide6 import QtWidgets
+from qtpy import QtWidgets
 
 from deeplabcut.core.config import ProjectConfig
 
@@ -40,7 +40,7 @@ class TestShowTaskError:
                 captured["exec_called"] = True
                 return 0
 
-        monkeypatch.setattr(QtWidgets, "QMessageBox", _Box)
+        monkeypatch.setattr("deeplabcut.gui.window.QMessageBox", _Box)
         return captured
 
     def test_generic_error_shows_task_failed_dialog(

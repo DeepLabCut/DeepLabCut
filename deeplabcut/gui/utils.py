@@ -16,7 +16,7 @@ import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 
-from PySide6 import QtCore, QtNetwork
+from qtpy import QtCore, QtNetwork
 
 try:
     from packaging.version import InvalidVersion, Version

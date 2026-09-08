@@ -11,8 +11,8 @@
 from functools import partial
 from pathlib import Path
 
-from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt
 
 from deeplabcut.generate_training_dataset import extract_frames
 from deeplabcut.gui.components import (
