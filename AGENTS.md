@@ -23,8 +23,7 @@ status.
 - Preserve optional dependency boundaries. Do not assume that a GUI,
   TensorFlow, CUDA, a GPU, or a display is available.
 - Avoid heavy or backend-specific imports at package import time.
-- Never overwrite or destructively modify user data unless explicitly
-  requested.
+- Do not unexpectedly overwrite or destructively modify user-authored data. Preserve existing safeguards, backups, and explicit overwrite controls.
 - Never fabricate scientific outputs or benchmark results. Clearly identify
   synthetic test data as synthetic.
 - Preserve labels, scorer names, dataframe structure, coordinate conventions,
