@@ -36,8 +36,7 @@ status.
 - Use Google-style docstrings. Follow the surrounding documentation
   conventions; in plain Markdown, prefer inline code such as `myfunc` over
   Sphinx roles such as `:func:\`myfunc\``.
-- Add or update regression tests for bug fixes and behavior changes when
-  practical.
+- Add or update regression tests for bug fixes and behavior changes when practical, ensuring they fail without the corresponding fix.
 - Run the smallest relevant tests while iterating. Isolate
   optional-dependency, GUI, and GPU-dependent tests where possible, and report
   relevant checks that were not run.
