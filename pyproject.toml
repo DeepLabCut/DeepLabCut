@@ -37,7 +37,7 @@ dependencies = [
   "h5py>=3.15.1; platform_system=='Darwin'",
   "huggingface-hub>=0.23",
   "imageio-ffmpeg",
-  "matplotlib>=3.3,<3.9,!=3.7,!=3.7.1",
+  "matplotlib>=3.5,<3.9,!=3.7,!=3.7.1",
   "networkx>=2.6",
   "numba>=0.54",
   "numpy>=1.22.4,<2",

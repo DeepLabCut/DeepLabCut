@@ -1473,7 +1473,7 @@ requires-dist = [
     { name = "imgaug", marker = "extra == 'tf-cu12'", specifier = ">=0.4" },
     { name = "imgaug", marker = "extra == 'tf-latest'", specifier = ">=0.4" },
     { name = "jupyter-book", marker = "extra == 'docs'", specifier = "==1.0.4.post1" },
-    { name = "matplotlib", specifier = ">=3.3,!=3.7,!=3.7.1,<3.9" },
+    { name = "matplotlib", specifier = ">=3.5,!=3.7,!=3.7.1,<3.9" },
     { name = "mike", marker = "extra == 'dev-docs'", specifier = ">=2.1" },
     { name = "mkdocs", marker = "extra == 'dev-docs'", specifier = ">=1.6" },
     { name = "mkdocs-api-autonav", marker = "extra == 'dev-docs'", specifier = ">=0.1" },
