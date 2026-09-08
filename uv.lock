@@ -1374,6 +1374,7 @@ gui = [
     { name = "napari-deeplabcut" },
     { name = "pyside6" },
     { name = "qdarkstyle" },
+    { name = "qtpy" },
 ]
 modelzoo = [
     { name = "huggingface-hub" },
@@ -1506,6 +1507,7 @@ requires-dist = [
     { name = "pyyaml" },
     { name = "qdarkstyle", marker = "platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'gui'", specifier = "==3.1" },
     { name = "qdarkstyle", marker = "(platform_machine != 'x86_64' and extra == 'gui') or (sys_platform != 'linux' and extra == 'gui')", specifier = ">=3.1" },
+    { name = "qtpy", marker = "extra == 'gui'", specifier = ">=2.4" },
     { name = "ruamel-yaml", specifier = ">=0.15" },
     { name = "scikit-image", specifier = ">=0.17" },
     { name = "scikit-learn", specifier = ">=1" },
