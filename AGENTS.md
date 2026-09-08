@@ -3,12 +3,13 @@
 ## DeepLabCut
 
 DeepLabCut is a scientific Python toolbox for markerless pose estimation.
-Prioritize correctness, preservation of user data, and public API compatibility.
+Prioritize correctness, preservation of user data, backward compatibility,
+reproducibility, and public API compatibility.
 
-DeepLabCut is PyTorch-first. TensorFlow is being deprecated, but legacy support
-remains. Do not introduce new TensorFlow-first functionality, and preserve
-existing TensorFlow compatibility unless a task explicitly changes its support
-status.
+DeepLabCut is PyTorch-first. Treat PyTorch as the primary backend for new
+functionality. Preserve legacy TensorFlow behavior where the current support
+policy still requires it, but do not introduce new TensorFlow-first
+functionality.
 
 ## Guidelines
 
@@ -18,8 +19,9 @@ status.
 - Treat aliases, deprecations, and default values as intentional user-facing
   behavior. Prefer aliases and explicit deprecation warnings over silently
   renaming or removing inputs.
-- Prefer `pathlib.Path`; do not assume POSIX paths. Isolate and document
-  intentionally platform-specific behavior.
+- Prefer `pathlib.Path`; do not assume POSIX paths or that `Path.resolve()` is
+  universally safe across filesystems. Isolate and document intentionally
+  platform-specific behavior.
 - Preserve optional dependency boundaries. Do not assume that a GUI,
   TensorFlow, CUDA, a GPU, or a display is available.
 - Avoid heavy or backend-specific imports at package import time.
@@ -30,7 +32,16 @@ status.
   identities, and project metadata unless the task explicitly requires
   changing them.
 - Use repository tooling where available. Treat repository source, tests, and documentation as primary evidence. When they disagree, identify the inconsistency rather than silently choosing one. When available, use `llms.txt`,
-  `knowledge/manifest.json`, `docs.jsonl`, and `api.jsonl` as discovery indexes.
+  [published here](https://deeplabcut.github.io/DeepLabCut/llms.txt),
+  `knowledge/manifest.json`, `docs.jsonl`, and `api.jsonl` as discovery
+  indexes.
+- Prefer issue-based bookkeeping for user-visible bugs, regressions, and
+  behavior changes when practical. Link related issues from pull requests and
+  preserve useful reproduction details, but do not require a new issue for
+  trivial or self-contained changes.
+- Keep discussion focused on code, behavior, and reproducible conditions. Do
+  not assign fault to users, contributors, or other individuals. Describe
+  problems neutrally and propose constructive next steps.
 - Update docstrings, examples, and relevant user or developer documentation
   when public behavior changes.
 - Use Google-style docstrings. Follow the surrounding documentation
