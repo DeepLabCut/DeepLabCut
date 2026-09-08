@@ -10,8 +10,8 @@ Only documented symbols are indexed, because mkdocstrings omits undocumented
 members from the reference pages: such a symbol has no summary and no URL that
 resolves.
 
-`EXCLUDED_MODULES` and `API_ROOT_URI` mirror `dev-docs/mkdocs.yml` and have to be
-kept in sync with it.
+`EXCLUDED_MODULES` here and `API_ROOT_URI` in `schemas.py` mirror
+`dev-docs/mkdocs.yml` and have to be kept in sync with it.
 
 `ApiNode` and `Symbol` are build-time only -- `write.py` flattens them into the
 `ApiRecord` rows published in `api.jsonl` (see `schemas.py`).
@@ -25,7 +25,7 @@ from pathlib import Path
 
 import griffe
 
-from .schemas import API_NAMESPACE, ApiNode, Symbol
+from .schemas import API_NAMESPACE, API_ROOT_URI, ApiNode, Symbol
 
 # griffe models a module member either as the object itself or, when it was
 # imported or re-exported, as an alias pointing at it.
@@ -38,9 +38,6 @@ EXCLUDED_MODULES: tuple[str, ...] = (
     "deeplabcut.benchmark",
     "deeplabcut.gui",
 )
-
-# `plugins.api-autonav.api_root_uri` in dev-docs/mkdocs.yml.
-API_ROOT_URI = "reference"
 
 _VARIADIC_PREFIX = {
     griffe.ParameterKind.var_positional: "*",

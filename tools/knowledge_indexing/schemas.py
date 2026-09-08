@@ -38,6 +38,13 @@ API_NAMESPACE = "api"
 # manage-dev-docs.yml). Whichever version carries it is `api.latest`.
 LATEST_RELEASE_ALIAS = "latest-release"
 
+# `plugins.api-autonav.api_root_uri` in dev-docs/mkdocs.yml, which has to be kept
+# in sync with it (as does `EXCLUDED_MODULES` in api_index.py). Lives here rather
+# than in api_index.py so `__main__.py` can build a reference url without
+# importing griffe. api-autonav publishes no index at the root itself -- the
+# reference starts one level down, at `<API_ROOT_URI>/<package>/`.
+API_ROOT_URI = "reference"
+
 # Layout under the output directory: <output>/knowledge/<version>/{api,docs}.jsonl
 # plus <output>/llms.txt. See README.md.
 KNOWLEDGE_DIR = "knowledge"

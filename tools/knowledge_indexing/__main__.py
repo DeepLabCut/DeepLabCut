@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 from .llms_txt import build_llms_txt
-from .schemas import KNOWLEDGE_DIR, LATEST_RELEASE_ALIAS, LLMS_TXT
+from .schemas import API_ROOT_URI, KNOWLEDGE_DIR, LATEST_RELEASE_ALIAS, LLMS_TXT
 from .toc import TOC_FILE
 from .write import delete_version, write_top_manifest, write_version
 
@@ -33,6 +33,13 @@ DEFAULT_OUTPUT_ROOT = Path("_build/knowledge-index")
 # segment --version-label fills in.
 DOCS_BASE_URL = "https://deeplabcut.github.io/DeepLabCut/"
 API_BASE_URL = "https://deeplabcut.github.io/DeepLabCut/dev/{version}/"
+
+# Landing page of the published reference, for the human-readable link in
+# llms.txt. Pinned to mike's `latest-release` alias rather than to a version
+# label: llms.txt is only written by the 'main' build, so the label would send
+# every reader to the unreleased API that `api.latest` steers them off. The
+# package segment is required -- api-autonav publishes no index at the root.
+API_REFERENCE_URL = f"{API_BASE_URL.format(version=LATEST_RELEASE_ALIAS)}{API_ROOT_URI}/{{package}}/"
 
 # The only dev-docs version label whose build carries docs.jsonl and llms.txt
 # -- the user docs are unversioned, so no other label indexes them.
@@ -282,7 +289,7 @@ def main(argv: list[str] | None = None) -> int:
     if include_docs:
         llms_txt = build_llms_txt(
             docs_base_url=DOCS_BASE_URL,
-            api_base_url=api_base_url,
+            api_reference_url=API_REFERENCE_URL.format(package=PACKAGE),
             knowledge_base_url=f"{DOCS_BASE_URL}{KNOWLEDGE_DIR}/",
             version_label=args.version_label,
         )

@@ -1570,9 +1570,9 @@ dev-docs = [
 ]
 gui-dev = [{ name = "pytest-qt" }]
 knowledge-index = [
-    { name = "docutils" },
-    { name = "griffelib" },
-    { name = "markdown-it-py" },
+    { name = "docutils", specifier = ">=0.21,<0.24" },
+    { name = "griffelib", specifier = ">=2,<3" },
+    { name = "markdown-it-py", specifier = ">=3,<4" },
     { name = "pyyaml" },
 ]
 

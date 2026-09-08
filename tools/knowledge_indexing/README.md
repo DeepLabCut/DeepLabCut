@@ -107,8 +107,20 @@ A class's own public methods are recorded as `kind: "method"` rows named
 `Class.method`, anchored by dotted path like any other symbol. Inherited
 methods, attributes and properties are not recorded.
 
-Two constants in `api_index.py` mirror `dev-docs/mkdocs.yml` and must be kept in
-sync with it: `EXCLUDED_MODULES` and `API_ROOT_URI`.
+Two constants mirror `dev-docs/mkdocs.yml` and must be kept in sync with it:
+`EXCLUDED_MODULES` in `api_index.py`, and `API_ROOT_URI` in `schemas.py` (it
+lives there so `__main__.py` can build a reference url without importing
+griffe). Note that api-autonav publishes no index page at `<API_ROOT_URI>/`
+itself — the reference starts one level down, at `<API_ROOT_URI>/<package>/`.
+
+For the same reason the `knowledge-index` dependency group bounds `griffelib` to
+the major `mkdocstrings-python` (in `dev-docs`) resolves to. Let them diverge and
+`api.jsonl` describes symbols differently from the reference pages its urls point
+at — griffe has moved things like `@property` between its function and attribute
+models across majors. `docutils` is bounded for a related reason: `make_id`
+decides every section record id, which this index publishes as stable. CI
+installs the group with `uv pip install --group`, which resolves fresh rather
+than reading `uv.lock`, so those bounds are the only thing holding it.
 
 ### Docs pages
 
@@ -169,6 +181,16 @@ description, then `##` sections of links.
 Links to the docs site, the API reference, and prominently to
 `knowledge/manifest.json`, `docs.jsonl` and `api.jsonl` for agents that want
 the structured index.
+
+Because only the `main` build writes it, the human-readable **API reference link
+points at mike's `latest-release` alias, not at `--version-label`**
+(`API_REFERENCE_URL` in `__main__.py`). Using the label would send every reader
+of `llms.txt` to the rolling unreleased API — the same mistake `api.latest`
+following `latest-release` exists to prevent for the machine-readable half. The
+link also carries the package segment (`.../reference/deeplabcut/`), because
+api-autonav publishes nothing at `.../reference/`. The `docs.jsonl`/`api.jsonl`
+links stay version-scoped, since those files really do live under the label
+being built.
 
 ## Deployment
 

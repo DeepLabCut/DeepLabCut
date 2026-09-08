@@ -170,10 +170,17 @@ dev-docs = [
 gui-dev = [
   "pytest-qt",
 ]
+# tools/knowledge_indexing reproduces what the doc renderers publish, so these
+# are bounded rather than floating: griffelib must stay on the major that
+# mkdocstrings-python (in dev-docs) resolves to, or api.jsonl describes symbols
+# differently from the reference pages its urls point at; docutils.make_id
+# decides every section record id, which the index publishes as stable.
+# CI installs this group with `uv pip install --group`, which resolves fresh
+# instead of reading uv.lock -- these bounds are the only thing pinning it.
 knowledge-index = [
-  "docutils",
-  "griffelib",
-  "markdown-it-py",
+  "docutils>=0.21,<0.24",
+  "griffelib>=2,<3",
+  "markdown-it-py>=3,<4",
   "pyyaml",
 ]
 
