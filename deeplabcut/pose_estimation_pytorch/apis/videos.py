@@ -718,11 +718,6 @@ def create_df_from_prediction(
     output_prefix: str | Path,
     save_as_csv: bool = False,
 ) -> pd.DataFrame:
-    pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
-    pred_unique_bodyparts = None
-    if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
-        pred_unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
-
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
 
@@ -741,6 +736,18 @@ def create_df_from_prediction(
         cols_names.insert(1, "individuals")
 
     results_df_index = pd.MultiIndex.from_product(cols, names=cols_names)
+    if not predictions:
+        df = pd.DataFrame(index=range(0), columns=results_df_index)
+        df.to_hdf(output_h5, key="df_with_missing", format="table", mode="w")
+        if save_as_csv:
+            df.to_csv(output_h5.with_suffix(".csv"))
+        return df
+
+    pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
+    pred_unique_bodyparts = None
+    if "unique_bodyparts" in predictions[0]:
+        pred_unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
+
     pred_bodyparts = pred_bodyparts[:, :n_individuals]
     df = pd.DataFrame(
         pred_bodyparts.reshape((len(pred_bodyparts), -1)),
