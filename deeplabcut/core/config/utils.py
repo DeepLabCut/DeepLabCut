@@ -292,7 +292,13 @@ scorername_3d: # Enter the scorer name for the 3D output
     return cfg_file_3d, ruamelFile_3d
 
 
-def read_config(configname: str | Path, ignore_empty: bool = True) -> ProjectConfig:
+_IGNORE_EMPTY_UNSET = object()
+
+
+def read_config(
+    configname: str | Path,
+    ignore_empty: bool | object = _IGNORE_EMPTY_UNSET,
+) -> ProjectConfig:
     """
     Reads structured config file defining a project.
 
@@ -301,17 +307,27 @@ def read_config(configname: str | Path, ignore_empty: bool = True) -> ProjectCon
 
     Args:
         configname: Path to the project configuration file (config.yaml).
-        ignore_empty: If True, empty/None values in the YAML are ignored and
-            dataclass defaults are used instead. If False, empty values represent None.
-            Defaults to True.
+        ignore_empty: Deprecated, has no effect. Empty/None values for
+            non-optional config.yaml fields are always treated as unset; optional
+            fields retain their ``None`` values (see `ProjectConfig` validators).
 
     Returns:
         The project configuration as a ProjectConfig instance (supports dict-like access).
     """
     from deeplabcut.core.config.project_config import ProjectConfig
+    from deeplabcut.core.deprecation import DLCDeprecationWarning
+
+    if ignore_empty is not _IGNORE_EMPTY_UNSET:
+        warnings.warn(
+            "read_config(ignore_empty=...) is deprecated and no longer has any effect: "
+            "empty/None values for non-optional ProjectConfig fields are always treated "
+            "as unset; optional fields retain their None values.",
+            DLCDeprecationWarning,
+            stacklevel=2,
+        )
 
     path = Path(configname)
-    project_config = ProjectConfig.from_yaml(path, ignore_empty=ignore_empty)
+    project_config = ProjectConfig.from_yaml(path)
 
     # If necessary, ProjectConfig automatically updates its project path via _post_yaml_load_updates.
     # if that is the case (marked as dirty), we write the config back to the file.

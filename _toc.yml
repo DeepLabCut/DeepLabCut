@@ -83,6 +83,7 @@ parts:
               - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/basler_backend
               - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend
               - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend
+          - file: docs/dlc-live/dlc-live-gui/user_guide/camera_config
           - file: docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing
             sections:
               - file: docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads
