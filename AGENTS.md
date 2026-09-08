@@ -29,8 +29,7 @@ status.
 - Preserve labels, scorer names, dataframe structure, coordinate conventions,
   identities, and project metadata unless the task explicitly requires
   changing them.
-- Use repository tooling where available. Treat repository source and
-  documentation as authoritative. When available, use `llms.txt`,
+- Use repository tooling where available. Treat repository source, tests, and documentation as primary evidence. When they disagree, identify the inconsistency rather than silently choosing one. When available, use `llms.txt`,
   `knowledge/manifest.json`, `docs.jsonl`, and `api.jsonl` as discovery indexes.
 - Update docstrings, examples, and relevant user or developer documentation
   when public behavior changes.
