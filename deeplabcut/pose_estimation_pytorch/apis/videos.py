@@ -228,7 +228,13 @@ def video_inference(
     if shelf_writer is not None:
         shelf_writer.close()
 
-    if shelf_writer is None and len(predictions) != n_frames:
+    if shelf_writer is None and len(predictions) == 0 and n_frames > 0:
+        logging.warning(
+            "No predictions were produced for this video. This can happen if no "
+            "animals were detected in any frame. If that is unexpected, check "
+            "model performance and verify that the video can be read correctly."
+        )
+    elif shelf_writer is None and len(predictions) != n_frames:
         tip_url = "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
         header = "#tips-on-video-re-encoding-and-preprocessing"
         logging.warning(
