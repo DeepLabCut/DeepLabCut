@@ -8,15 +8,15 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import sys
 from importlib import import_module
 
 
 def main():
     try:
         import_module("deeplabcut.gui")
-    except ImportError as err:
-        print(err)
-        return
+    except (ImportError, ValueError) as err:
+        sys.exit(str(err))
 
     # if module is executed directly (i.e. `python -m deeplabcut.__init__`) launch straight into the GUI
     print("Starting GUI...")
