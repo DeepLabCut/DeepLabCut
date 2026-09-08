@@ -11,7 +11,6 @@
 
 import os
 import sys
-import warnings
 from importlib.util import find_spec
 from pathlib import Path
 
@@ -29,7 +28,6 @@ _MODULE_TO_QT_API = (
     ("PySide6", "pyside6"),
 )
 _VALID_QT_APIS = tuple(api for _, api in _MODULE_TO_QT_API)
-_GPL_QT_APIS = ("pyqt5", "pyqt6")
 
 _INSTALL_DOCS_URL = "https://deeplabcut.github.io/DeepLabCut/docs/installation.html"
 
@@ -82,14 +80,5 @@ except ImportError as err:
 # matplotlib's backends/qt_compat.py also reads QT_API and must not end up on a
 # different binding. It expects the lowercase form, which is `qtpy.API`.
 os.environ["QT_API"] = qtpy.API
-
-if qtpy.API in _GPL_QT_APIS:
-    warnings.warn(
-        f"DeepLabCut GUI is running on {qtpy.API_NAME}, which is licensed "
-        "under the GPL. DeepLabCut is LGPL and is developed against PySide6 "
-        "(LGPL). Set QT_API=pyside6, or install PySide6, to use the preferred "
-        "binding.",
-        stacklevel=2,
-    )
 
 BASE_DIR = Path(__file__).parent
