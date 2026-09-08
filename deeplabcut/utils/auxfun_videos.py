@@ -630,6 +630,8 @@ def collect_video_paths(
     extensions: str | Sequence[str] | None = None,
     shuffle: bool = False,
     exclude_patterns: Sequence[str] = DEFAULT_EXCLUDE_PATTERNS,
+    *,
+    warn_on_unsupported_ext: bool = True,
 ) -> list[Path]:
     """
     Collects video paths from a given set of data paths: directories, files, or a mix
@@ -657,6 +659,9 @@ def collect_video_paths(
             returned in sorted order for deterministic behavior.
         exclude_patterns: Patterns to exclude from the collection. Defaults to
             ``DEFAULT_EXCLUDE_PATTERNS``. Set to ``[]`` to disable pattern exclusion.
+        warn_on_unsupported_ext: Whether to warn when collected files have an extension
+            outside ``SUPPORTED_VIDEOS``. Set to ``False`` when deliberately collecting
+            non-video files (e.g. ``extensions=".h5"``), where the warning is misleading.
 
     Returns:
         The paths of videos to analyze. Duplicate paths are removed.
@@ -722,9 +727,14 @@ def collect_video_paths(
     else:
         unique_videos.sort()
 
-    if any(fn.suffix.lower().lstrip(".") not in SUPPORTED_VIDEOS for fn in unique_videos if fn.suffix):
-        warnings.warn(
-            f"Some videos have unsupported extensions: {unique_videos} \nSupported extensions are: {SUPPORTED_VIDEOS}",
-            stacklevel=2,
-        )
+    if warn_on_unsupported_ext:
+        unsupported = [
+            fn for fn in unique_videos if fn.suffix and fn.suffix.lower().lstrip(".") not in SUPPORTED_VIDEOS
+        ]
+        if unsupported:
+            warnings.warn(
+                f"Some videos have unsupported extensions: {unsupported} \n"
+                f"Supported extensions are: {SUPPORTED_VIDEOS}",
+                stacklevel=2,
+            )
     return unique_videos
