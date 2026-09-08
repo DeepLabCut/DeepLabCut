@@ -1433,7 +1433,6 @@ wandb = [
 [package.dev-dependencies]
 dev = [
     { name = "coverage" },
-    { name = "markdown-it-py" },
     { name = "nbformat" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -1553,7 +1552,6 @@ provides-extras = ["gui", "openvino", "docs", "fmpose3d", "tf", "tf-cu11", "tf-c
 [package.metadata.requires-dev]
 dev = [
     { name = "coverage" },
-    { name = "markdown-it-py" },
     { name = "nbformat", specifier = ">5" },
     { name = "pre-commit" },
     { name = "pytest" },

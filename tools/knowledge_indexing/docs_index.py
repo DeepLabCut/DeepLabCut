@@ -30,6 +30,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 import yaml
+from docutils.nodes import make_id
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
 
@@ -404,19 +405,13 @@ def _link_targets(tokens: list[Token]) -> list[str]:
 
 
 def _anchor(text: str) -> str:
-    """Heading anchor, as Sphinx publishes it.
+    """Slug for a heading, used to name its record, not to address it.
 
-    `make_id` is what docutils uses to turn a heading into a section id: it drops
+    Published anchors come from `read_published_anchors`. `make_id` drops
     non-ASCII, collapses everything else to hyphens and trims leading digits, so
-    "(1) Create a New 3D Project:" anchors as `create-a-new-3d-project` and
-    "DeepLabCut's role" as `deeplabcuts-role`.
-
-    Imported here rather than at module level: docutils is the one build
-    dependency a plain dev install does not already have, and it is needed only
-    to run a build, not to import this module.
+    "(1) Create a New 3D Project:" becomes `create-a-new-3d-project` and
+    "DeepLabCut's role" becomes `deeplabcuts-role`.
     """
-    from docutils.nodes import make_id
-
     return make_id(text)
 
 
