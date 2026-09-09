@@ -150,6 +150,7 @@ def _symbols(module: griffe.Module, package: str, base_url: str = "") -> tuple[S
         if not target.docstring:
             continue
 
+        canonical = target.canonical_path
         symbols.append(
             Symbol(
                 name=name,
@@ -157,7 +158,7 @@ def _symbols(module: griffe.Module, package: str, base_url: str = "") -> tuple[S
                 summary=_summary(target),
                 signature=_signature(target),
                 source=_source(target),
-                docs_url=_docs_url(module.path, f"{module.path}.{name}", base_url),
+                docs_url=_docs_url(canonical.rsplit(".", 1)[0], canonical, base_url),
             )
         )
 
