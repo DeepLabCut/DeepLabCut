@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from deeplabcut.refine_training_dataset.stitch import Tracklet, TrackletStitcher
+from deeplabcut.refine_training_dataset.stitch import EmptyTrackletsError, Tracklet, TrackletStitcher
 
 TRACKLET_LEN = 1000
 TRACKLET_START = 50
@@ -125,10 +125,27 @@ def test_tracklet_affinities(tracklet):
 
 @pytest.mark.parametrize("tracklet", make_fake_tracklets())
 def test_stitcher_wrong_inputs(tracklet):
-    with pytest.raises(IOError):
+    with pytest.raises(EmptyTrackletsError):
         _ = TrackletStitcher([], n_tracks=2)
     with pytest.raises(ValueError):
         _ = TrackletStitcher([tracklet], n_tracks=2, min_length=2)
+
+
+def test_empty_tracklets_error_is_a_value_error():
+    """Empty tracklets is an invalid-argument condition, consistent with the other
+    guards in ``TrackletStitcher.__init__``. Pinned because this was signalled with
+    ``OSError`` before, which read as an I/O failure.
+    """
+    assert issubclass(EmptyTrackletsError, ValueError)
+
+
+def test_stitcher_rejects_header_only_tracklets(real_tracklets):
+    """A tracklets file with a header but no tracklets is what tracklet conversion
+    produces for a video in which no animal was ever detected. Goes through
+    ``from_dict_of_dict``, the path ``from_pickle`` and ``stitch_tracklets`` use.
+    """
+    with pytest.raises(EmptyTrackletsError):
+        _ = TrackletStitcher.from_dict_of_dict({"header": real_tracklets["header"]}, n_tracks=3)
 
 
 @pytest.mark.parametrize("tracklet", make_fake_tracklets())

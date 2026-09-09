@@ -1,5 +1,7 @@
+import pickle
 from unittest.mock import Mock
 
+import numpy as np
 import pytest
 
 import deeplabcut.pose_estimation_pytorch.apis.videos as videos
@@ -29,6 +31,39 @@ def test_generate_output_data_handles_empty_predictions():
             "key_str_width": 1,
         }
     }
+
+
+def _write_assemblies(tmp_path, predictions):
+    """Runs predictions through the real full-pickle -> assemblies chain."""
+    full_data_path = tmp_path / "full.pickle"
+    with full_data_path.open("wb") as f:
+        pickle.dump(videos._generate_output_data(POSE_CFG, predictions), f)
+
+    return videos._generate_assemblies_file(
+        full_data_path=full_data_path,
+        output_path=tmp_path / "assemblies.pickle",
+        num_bodyparts=3,
+        num_unique_bodyparts=0,
+    )
+
+
+@pytest.mark.parametrize("num_frames", [1, 3])
+def test_generate_assemblies_file_counts_no_assemblies_when_nothing_detected(tmp_path, num_frames):
+    """A frame without detections is padded with -1 by ``PadOutputs``, and those rows
+    are filtered out when the assemblies are built - so the count is 0 even though
+    the predictions list is full length.
+    """
+    predictions = [dict(bodyparts=np.full((2, 3, 3), -1.0)) for _ in range(num_frames)]
+
+    assert _write_assemblies(tmp_path, predictions) == 0
+
+
+def test_generate_assemblies_file_counts_real_assemblies(tmp_path):
+    detected = np.zeros((2, 3, 3))  # 2 individuals, 3 bodyparts, (x, y, score)
+    undetected = np.full((2, 3, 3), -1.0)
+    predictions = [dict(bodyparts=detected), dict(bodyparts=undetected)]
+
+    assert _write_assemblies(tmp_path, predictions) == 2
 
 
 def test_create_df_from_prediction_rejects_empty_predictions(tmp_path):

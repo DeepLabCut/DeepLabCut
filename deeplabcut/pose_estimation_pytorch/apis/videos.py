@@ -555,6 +555,7 @@ def analyze_videos(
     # Reading video and init variables
     videos = collect_video_paths(videos, extensions=video_extensions, shuffle=in_random_order)
     h5_files_created = False  # Track if any .h5 files were created
+    videos_without_detections = []  # Videos in which no animal was ever detected
 
     for video in videos:
         if destfolder is None:
@@ -632,7 +633,7 @@ def analyze_videos(
 
             if multi_animal:
                 assemblies_path = output_path / f"{output_prefix}_assemblies.pickle"
-                _generate_assemblies_file(
+                num_assemblies = _generate_assemblies_file(
                     full_data_path=output_pkl,
                     output_path=assemblies_path,
                     num_bodyparts=len(bodyparts),
@@ -692,32 +693,44 @@ def analyze_videos(
                         )
 
                 elif auto_track:
-                    convert_detections2tracklets(
-                        config=config,
-                        videos=str(video),
-                        video_extensions=video_extensions,
-                        shuffle=shuffle,
-                        trainingsetindex=trainingsetindex,
-                        overwrite=False,
-                        identity_only=identity_only,
-                        destfolder=str(output_path),
-                        snapshot_index=snapshot_index,
-                        detector_snapshot_index=detector_snapshot_index,
-                    )
-                    stitch_tracklets(
-                        config,
-                        [str(video)],
-                        video_extensions,
-                        shuffle,
-                        trainingsetindex,
-                        n_tracks=n_tracks,
-                        animal_names=animal_names,
-                        destfolder=str(output_path),
-                        save_as_csv=save_as_csv,
-                        snapshot_index=snapshot_index,
-                        detector_snapshot_index=detector_snapshot_index,
-                    )
-                    h5_files_created = True  # .h5 file was created by stitch_tracklets
+                    # Stitching needs at least one assembly to work with. Frames
+                    # without detections are padded with -1 and dropped when the
+                    # assemblies are built, so a video in which no animal was ever
+                    # detected yields none at all.
+                    if num_assemblies == 0:
+                        videos_without_detections.append(video)
+                        logging.warning(
+                            f"No animals were detected in {video}, so there is "
+                            "nothing to track: skipping tracklet stitching. The pose "
+                            f"predictions are still available in {output_pkl}."
+                        )
+                    else:
+                        convert_detections2tracklets(
+                            config=config,
+                            videos=str(video),
+                            video_extensions=video_extensions,
+                            shuffle=shuffle,
+                            trainingsetindex=trainingsetindex,
+                            overwrite=False,
+                            identity_only=identity_only,
+                            destfolder=str(output_path),
+                            snapshot_index=snapshot_index,
+                            detector_snapshot_index=detector_snapshot_index,
+                        )
+                        stitch_tracklets(
+                            config,
+                            [str(video)],
+                            video_extensions,
+                            shuffle,
+                            trainingsetindex,
+                            n_tracks=n_tracks,
+                            animal_names=animal_names,
+                            destfolder=str(output_path),
+                            save_as_csv=save_as_csv,
+                            snapshot_index=snapshot_index,
+                            detector_snapshot_index=detector_snapshot_index,
+                        )
+                        h5_files_created = True  # .h5 file was created by stitch_tracklets
 
     if h5_files_created:
         print(
@@ -726,6 +739,12 @@ def analyze_videos(
             "If the tracking is not satisfactory for some videos, consider expanding the "
             "training set. You can use the function 'extract_outlier_frames' to extract a "
             "few representative outlier frames.\n"
+        )
+    elif videos_without_detections:
+        print(
+            f"No animals were detected in {len(videos_without_detections)} of the "
+            "analyzed video(s), so no tracking files were created for them. The pose "
+            "predictions are still available in the ``_full.pickle`` files.\n"
         )
     else:
         print(
@@ -798,8 +817,14 @@ def _generate_assemblies_file(
     output_path: Path,
     num_bodyparts: int,
     num_unique_bodyparts: int,
-) -> None:
-    """Generates the assemblies file from predictions."""
+) -> int:
+    """Generates the assemblies file from predictions.
+
+    Returns:
+        The total number of assemblies kept across all frames. This is 0 when no
+        animal was detected anywhere in the video, as frames without detections are
+        padded with -1 and filtered out below.
+    """
     if full_data_path.exists():
         with full_data_path.open("rb") as f:
             data = pickle.load(f)
@@ -815,6 +840,7 @@ def _generate_assemblies_file(
         str_width = len(keys[0]) - len("frame")
 
     assemblies = dict(single=dict())
+    num_assemblies = 0
     for frame_index in range(num_frames):
         frame_key = "frame" + str(frame_index).zfill(str_width)
         predictions = data[frame_key]
@@ -843,6 +869,7 @@ def _generate_assemblies_file(
         mask = ~np.all(preds < 0, axis=(1, 2))
         preds = preds[mask]
 
+        num_assemblies += len(preds)
         assemblies[frame_index] = preds
 
         if num_unique_bodyparts > 0:
@@ -857,6 +884,8 @@ def _generate_assemblies_file(
 
     if isinstance(data, shelving.ShelfReader):
         data.close()
+
+    return num_assemblies
 
 
 def _validate_destfolder(destfolder: str | None) -> None:
