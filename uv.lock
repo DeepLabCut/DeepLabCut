@@ -1393,6 +1393,7 @@ tf = [
 ]
 tf-cu11 = [
     { name = "imgaug" },
+    { name = "numpy" },
     { name = "protobuf", version = "4.25.9", source = { registry = "https://pypi.org/simple" } },
     { name = "tensorflow", version = "2.14.0", source = { registry = "https://pypi.org/simple" } },
     { name = "tensorflow-io-gcs-filesystem", version = "0.31.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'win32'" },
@@ -1405,6 +1406,7 @@ tf-cu11 = [
 ]
 tf-cu12 = [
     { name = "imgaug" },
+    { name = "numpy" },
     { name = "protobuf", version = "5.29.6", source = { registry = "https://pypi.org/simple" } },
     { name = "tensorflow", version = "2.18.0", source = { registry = "https://pypi.org/simple" } },
     { name = "tensorflow-metal", marker = "sys_platform == 'darwin'" },
@@ -1482,6 +1484,8 @@ requires-dist = [
     { name = "networkx", specifier = ">=2.6" },
     { name = "numba", specifier = ">=0.54" },
     { name = "numpy", specifier = ">=1.22.4" },
+    { name = "numpy", marker = "extra == 'tf-cu11'", specifier = ">=1.22.4,<2" },
+    { name = "numpy", marker = "extra == 'tf-cu12'", specifier = ">=1.22.4,<2" },
     { name = "openvino-dev", marker = "extra == 'openvino'", specifier = "==2022.1" },
     { name = "packaging", specifier = ">=26" },
     { name = "pandas", extras = ["hdf5", "performance"], specifier = ">=2.2,<3" },

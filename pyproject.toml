@@ -96,6 +96,7 @@ tf = [
 ]
 tf-cu11 = [
   "imgaug>=0.4",
+  "numpy>=1.22.4,<2",
   "protobuf<7",
   "tensorflow==2.14",
   "tensorflow-io-gcs-filesystem==0.31; platform_system=='Windows'",
@@ -108,6 +109,7 @@ tf-cu11 = [
 ]
 tf-cu12 = [
   "imgaug>=0.4",
+  "numpy>=1.22.4,<2",
   "protobuf<7",
   "tensorflow==2.18",
   "tensorflow-metal==1.2; platform_system=='Darwin'",
