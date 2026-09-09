@@ -158,6 +158,39 @@ def test_mock_top_down(batch_size, detections_per_image):
             assert i_det[0, 0, 0] == p_det["mock"]["index"]
 
 
+@pytest.mark.parametrize(
+    "detections_per_image",
+    [
+        [0, 0, 0, 0],  # issue #3485: no detections anywhere
+        [1, 1, 0, 0],
+        [1, 0],
+        [2, 0, 1, 0],
+    ],
+)
+def test_async_inference_emits_images_without_detections(detections_per_image):
+    """An image without detections adds nothing to the batch, so it never produces a
+    queue item. The async consumer therefore only emits it if results are drained
+    once more after the producer signals completion; without that final drain the
+    trailing undetected images are dropped, and with no detections at all the whole
+    result set comes back empty (issue #3485). Pinned against the sequential path,
+    which has always handled this because it extracts after every image.
+    """
+    images = _top_down_images(detections_per_image, h=8, w=8)
+
+    async_runner = MockInferenceRunner(batch_size=2)
+    assert async_runner.inference_cfg.multithreading.enabled, "async is the default path"
+
+    sequential_runner = MockInferenceRunner(batch_size=2)
+    sequential_runner.inference_cfg.multithreading.enabled = False
+
+    async_predictions = async_runner.inference(images)
+    sequential_predictions = sequential_runner.inference(images)
+
+    assert len(async_predictions) == len(images)
+    assert [len(p) for p in async_predictions] == detections_per_image
+    assert [len(p) for p in async_predictions] == [len(p) for p in sequential_predictions]
+
+
 def test_dynamic_pose_inference_calls_dynamic():
     pose_batch = torch.zeros((1, 1, 1, 3))
     pose_batch_updated = torch.ones((1, 1, 1, 3))
