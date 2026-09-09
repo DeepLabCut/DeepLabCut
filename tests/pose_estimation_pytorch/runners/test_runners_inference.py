@@ -172,7 +172,7 @@ def test_async_inference_emits_images_without_detections(detections_per_image):
     queue item. The async consumer therefore only emits it if results are drained
     once more after the producer signals completion; without that final drain the
     trailing undetected images are dropped, and with no detections at all the whole
-    result set comes back empty (issue #3485). Pinned against the sequential path,
+    result set comes back empty (issue #3485). Compared to the sequential path,
     which has always handled this because it extracts after every image.
     """
     images = _top_down_images(detections_per_image, h=8, w=8)
