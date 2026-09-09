@@ -605,26 +605,37 @@ def analyze_videos(
                 print("Can't ``save_as_df`` as ``use_shelve=True``. Skipping.")
 
             if not use_shelve:
-                output_data = _generate_output_data(pose_cfg, predictions)
+                output_data = _generate_output_data(pose_cfg, predictions)  # this should not consume full-NaN frames
                 with Path(output_pkl).open("wb") as f:
                     pickle.dump(output_data, f, pickle.HIGHEST_PROTOCOL)
 
-                if save_as_df and predictions:
-                    create_df_from_prediction(
-                        predictions=predictions,
-                        multi_animal=multi_animal,
-                        model_cfg=loader.model_cfg,
-                        dlc_scorer=dlc_scorer,
-                        output_path=output_path,
-                        output_prefix=output_prefix,
-                        save_as_csv=save_as_csv,
-                    )
-                    h5_files_created = True  # .h5 file was created
-                elif save_as_df:
-                    logging.warning(
-                        f"Skipping dataframe export for {video}: no predictions were "
-                        "produced, so no results .h5 file will be written."
-                    )
+                if save_as_df:
+                    df_predictions = predictions
+                    if not df_predictions:
+                        n_frames = video_iterator.get_n_frames(robust=robust_nframes)
+                        logging.warning(
+                            f"No predictions were produced for {video}: writing an "
+                            f"all-NaN results file with {n_frames} row(s) so that "
+                            "downstream steps proceed."
+                        )
+                        df_predictions = _nan_predictions(n_frames, loader.model_cfg)
+
+                    if not df_predictions:
+                        logging.error(
+                            f"Cannot write a results file for {video}: no predictions "
+                            "were produced and the video reports 0 frames."
+                        )
+                    else:
+                        create_df_from_prediction(
+                            predictions=df_predictions,
+                            multi_animal=multi_animal,
+                            model_cfg=loader.model_cfg,
+                            dlc_scorer=dlc_scorer,
+                            output_path=output_path,
+                            output_prefix=output_prefix,
+                            save_as_csv=save_as_csv,
+                        )
+                        h5_files_created = True
 
             if multi_animal:
                 assemblies_path = output_path / f"{output_prefix}_assemblies.pickle"
@@ -736,16 +747,21 @@ def create_df_from_prediction(
     output_prefix: str | Path,
     save_as_csv: bool = False,
 ) -> pd.DataFrame:
+    if not predictions:
+        raise RuntimeError("Cannot create a results DataFrame from an empty predictions list.")
+
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
-
-    if not predictions:
-        raise ValueError("Cannot create a results DataFrame from an empty predictions list.")
 
     bodyparts = model_cfg["metadata"]["bodyparts"]
     unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
     individuals = model_cfg["metadata"]["individuals"]
     n_individuals = len(individuals)
+
+    pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
+    pred_unique_bodyparts = None
+    if "unique_bodyparts" in predictions[0]:
+        pred_unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
 
     print(f"Saving results in {output_h5} and {output_pkl}")
     coords = ["x", "y", "likelihood"]
@@ -757,10 +773,6 @@ def create_df_from_prediction(
         cols_names.insert(1, "individuals")
 
     results_df_index = pd.MultiIndex.from_product(cols, names=cols_names)
-    pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
-    pred_unique_bodyparts = None
-    if "unique_bodyparts" in predictions[0]:
-        pred_unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
 
     pred_bodyparts = pred_bodyparts[:, :n_individuals]
     df = pd.DataFrame(
@@ -781,6 +793,28 @@ def create_df_from_prediction(
     if save_as_csv:
         df.to_csv(output_h5.with_suffix(".csv"))
     return df
+
+
+def _nan_predictions(n_frames: int, model_cfg: dict) -> list[dict[str, np.ndarray]]:
+    """Returns placeholder all-NaN predictions, one per frame.
+
+    Used when inference produced no predictions at all, so a well-formed results
+    file with one row per frame is still written and downstream steps (filtering,
+    labeled videos) keep working.
+    """
+    metadata = model_cfg["metadata"]
+    num_idv = len(metadata["individuals"])
+    num_bpts = len(metadata["bodyparts"])
+    num_unique = len(metadata["unique_bodyparts"])
+
+    predictions = []
+    for _ in range(n_frames):
+        prediction = dict(bodyparts=np.full((num_idv, num_bpts, 3), np.nan))
+        if num_unique > 0:
+            prediction["unique_bodyparts"] = np.full((1, num_unique, 3), np.nan)
+        predictions.append(prediction)
+
+    return predictions
 
 
 def _generate_assemblies_file(
