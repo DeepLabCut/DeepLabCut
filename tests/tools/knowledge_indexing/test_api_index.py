@@ -96,3 +96,11 @@ def test_the_class_itself_is_still_recorded(nodes):
     symbols = _symbols(nodes, "demopkg.thing")
 
     assert symbols["Thing"].kind == "class"
+
+
+def test_root_reexports_are_indexed_on_the_package(nodes):
+    # Public API is re-exported from the package root; URLs must stay on that page.
+    symbols = _symbols(nodes, "demopkg")
+
+    assert symbols["Thing"].kind == "class"
+    assert symbols["Thing"].docs_url == ("https://example.test/reference/demopkg/#demopkg.Thing")

@@ -8,7 +8,9 @@ from markdown_it import MarkdownIt
 from tools.knowledge_indexing.docs_index import (
     _page_anchors,
     _read_structure,
+    _resolve_target,
     _split_frontmatter,
+    build_docs_nodes,
     read_published_anchors,
 )
 from tools.knowledge_indexing.toc import TocEntry
@@ -193,3 +195,46 @@ def test_malformed_yaml_keeps_the_page_whole():
 def test_page_without_frontmatter_is_unchanged():
     text = "# Title\n\nProse.\n"
     assert _split_frontmatter(text) == ({}, text)
+
+
+@pytest.mark.parametrize(
+    ("target", "directory", "labels", "expected"),
+    [
+        ("file:install", "docs", {"file:install": "installation", "install": "installation"}, "installation"),
+        ("install", "docs", {"file:install": "installation", "install": "installation"}, "installation"),
+        ("../sibling.md", "docs/guide", {}, "sibling"),
+        ("https://example.test/x", "docs", {}, ""),
+        ("#only-anchor", "docs", {}, ""),
+        ("../../escape.md", "docs", {}, ""),
+        ("image.png", "docs", {}, ""),
+        ("unknown-label", "docs", {}, ""),
+    ],
+)
+def test_resolve_target(target, directory, labels, expected):
+    assert _resolve_target(target, directory, labels) == expected
+
+
+def test_build_docs_nodes_skips_hidden_and_resolves_related(tmp_path: Path):
+    (tmp_path / "_toc.yml").write_text(
+        "format: jb-book\nroot: docs/a\nchapters:\n  - file: docs/b\n  - file: docs/hidden\n  - file: docs/orphan\n",
+        encoding="utf-8",
+    )
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "a.md").write_text(
+        "# A\n\nSee {ref}`file:b-page` and [B](b.md).\n\n(file:a-page)=\n",
+        encoding="utf-8",
+    )
+    (docs / "b.md").write_text("# B\n\nProse.\n\n(file:b-page)=\n", encoding="utf-8")
+    (docs / "hidden.md").write_text(
+        "---\ndeeplabcut:\n  ignore: true\n---\n# Hidden\n",
+        encoding="utf-8",
+    )
+    (docs / "orphan.md").write_text(
+        "---\ndeeplabcut:\n  visibility: orphaned\n---\n# Orphan\n",
+        encoding="utf-8",
+    )
+
+    nodes = {node.id: node for node in build_docs_nodes(tmp_path)}
+    assert set(nodes) == {"docs:a", "docs:b"}
+    assert nodes["docs:a"].related_pages == ("docs:b",)
