@@ -229,21 +229,29 @@ def video_inference(
     if shelf_writer is not None:
         shelf_writer.close()
 
-    if shelf_writer is None and len(predictions) == 0 and n_frames > 0:
-        logging.warning(
-            "No predictions were produced for this video. This can happen if no "
-            "animals were detected in any frame. If that is unexpected, check "
-            "model performance and verify that the video can be read correctly."
-        )
-    elif shelf_writer is None and len(predictions) != n_frames:
+    if shelf_writer is None:
         tip_url = "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
         header = "#tips-on-video-re-encoding-and-preprocessing"
-        logging.warning(
-            f"The video metadata indicates that there {n_frames} in the video, but "
-            f"only {len(predictions)} were able to be processed. This can happen if "
-            "the video is corrupted. You can try to fix the issue by re-encoding your "
-            f"video (tips on how to do that: {tip_url}{header})"
+        reencoding_tip = (
+            "This can happen if the video is corrupted. You can try to fix the issue "
+            f"by re-encoding your video (tips on how to do that: {tip_url}{header})"
         )
+        if len(predictions) == 0:
+            causes = (
+                "no animals were detected in any frame, or the video could not be read"
+                if detector_runner is not None
+                else "the video could not be read"
+            )
+            logging.warning(
+                f"No predictions were produced for {video.video_path}: {causes}. "
+                f"Check model performance if that is unexpected. {reencoding_tip}"
+            )
+        elif len(predictions) != n_frames:
+            logging.warning(
+                f"The video metadata indicates that there are {n_frames} frames in "
+                f"the video, but only {len(predictions)} were able to be processed. "
+                f"{reencoding_tip}"
+            )
 
     return predictions
 
