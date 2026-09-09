@@ -30,7 +30,7 @@ from deeplabcut.core.inferenceutils import (
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
-_trapz = getattr(np, "trapezoid", np.trapz)  # NumPy 2.0+ compat; drop once NumPy 1 unsupported
+_trapz = np.trapezoid if hasattr(np, "trapezoid") else np.trapz  # NumPy 2.0+ compat; drop once NumPy 1 unsupported
 
 
 def _set_up_evaluation(data):
