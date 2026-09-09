@@ -93,20 +93,8 @@ def test_mock_bottom_up(batch_size):
         assert i[0, 0, 0, 0] == p[0]["mock"]["index"]
 
 
-@pytest.mark.parametrize("batch_size", [1, 2, 4, 8])
-@pytest.mark.parametrize(
-    "detections_per_image",
-    [
-        [1, 1, 1, 1, 1],
-        [0, 1, 0, 1, 1],  # some frames might not have predictions
-        [0, 0, 0, 5, 2],
-        [1, 2, 3, 4],
-        [3, 4, 2, 1, 4],
-        [4, 23, 5, 20, 64, 100],
-    ],
-)
-def test_mock_top_down(batch_size, detections_per_image):
-    h, w = 8, 8
+def _top_down_images(detections_per_image, h: int, w: int) -> list[np.ndarray]:
+    """Builds one input batch per image, empty for images without detections."""
     images = []
     for index, num_detections in enumerate(detections_per_image):
         if num_detections == 0:
@@ -118,6 +106,28 @@ def test_mock_top_down(batch_size, detections_per_image):
             )
 
         images.append(detections)
+
+    return images
+
+
+@pytest.mark.parametrize("batch_size", [1, 2, 4, 8])
+@pytest.mark.parametrize(
+    "detections_per_image",
+    [
+        [1, 1, 1, 1, 1],
+        [0, 1, 0, 1, 1],  # some frames might not have predictions
+        [0, 0, 0, 5, 2],
+        [1, 2, 3, 4],
+        [3, 4, 2, 1, 4],
+        [4, 23, 5, 20, 64, 100],
+        [0, 0, 0, 0, 0],  # no detections at all: nothing is ever queued
+        [1, 1, 0, 0],  # trailing frames without detections
+        [5, 2, 0],
+    ],
+)
+def test_mock_top_down(batch_size, detections_per_image):
+    h, w = 8, 8
+    images = _top_down_images(detections_per_image, h, w)
 
     runner = MockInferenceRunner(batch_size=batch_size)
     predictions = runner.inference(images)
@@ -183,6 +193,9 @@ def test_dynamic_pose_inference_calls_dynamic():
 
 
 def _check_batch_shapes(batch_size, h, w, batch_shapes) -> None:
+    if not batch_shapes:
+        return  # no image had detections, so no batch was ever run
+
     for b in batch_shapes[:-1]:
         assert b[0] == batch_size
         assert b[1] == 3
