@@ -110,9 +110,7 @@ class ShelfWriter(ShelfManager):
         self._num_frames = num_frames
         self._frame_index = 0
 
-        self._str_width = 5
-        if num_frames is not None:
-            self._str_width = frame_key_width(num_frames)
+        self._str_width = frame_key_width(num_frames)
 
     def add_prediction(
         self,
