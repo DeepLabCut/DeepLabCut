@@ -246,9 +246,9 @@ def _check_unique_ids(filename: str, ids: Iterable[str]) -> None:
 
 
 def _write_jsonl(path: Path, records: Iterable[dict[str, Any]]) -> None:
-    """Write one JSON object per line."""
+    """Write one JSON object per line. An empty iterable writes an empty file."""
     path.write_text(
-        "\n".join(json.dumps(record, ensure_ascii=False) for record in records) + "\n",
+        "".join(f"{json.dumps(record, ensure_ascii=False)}\n" for record in records),
         encoding="utf-8",
     )
 

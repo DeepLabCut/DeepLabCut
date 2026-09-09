@@ -19,6 +19,7 @@ from tools.knowledge_indexing.schemas import (
 from tools.knowledge_indexing.write import (
     _check_unique_ids,
     _read_json,
+    _write_jsonl,
     delete_version,
     write_top_manifest,
     write_version,
@@ -83,6 +84,14 @@ def _read_jsonl(path: Path) -> list[dict]:
 def test_check_unique_ids_raises_on_duplicate():
     with pytest.raises(ValueError, match="Duplicate record id"):
         _check_unique_ids("api.jsonl", ["a", "b", "a"])
+
+
+def test_empty_jsonl_is_an_empty_file(tmp_path: Path):
+    path = tmp_path / "empty.jsonl"
+    _write_jsonl(path, ())
+    # A trailing blank line would break `json.loads(line)` without filtering.
+    assert path.read_text(encoding="utf-8") == ""
+    assert [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()] == []
 
 
 def test_read_json_missing_returns_none(tmp_path: Path):
