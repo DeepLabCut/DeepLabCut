@@ -666,7 +666,7 @@ def analyze_videos(
 
                     if predictions:
                         create_df_from_prediction(
-                            predictions=predictions,
+                            predictions=ctd_predictions,
                             multi_animal=multi_animal,
                             model_cfg=loader.model_cfg,
                             dlc_scorer=dlc_scorer,
