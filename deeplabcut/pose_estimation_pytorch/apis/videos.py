@@ -668,7 +668,7 @@ def analyze_videos(
                         # add poses to the predictions
                         ctd_predictions.append(dict(bodyparts=pose))
 
-                    if predictions:
+                    if ctd_predictions:
                         create_df_from_prediction(
                             predictions=ctd_predictions,
                             multi_animal=multi_animal,
@@ -681,9 +681,9 @@ def analyze_videos(
                         h5_files_created = True  # .h5 file was created for CTD tracking
                     else:
                         logging.warning(
-                            f"Skipping CTD dataframe export for {video}: no "
-                            "predictions were produced, so no results .h5 file will "
-                            "be written."
+                            f"Skipping CTD dataframe export for {video}: {output_pkl} "
+                            "contains no frames, so no results .h5 file will be "
+                            "written."
                         )
 
                 elif auto_track:
