@@ -197,7 +197,9 @@ class EllipseFitter:
         M[0] = temp[2] * 0.5
         M[1] = -temp[1]
         M[2] = temp[0] * 0.5
-        E, V = np.linalg.eig(M)
+        _, V = np.linalg.eig(M)
+        # numba types eig's eigenvectors as complex; the fit needs the real part
+        V = V.real
         cond = 4 * V[0] * V[2] - V[1] ** 2
         a1 = V[:, cond > 0][:, 0]
         a2 = T @ a1
