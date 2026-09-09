@@ -289,7 +289,7 @@ class PointSelector:
 class TrackletVisualizer:
     def __init__(self, manager, videoname, trail_len=50):
         self.manager = manager
-        self.cmap = plt.cm.get_cmap(manager.cfg["colormap"], len(set(manager.tracklet2id)))
+        self.cmap = plt.get_cmap(manager.cfg["colormap"], len(set(manager.tracklet2id)))
         self.videoname = videoname
         self.video = VideoReader(videoname)
         self.nframes = len(self.video)
@@ -744,7 +744,7 @@ class TrackletVisualizer:
             self.clean_collections()
 
     def clean_collections(self):
-        for coll in self.ax2.collections + self.ax3.collections + self.ax_slider.collections:
+        for coll in [*self.ax2.collections, *self.ax3.collections, *self.ax_slider.collections]:
             coll.remove()
 
     def display_points(self, val):

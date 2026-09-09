@@ -222,7 +222,7 @@ def generate_model_output_plots(
         if paf_all_in_one:
             inds = [elem[0] for elem in edge_list]
             n_inds = len(inds)
-            cmap = plt.cm.get_cmap(paf_colormap, n_inds)
+            cmap = plt.get_cmap(paf_colormap, n_inds)
             colors = cmap(range(n_inds))
             fig3, _ = visualize_paf(image, paf[:, :, inds], colors=colors)
             fig3.savefig(output_folder / _filename("paf"))
