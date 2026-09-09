@@ -609,7 +609,7 @@ def analyze_videos(
                 with Path(output_pkl).open("wb") as f:
                     pickle.dump(output_data, f, pickle.HIGHEST_PROTOCOL)
 
-                if save_as_df:
+                if save_as_df and predictions:
                     create_df_from_prediction(
                         predictions=predictions,
                         multi_animal=multi_animal,
@@ -620,6 +620,11 @@ def analyze_videos(
                         save_as_csv=save_as_csv,
                     )
                     h5_files_created = True  # .h5 file was created
+                elif save_as_df:
+                    logging.warning(
+                        f"Skipping dataframe export for {video}: no predictions were "
+                        "produced, so no results .h5 file will be written."
+                    )
 
             if multi_animal:
                 assemblies_path = output_path / f"{output_prefix}_assemblies.pickle"
@@ -659,16 +664,23 @@ def analyze_videos(
                         # add poses to the predictions
                         ctd_predictions.append(dict(bodyparts=pose))
 
-                    create_df_from_prediction(
-                        predictions=predictions,
-                        multi_animal=multi_animal,
-                        model_cfg=loader.model_cfg,
-                        dlc_scorer=dlc_scorer,
-                        output_path=output_path,
-                        output_prefix=output_prefix + "_ctd",
-                        save_as_csv=save_as_csv,
-                    )
-                    h5_files_created = True  # .h5 file was created for CTD tracking
+                    if predictions:
+                        create_df_from_prediction(
+                            predictions=predictions,
+                            multi_animal=multi_animal,
+                            model_cfg=loader.model_cfg,
+                            dlc_scorer=dlc_scorer,
+                            output_path=output_path,
+                            output_prefix=output_prefix + "_ctd",
+                            save_as_csv=save_as_csv,
+                        )
+                        h5_files_created = True  # .h5 file was created for CTD tracking
+                    else:
+                        logging.warning(
+                            f"Skipping CTD dataframe export for {video}: no "
+                            "predictions were produced, so no results .h5 file will "
+                            "be written."
+                        )
 
                 elif auto_track:
                     convert_detections2tracklets(
@@ -727,6 +739,9 @@ def create_df_from_prediction(
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
 
+    if not predictions:
+        raise ValueError("Cannot create a results DataFrame from an empty predictions list.")
+
     bodyparts = model_cfg["metadata"]["bodyparts"]
     unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
     individuals = model_cfg["metadata"]["individuals"]
@@ -742,13 +757,6 @@ def create_df_from_prediction(
         cols_names.insert(1, "individuals")
 
     results_df_index = pd.MultiIndex.from_product(cols, names=cols_names)
-    if not predictions:
-        df = pd.DataFrame(index=range(0), columns=results_df_index)
-        df.to_hdf(output_h5, key="df_with_missing", format="table", mode="w")
-        if save_as_csv:
-            df.to_csv(output_h5.with_suffix(".csv"))
-        return df
-
     pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
     pred_unique_bodyparts = None
     if "unique_bodyparts" in predictions[0]:
