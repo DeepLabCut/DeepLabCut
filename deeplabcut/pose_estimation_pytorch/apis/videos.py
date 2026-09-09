@@ -757,7 +757,7 @@ def create_df_from_prediction(
     save_as_csv: bool = False,
 ) -> pd.DataFrame:
     if not predictions:
-        raise RuntimeError("Cannot create a results DataFrame from an empty predictions list.")
+        raise ValueError("Cannot create a results DataFrame from an empty predictions list.")
 
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
