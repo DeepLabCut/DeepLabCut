@@ -227,9 +227,12 @@ class _PublishedAnchors(HTMLParser):
         elif tag in _HEADING_TAGS and self._heading is not None:
             title = " ".join("".join(self._heading).split())
             anchor = self._sections[-1] if self._sections else ""
-            if title and anchor:
+            # Count every titled heading, even without a usable section id, so
+            # occurrence numbers stay aligned with `_read_structure`.
+            if title:
                 self._seen[title] += 1
-                self.anchors.setdefault((title, self._seen[title]), anchor)
+                if anchor:
+                    self.anchors.setdefault((title, self._seen[title]), anchor)
             self._heading = None
         elif tag == "a" and self._skip:
             self._skip -= 1

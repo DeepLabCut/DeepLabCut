@@ -99,6 +99,20 @@ def test_page_title_h1_does_not_consume_a_later_heading_s_occurrence():
     assert section.anchor == "overview"
 
 
+def test_heading_without_section_id_still_advances_occurrence():
+    # A titled heading with no usable section id must still count, or the next
+    # repeat of that title would resolve to the wrong published anchor.
+    html = """
+    <section id=""><h2>Overview</h2></section>
+    <section id="id1"><h2>Overview</h2></section>
+    """
+    markdown = "# Title\n\n## Overview\n\nA.\n\n## Overview\n\nB.\n"
+    first, second = _sections(markdown, read_published_anchors(html))
+
+    assert first.anchor == ""
+    assert second.anchor == "id1"
+
+
 def test_only_the_first_h1_is_the_page_title():
     # Some pages use h1 throughout, so only the first may be taken as the title.
     sections = _sections("# Title\n\nLead.\n\n# Second\n\nA.\n\n# Third\n\nB.\n")
