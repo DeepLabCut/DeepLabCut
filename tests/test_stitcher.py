@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from deeplabcut.refine_training_dataset.stitch import Tracklet, TrackletStitcher
+from deeplabcut.refine_training_dataset.stitch import EmptyTrackletsError, Tracklet, TrackletStitcher
 
 TRACKLET_LEN = 1000
 TRACKLET_START = 50
@@ -125,7 +125,7 @@ def test_tracklet_affinities(tracklet):
 
 @pytest.mark.parametrize("tracklet", make_fake_tracklets())
 def test_stitcher_wrong_inputs(tracklet):
-    with pytest.raises(IOError):
+    with pytest.raises(EmptyTrackletsError):
         _ = TrackletStitcher([], n_tracks=2)
     with pytest.raises(ValueError):
         _ = TrackletStitcher([tracklet], n_tracks=2, min_length=2)
