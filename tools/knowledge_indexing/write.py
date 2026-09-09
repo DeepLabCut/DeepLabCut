@@ -53,11 +53,15 @@ def write_version(
     Passing none leaves this version's aliases as they are on disk.
     """
     version_dir = knowledge_dir / version_label
-    version_dir.mkdir(parents=True, exist_ok=True)
-
+    # Read before mkdir: a missing directory is fine, and failing the provenance
+    # check must not leave an empty version dir for keep_files deploys to publish.
     existing = _read_json(version_dir / VERSION_MANIFEST)
     api_provenance = ApiProvenance.from_dict(existing["api"]) if existing and existing.get("api") else None
     docs_provenance = DocsProvenance.from_dict(existing["docs"]) if existing and existing.get("docs") else None
+    if apis is None and api_provenance is None:
+        raise ValueError(f"No api provenance for {version_label!r}: apis was skipped and no manifest.json exists yet")
+
+    version_dir.mkdir(parents=True, exist_ok=True)
 
     api_count = 0
     if apis is not None:
@@ -83,9 +87,6 @@ def write_version(
             revision=revision,
             generated_at=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
         )
-
-    if api_provenance is None:
-        raise ValueError(f"No api provenance for {version_label!r}: apis was skipped and no manifest.json exists yet")
 
     kept = tuple(existing.get("api_aliases") or ()) if existing else ()
     api_aliases = tuple(dict.fromkeys([*kept, *aliases]))

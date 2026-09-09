@@ -159,6 +159,13 @@ def test_write_version_skip_keeps_existing_half(tmp_path: Path):
     assert second["docs"]["revision"] == "second"
 
 
+def test_skipping_api_without_existing_provenance_leaves_no_directory(tmp_path: Path):
+    knowledge_dir = tmp_path / KNOWLEDGE_DIR
+    with pytest.raises(ValueError, match="No api provenance"):
+        write_version(knowledge_dir, "3.0", None, _sample_docs(), revision="r1")
+    assert not (knowledge_dir / "3.0").exists()
+
+
 def test_write_top_manifest_and_delete_version(tmp_path: Path):
     knowledge_dir = tmp_path / KNOWLEDGE_DIR
     write_version(knowledge_dir, "main", _sample_api(), _sample_docs(), revision="r1")
