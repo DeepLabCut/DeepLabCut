@@ -189,8 +189,9 @@ def main(argv: list[str] | None = None) -> int:
     include_api = not args.skip_api
     include_docs = args.version_label == DOCS_VERSION_LABEL and not args.skip_docs
     if not args.delete and not include_api and not include_docs:
+        docs_reason = "--skip-docs" if args.skip_docs else f"docs are only indexed for '{DOCS_VERSION_LABEL}'"
         print(
-            f"Error: nothing to do for version {args.version_label!r} (API skipped and docs not applicable).",
+            f"Error: nothing to do for version {args.version_label!r}: --skip-api, and {docs_reason}.",
             file=sys.stderr,
         )
         return 1
