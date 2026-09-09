@@ -317,7 +317,7 @@ def plot_trajectories(
 
     if len(failures) > 0:
         # Some videos were not evaluated.
-        failed_videos = ",".join(failures)
+        failed_videos = ",".join(str(video) for video in failures)
         if len(multianimal_errors) > 0:
             verbose_error = ": " + " ".join(multianimal_errors)
         else:
@@ -464,7 +464,7 @@ def plot_edge_affinity_distributions(
         i1, i2 = graph[ind]
         w_tr = w_train[ind]
         b_tr = b_train[ind]
-        sep, _ = crossvalutils._calc_separability(b_tr, w_tr, metric="auc")
+        sep, _ = crossvalutils.calc_separability(b_tr, w_tr, metric="auc")
         axes[n].text(
             0.5,
             0.8,

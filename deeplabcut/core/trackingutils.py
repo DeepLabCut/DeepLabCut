@@ -539,7 +539,7 @@ class SORTSkeleton(SORTBase):
         xx = x[mask]
         yy = y[mask]
         dist = np.linalg.norm(xx - yy, axis=1)
-        scale = np.sqrt(np.product(np.ptp(yy, axis=0)))  # square root of bounding box area
+        scale = np.sqrt(np.prod(np.ptp(yy, axis=0)))  # square root of bounding box area
         oks = np.exp(-0.5 * (dist / (0.05 * scale)) ** 2)
         return np.mean(oks)
 

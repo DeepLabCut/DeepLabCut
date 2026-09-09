@@ -37,6 +37,7 @@ def adaptation_train(
     batch_size: int = 8,
     detector_batch_size: int = 8,
     eval_interval: int | None = None,
+    detector_eval_interval: int | None = None,
     skip_detector: bool = False,
 ):
     setup_file_logging(Path(model_folder) / "log.txt")
@@ -60,6 +61,8 @@ def adaptation_train(
         loader.model_cfg.detector.runner.snapshots.save_epochs = detector_save_epochs
         loader.model_cfg.detector.train_settings.batch_size = detector_batch_size
         loader.model_cfg.detector.train_settings.epochs = detector_epochs
+        if detector_eval_interval is not None:
+            loader.model_cfg.detector.runner.eval_interval = detector_eval_interval
 
     if eval_interval is not None:
         loader.model_cfg.runner.eval_interval = eval_interval

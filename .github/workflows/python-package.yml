@@ -127,7 +127,9 @@ jobs:
           python -m ensurepip --upgrade
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install dependency-groups
-          python -m pip install --no-cache-dir -e ".${{ matrix.extras }}" --group dev
+          # knowledge-index: tests/tools/knowledge_indexing exercises the real
+          # extractors, which import griffe, docutils and markdown-it.
+          python -m pip install --no-cache-dir -e ".${{ matrix.extras }}" --group dev --group knowledge-index
 
       - name: Force-install upgrade packages
         if: ${{ env.PIP_OVERRIDES != '' }}

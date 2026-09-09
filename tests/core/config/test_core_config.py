@@ -11,6 +11,7 @@
 """Tests for deeplabcut.core.config."""
 
 import logging
+import warnings
 from collections.abc import Mapping
 from pathlib import Path
 
@@ -298,6 +299,25 @@ def test_read_config_breaks_for_invalid_fields(tmp_path):
         read_config(config_path)
 
 
+def test_read_config_loads_null_non_optional_fields(tmp_path):
+    """Bare/null keys in config.yaml are treated as unset (legacy template support)."""
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(f"project_path: {tmp_path}\nengine: pytorch\nmultianimalproject:\nidentity:\n")
+    cfg = read_config(config_path)
+    assert cfg["multianimalproject"] is False
+    assert cfg["identity"] is None
+
+
+@pytest.mark.parametrize("ignore_empty", [True, False])
+def test_read_config_ignore_empty_is_deprecated_noop(tmp_path, ignore_empty):
+    """Any explicit ignore_empty=... warns and has no effect; null keys use defaults."""
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(f"project_path: {tmp_path}\nengine: pytorch\nmultianimalproject:\n")
+    with pytest.warns(DLCDeprecationWarning, match="ignore_empty"):
+        cfg = read_config(config_path, ignore_empty=ignore_empty)
+    assert cfg["multianimalproject"] is False
+
+
 # -----------------------------------------------------------------------------
 # write_project_config
 # -----------------------------------------------------------------------------
@@ -436,7 +456,6 @@ def test_resolve_alias_returns_name_unchanged_for_unknown_key():
 
 
 def test_resolve_alias_no_warning_when_warn_false():
-    import warnings
 
     with warnings.catch_warnings():
         warnings.simplefilter("error", DLCDeprecationWarning)
