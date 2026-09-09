@@ -223,8 +223,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     api_base_url = API_BASE_URL.format(version=args.version_label)
-    stable_api_base_url = API_BASE_URL.format(version=LATEST_RELEASE_ALIAS)
-    rolling_api_base_url = API_BASE_URL.format(version=DOCS_VERSION_LABEL)
+    stable_api_reference_url = f"{API_BASE_URL.format(version=LATEST_RELEASE_ALIAS)}reference/{PACKAGE}/"
+    rolling_api_reference_url = f"{API_BASE_URL.format(version=DOCS_VERSION_LABEL)}reference/{PACKAGE}/"
 
     apis = None
     if include_api:
@@ -287,8 +287,8 @@ def main(argv: list[str] | None = None) -> int:
     if include_docs:
         llms_txt = build_llms_txt(
             docs_base_url=DOCS_BASE_URL,
-            stable_api_base_url=stable_api_base_url,
-            rolling_api_base_url=rolling_api_base_url,
+            stable_api_reference_url=stable_api_reference_url,
+            rolling_api_reference_url=rolling_api_reference_url,
             knowledge_base_url=f"{DOCS_BASE_URL}{KNOWLEDGE_DIR}/",
             version_label=args.version_label,
         )
