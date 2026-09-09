@@ -16,7 +16,7 @@ deeplabcut.evaluate_network(config, shuffle=[1])
 deeplabcut.analyze_videos(config, videos=["/path/to/video.mp4"])
 ```
 
-See the [standard guide](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide) for single-animal projects and [multi-animal guide](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide) for multi-animal tracking.
+See the [user guide](https://deeplabcut.github.io/DeepLabCut/docs/main-workflows/user-guide.html) for single-animal and multi-animal projects.
 
 ## Low-Level PyTorch API
 

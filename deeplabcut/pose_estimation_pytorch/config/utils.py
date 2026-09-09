@@ -16,7 +16,7 @@ import copy
 from pathlib import Path
 
 from deeplabcut.core.config import ensure_plain_config, read_config_as_dict
-from deeplabcut.core.deprecation import deprecated
+from deeplabcut.core.deprecation import DeprecationRound, deprecated
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -118,7 +118,7 @@ def replace_default_values(
     return config
 
 
-@deprecated(replacement=None, since="3.0.1")
+@deprecated(replacement=None, deprecation_round=DeprecationRound.CONFIG_MODEL_MIGRATION)
 def update_config(config: dict, updates: dict, copy_original: bool = True) -> dict:
     """Deprecated helper for updating config dictionaries."""
     from deeplabcut.pose_estimation_pytorch.config.make_pose_config import _update_config
@@ -126,7 +126,7 @@ def update_config(config: dict, updates: dict, copy_original: bool = True) -> di
     return _update_config(config, updates, copy_original)
 
 
-@deprecated(replacement=None, since="3.0.1")
+@deprecated(replacement=None, deprecation_round=DeprecationRound.CONFIG_MODEL_MIGRATION)
 def update_config_by_dotpath(config: dict, updates: dict, copy_original: bool = True) -> dict:
     """Deprecated helper for updating config dictionaries using dot notation.
     ``DLCBaseConfig.set_nested`` (new in 3.0.1) can be used instead (not identical).

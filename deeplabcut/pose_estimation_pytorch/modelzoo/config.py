@@ -27,7 +27,7 @@ from deeplabcut.core.config import (
     get_yaml_dumper,
     read_config_as_dict,
 )
-from deeplabcut.core.deprecation import deprecated
+from deeplabcut.core.deprecation import DeprecationRound, deprecated
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.config.metadata import PoseMetadata
@@ -140,7 +140,9 @@ def build_superanimal_finetune_config(
     return model_cfg
 
 
-@deprecated(replacement="PoseConfig.build_for_superanimal_finetune", since="3.0.1")
+@deprecated(
+    replacement="PoseConfig.build_for_superanimal_finetune", deprecation_round=DeprecationRound.CONFIG_MODEL_MIGRATION
+)
 def make_super_animal_finetune_config(
     weight_init: WeightInitialization,
     project_config: dict,

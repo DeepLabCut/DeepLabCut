@@ -23,7 +23,7 @@ from tqdm import tqdm
 import deeplabcut.utils.auxfun_multianimal as auxfun_multianimal
 import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
 from deeplabcut.core import trackingutils
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.inferenceutils import Assembly
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
@@ -34,7 +34,7 @@ from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
 from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def convert_detections2tracklets(
     config: str | Path,
     videos: str | list[str],

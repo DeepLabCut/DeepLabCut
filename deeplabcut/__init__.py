@@ -26,35 +26,23 @@ from .version import VERSION, __version__
 if DEBUG:
     logger.debug("Loading DLC %s", VERSION)
 
+# DeepLabCut deprecation warnings are shown only once per message instance.
+import warnings
+
+from deeplabcut.core.deprecation import DLCDeprecationWarning
+
+warnings.filterwarnings("once", category=DLCDeprecationWarning)
+
 # -----------------------------------------------------------------------------
 # Always-available public API
 # -----------------------------------------------------------------------------
 
-# Train / evaluate / predict functions (compat layer)
-from .compat import (
-    analyze_images,
-    analyze_time_lapse_frames,
-    analyze_videos,
-    convert_detections2tracklets,
-    create_tracking_dataset,
-    evaluate_network,
-    export_model,
-    extract_maps,
-    extract_save_all_maps,
-    return_evaluate_network_data,
-    return_train_network_path,
-    train_network,
-    visualize_locrefs,
-    visualize_paf,
-    visualize_scoremaps,
-)
 from .core.engine import Engine
 from .create_project import (
     add_new_videos,
     create_new_project,
     create_new_project_3d,
     create_pretrained_human_project,
-    create_pretrained_project,
     load_demo_data,
 )
 from .generate_training_dataset import (
@@ -72,20 +60,12 @@ from .generate_training_dataset import (
     extract_frames,
     mergeandsplit,
 )
-from .modelzoo.video_inference import video_inference_superanimal
 from .pose_estimation_3d import (
     calibrate_cameras,
     check_undistortion,
     create_labeled_video_3d,
     triangulate,
 )
-from .post_processing import analyzeskeleton, filterpredictions
-from .refine_training_dataset import (
-    extract_outlier_frames,
-    find_outliers_in_raw_data,
-    merge_datasets,
-)
-from .refine_training_dataset.stitch import stitch_tracklets
 from .utils import (
     analyze_videos_converth5_to_csv,
     analyze_videos_converth5_to_nwb,
@@ -128,9 +108,44 @@ _OPTIONAL_EXPORTS: dict[str, tuple[str, str]] = {
     "transformer_reID": (".pose_tracking_pytorch", "transformer_reID"),
 }
 
+# API exports are lazily loaded from the pose_estimation API facade.
+_API_EXPORTS_MAP: dict[str, tuple[str, str]] = {
+    "analyze_images": (".api.pose_estimation", "analyze_images"),
+    "analyze_time_lapse_frames": (".api.pose_estimation", "analyze_time_lapse_frames"),
+    "analyze_videos": (".api.pose_estimation", "analyze_videos"),
+    "convert_detections2tracklets": (".api.pose_estimation", "convert_detections2tracklets"),
+    "create_pretrained_project": (".api.create_project", "create_pretrained_project"),
+    "create_tracking_dataset": (".api.pose_estimation", "create_tracking_dataset"),
+    "evaluate_network": (".api.pose_estimation", "evaluate_network"),
+    "export_model": (".api.pose_estimation", "export_model"),
+    "extract_maps": (".api.pose_estimation", "extract_maps"),
+    "extract_save_all_maps": (".api.pose_estimation", "extract_save_all_maps"),
+    "return_evaluate_network_data": (".api.pose_estimation", "return_evaluate_network_data"),
+    "return_train_network_path": (".api.pose_estimation", "return_train_network_path"),
+    "train_network": (".api.pose_estimation", "train_network"),
+    "visualize_locrefs": (".api.pose_estimation", "visualize_locrefs"),
+    "visualize_paf": (".api.pose_estimation", "visualize_paf"),
+    "visualize_scoremaps": (".api.pose_estimation", "visualize_scoremaps"),
+    "analyzeskeleton": (".api.post_processing", "analyzeskeleton"),
+    "filterpredictions": (".api.post_processing", "filterpredictions"),
+    "extract_outlier_frames": (".api.refine_training", "extract_outlier_frames"),
+    "find_outliers_in_raw_data": (".api.refine_training", "find_outliers_in_raw_data"),
+    "merge_datasets": (".api.refine_training", "merge_datasets"),
+    "stitch_tracklets": (".api.refine_training", "stitch_tracklets"),
+    "video_inference_superanimal": (".api.modelzoo_inference", "video_inference_superanimal"),
+}
+
 
 def __getattr__(name: str) -> Any:
-    """Lazily load optional public exports."""
+    """Lazily load optional public exports and API exports."""
+    # Check API exports first (always available, lightweight import)
+    if name in _API_EXPORTS_MAP:
+        module_name, attr_name = _API_EXPORTS_MAP[name]
+        module = import_module(module_name, package=__name__)
+        value = getattr(module, attr_name)
+        globals()[name] = value
+        return value
+
     if name not in _OPTIONAL_EXPORTS:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
@@ -187,7 +202,6 @@ _PROJECT_EXPORTS = [
     "create_new_project",
     "create_new_project_3d",
     "create_pretrained_human_project",
-    "create_pretrained_project",
     "load_demo_data",
 ]
 
@@ -207,7 +221,7 @@ _DATASET_EXPORTS = [
     "mergeandsplit",
 ]
 
-_COMPAT_EXPORTS = [
+_API_EXPORTS = [
     "analyze_images",
     "analyze_time_lapse_frames",
     "analyze_videos",
@@ -223,6 +237,14 @@ _COMPAT_EXPORTS = [
     "visualize_locrefs",
     "visualize_paf",
     "visualize_scoremaps",
+    "analyzeskeleton",
+    "create_pretrained_project",
+    "filterpredictions",
+    "extract_outlier_frames",
+    "find_outliers_in_raw_data",
+    "merge_datasets",
+    "stitch_tracklets",
+    "video_inference_superanimal",
 ]
 
 _UTIL_EXPORTS = [
@@ -241,24 +263,11 @@ _UTIL_EXPORTS = [
     "check_video_integrity",
 ]
 
-_POST_PROCESSING_EXPORTS = [
-    "analyzeskeleton",
-    "filterpredictions",
-    "extract_outlier_frames",
-    "find_outliers_in_raw_data",
-    "merge_datasets",
-    "stitch_tracklets",
-]
-
 _THREE_D_EXPORTS = [
     "calibrate_cameras",
     "check_undistortion",
     "create_labeled_video_3d",
     "triangulate",
-]
-
-_MODELZOO_EXPORTS = [
-    "video_inference_superanimal",
 ]
 
 _OPTIONAL_API_EXPORTS = list(_OPTIONAL_EXPORTS)
@@ -268,10 +277,8 @@ __all__ = (
     + _CORE_EXPORTS
     + _PROJECT_EXPORTS
     + _DATASET_EXPORTS
-    + _COMPAT_EXPORTS
+    + _API_EXPORTS
     + _UTIL_EXPORTS
-    + _POST_PROCESSING_EXPORTS
     + _THREE_D_EXPORTS
-    + _MODELZOO_EXPORTS
     + _OPTIONAL_API_EXPORTS
 )

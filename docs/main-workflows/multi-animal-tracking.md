@@ -151,32 +151,26 @@ In such cases, file columns will default to dummy animal names (ind1, ind2, ...,
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs for analyze_videos
+```{admonition} Click the button to see API Docs for analyze_videos
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.analyze_videos.rst
+[View the `analyze_videos` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/pose_estimation/#deeplabcut.api.pose_estimation.analyze_videos)
 ```
-````
 
-````{admonition} Click the button to see API Docs for convert_detections2tracklets
+```{admonition} Click the button to see API Docs for convert_detections2tracklets
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.convert_detections2tracklets.rst
+[View the `convert_detections2tracklets` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/pose_estimation/#deeplabcut.api.pose_estimation.convert_detections2tracklets)
 ```
-````
 
-````{admonition} Click the button to see API Docs for stitch_tracklets
+```{admonition} Click the button to see API Docs for stitch_tracklets
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.stitch_tracklets.rst
+[View the `stitch_tracklets` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/api/refine_training/#deeplabcut.api.refine_training.stitch_tracklets)
 ```
-````
 
 ##### Using Unsupervised Identity Tracking:
 

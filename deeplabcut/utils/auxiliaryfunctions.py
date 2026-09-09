@@ -29,7 +29,7 @@ from pathlib import Path
 import pandas as pd
 
 from deeplabcut.core import config as core_config
-from deeplabcut.core.deprecation import deprecated
+from deeplabcut.core.deprecation import DeprecationRound, deprecated
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxfun_multianimal
@@ -151,7 +151,7 @@ def write_pickle(filename, data):
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-@deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
+@deprecated(replacement="deeplabcut.collect_video_paths", deprecation_round=DeprecationRound.VIDEO_PATH_MIGRATION)
 def get_list_of_videos(
     videos: list[str] | str,
     videotype: str | Sequence[str] | None = SUPPORTED_VIDEOS,
@@ -203,7 +203,7 @@ def load_metadata(metadatafile: str | Path):
         return trainingdata_details, trainIndices, testIndices, testFraction_data
 
 
-@deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.1")
+@deprecated(replacement="deeplabcut.collect_video_paths", deprecation_round=DeprecationRound.PATHLIB_MIGRATION)
 def grab_files_in_folder(folder, ext="", relative=True):
     """Return the paths of files with extension *ext* present in *folder*."""
     for file in Path(folder).iterdir():
@@ -251,7 +251,7 @@ def filter_files_by_patterns(
     return matching_files
 
 
-@deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
+@deprecated(replacement="deeplabcut.collect_video_paths", deprecation_round=DeprecationRound.VIDEO_PATH_MIGRATION)
 def get_video_list(filename, videopath, videtype):
     """Get list of videos in a path (if filetype == all), otherwise just a specific
     file.
@@ -479,45 +479,16 @@ def get_scorer_name(
         )
         return dlc3_scorer, dlc3_scorer
 
-    Task = cfg["Task"]
-    date = cfg["date"]
+    from deeplabcut.tensorflow_compat.create_project import _tf_get_scorer_name
 
-    if trainingsiterations == "unknown":
-        snapshotindex = get_snapshot_index_for_scorer("snapshotindex", cfg["snapshotindex"])
-        model_folder = get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)
-        train_folder = Path(cfg["project_path"]) / model_folder / "train"
-        snapshot_names = get_snapshots_from_folder(train_folder)
-        snapshot_name = snapshot_names[snapshotindex]
-        trainingsiterations = Path(snapshot_name).parts[-1].split("-")[-1]
-
-    dlc_cfg = read_plainconfig(
-        str(
-            Path(cfg["project_path"])
-            / get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)
-            / "train"
-            / engine.pose_cfg_name
-        )
+    return _tf_get_scorer_name(
+        cfg=cfg,
+        shuffle=shuffle,
+        trainFraction=trainFraction,
+        engine=engine,
+        modelprefix=modelprefix,
+        trainingsiterations=trainingsiterations,
     )
-    # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
-    if "resnet" in dlc_cfg["net_type"]:
-        if dlc_cfg.get("multi_stage", False):
-            netname = "dlcrnetms5"
-        else:
-            netname = dlc_cfg["net_type"].replace("_", "")
-    elif "mobilenet" in dlc_cfg["net_type"]:  # mobilenet >> mobnet_100; mobnet_35 etc.
-        netname = "mobnet_" + str(int(float(dlc_cfg["net_type"].split("_")[-1]) * 100))
-    elif "efficientnet" in dlc_cfg["net_type"]:
-        netname = "effnet_" + dlc_cfg["net_type"].split("-")[1]
-    else:
-        raise ValueError(f"Failed to abbreviate network name: {dlc_cfg['net_type']}")
-
-    scorer = "DLC_" + netname + "_" + Task + str(date) + "shuffle" + str(shuffle) + "_" + str(trainingsiterations)
-    # legacy scorername until DLC 2.1. (cfg['resnet'] is deprecated / which is why we get the resnet_xyz name from
-    # dlc_cfg!
-    # scorer_legacy = 'DeepCut' + "_resnet" + str(cfg['resnet']) + "_" + Task + str(date) + 'shuffle' + str(shuffle) +
-    # '_' + str(trainingsiterations)
-    scorer_legacy = scorer.replace("DLC", "DeepCut")
-    return scorer, scorer_legacy
 
 
 def check_if_post_processing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="filtered"):

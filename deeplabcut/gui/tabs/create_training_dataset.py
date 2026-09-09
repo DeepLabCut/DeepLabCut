@@ -19,8 +19,7 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
 
 import deeplabcut
-import deeplabcut.compat as compat
-from deeplabcut.core.engine import Engine
+from deeplabcut.core.engine import Engine, get_available_aug_methods
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
@@ -524,7 +523,7 @@ class CreateTrainingDataset(DefaultTab):
 
     @Slot(Engine)
     def update_aug_methods(self, engine: Engine) -> None:
-        methods = compat.get_available_aug_methods(engine)
+        methods = get_available_aug_methods(engine)
         set_combo_items(
             combo_box=self.aug_choice,
             items=methods,
