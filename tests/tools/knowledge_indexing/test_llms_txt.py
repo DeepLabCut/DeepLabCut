@@ -4,6 +4,8 @@ from tools.knowledge_indexing.llms_txt import build_llms_txt
 
 
 def test_llms_txt_lists_stable_and_rolling_api_links():
+    # The urls are landing pages, carrying the package segment: api-autonav
+    # publishes no index at `reference/`, so a link to it 404s.
     text = build_llms_txt(
         docs_base_url="https://example.test/",
         stable_api_reference_url="https://example.test/dev/latest-release/reference/deeplabcut/",
