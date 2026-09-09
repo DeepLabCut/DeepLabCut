@@ -174,6 +174,10 @@ Links to the docs site, both the stable-release and rolling-main API
 reference, and prominently to `knowledge/manifest.json`, `docs.jsonl` and
 `api.jsonl` for agents that want the structured index.
 
+The stable link points at mike's `latest-release` alias rather than at
+`--version-label`: only the `main` build writes `llms.txt`, so the label would
+aim it at the rolling unreleased API (see "Versioning").
+
 ## Deployment
 
 `.github/workflows/deploy-knowledge-index.yml` deploys or deletes. A deploy
