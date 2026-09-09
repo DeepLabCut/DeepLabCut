@@ -186,8 +186,13 @@ def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     repo: Path = args.repo
 
-    if args.skip_api and args.skip_docs:
-        print("Error: --skip-api and --skip-docs together leave nothing to do.", file=sys.stderr)
+    include_api = not args.skip_api
+    include_docs = args.version_label == DOCS_VERSION_LABEL and not args.skip_docs
+    if not args.delete and not include_api and not include_docs:
+        print(
+            f"Error: nothing to do for version {args.version_label!r} (API skipped and docs not applicable).",
+            file=sys.stderr,
+        )
         return 1
 
     if args.delete and (args.skip_api or args.skip_docs):
@@ -220,8 +225,6 @@ def main(argv: list[str] | None = None) -> int:
     api_base_url = API_BASE_URL.format(version=args.version_label)
     stable_api_base_url = API_BASE_URL.format(version=LATEST_RELEASE_ALIAS)
     rolling_api_base_url = API_BASE_URL.format(version=DOCS_VERSION_LABEL)
-    include_api = not args.skip_api
-    include_docs = args.version_label == DOCS_VERSION_LABEL and not args.skip_docs
 
     apis = None
     if include_api:

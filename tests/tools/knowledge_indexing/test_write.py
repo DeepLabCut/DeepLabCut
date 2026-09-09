@@ -303,3 +303,13 @@ def test_delete_main_via_cli_refused(tmp_path: Path, capsys):
     assert code == 1
     assert "cannot be deleted" in capsys.readouterr().err
     assert (knowledge_dir / "main").is_dir()
+
+
+def test_skip_api_on_non_main_is_rejected(tmp_path: Path, capsys):
+    # Docs are only indexed for main, so --skip-api on another label leaves
+    # nothing to do and must not report success.
+    from tools.knowledge_indexing.__main__ import main
+
+    code = main(["--version-label", "3.0", "--skip-api", "--output", str(tmp_path)])
+    assert code == 1
+    assert "nothing to do" in capsys.readouterr().err
