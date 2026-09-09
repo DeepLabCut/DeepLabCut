@@ -73,6 +73,23 @@ class ShelfReader(ShelfManager):
         return self._db[item]
 
 
+def frame_key_width(num_frames: int | None, default: int = 5) -> int:
+    """Returns the zero-fill width for frame keys in a full-data dict.
+
+    Args:
+        num_frames: The number of frames in the video, if known.
+        default: The width to use when the number of frames is unknown.
+
+    Returns:
+        The number of leading zeros to pad frame indices with.
+    """
+    if num_frames is None:
+        return default
+    if num_frames <= 1:
+        return 1
+    return int(np.ceil(np.log10(num_frames)))
+
+
 class ShelfWriter(ShelfManager):
     """Writes data to a shelf on-the-fly during video analysis.
 
@@ -95,7 +112,7 @@ class ShelfWriter(ShelfManager):
 
         self._str_width = 5
         if num_frames is not None:
-            self._str_width = int(np.ceil(np.log10(num_frames)))
+            self._str_width = frame_key_width(num_frames)
 
     def add_prediction(
         self,

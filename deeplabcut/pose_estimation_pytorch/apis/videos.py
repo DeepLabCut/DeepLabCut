@@ -42,6 +42,7 @@ from deeplabcut.pose_estimation_pytorch.runners import (
     TopDownDynamicCropper,
 )
 from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
+from deeplabcut.pose_estimation_pytorch.runners.shelving import frame_key_width
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import VideoReader, auxiliaryfunctions
@@ -936,18 +937,11 @@ def _generate_metadata(
     return {"data": metadata}
 
 
-def _frame_key_width(num_frames: int) -> int:
-    """Returns the zero-fill width for frame keys."""
-    if num_frames <= 1:
-        return 1
-    return int(np.ceil(np.log10(num_frames)))
-
-
 def _generate_output_data(
     pose_config: dict,
     predictions: list[dict[str, np.ndarray]],
 ) -> dict:
-    str_width = _frame_key_width(len(predictions))
+    str_width = frame_key_width(len(predictions))
     output = {
         "metadata": {
             "nms radius": pose_config.get("nmsradius"),
