@@ -38,6 +38,10 @@ from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
 
 
+class EmptyTrackletsError(ValueError):
+    """Raised when there are no tracklets long enough to stitch."""
+
+
 class Tracklet:
     def __init__(self, data, inds):
         """Create a Tracklet object.
@@ -452,7 +456,7 @@ class TrackletStitcher:
                     self.residuals.append(t)
 
         if not len(self.tracklets):
-            raise OSError("Tracklets are empty.")
+            raise EmptyTrackletsError("Tracklets are empty.")
 
         if prestitch_residuals:
             self._prestitch_residuals(5)  # Hard-coded but found to work very well
@@ -1181,5 +1185,5 @@ def stitch_tracklets(
                     suffix="",
                     save_as_csv=save_as_csv,
                 )
-        except FileNotFoundError as e:
+        except (FileNotFoundError, EmptyTrackletsError) as e:
             print(e, "\nSkipping...")
