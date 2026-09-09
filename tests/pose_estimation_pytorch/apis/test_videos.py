@@ -1,7 +1,6 @@
-from pathlib import Path
 from unittest.mock import Mock
 
-import pandas as pd
+import pytest
 
 import deeplabcut.pose_estimation_pytorch.apis.videos as videos
 
@@ -32,33 +31,25 @@ def test_generate_output_data_handles_empty_predictions():
     }
 
 
-def test_create_df_from_prediction_handles_empty_predictions(monkeypatch, tmp_path):
-    writes: list[tuple[Path, str, str, str]] = []
+def test_create_df_from_prediction_rejects_empty_predictions(tmp_path):
+    with pytest.raises(ValueError, match="empty predictions list"):
+        videos.create_df_from_prediction(
+            predictions=[],
+            dlc_scorer="DLC_test",
+            multi_animal=False,
+            model_cfg={
+                "metadata": {
+                    "bodyparts": ["snout", "leftear", "rightear"],
+                    "unique_bodyparts": [],
+                    "individuals": ["animal_0"],
+                }
+            },
+            output_path=tmp_path,
+            output_prefix="video",
+            save_as_csv=False,
+        )
 
-    def _fake_to_hdf(self, path_or_buf, key, format, mode):
-        writes.append((Path(path_or_buf), key, format, mode))
-
-    monkeypatch.setattr(pd.DataFrame, "to_hdf", _fake_to_hdf)
-
-    df = videos.create_df_from_prediction(
-        predictions=[],
-        dlc_scorer="DLC_test",
-        multi_animal=False,
-        model_cfg={
-            "metadata": {
-                "bodyparts": ["snout", "leftear", "rightear"],
-                "unique_bodyparts": [],
-                "individuals": ["animal_0"],
-            }
-        },
-        output_path=tmp_path,
-        output_prefix="video",
-        save_as_csv=False,
-    )
-
-    assert df.empty
-    assert list(df.columns.names) == ["scorer", "bodyparts", "coords"]
-    assert writes == [(tmp_path / "video.h5", "df_with_missing", "table", "w")]
+    assert not (tmp_path / "video.h5").exists()
 
 
 def test_video_inference_warns_distinctly_for_zero_predictions(monkeypatch, caplog):
