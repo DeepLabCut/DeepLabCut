@@ -27,8 +27,10 @@ from .debug_logger import (
     install_debug_recorder,
     log_timing,
 )
+from .flag import DEBUG
 
 __all__: Sequence[str] = (
+    "DEBUG",
     "DLC_ALL_LIBS_SPECS",
     "ExecutableSpec",
     "DebugSection",

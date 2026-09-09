@@ -30,7 +30,6 @@ from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
 from deeplabcut.pose_estimation_pytorch.modelzoo import (
     get_super_animal_project_config_path,
 )
-from deeplabcut.utils.pseudo_label import calculate_iou
 
 
 def get_pose_predictions(
@@ -220,6 +219,9 @@ def prepare_memory_replay_dataset(
             matched_pred = prediction["bodyparts"][optimal_index]
             bbox_gt = bbox_gts[idx]
             bbox_pred = bbox_preds[idx]
+
+            # break import cycle: utils.pseudo_label reaches here via pose_estimation_pytorch
+            from deeplabcut.utils.pseudo_label import calculate_iou
 
             # maybe check iou of two bbox
             iou = calculate_iou(bbox_gt, bbox_pred)

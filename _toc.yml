@@ -19,8 +19,6 @@ parts:
           - file: docs/quick-start/single_animal_quick_guide
           - file: docs/quick-start/tutorial_maDLC
           - file: docs/main-workflows/multi-animal-tracking
-      # - file: docs/standardDeepLabCut_UserGuide
-      # - file: docs/maDLC_UserGuide
       - file: docs/Overviewof3D
 
   - caption: GUI workflow

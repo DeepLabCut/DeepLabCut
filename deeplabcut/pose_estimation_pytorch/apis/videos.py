@@ -27,7 +27,7 @@ from tqdm import tqdm
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.core.config import ProjectConfig
-from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import DeprecationRound, renamed_parameter
 from deeplabcut.pose_estimation_pytorch.apis.ctd import get_conditions_provider_for_video
 from deeplabcut.pose_estimation_pytorch.apis.tracklets import (
     convert_detections2tracklets,
@@ -44,8 +44,8 @@ from deeplabcut.pose_estimation_pytorch.runners import (
 from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
-from deeplabcut.utils import VideoReader, auxiliaryfunctions
-from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import VideoReader, collect_video_paths
 
 
 class VideoIterator(VideoReader):
@@ -241,7 +241,7 @@ def video_inference(
     return predictions
 
 
-@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", deprecation_round=DeprecationRound.INIT_PARAMETER_ALIASING)
 def analyze_videos(
     config: str | Path,
     videos: str | Path | list[str | Path],

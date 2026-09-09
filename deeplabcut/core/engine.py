@@ -48,3 +48,28 @@ class Engine(EngineDataMixin, Enum):
 
     def __repr__(self) -> str:
         return f"Engine.{self.name}"
+
+
+DEFAULT_ENGINE = Engine.PYTORCH
+
+
+def get_project_engine(cfg: dict) -> Engine:
+    """Return the engine for a project config, or the default if none is set."""
+    if cfg.get("engine") is not None:
+        return Engine(cfg["engine"])
+    return DEFAULT_ENGINE
+
+
+def get_available_aug_methods(engine: Engine) -> tuple[str, ...]:
+    """Returns the augmentation methods available for the given engine.
+
+    The first entry is the default method to use.
+
+    Raises:
+        RuntimeError: if no augmentation methods are defined for the given engine.
+    """
+    if engine == Engine.TF:
+        return "imgaug", "default", "deterministic", "scalecrop", "tensorpack"
+    if engine == Engine.PYTORCH:
+        return ("albumentations",)
+    raise RuntimeError(f"Unknown augmentation methods for engine: {engine}")

@@ -54,6 +54,35 @@ jobs:
           echo "Changed Python files:"
           echo "${{ steps.changed_python.outputs.changed_python }}"
 
+  typecheck:
+    # Guards deeplabcut/__init__.pyi, the declarative source of truth for the
+    # public API. Runs without DeepLabCut or its dependencies. (Only pyright)
+    needs: detect_changes
+    runs-on: ubuntu-latest
+    if: ${{ needs.detect_changes.outputs.changed_python != '' }}
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # The pyright wheel is a wrapper around the Node CLI.
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      # Pinned because the check string-matches pyright's reveal_type output.
+      - name: Install Pyright
+        run: pip install pyright==1.1.411
+
+      - name: Check the public API stub resolves statically
+        run: python tools/check_type_stub.py --require-checker
+
   precommit:
     needs: detect_changes
     runs-on: ubuntu-latest
