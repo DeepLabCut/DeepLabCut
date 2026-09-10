@@ -318,3 +318,39 @@ def _assert_learning_rates_match(e, optimizer, expected):
     for lr in current_lrs:
         assert isinstance(lr, float)
         np.testing.assert_almost_equal(lr, expected)
+
+
+# ---------------------------------------------------------------------------
+# _move_target_to_device
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("device", ["mps", "mps:0", torch.device("mps")])
+def test_move_target_to_device_casts_float64_to_float32_on_mps(device) -> None:
+    tensor = Mock(dtype=torch.float64)
+    moved = train_runners._move_target_to_device(tensor, device)
+    tensor.to.assert_called_once_with(device, dtype=torch.float32)
+    assert moved is tensor.to.return_value
+
+
+def test_move_target_to_device_keeps_float32_on_mps() -> None:
+    tensor = Mock(dtype=torch.float32)
+    moved = train_runners._move_target_to_device(tensor, "mps")
+    tensor.to.assert_called_once_with("mps")
+    assert moved is tensor.to.return_value
+
+
+@pytest.mark.parametrize("device", ["cpu", "cuda:0"])
+def test_move_target_to_device_keeps_float64_off_mps(device: str) -> None:
+    tensor = Mock(dtype=torch.float64)
+    moved = train_runners._move_target_to_device(tensor, device)
+    tensor.to.assert_called_once_with(device)
+    assert moved is tensor.to.return_value
+
+
+@pytest.mark.parametrize("dtype", [torch.float64, torch.float32, torch.int64])
+def test_move_target_to_device_preserves_dtype_on_cpu(dtype: torch.dtype) -> None:
+    tensor = torch.tensor([[1.0, 2.0, 30.0, 40.0]], dtype=dtype)
+    moved = train_runners._move_target_to_device(tensor, "cpu")
+    assert moved.dtype == dtype
+    assert torch.equal(moved, tensor)
