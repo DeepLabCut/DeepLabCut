@@ -1381,6 +1381,7 @@ openvino = [
 ]
 tf = [
     { name = "imgaug" },
+    { name = "numpy" },
     { name = "protobuf", version = "4.25.9", source = { registry = "https://pypi.org/simple" } },
     { name = "tensorflow", version = "2.14.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.12' and extra == 'extra-10-deeplabcut-tf') or (extra == 'extra-10-deeplabcut-apple-mchips' and extra == 'extra-10-deeplabcut-tf') or (extra == 'extra-10-deeplabcut-apple-mchips' and extra == 'extra-10-deeplabcut-tf-cu11') or (extra == 'extra-10-deeplabcut-apple-mchips' and extra == 'extra-10-deeplabcut-tf-cu12') or (extra == 'extra-10-deeplabcut-apple-mchips' and extra == 'extra-10-deeplabcut-tf-latest') or (extra == 'extra-10-deeplabcut-fmpose3d' and extra == 'extra-10-deeplabcut-tf-cu11') or (extra == 'extra-10-deeplabcut-fmpose3d' and extra == 'extra-10-deeplabcut-tf-cu12') or (extra == 'extra-10-deeplabcut-tf' and extra == 'extra-10-deeplabcut-tf-cu11') or (extra == 'extra-10-deeplabcut-tf' and extra == 'extra-10-deeplabcut-tf-cu12') or (extra == 'extra-10-deeplabcut-tf' and extra == 'extra-10-deeplabcut-tf-latest') or (extra == 'extra-10-deeplabcut-tf-cu11' and extra == 'extra-10-deeplabcut-tf-cu12') or (extra == 'extra-10-deeplabcut-tf-cu11' and extra == 'extra-10-deeplabcut-tf-latest') or (extra == 'extra-10-deeplabcut-tf-cu12' and extra == 'extra-10-deeplabcut-tf-latest')" },
     { name = "tensorflow", version = "2.17.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.12' and extra == 'extra-10-deeplabcut-tf') or (extra == 'extra-10-deeplabcut-tf' and extra == 'extra-10-deeplabcut-tf-cu11') or (extra == 'extra-10-deeplabcut-tf' and extra == 'extra-10-deeplabcut-tf-cu12') or (extra == 'extra-10-deeplabcut-tf' and extra == 'extra-10-deeplabcut-tf-latest') or (extra == 'extra-10-deeplabcut-apple-mchips' and extra == 'extra-10-deeplabcut-tf') or (extra == 'extra-10-deeplabcut-apple-mchips' and extra == 'extra-10-deeplabcut-tf-cu11') or (extra == 'extra-10-deeplabcut-apple-mchips' and extra == 'extra-10-deeplabcut-tf-cu12') or (extra == 'extra-10-deeplabcut-apple-mchips' and extra == 'extra-10-deeplabcut-tf-latest') or (extra == 'extra-10-deeplabcut-fmpose3d' and extra == 'extra-10-deeplabcut-tf-cu11') or (extra == 'extra-10-deeplabcut-fmpose3d' and extra == 'extra-10-deeplabcut-tf-cu12') or (extra == 'extra-10-deeplabcut-tf-cu11' and extra == 'extra-10-deeplabcut-tf-cu12') or (extra == 'extra-10-deeplabcut-tf-cu11' and extra == 'extra-10-deeplabcut-tf-latest') or (extra == 'extra-10-deeplabcut-tf-cu12' and extra == 'extra-10-deeplabcut-tf-latest')" },
@@ -1483,6 +1484,7 @@ requires-dist = [
     { name = "networkx", specifier = ">=2.6" },
     { name = "numba", specifier = ">=0.54" },
     { name = "numpy", specifier = ">=1.22.4" },
+    { name = "numpy", marker = "extra == 'tf'", specifier = ">=1.22.4,<2" },
     { name = "numpy", marker = "extra == 'tf-cu11'", specifier = ">=1.22.4,<2" },
     { name = "openvino-dev", marker = "extra == 'openvino'", specifier = "==2022.1" },
     { name = "packaging", specifier = ">=26" },
