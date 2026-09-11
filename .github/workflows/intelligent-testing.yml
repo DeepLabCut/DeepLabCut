@@ -170,6 +170,10 @@ jobs:
           "examples/testscript_pytorch_multi_animal.py"
         ]
       continue_on_error: true
+      # Per-id `strict` only (failure only on pushes and same-repo PRs)
+      # Fork PRs stay continue-on-error, so an external contributor is not blocked
+      strict_cells: ${{ github.event_name == 'push' ||
+        github.event.pull_request.head.repo.full_name == github.repository }}
 
   tf-install-smoke-test:
     name: TensorFlow install smoke test
