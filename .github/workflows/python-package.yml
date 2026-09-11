@@ -30,6 +30,10 @@ on:
         required: false
         type: boolean
         default: false
+      strict_cells:
+        required: false
+        type: boolean
+        default: true
 
   workflow_dispatch:
     inputs:
@@ -67,6 +71,11 @@ on:
         required: false
         type: boolean
         default: false
+      strict_cells:
+        description: "Make canary lane checks strict (set false for non-blocking behavior)"
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   build:
@@ -219,7 +228,7 @@ jobs:
 
       - name: Run pytest
         id: run_pytest
-        continue-on-error: ${{ inputs.continue_on_error }}
+        continue-on-error: ${{ inputs.continue_on_error && !(inputs.strict_cells && matrix.strict == 'true') }}
         shell: bash -el {0}
         env:
           FULL_SUITE: ${{ inputs.full_suite }}
@@ -249,7 +258,7 @@ jobs:
 
       - name: Run functional scripts
         id: run_functional_scripts
-        continue-on-error: ${{ inputs.continue_on_error }}
+        continue-on-error: ${{ inputs.continue_on_error && !(inputs.strict_cells && matrix.strict == 'true') }}
         shell: bash -el {0}
         env:
           FULL_SUITE: ${{ inputs.full_suite }}
@@ -295,10 +304,12 @@ jobs:
       - name: Report continue-on-error failures
         # continue-on-error hides failures behind a small icon on the step itself and
         # reports the job as passing overall, so make failures hard to miss: emit a
-        # workflow annotation and a job-summary entry whenever this happens.
+        # workflow annotation and a job summary entry whenever this happens. Strict
+        # cells fail the job outright, so they need no annotation.
         if: >-
-          ${{ inputs.continue_on_error &&
+          ${{ inputs.continue_on_error && !(inputs.strict_cells && matrix.strict == 'true') &&
               (steps.run_pytest.outcome == 'failure' || steps.run_functional_scripts.outcome == 'failure') }}
+
         shell: bash
         run: |
           MATRIX_DESC="${{ matrix.os }}, py${{ matrix.python-version }}, pip_overrides='$PIP_OVERRIDES'"
