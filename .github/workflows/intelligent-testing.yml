@@ -155,8 +155,8 @@ jobs:
             {"id":"numpy-2","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"numpy>=2"},
             {"id":"pandas","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"pandas>=3"},
             {"id":"albumentations","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"albumentations>=2"},
-            {"id":"matplotlib","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"matplotlib>=3.9"}
-            {"id":"numpy-1","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"numpy<2"},
+            {"id":"matplotlib","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"matplotlib>=3.9"},
+            {"id":"numpy-1","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"numpy<2"}
           ]
         }
       full_suite: false
