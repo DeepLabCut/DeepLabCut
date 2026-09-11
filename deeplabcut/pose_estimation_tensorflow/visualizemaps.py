@@ -400,7 +400,7 @@ def extract_save_all_maps(
                     else:
                         inds = [elem[0] for elem in list_of_inds]
                         n_inds = len(inds)
-                        cmap = plt.cm.get_cmap(cfg["colormap"], n_inds)
+                        cmap = plt.get_cmap(cfg["colormap"], n_inds)
                         colors = cmap(range(n_inds))
                         fig3, _ = visualize_paf(image, paf[:, :, inds], colors=colors)
                         temp = dest_path.format(
