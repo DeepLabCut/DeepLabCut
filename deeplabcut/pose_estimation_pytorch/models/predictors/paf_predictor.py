@@ -191,7 +191,7 @@ class PartAffinityFieldPredictor(BasePredictor):
             if assemblies is not None:
                 for j, assembly in enumerate(assemblies):
                     poses[i, j, :, :4] = torch.from_numpy(assembly.data)
-                    poses[i, j, :, 4] = assembly.affinity
+                    poses[i, j, :, 4] = float(assembly.affinity)
             if unique is not None:
                 poses_unique[i, 0, :, :4] = torch.from_numpy(unique)
 
