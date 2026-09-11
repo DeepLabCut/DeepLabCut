@@ -109,6 +109,10 @@ methods, attributes and properties are not recorded.
 
 Two constants in `api_index.py` mirror `dev-docs/mkdocs.yml` and must be kept in
 sync with it: `EXCLUDED_MODULES` and `API_ROOT_URI`.
+The `knowledge-index` dependency-group bounds in `pyproject.toml` are the same
+kind of coupling: griffe, docutils and markdown-it-py must stay on majors that
+match the docs toolchain, or published signatures, symbol kinds and section ids
+can drift without any source change.
 
 ### Docs pages
 
@@ -166,9 +170,13 @@ explicit `ignore: true`.
 Written only for `--version-label main`, alongside `docs.jsonl`. Follows the
 [llmstxt.org](https://llmstxt.org) convention: an H1 title, a one-line
 description, then `##` sections of links.
-Links to the docs site, the API reference, and prominently to
-`knowledge/manifest.json`, `docs.jsonl` and `api.jsonl` for agents that want
-the structured index.
+Links to the docs site, both the stable-release and rolling-main API
+reference, and prominently to `knowledge/manifest.json`, `docs.jsonl` and
+`api.jsonl` for agents that want the structured index.
+
+The stable link points at mike's `latest-release` alias rather than at
+`--version-label`: only the `main` build writes `llms.txt`, so the label would
+aim it at the rolling unreleased API (see "Versioning").
 
 ## Deployment
 

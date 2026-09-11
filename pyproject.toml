@@ -171,9 +171,11 @@ gui-dev = [
   "pytest-qt",
 ]
 knowledge-index = [
-  "docutils",
-  "griffelib",
-  "markdown-it-py",
+  # Keep these aligned with the majors the docs toolchain resolves to:
+  # ids, anchors, signatures and symbol kinds are derived through them.
+  "docutils>=0.20,<0.22",
+  "griffelib>=2,<3",
+  "markdown-it-py>=3,<4",
   "pyyaml",
 ]
 

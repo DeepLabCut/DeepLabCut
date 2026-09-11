@@ -17,8 +17,19 @@ ISSUES_URL = f"{REPO_URL}/issues"
 FORUM_URL = "https://forum.image.sc/tag/deeplabcut"
 
 
-def build_llms_txt(docs_base_url: str, api_base_url: str, knowledge_base_url: str, version_label: str) -> str:
-    """Render `llms.txt`. `knowledge_base_url` is the published `.../knowledge/` directory."""
+def build_llms_txt(
+    docs_base_url: str,
+    stable_api_reference_url: str,
+    rolling_api_reference_url: str,
+    knowledge_base_url: str,
+    version_label: str,
+) -> str:
+    """Render `llms.txt`. `knowledge_base_url` is the published `.../knowledge/` directory.
+
+    The two api urls are reference *landing pages*, used verbatim: api-autonav
+    publishes no index at the reference root, so the package segment is part of
+    the url its caller builds.
+    """
     lines = [
         f"# {PROJECT_NAME}",
         "",
@@ -26,7 +37,8 @@ def build_llms_txt(docs_base_url: str, api_base_url: str, knowledge_base_url: st
         "",
         "## Docs",
         f"- [User documentation]({docs_base_url}): full user guide and workflows",
-        f"- [API reference]({api_base_url}reference/): every public module, class and function",
+        f"- [API reference (stable release)]({stable_api_reference_url}): every public module, class and function",
+        f"- [API reference (main / unreleased)]({rolling_api_reference_url}): the rolling developer build",
         "",
         "## Machine-readable index",
         f"- [Index manifest]({knowledge_base_url}manifest.json): start here -- every indexed "

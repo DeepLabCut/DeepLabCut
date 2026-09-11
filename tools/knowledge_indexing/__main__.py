@@ -186,8 +186,14 @@ def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     repo: Path = args.repo
 
-    if args.skip_api and args.skip_docs:
-        print("Error: --skip-api and --skip-docs together leave nothing to do.", file=sys.stderr)
+    include_api = not args.skip_api
+    include_docs = args.version_label == DOCS_VERSION_LABEL and not args.skip_docs
+    if not args.delete and not include_api and not include_docs:
+        docs_reason = "--skip-docs" if args.skip_docs else f"docs are only indexed for '{DOCS_VERSION_LABEL}'"
+        print(
+            f"Error: nothing to do for version {args.version_label!r}: --skip-api, and {docs_reason}.",
+            file=sys.stderr,
+        )
         return 1
 
     if args.delete and (args.skip_api or args.skip_docs):
@@ -218,8 +224,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     api_base_url = API_BASE_URL.format(version=args.version_label)
-    include_api = not args.skip_api
-    include_docs = args.version_label == DOCS_VERSION_LABEL and not args.skip_docs
+    stable_api_reference_url = f"{API_BASE_URL.format(version=LATEST_RELEASE_ALIAS)}reference/{PACKAGE}/"
+    rolling_api_reference_url = f"{API_BASE_URL.format(version=DOCS_VERSION_LABEL)}reference/{PACKAGE}/"
 
     apis = None
     if include_api:
@@ -282,7 +288,8 @@ def main(argv: list[str] | None = None) -> int:
     if include_docs:
         llms_txt = build_llms_txt(
             docs_base_url=DOCS_BASE_URL,
-            api_base_url=api_base_url,
+            stable_api_reference_url=stable_api_reference_url,
+            rolling_api_reference_url=rolling_api_reference_url,
             knowledge_base_url=f"{DOCS_BASE_URL}{KNOWLEDGE_DIR}/",
             version_label=args.version_label,
         )

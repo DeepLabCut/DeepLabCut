@@ -8,7 +8,9 @@ from markdown_it import MarkdownIt
 from tools.knowledge_indexing.docs_index import (
     _page_anchors,
     _read_structure,
+    _resolve_target,
     _split_frontmatter,
+    build_docs_nodes,
     read_published_anchors,
 )
 from tools.knowledge_indexing.toc import TocEntry
@@ -99,6 +101,20 @@ def test_page_title_h1_does_not_consume_a_later_heading_s_occurrence():
     assert section.anchor == "overview"
 
 
+def test_heading_without_section_id_still_advances_occurrence():
+    # A titled heading with no usable section id must still count, or the next
+    # repeat of that title would resolve to the wrong published anchor.
+    html = """
+    <section id=""><h2>Overview</h2></section>
+    <section id="id1"><h2>Overview</h2></section>
+    """
+    markdown = "# Title\n\n## Overview\n\nA.\n\n## Overview\n\nB.\n"
+    first, second = _sections(markdown, read_published_anchors(html))
+
+    assert first.anchor == ""
+    assert second.anchor == "id1"
+
+
 def test_only_the_first_h1_is_the_page_title():
     # Some pages use h1 throughout, so only the first may be taken as the title.
     sections = _sections("# Title\n\nLead.\n\n# Second\n\nA.\n\n# Third\n\nB.\n")
@@ -179,3 +195,46 @@ def test_malformed_yaml_keeps_the_page_whole():
 def test_page_without_frontmatter_is_unchanged():
     text = "# Title\n\nProse.\n"
     assert _split_frontmatter(text) == ({}, text)
+
+
+@pytest.mark.parametrize(
+    ("target", "directory", "labels", "expected"),
+    [
+        ("file:install", "docs", {"file:install": "installation", "install": "installation"}, "installation"),
+        ("install", "docs", {"file:install": "installation", "install": "installation"}, "installation"),
+        ("../sibling.md", "docs/guide", {}, "sibling"),
+        ("https://example.test/x", "docs", {}, ""),
+        ("#only-anchor", "docs", {}, ""),
+        ("../../escape.md", "docs", {}, ""),
+        ("image.png", "docs", {}, ""),
+        ("unknown-label", "docs", {}, ""),
+    ],
+)
+def test_resolve_target(target, directory, labels, expected):
+    assert _resolve_target(target, directory, labels) == expected
+
+
+def test_build_docs_nodes_skips_hidden_and_resolves_related(tmp_path: Path):
+    (tmp_path / "_toc.yml").write_text(
+        "format: jb-book\nroot: docs/a\nchapters:\n  - file: docs/b\n  - file: docs/hidden\n  - file: docs/orphan\n",
+        encoding="utf-8",
+    )
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "a.md").write_text(
+        "# A\n\nSee {ref}`file:b-page` and [B](b.md).\n\n(file:a-page)=\n",
+        encoding="utf-8",
+    )
+    (docs / "b.md").write_text("# B\n\nProse.\n\n(file:b-page)=\n", encoding="utf-8")
+    (docs / "hidden.md").write_text(
+        "---\ndeeplabcut:\n  ignore: true\n---\n# Hidden\n",
+        encoding="utf-8",
+    )
+    (docs / "orphan.md").write_text(
+        "---\ndeeplabcut:\n  visibility: orphaned\n---\n# Orphan\n",
+        encoding="utf-8",
+    )
+
+    nodes = {node.id: node for node in build_docs_nodes(tmp_path)}
+    assert set(nodes) == {"docs:a", "docs:b"}
+    assert nodes["docs:a"].related_pages == ("docs:b",)
