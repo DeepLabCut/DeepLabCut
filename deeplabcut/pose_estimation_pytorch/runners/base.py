@@ -215,14 +215,16 @@ def _add_numpy_to_torch_safe_globals():
     """Allows snapshots containing numpy floats in the metrics to be loaded without
     needing to change the `weights_only` argument.
 
-    Requires `numpy>=1.25.0` for `numpy.dtypes`. The pickle reconstruction helper
-    moved to `numpy._core.multiarray` in NumPy 2.0.
+    Torch deliberately does not allowlist NumPy reconstructors by default, so legacy
+    snapshots written before metrics were unwrapped with `.item()` need them
+    registered explicitly. Requires `numpy>=1.25.0` for `numpy.dtypes`.
+    Torch 2.6 may change this behavior, so this workaround might not be necessary in future versions.
     """
     try:
         try:
             from numpy._core.multiarray import scalar  # NumPy >= 2.0
         except ImportError:
-            from numpy.core.multiarray import scalar  # NumPy 1.x
+            from numpy.core.multiarray import scalar  # NumPy < 2.0
         from numpy.dtypes import Float64DType
 
         torch.serialization.add_safe_globals([np.dtype, Float64DType, scalar])
