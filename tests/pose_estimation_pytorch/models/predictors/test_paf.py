@@ -33,5 +33,5 @@ def test_affinity_assigns_into_float_tensor():
     assembly._affinity = np.float32(0.75)
     assembly._links = [object()]
     poses = -torch.ones((1, 1, 4, 5))
-    poses[0, 0, :, 4] = float(assembly.affinity)
+    poses[0, 0, :, 4] = assembly.affinity
     assert torch.allclose(poses[0, 0, :, 4], torch.full((4,), 0.75))
