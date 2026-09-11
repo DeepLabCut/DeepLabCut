@@ -152,12 +152,16 @@ jobs:
       matrix_json: >-
         {
           "include": [
-            {"id":"numpy","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"numpy>=2"},
+            {"id":"resolve-py312","os":"ubuntu-latest","python-version":"3.12","extras":"","strict":"true"},
+            {"id":"resolve-py310","os":"ubuntu-latest","python-version":"3.10","extras":"","strict":"true"},
+            {"id":"inplace-np2-py312","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"numpy>=2"},
+            {"id":"inplace-np1-py312","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"numpy<2"},
+            {"id":"matplotlib","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"matplotlib>=3.9","strict":"true"},
             {"id":"pandas","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"pandas>=3"},
-            {"id":"albumentations","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"albumentations>=2"},
-            {"id":"matplotlib","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"matplotlib>=3.9"}
+            {"id":"albumentations","os":"ubuntu-latest","python-version":"3.12","extras":"","pip_overrides":"albumentations>=2"}
           ]
         }
+
       full_suite: false
       pytest_paths_json: '["tests"]'
       functional_scripts_json: >-
