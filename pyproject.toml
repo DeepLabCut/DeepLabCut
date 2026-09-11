@@ -39,7 +39,7 @@ dependencies = [
   "imageio-ffmpeg",
   "matplotlib>=3.3,<3.9,!=3.7,!=3.7.1",
   "networkx>=2.6",
-  "numba>=0.6",
+  "numba>=0.60",
   "numpy>=1.22.4,<2",
   "opencv-python-headless>=4.10.0.84",
   "packaging>=26",
