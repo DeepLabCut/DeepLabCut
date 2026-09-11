@@ -1484,7 +1484,7 @@ requires-dist = [
     { name = "napari-deeplabcut", marker = "extra == 'gui'", specifier = ">=0.3.1" },
     { name = "networkx", specifier = ">=2.6" },
     { name = "numba", specifier = ">=0.54" },
-    { name = "numpy", specifier = ">=1.22.4" },
+    { name = "numpy", specifier = ">=1.26" },
     { name = "numpy", marker = "extra == 'tf'", specifier = ">=1.22.4,<2" },
     { name = "numpy", marker = "extra == 'tf-cu11'", specifier = ">=1.22.4,<2" },
     { name = "openvino-dev", marker = "extra == 'openvino'", specifier = "==2022.1" },
