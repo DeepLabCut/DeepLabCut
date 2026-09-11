@@ -83,6 +83,7 @@ fmpose3d = [ "fmpose3d>=0.0.8" ]
 # Use only one of [tf, tf-cu11, tf-cu12, tf-latest]. Do not combine extras.
 tf = [
   "imgaug>=0.4",
+  "numpy>=1.22.4,<2",
   "protobuf<7",
   "tensorflow>=2.12,<2.16; python_version<'3.12'",
   "tensorflow>=2.16.1,<2.18; python_version>='3.12'",
