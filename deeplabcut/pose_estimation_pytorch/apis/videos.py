@@ -671,7 +671,7 @@ def analyze_videos(
                         video_extensions=video_extensions,
                         shuffle=shuffle,
                         trainingsetindex=trainingsetindex,
-                        overwrite=False,
+                        overwrite=overwrite,
                         identity_only=identity_only,
                         destfolder=str(output_path),
                         snapshot_index=snapshot_index,
