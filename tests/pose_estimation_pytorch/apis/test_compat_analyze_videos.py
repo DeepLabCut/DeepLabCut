@@ -8,9 +8,12 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import inspect
+
 import pytest
 
 import deeplabcut.pose_estimation_pytorch.apis as pytorch_apis
+import deeplabcut.pose_estimation_pytorch.apis.videos as videos_api
 from deeplabcut.compat import Engine, analyze_videos
 
 
@@ -42,3 +45,16 @@ def test_analyze_videos_forwards_overwrite(monkeypatch, overwrite):
     assert result == "mock-scorer"
     assert captured["overwrite"] is overwrite
     assert "overwrite" not in captured["kwargs"]
+
+
+def test_analyze_videos_auto_track_forwards_overwrite():
+    """PyTorch auto_track must pass ``overwrite`` through to tracklet generation.
+
+    Catches a hard-coded ``overwrite=False`` at the convert_detections2tracklets
+    call site without driving full video analysis.
+    """
+    source = inspect.getsource(videos_api.analyze_videos)
+    _, _, after = source.partition("convert_detections2tracklets(")
+    call = after.split("stitch_tracklets(", 1)[0]
+    assert "overwrite=overwrite" in call
+    assert "overwrite=False" not in call
