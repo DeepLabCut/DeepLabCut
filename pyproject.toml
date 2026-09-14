@@ -81,9 +81,11 @@ docs = [
 ]
 fmpose3d = [ "fmpose3d>=0.0.8" ]
 # Use only one of [tf, tf-cu11, tf-cu12, tf-latest]. Do not combine extras.
+# NumPy <2 is declared where TF itself does not. TF 2.15–2.18 cap NumPy themselves.
 tf = [
   "imgaug>=0.4",
-  "numpy>=1.22.4,<2",
+  # py<3.12 may resolve tensorflow 2.14.0 (no NumPy upper bound on PyPI).
+  "numpy>=1.22.4,<2; python_version<'3.12'",
   "protobuf<7",
   "tensorflow>=2.12,<2.16; python_version<'3.12'",
   "tensorflow>=2.16.1,<2.18; python_version>='3.12'",
@@ -97,6 +99,7 @@ tf = [
 ]
 tf-cu11 = [
   "imgaug>=0.4",
+  # tensorflow==2.14 resolves to 2.14.0, which has no NumPy upper bound.
   "numpy>=1.22.4,<2",
   "protobuf<7",
   "tensorflow==2.14",
@@ -132,6 +135,8 @@ tf-latest = [
 # apple_mchips is kept for older systems, prefer [tf] in new projects.
 apple_mchips = [
   "imgaug>=0.4; platform_system=='Darwin'",
+  # Same TF 2.14.0 hole as [tf] on py<3.12.
+  "numpy>=1.22.4,<2; platform_system=='Darwin' and python_version<'3.12'",
   "protobuf<7; platform_system=='Darwin'",
   "tensorflow>=2.12,<2.15; platform_system=='Darwin' and python_version<'3.12'",
   "tensorflow>=2.15,<2.18; platform_system=='Darwin' and python_version>='3.12'",
