@@ -192,6 +192,9 @@ def _video_inference_fmpose3d(
         if batch:
             _process_batch(batch)
 
+        if not predictions_2d:
+            raise RuntimeError(f"No pose predictions were made for video {video_path}. Were no individuals detected?")
+
         output_prefix = f"{Path(video_path).stem}_{dlc_scorer}"
         output_h5 = dest_folder / f"{output_prefix}.h5"
 
