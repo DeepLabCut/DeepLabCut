@@ -850,7 +850,6 @@ def analyze_videos(
             animal_names=animal_names,
             calibrate=calibrate,
             identity_only=identity_only,
-            overwrite=False,
             cropping=cropping,
             **torch_kwargs,
         )
