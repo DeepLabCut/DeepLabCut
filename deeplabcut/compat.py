@@ -601,9 +601,9 @@ def analyze_videos(
     animal_names: list[str] | None = None,
     calibrate: bool = False,
     identity_only: bool = False,
-    overwrite: bool = False,
     use_openvino: str | None = None,
     engine: Engine | None = None,
+    overwrite: bool = False,
     **torch_kwargs,
 ):
     """Makes prediction based on a trained network.
