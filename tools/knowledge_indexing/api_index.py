@@ -150,6 +150,7 @@ def _symbols(module: griffe.Module, package: str, base_url: str = "") -> tuple[S
         if not target.docstring:
             continue
 
+        canonical = target.canonical_path
         symbols.append(
             Symbol(
                 name=name,
@@ -157,21 +158,26 @@ def _symbols(module: griffe.Module, package: str, base_url: str = "") -> tuple[S
                 summary=_summary(target),
                 signature=_signature(target),
                 source=_source(target),
-                docs_url=_docs_url(module.path, f"{module.path}.{name}", base_url),
+                docs_url=_docs_url(canonical.rsplit(".", 1)[0], canonical, base_url),
             )
         )
 
         if kind == "class":
-            symbols.extend(_methods(target, module.path, name, base_url))
+            symbols.extend(_methods(target, name, base_url))
 
     return tuple(sorted(symbols, key=lambda symbol: symbol.name))
 
 
-def _methods(cls: griffe.Class, module_path: str, class_name: str, base_url: str = "") -> Iterator[Symbol]:
+def _methods(cls: griffe.Class, class_name: str, base_url: str = "") -> Iterator[Symbol]:
     """Documented public methods a class declares itself.
 
     `cls.members` excludes inherited members, which the base class documents.
+
+    `class_name` names each method as the caller reaches it, while the url comes
+    from the class's canonical path. The two differ for a re-exported class,
+    which mkdocstrings documents on its defining module's page.
     """
+    owner = cls.canonical_path.rsplit(".", 1)[0]
     for name, member in sorted(cls.members.items()):
         if name.startswith("_") or member.is_alias or not member.is_function:
             continue
@@ -185,7 +191,7 @@ def _methods(cls: griffe.Class, module_path: str, class_name: str, base_url: str
             summary=_summary(member),
             signature=_signature(member),
             source=_source(member),
-            docs_url=_docs_url(module_path, f"{module_path}.{qualified}", base_url),
+            docs_url=_docs_url(owner, f"{cls.canonical_path}.{name}", base_url),
         )
 
 

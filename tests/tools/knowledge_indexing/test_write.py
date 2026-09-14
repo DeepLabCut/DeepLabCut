@@ -19,6 +19,7 @@ from tools.knowledge_indexing.schemas import (
 from tools.knowledge_indexing.write import (
     _check_unique_ids,
     _read_json,
+    _write_jsonl,
     delete_version,
     write_top_manifest,
     write_version,
@@ -85,6 +86,14 @@ def test_check_unique_ids_raises_on_duplicate():
         _check_unique_ids("api.jsonl", ["a", "b", "a"])
 
 
+def test_empty_jsonl_is_an_empty_file(tmp_path: Path):
+    path = tmp_path / "empty.jsonl"
+    _write_jsonl(path, ())
+    # A trailing blank line would break `json.loads(line)` without filtering.
+    assert path.read_text(encoding="utf-8") == ""
+    assert [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()] == []
+
+
 def test_read_json_missing_returns_none(tmp_path: Path):
     assert _read_json(tmp_path / "missing.json") is None
 
@@ -148,6 +157,13 @@ def test_write_version_skip_keeps_existing_half(tmp_path: Path):
 
     assert second["api"] == first["api"]
     assert second["docs"]["revision"] == "second"
+
+
+def test_skipping_api_without_existing_provenance_leaves_no_directory(tmp_path: Path):
+    knowledge_dir = tmp_path / KNOWLEDGE_DIR
+    with pytest.raises(ValueError, match="No api provenance"):
+        write_version(knowledge_dir, "3.0", None, _sample_docs(), revision="r1")
+    assert not (knowledge_dir / "3.0").exists()
 
 
 def test_write_top_manifest_and_delete_version(tmp_path: Path):
@@ -303,3 +319,13 @@ def test_delete_main_via_cli_refused(tmp_path: Path, capsys):
     assert code == 1
     assert "cannot be deleted" in capsys.readouterr().err
     assert (knowledge_dir / "main").is_dir()
+
+
+def test_skip_api_on_non_main_is_rejected(tmp_path: Path, capsys):
+    # Docs are only indexed for main, so --skip-api on another label leaves
+    # nothing to do and must not report success.
+    from tools.knowledge_indexing.__main__ import main
+
+    code = main(["--version-label", "3.0", "--skip-api", "--output", str(tmp_path)])
+    assert code == 1
+    assert "nothing to do" in capsys.readouterr().err
