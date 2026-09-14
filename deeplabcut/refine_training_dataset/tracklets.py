@@ -221,8 +221,9 @@ class TrackletManager:
         self.filename = filename
         df = pd.read_hdf(filename)
 
-        # Fill existing gaps
-        data = df.to_numpy()
+        # Fill existing gaps. copy=True: under pandas 3 CoW, to_numpy() may
+        # return a read-only view that cannot be mutated in place.
+        data = df.to_numpy(copy=True)
         mask = ~df.columns.get_level_values(level="coords").str.contains("likelihood")
         xy = data[:, mask]
         prob = data[:, ~mask]
@@ -245,7 +246,11 @@ class TrackletManager:
         self.bodyparts = idx.get_level_values("bodyparts")
         self.nframes = len(df)
         self.times = np.arange(self.nframes)
-        self.data = df.values.reshape((self.nframes, -1, 3)).swapaxes(0, 1)
+        # copy=True: `self.xy`/`self.prob` are views into `self.data` and are
+        # mutated in place (e.g. by `swap_tracklets`), so the backing array must
+        # stay writable. Under pandas 3 CoW, `.values` on a homogeneous float
+        # DataFrame returns a read-only view.
+        self.data = df.to_numpy(copy=True).reshape((self.nframes, -1, 3)).swapaxes(0, 1)
         self.xy = self.data[:, :, :2]
         self.prob = self.data[:, :, 2]
         individuals = idx.get_level_values("individuals")

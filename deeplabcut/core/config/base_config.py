@@ -98,13 +98,9 @@ class DLCBaseConfig(BaseModel):
                 f"dictionary, string, or Path. Got {type(config)}"
             )
 
-    # Note @deruyter92 2026-06-15: the ignore_empty option is currently just used to support
-    # some top-level fields in v0 legacy configs that are often empty. Should be removed in v1.
     @classmethod
-    def from_yaml(cls, yaml_path: str | Path, ignore_empty: bool = True) -> Self:
+    def from_yaml(cls, yaml_path: str | Path) -> Self:
         yaml_dict = read_config_as_dict(yaml_path)
-        if ignore_empty:
-            yaml_dict = {k: v for k, v in yaml_dict.items() if v is not None}
         cfg = cls.from_dict(yaml_dict)
         cfg._post_yaml_load_updates(yaml_path=Path(yaml_path))
         return cfg

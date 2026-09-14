@@ -275,7 +275,9 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
                 None, train/test inputs are never logged).
             model: The model to log. Defaults to None.
             train_folder: path to the train folder (used to store the W&B run identifiers)
-            wandb_kwargs: extra arguments to pass to ``wb.init``
+            wandb_kwargs: extra arguments to pass to ``wandb.init``. These can be given as
+                keyword arguments, or collected in a single ``wandb_kwargs`` mapping (as
+                declared by ``WandbLoggerConfig``).
 
         Example:
             logger = WandbLogger(project_name="mice", run_name="exp1", model=my_model)
@@ -288,19 +290,34 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
                 "``pip install wandb`` if you want to log to wandb"
             )
 
+        # Validate arguments before wandb,
+        # so an unusable call cannot leave an orphaned run.
+        if model is None:
+            raise ValueError("Specify the model to track!")
+        if train_folder is None:
+            raise ValueError("Specify the train folder!")
+
         if wandb.run is not None:
             wandb.finish()
 
-        self.run = wandb.init(
-            project=project_name,
-            name=run_name,
-            **wandb_kwargs,
-        )
-        if model is None:
-            raise ValueError("Specify the model to track!")
+        # A nested ``wandb_kwargs`` mapping must be flattened
+        wandb_kwargs.update(wandb_kwargs.pop("wandb_kwargs", None) or {})
+
+        try:
+            self.run = wandb.init(
+                project=project_name,
+                name=run_name,
+                **wandb_kwargs,
+            )
+        except TypeError as err:
+            raise ValueError(
+                f"Failed to initialize the W&B run: {err}\n"
+                f"Options forwarded to wandb.init: {sorted(wandb_kwargs)}\n"
+                "These come from the `logger` section of pytorch_config.yaml; extra "
+                "W&B options belong under `wandb_kwargs`."
+            ) from err
+
         self.run.watch(model)
-        if train_folder is None:
-            raise ValueError("Specify the train folder!")
         self.train_folder = Path(train_folder)
         self._save_wandb_info()
 
