@@ -601,6 +601,7 @@ def analyze_videos(
     animal_names: list[str] | None = None,
     calibrate: bool = False,
     identity_only: bool = False,
+    overwrite: bool = False,
     use_openvino: str | None = None,
     engine: Engine | None = None,
     **torch_kwargs,
@@ -682,6 +683,8 @@ def analyze_videos(
             ``stitch_tracklets`` afterwards, in order to obtain the h5 file. Defaults to True.
         identity_only (bool, optional): If ``True`` and animal identity was learned by the model, assembly and tracking
             rely exclusively on identity prediction. Defaults to False.
+        overwrite (bool, optional): Only for the PyTorch engine. Re-analyze videos for which predictions already exist.
+            By default, a video whose output file is already present is skipped. Defaults to False.
         calibrate (bool, optional): If ``True``, use training data to calibrate the animal assembly procedure. This
             improves its robustness to wrong body part links, but requires very little
             missing data. Defaults to False.
@@ -850,6 +853,7 @@ def analyze_videos(
             animal_names=animal_names,
             calibrate=calibrate,
             identity_only=identity_only,
+            overwrite=overwrite,
             cropping=cropping,
             **torch_kwargs,
         )
