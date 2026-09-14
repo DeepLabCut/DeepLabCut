@@ -110,6 +110,7 @@ tf-cu11 = [
 ]
 tf-cu12 = [
   "imgaug>=0.4",
+  "numpy>=1.22.4,<2",
   "protobuf<7",
   # No numpy cap needed: tensorflow 2.18 declares `numpy<2.1.0,>=1.26.0`
   "tensorflow==2.18",
