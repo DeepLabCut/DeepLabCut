@@ -38,7 +38,7 @@ TRANSFORM_DICTS = {
     },
 }
 
-# The seed is per case, so that each transform configuration is exercised with
+# The seed is per case, so each transform config is exercised with
 # different images and poses
 TRANSFORM_CASES = [
     pytest.param(transform_dict, seed, id=case_id)
