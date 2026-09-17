@@ -1,0 +1,18 @@
+# DeepLabCut
+
+> Markerless pose-estimation of user-defined features with deep learning
+
+## Docs
+- [User documentation](https://deeplabcut.github.io/DeepLabCut/): full user guide and workflows
+- [API reference (stable release)](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/): every public module, class and function
+- [API reference (main / unreleased)](https://deeplabcut.github.io/DeepLabCut/dev/main/reference/deeplabcut/): the rolling developer build
+
+## Machine-readable index
+- [Index manifest](https://deeplabcut.github.io/DeepLabCut/knowledge/manifest.json): start here -- every indexed api version and which one is current
+- [Doc pages and sections](https://deeplabcut.github.io/DeepLabCut/knowledge/main/docs.jsonl): one JSON object per line, `{id, title, url, section, summary, ...}`
+- [API symbols](https://deeplabcut.github.io/DeepLabCut/knowledge/main/api.jsonl): one JSON object per line, `{id, kind, name, module, signature, summary, ...}`
+
+## Optional
+- [Source code](https://github.com/DeepLabCut/DeepLabCut): the DeepLabCut repository
+- [Issue tracker](https://github.com/DeepLabCut/DeepLabCut/issues): report bugs, request features
+- [Community forum](https://forum.image.sc/tag/deeplabcut): usage questions and support

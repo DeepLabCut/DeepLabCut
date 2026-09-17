@@ -7,7 +7,11 @@
     "revision": "93427e96d42f00eba61f8bf616e410032ea12a47",
     "generated_at": "2026-09-17T06:53:19+00:00"
   },
-  "docs": null,
+  "docs": {
+    "package_version": "3.0.1",
+    "revision": "93427e96d42f00eba61f8bf616e410032ea12a47",
+    "generated_at": "2026-09-17T07:14:44+00:00"
+  },
   "extractor_version": "0.0.1",
   "generated_by": "tools/knowledge_indexing"
 }

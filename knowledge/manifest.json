@@ -2,7 +2,7 @@
   "schema_version": 1,
   "docs": {
     "versioned": false,
-    "path": null
+    "path": "main/docs.jsonl"
   },
   "api": {
     "versioned": true,
