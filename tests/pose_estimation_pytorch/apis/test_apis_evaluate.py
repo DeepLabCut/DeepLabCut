@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from unittest.mock import Mock, patch
 
 import numpy as np
+import pandas as pd
 import pytest
 
 import deeplabcut.pose_estimation_pytorch.apis as apis
@@ -468,3 +469,65 @@ def build_mock_loader(
         "train_settings": {},
     }
     return loader
+
+
+SCORE_INDEX = [
+    "%Training dataset",
+    "Shuffle number",
+    "Training epochs",
+    "Detector epochs (TD only)",
+    "pcutoff",
+]
+
+
+def _scores_df(epochs: int, **metrics_) -> pd.DataFrame:
+    """Builds a one-row scores dataframe, as `evaluate_snapshot` does."""
+    scores = {
+        "%Training dataset": 95,
+        "Shuffle number": 1,
+        "Training epochs": epochs,
+        "Detector epochs (TD only)": -1,
+        "pcutoff": 0.6,
+        **metrics_,
+    }
+    return pd.DataFrame([scores]).set_index(SCORE_INDEX)
+
+
+def test_combined_results_do_not_resurrect_stale_scores(tmp_path) -> None:
+    """Re-evaluating a snapshot must replace its row, not backfill NaN cells.
+
+    `mAP` is NaN whenever OKS cannot be computed (see issue #3518). Merging with
+    `combine_first` would fill it from the previous evaluation, reporting a stale
+    score for a metric that is not computable for the project.
+    """
+    evaluation_folder = tmp_path / "evaluation-results" / "iteration-0"
+    evaluation_folder.mkdir(parents=True)
+    scores_path = evaluation_folder / "model-results.csv"
+    combined_path = tmp_path / "evaluation-results" / "CombinedEvaluation-results.csv"
+
+    # First evaluation of two snapshots, both with a computable mAP
+    for epochs, m_ap in ((100, 42.0), (200, 50.0)):
+        apis.evaluation.save_evaluation_results(
+            _scores_df(epochs, **{"test rmse": 3.0, "test mAP": m_ap}),
+            scores_path,
+            print_results=False,
+            pcutoff=0.6,
+        )
+
+    # Re-evaluate the first snapshot only, this time with an undefined mAP
+    apis.evaluation.save_evaluation_results(
+        _scores_df(100, **{"test rmse": 3.5, "test mAP": float("nan")}),
+        scores_path,
+        print_results=False,
+        pcutoff=0.6,
+    )
+
+    combined = pd.read_csv(combined_path, index_col=[0, 1, 2, 3, 4])
+    reevaluated = combined.xs(100, level="Training epochs")
+    assert np.isnan(reevaluated["test mAP"].item()), "stale mAP was resurrected"
+    assert reevaluated["test rmse"].item() == 3.5
+
+    # The row for the snapshot that was not re-evaluated must survive untouched
+    untouched = combined.xs(200, level="Training epochs")
+    assert untouched["test mAP"].item() == 50.0
+    assert untouched["test rmse"].item() == 3.0
