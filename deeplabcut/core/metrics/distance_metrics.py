@@ -18,7 +18,10 @@ import numpy as np
 
 import deeplabcut.core.metrics.matching as matching
 from deeplabcut.core.crossvalutils import find_closest_neighbors
-from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity
+from deeplabcut.core.inferenceutils import (
+    calc_object_keypoint_similarity,
+    calc_oks_scale_squared,
+)
 
 
 def compute_oks_matrix(
@@ -96,6 +99,11 @@ def compute_oks(
         # filter data to only keep individuals with at least 2 valid keypoints
         gt = gt[np.sum(np.all(~np.isnan(gt), axis=-1), axis=-1) > 1]
         pred = pred[np.sum(np.all(~np.isnan(pred), axis=-1), axis=-1) > 1]
+
+        # OKS normalizes distances by the spatial extent of the ground truth pose, so
+        # poses without any extent (e.g. collinear "1D" keypoints) can never be scored.
+        # Drop them like the individuals filtered above.
+        gt = gt[[not np.isnan(calc_oks_scale_squared(pose[:, :2], oks_bbox_margin)) for pose in gt],]
 
         oks_matrix = compute_oks_matrix(
             gt[:, :, :2],
