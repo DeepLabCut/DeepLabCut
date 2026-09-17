@@ -690,8 +690,8 @@ def build_training_runner(
     gpus: list[int] | None = None,
     snapshot_path: str | Path | None = None,
     load_head_weights: bool = True,
-    single_animal: bool = False,
     logger: BaseLogger | None = None,
+    single_animal: bool = False,
 ) -> TrainingRunner:
     """Build a runner object according to a pytorch configuration file.
 
@@ -705,10 +705,10 @@ def build_training_runner(
         snapshot_path: the snapshot from which to load the weights
         load_head_weights: When `snapshot_path` is not None and a pose model is being
             trained, whether to load the head weights from the saved snapshot.
+        logger: the logger to use, if any
         single_animal: Whether a pose model is being trained on a single animal
             dataset, which is needed to compute metrics during training the same way
             `evaluate_network` does.
-        logger: the logger to use, if any
 
     Returns:
         the runner that was built
