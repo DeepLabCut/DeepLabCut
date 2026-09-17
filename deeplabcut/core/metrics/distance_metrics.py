@@ -12,6 +12,8 @@
 
 from __future__ import annotations
 
+import logging
+
 import numpy as np
 
 import deeplabcut.core.metrics.matching as matching
@@ -107,6 +109,16 @@ def compute_oks(
 
     if total_gt == 0:
         # No GT contains at least 2 valid keypoints, so mAP/mAR are undefined
+        logging.warning(
+            "Could not compute mAP/mAR: OKS requires at least 2 visible keypoints per individual"
+            ", and no GT individual in this dataset meets this requirement.\n"
+            "This can happen for:\n"
+            "- Projects with a single bodypart\n"
+            "- When a single bodypart is visible in the ground truth\n"
+            "mAP and mAR will be reported as NaN rather than 0. "
+            "If `test.mAP` is the key metric used to select the "
+            "best snapshot, none will be saved (regular snapshots are unaffected)."
+        )
         return {"mAP": float("nan"), "mAR": float("nan")}
 
     precisions, recalls = [], []
