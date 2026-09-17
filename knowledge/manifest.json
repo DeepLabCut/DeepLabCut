@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "docs": {
+    "versioned": false,
+    "path": null
+  },
+  "api": {
+    "versioned": true,
+    "latest": "main",
+    "versions": [
+      "main"
+    ],
+    "aliases": {}
+  }
+}
