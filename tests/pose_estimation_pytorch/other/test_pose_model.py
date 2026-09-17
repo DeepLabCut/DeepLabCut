@@ -188,15 +188,17 @@ def _backbone_id(backbone: dict) -> str:
     return backbone["model_name"]
 
 
-BACKBONE_CASES = [pytest.param(backbone, id=_backbone_id(backbone)) for backbone in backbones_dicts]
-HEAD_CASES = [pytest.param(head, id=head["type"]) for head in heads_dicts]
+BACKBONE_CASES = [
+    pytest.param(backbone, seed, id=_backbone_id(backbone)) for seed, backbone in enumerate(backbones_dicts)
+]
+HEAD_CASES = [pytest.param(head, seed, id=head["type"]) for seed, head in enumerate(heads_dicts)]
 
 
-@pytest.mark.parametrize("backbone_dict", BACKBONE_CASES)
-def test_backbone(backbone_dict):
+@pytest.mark.parametrize("backbone_dict, seed", BACKBONE_CASES)
+def test_backbone(backbone_dict, seed):
     # Sizes divisible by 64, to be able to predict the output size consistently
     # (and to be able to do the forward pass of HRNet)
-    rng = np.random.default_rng(0)
+    rng = np.random.default_rng(seed)
     x_size, y_size = (int(size) - int(size) % 64 for size in rng.integers(100, 1001, size=2))
 
     input_size = (x_size, y_size)
@@ -214,10 +216,10 @@ def test_backbone(backbone_dict):
     assert w == input_size[0] // stride
 
 
-@pytest.mark.parametrize("head_dict", HEAD_CASES)
-def test_head(head_dict):
+@pytest.mark.parametrize("head_dict, seed", HEAD_CASES)
+def test_head(head_dict, seed):
     # Sizes divisible by 4, to be able to predict the output size consistently
-    rng = np.random.default_rng(0)
+    rng = np.random.default_rng(seed)
     w, h = (int(size) - int(size) % 4 for size in rng.integers(8, 501, size=2))
     num_keypoints = int(rng.integers(2, 51))
 

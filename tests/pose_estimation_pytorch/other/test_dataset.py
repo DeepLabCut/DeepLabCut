@@ -66,7 +66,7 @@ anno_key_set = {
 }
 
 
-@pytest.mark.parametrize("batch_size", [1, 2, 17])
+@pytest.mark.parametrize("batch_size", [1, 2, 20])
 def test_iter_all_dataset_no_transform(batch_size):
     if batch_size > 1:  # if batched, all images need to be the same size
         transform = A.Compose(
@@ -108,15 +108,12 @@ def test_iter_all_dataset_no_transform(batch_size):
         )
 
 
-# Fixed values, so that test ids are stable and a failing case can be re-run. The
-# batch sizes, image sizes and augmentation exaggerations cover the same ranges the
-# values used to be drawn from at random.
 @pytest.mark.parametrize(
     "batch_size, x_size, y_size, exaggeration",
     [
         pytest.param(1, 512, 512, 1, id="no-augmentation"),
-        pytest.param(4, 321, 289, 25, id="moderate-augmentation"),
-        pytest.param(7, 187, 468, 77, id="extreme-augmentation"),
+        pytest.param(20, 50, 600, 50, id="max-batch-min-width"),
+        pytest.param(1, 600, 50, 99, id="max-augmentation-min-height"),
     ],
 )
 def test_iter_all_augmented_dataset(batch_size, x_size, y_size, exaggeration):

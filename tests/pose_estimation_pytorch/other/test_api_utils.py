@@ -13,53 +13,42 @@ import pytest
 
 import deeplabcut.pose_estimation_pytorch.data.transforms as transforms
 
+TRANSFORM_DICTS = {
+    "auto-padding": {"auto_padding": {"pad_height_divisor": 64, "pad_width_divisor": 27}},
+    "resize": {"resize": {"height": 512, "width": 256, "keep_ration": True}},
+    "typical-augmentations": {
+        "covering": True,
+        "gaussian_noise": 12.75,
+        "hist_eq": True,
+        "motion_blur": True,
+        "normalize_images": True,
+        "rotation": 30,
+        "scale_jitter": [0.5, 1.25],
+        "auto_padding": {"pad_width_divisor": 64, "pad_height_divisor": 27},
+    },
+    "extreme-augmentations": {
+        "covering": True,
+        "gaussian_noise": 100,
+        "hist_eq": True,
+        "motion_blur": True,
+        "normalize_images": True,
+        "rotation": 180,
+        "scale_jitter": [0.03, 20],
+        "auto_padding": {"pad_width_divisor": 64, "pad_height_divisor": 27},
+    },
+}
+
+# The seed is per case, so that each transform configuration is exercised with
+# different images and poses
 TRANSFORM_CASES = [
-    pytest.param(
-        {"auto_padding": {"pad_height_divisor": 64, "pad_width_divisor": 27}},
-        id="auto-padding",
-    ),
-    pytest.param(
-        {"resize": {"height": 512, "width": 256, "keep_ration": True}},
-        id="resize",
-    ),
-    pytest.param(
-        {
-            "covering": True,
-            "gaussian_noise": 12.75,
-            "hist_eq": True,
-            "motion_blur": True,
-            "normalize_images": True,
-            "rotation": 30,
-            "scale_jitter": [0.5, 1.25],
-            "auto_padding": {
-                "pad_width_divisor": 64,
-                "pad_height_divisor": 27,
-            },
-        },
-        id="typical-augmentations",
-    ),
-    pytest.param(
-        {
-            "covering": True,
-            "gaussian_noise": 100,
-            "hist_eq": True,
-            "motion_blur": True,
-            "normalize_images": True,
-            "rotation": 180,
-            "scale_jitter": [0.03, 20],
-            "auto_padding": {
-                "pad_width_divisor": 64,
-                "pad_height_divisor": 27,
-            },
-        },
-        id="extreme-augmentations",
-    ),
+    pytest.param(transform_dict, seed, id=case_id)
+    for seed, (case_id, transform_dict) in enumerate(TRANSFORM_DICTS.items())
 ]
 
 
-@pytest.mark.parametrize("transform_dict", TRANSFORM_CASES)
-def test_build_transforms(transform_dict):
-    rng = np.random.default_rng(0)
+@pytest.mark.parametrize("transform_dict, seed", TRANSFORM_CASES)
+def test_build_transforms(transform_dict, seed):
+    rng = np.random.default_rng(seed)
 
     w, h = rng.integers(100, 1001, size=2)
     num_keypoints = int(rng.integers(1, 101))
