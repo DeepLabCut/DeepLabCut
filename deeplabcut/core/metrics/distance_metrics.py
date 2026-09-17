@@ -105,6 +105,10 @@ def compute_oks(
         total_gt += len(gt)
         pose_data.append((gt, pred, oks_matrix))
 
+    if total_gt == 0:
+        # No GT contains at least 2 valid keypoints, so mAP/mAR are undefined
+        return {"mAP": float("nan"), "mAR": float("nan")}
+
     precisions, recalls = [], []
     for oks_threshold in oks_thresholds:
         matches = []
