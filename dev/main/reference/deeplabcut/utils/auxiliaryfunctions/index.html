@@ -12077,6 +12077,8 @@
       
         
       
+        
+      
     
     
     
@@ -12865,6 +12867,34 @@
     
   
     <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>make_labeled_video
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../matplotlib_utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>matplotlib_utils
   
 
     
@@ -14118,7 +14148,7 @@ new one!)</p>
 <h3 id="deeplabcut.utils.auxiliaryfunctions.filter_files_by_patterns(folder)" class="doc doc-heading doc-heading-parameter">                  <code>folder</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14134,7 +14164,7 @@ new one!)</p>
 <h3 id="deeplabcut.utils.auxiliaryfunctions.filter_files_by_patterns(start_patterns)" class="doc doc-heading doc-heading-parameter">                  <code>start_patterns</code>
 </h3>            </td>
             <td>
-                  <code><span title="Set">Set</span>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>] | None</code>
+                  <code><span title="Set">Set</span>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14151,7 +14181,7 @@ If None or empty, this pattern is not taken into account.</p>
 <h3 id="deeplabcut.utils.auxiliaryfunctions.filter_files_by_patterns(contain_patterns)" class="doc doc-heading doc-heading-parameter">                  <code>contain_patterns</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#set">set</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#set">set</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14168,7 +14198,7 @@ If None or empty, this pattern is not taken into account.</p>
 <h3 id="deeplabcut.utils.auxiliaryfunctions.filter_files_by_patterns(end_patterns)" class="doc doc-heading doc-heading-parameter">                  <code>end_patterns</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#set">set</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#set">set</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14354,7 +14384,7 @@ If None or empty, this pattern is not taken into account.</p>
 </span><span id="__span-0-640"><a id="__codelineno-0-640" name="__codelineno-0-640"></a>    <span class="n">tracker</span> <span class="o">=</span> <span class="n">TRACK_METHODS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">track_method</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
 </span><span id="__span-0-641"><a id="__codelineno-0-641" name="__codelineno-0-641"></a>
 </span><span id="__span-0-642"><a id="__codelineno-0-642" name="__codelineno-0-642"></a>    <span class="n">candidates</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="__span-0-643"><a id="__codelineno-0-643" name="__codelineno-0-643"></a>    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">collect_video_paths</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="s2">".h5"</span><span class="p">):</span>
+</span><span id="__span-0-643"><a id="__codelineno-0-643" name="__codelineno-0-643"></a>    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">collect_video_paths</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="s2">".h5"</span><span class="p">,</span> <span class="n">warn_on_unsupported_ext</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 </span><span id="__span-0-644"><a id="__codelineno-0-644" name="__codelineno-0-644"></a>        <span class="n">stem</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"_filtered"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
 </span><span id="__span-0-645"><a id="__codelineno-0-645" name="__codelineno-0-645"></a>        <span class="n">starts_by_scorer</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="n">videoname</span> <span class="o">+</span> <span class="n">scorer</span><span class="p">,</span> <span class="n">videoname</span> <span class="o">+</span> <span class="n">scorer_legacy</span><span class="p">))</span>
 </span><span id="__span-0-646"><a id="__codelineno-0-646" name="__codelineno-0-646"></a>        <span class="k">if</span> <span class="n">tracker</span><span class="p">:</span>
@@ -14651,7 +14681,7 @@ If None or empty, this pattern is not taken into account.</p>
 <h3 id="deeplabcut.utils.auxiliaryfunctions.get_evaluation_folder(trainFraction)" class="doc doc-heading doc-heading-parameter">                  <code>trainFraction</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14668,7 +14698,7 @@ for which to get the evaluation folder</p>
 <h3 id="deeplabcut.utils.auxiliaryfunctions.get_evaluation_folder(shuffle)" class="doc doc-heading doc-heading-parameter">                  <code>shuffle</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14718,7 +14748,7 @@ dataset metadata file.</p>
 <h3 id="deeplabcut.utils.auxiliaryfunctions.get_evaluation_folder(modelprefix)" class="doc doc-heading doc-heading-parameter">                  <code>modelprefix</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14890,7 +14920,7 @@ for a shuffle (configuration files, snapshots, training logs, ...)</p>
 <h3 id="deeplabcut.utils.auxiliaryfunctions.get_model_folder(trainFraction)" class="doc doc-heading doc-heading-parameter">                  <code>trainFraction</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14907,7 +14937,7 @@ for which to get the model folder</p>
 <h3 id="deeplabcut.utils.auxiliaryfunctions.get_model_folder(shuffle)" class="doc doc-heading doc-heading-parameter">                  <code>shuffle</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14939,7 +14969,7 @@ for which to get the model folder</p>
 <h3 id="deeplabcut.utils.auxiliaryfunctions.get_model_folder(modelprefix)" class="doc doc-heading doc-heading-parameter">                  <code>modelprefix</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -15347,7 +15377,7 @@ increasing training iterations.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError">FileNotFoundError</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError">FileNotFoundError</a></code>
             </td>
             <td>
               <div class="doc-md-description">

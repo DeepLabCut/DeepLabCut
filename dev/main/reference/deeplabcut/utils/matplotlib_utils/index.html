@@ -10,31 +10,31 @@
       
       
       
-        <link rel="canonical" href="https://deeplabcut.github.io/DeepLabCut/dev/main/reference/deeplabcut/pose_estimation_pytorch/models/backbones/">
+        <link rel="canonical" href="https://deeplabcut.github.io/DeepLabCut/dev/main/reference/deeplabcut/utils/matplotlib_utils/">
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../make_labeled_video/">
       
       
-        <link rel="next" href="base/">
+        <link rel="next" href="../multiprocessing/">
       
       
         
       
       
-      <link rel="icon" href="../../../../../assets/favicon.ico">
+      <link rel="icon" href="../../../../assets/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>backbones - DeepLabCut Developer Documentation</title>
+        <title>matplotlib_utils - DeepLabCut Developer Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,9 +53,9 @@
       
     
     
-      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -63,17 +63,17 @@
     
   
 <meta property="og:type" content="website" />
-<meta property="og:title" content="backbones - DeepLabCut Developer Documentation" />
+<meta property="og:title" content="matplotlib_utils - DeepLabCut Developer Documentation" />
 <meta property="og:description" content="Developer documentation for DeepLabCut" />
-<meta property="og:image" content="https://deeplabcut.github.io/DeepLabCut/dev/main/assets/images/social/reference/deeplabcut/pose_estimation_pytorch/models/backbones/index.png" />
+<meta property="og:image" content="https://deeplabcut.github.io/DeepLabCut/dev/main/assets/images/social/reference/deeplabcut/utils/matplotlib_utils.png" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:url" content="https://deeplabcut.github.io/DeepLabCut/dev/main/reference/deeplabcut/pose_estimation_pytorch/models/backbones/" />
+<meta property="og:url" content="https://deeplabcut.github.io/DeepLabCut/dev/main/reference/deeplabcut/utils/matplotlib_utils/" />
 <meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:title" content="backbones - DeepLabCut Developer Documentation" />
+<meta property="twitter:title" content="matplotlib_utils - DeepLabCut Developer Documentation" />
 <meta property="twitter:description" content="Developer documentation for DeepLabCut" />
-<meta property="twitter:image" content="https://deeplabcut.github.io/DeepLabCut/dev/main/assets/images/social/reference/deeplabcut/pose_estimation_pytorch/models/backbones/index.png" />
+<meta property="twitter:image" content="https://deeplabcut.github.io/DeepLabCut/dev/main/assets/images/social/reference/deeplabcut/utils/matplotlib_utils.png" />
 </head>
   
   
@@ -93,7 +93,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#deeplabcut.pose_estimation_pytorch.models.backbones" class="md-skip">
+        <a href="#deeplabcut.utils.matplotlib_utils" class="md-skip">
           Skip to content
         </a>
       
@@ -108,12 +108,12 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   You're not viewing the latest release.
-  <a href="../../../../../..">
+  <a href="../../../../..">
     <strong>Click here to go to the latest release.</strong>
   </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../../../../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../../../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -123,9 +123,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../../.." title="DeepLabCut Developer Documentation" class="md-header__button md-logo" aria-label="DeepLabCut Developer Documentation" data-md-component="logo">
+    <a href="../../../.." title="DeepLabCut Developer Documentation" class="md-header__button md-logo" aria-label="DeepLabCut Developer Documentation" data-md-component="logo">
       
-  <img src="../../../../../assets/logo.png" alt="logo">
+  <img src="../../../../assets/logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -142,7 +142,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              backbones
+              matplotlib_utils
             
           </span>
         </div>
@@ -257,7 +257,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../../../get-started/" class="md-tabs__link">
+        <a href="../../../../get-started/" class="md-tabs__link">
           
   
   
@@ -279,7 +279,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../../../developer-guides/" class="md-tabs__link">
+        <a href="../../../../developer-guides/" class="md-tabs__link">
           
   
   
@@ -301,7 +301,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../../../examples/" class="md-tabs__link">
+        <a href="../../../../examples/" class="md-tabs__link">
           
   
   
@@ -334,7 +334,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../../" class="md-tabs__link">
+        <a href="../../" class="md-tabs__link">
           
   
   
@@ -373,9 +373,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../../.." title="DeepLabCut Developer Documentation" class="md-nav__button md-logo" aria-label="DeepLabCut Developer Documentation" data-md-component="logo">
+    <a href="../../../.." title="DeepLabCut Developer Documentation" class="md-nav__button md-logo" aria-label="DeepLabCut Developer Documentation" data-md-component="logo">
       
-  <img src="../../../../../assets/logo.png" alt="logo">
+  <img src="../../../../assets/logo.png" alt="logo">
 
     </a>
     DeepLabCut Developer Documentation
@@ -427,7 +427,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../../../get-started/" class="md-nav__link ">
+            <a href="../../../../get-started/" class="md-nav__link ">
               
   
   
@@ -471,7 +471,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../get-started/quickstart/" class="md-nav__link">
+      <a href="../../../../get-started/quickstart/" class="md-nav__link">
         
   
   
@@ -537,7 +537,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../../../developer-guides/" class="md-nav__link ">
+            <a href="../../../../developer-guides/" class="md-nav__link ">
               
   
   
@@ -581,7 +581,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../developer-guides/models/" class="md-nav__link">
+      <a href="../../../../developer-guides/models/" class="md-nav__link">
         
   
   
@@ -609,7 +609,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../developer-guides/dataprep/" class="md-nav__link">
+      <a href="../../../../developer-guides/dataprep/" class="md-nav__link">
         
   
   
@@ -637,7 +637,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../developer-guides/training/" class="md-nav__link">
+      <a href="../../../../developer-guides/training/" class="md-nav__link">
         
   
   
@@ -665,7 +665,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../developer-guides/inference/" class="md-nav__link">
+      <a href="../../../../developer-guides/inference/" class="md-nav__link">
         
   
   
@@ -723,7 +723,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../../../examples/" class="md-nav__link ">
+            <a href="../../../../examples/" class="md-nav__link ">
               
   
   
@@ -884,7 +884,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../" class="md-nav__link ">
+            <a href="../../" class="md-nav__link ">
               
   
   
@@ -928,7 +928,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../cli/" class="md-nav__link">
+      <a href="../../cli/" class="md-nav__link">
         
   
   
@@ -956,7 +956,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../compat/" class="md-nav__link">
+      <a href="../../compat/" class="md-nav__link">
         
   
   
@@ -1029,7 +1029,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../core/" class="md-nav__link ">
+            <a href="../../core/" class="md-nav__link ">
               
   
   
@@ -1106,7 +1106,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../core/config/" class="md-nav__link ">
+            <a href="../../core/config/" class="md-nav__link ">
               
   
   
@@ -1150,7 +1150,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/config/base_config/" class="md-nav__link">
+      <a href="../../core/config/base_config/" class="md-nav__link">
         
   
   
@@ -1178,7 +1178,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/config/project_config/" class="md-nav__link">
+      <a href="../../core/config/project_config/" class="md-nav__link">
         
   
   
@@ -1206,7 +1206,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/config/utils/" class="md-nav__link">
+      <a href="../../core/config/utils/" class="md-nav__link">
         
   
   
@@ -1234,7 +1234,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/config/validation/" class="md-nav__link">
+      <a href="../../core/config/validation/" class="md-nav__link">
         
   
   
@@ -1262,7 +1262,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/config/versioning/" class="md-nav__link">
+      <a href="../../core/config/versioning/" class="md-nav__link">
         
   
   
@@ -1298,7 +1298,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/conversion_table/" class="md-nav__link">
+      <a href="../../core/conversion_table/" class="md-nav__link">
         
   
   
@@ -1326,7 +1326,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/crossvalutils/" class="md-nav__link">
+      <a href="../../core/crossvalutils/" class="md-nav__link">
         
   
   
@@ -1379,7 +1379,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../core/debug/" class="md-nav__link ">
+            <a href="../../core/debug/" class="md-nav__link ">
               
   
   
@@ -1423,7 +1423,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/debug/debug_logger/" class="md-nav__link">
+      <a href="../../core/debug/debug_logger/" class="md-nav__link">
         
   
   
@@ -1459,7 +1459,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/deprecation/" class="md-nav__link">
+      <a href="../../core/deprecation/" class="md-nav__link">
         
   
   
@@ -1487,7 +1487,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/engine/" class="md-nav__link">
+      <a href="../../core/engine/" class="md-nav__link">
         
   
   
@@ -1515,7 +1515,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/inferenceutils/" class="md-nav__link">
+      <a href="../../core/inferenceutils/" class="md-nav__link">
         
   
   
@@ -1576,7 +1576,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../core/metrics/" class="md-nav__link ">
+            <a href="../../core/metrics/" class="md-nav__link ">
               
   
   
@@ -1620,7 +1620,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/metrics/api/" class="md-nav__link">
+      <a href="../../core/metrics/api/" class="md-nav__link">
         
   
   
@@ -1648,7 +1648,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/metrics/bbox/" class="md-nav__link">
+      <a href="../../core/metrics/bbox/" class="md-nav__link">
         
   
   
@@ -1676,7 +1676,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/metrics/distance_metrics/" class="md-nav__link">
+      <a href="../../core/metrics/distance_metrics/" class="md-nav__link">
         
   
   
@@ -1704,7 +1704,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/metrics/identity/" class="md-nav__link">
+      <a href="../../core/metrics/identity/" class="md-nav__link">
         
   
   
@@ -1732,7 +1732,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/metrics/matching/" class="md-nav__link">
+      <a href="../../core/metrics/matching/" class="md-nav__link">
         
   
   
@@ -1768,7 +1768,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/trackingutils/" class="md-nav__link">
+      <a href="../../core/trackingutils/" class="md-nav__link">
         
   
   
@@ -1796,7 +1796,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/visualization/" class="md-nav__link">
+      <a href="../../core/visualization/" class="md-nav__link">
         
   
   
@@ -1824,7 +1824,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../core/weight_init/" class="md-nav__link">
+      <a href="../../core/weight_init/" class="md-nav__link">
         
   
   
@@ -1893,7 +1893,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../create_project/" class="md-nav__link ">
+            <a href="../../create_project/" class="md-nav__link ">
               
   
   
@@ -1937,7 +1937,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../create_project/add/" class="md-nav__link">
+      <a href="../../create_project/add/" class="md-nav__link">
         
   
   
@@ -1965,7 +1965,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../create_project/demo_data/" class="md-nav__link">
+      <a href="../../create_project/demo_data/" class="md-nav__link">
         
   
   
@@ -1993,7 +1993,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../create_project/modelzoo/" class="md-nav__link">
+      <a href="../../create_project/modelzoo/" class="md-nav__link">
         
   
   
@@ -2021,7 +2021,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../create_project/new/" class="md-nav__link">
+      <a href="../../create_project/new/" class="md-nav__link">
         
   
   
@@ -2049,7 +2049,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../create_project/new_3d/" class="md-nav__link">
+      <a href="../../create_project/new_3d/" class="md-nav__link">
         
   
   
@@ -2116,7 +2116,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../generate_training_dataset/" class="md-nav__link ">
+            <a href="../../generate_training_dataset/" class="md-nav__link ">
               
   
   
@@ -2160,7 +2160,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../generate_training_dataset/frame_extraction/" class="md-nav__link">
+      <a href="../../generate_training_dataset/frame_extraction/" class="md-nav__link">
         
   
   
@@ -2188,7 +2188,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../generate_training_dataset/metadata/" class="md-nav__link">
+      <a href="../../generate_training_dataset/metadata/" class="md-nav__link">
         
   
   
@@ -2216,7 +2216,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../generate_training_dataset/multiple_individuals_trainingsetmanipulation/" class="md-nav__link">
+      <a href="../../generate_training_dataset/multiple_individuals_trainingsetmanipulation/" class="md-nav__link">
         
   
   
@@ -2244,7 +2244,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../generate_training_dataset/trainingsetmanipulation/" class="md-nav__link">
+      <a href="../../generate_training_dataset/trainingsetmanipulation/" class="md-nav__link">
         
   
   
@@ -2313,7 +2313,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../modelzoo/" class="md-nav__link ">
+            <a href="../../modelzoo/" class="md-nav__link ">
               
   
   
@@ -2386,7 +2386,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../modelzoo/generalized_data_converter/" class="md-nav__link ">
+            <a href="../../modelzoo/generalized_data_converter/" class="md-nav__link ">
               
   
   
@@ -2455,7 +2455,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../modelzoo/generalized_data_converter/conversion_table/" class="md-nav__link ">
+            <a href="../../modelzoo/generalized_data_converter/conversion_table/" class="md-nav__link ">
               
   
   
@@ -2499,7 +2499,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/generalized_data_converter/conversion_table/conversion_table/" class="md-nav__link">
+      <a href="../../modelzoo/generalized_data_converter/conversion_table/conversion_table/" class="md-nav__link">
         
   
   
@@ -2578,7 +2578,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../modelzoo/generalized_data_converter/datasets/" class="md-nav__link ">
+            <a href="../../modelzoo/generalized_data_converter/datasets/" class="md-nav__link ">
               
   
   
@@ -2622,7 +2622,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/generalized_data_converter/datasets/base/" class="md-nav__link">
+      <a href="../../modelzoo/generalized_data_converter/datasets/base/" class="md-nav__link">
         
   
   
@@ -2650,7 +2650,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/generalized_data_converter/datasets/base_dlc/" class="md-nav__link">
+      <a href="../../modelzoo/generalized_data_converter/datasets/base_dlc/" class="md-nav__link">
         
   
   
@@ -2678,7 +2678,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/generalized_data_converter/datasets/coco/" class="md-nav__link">
+      <a href="../../modelzoo/generalized_data_converter/datasets/coco/" class="md-nav__link">
         
   
   
@@ -2706,7 +2706,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/generalized_data_converter/datasets/ma_dlc/" class="md-nav__link">
+      <a href="../../modelzoo/generalized_data_converter/datasets/ma_dlc/" class="md-nav__link">
         
   
   
@@ -2734,7 +2734,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/generalized_data_converter/datasets/ma_dlc_dataframe/" class="md-nav__link">
+      <a href="../../modelzoo/generalized_data_converter/datasets/ma_dlc_dataframe/" class="md-nav__link">
         
   
   
@@ -2762,7 +2762,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/generalized_data_converter/datasets/materialize/" class="md-nav__link">
+      <a href="../../modelzoo/generalized_data_converter/datasets/materialize/" class="md-nav__link">
         
   
   
@@ -2790,7 +2790,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/generalized_data_converter/datasets/multi/" class="md-nav__link">
+      <a href="../../modelzoo/generalized_data_converter/datasets/multi/" class="md-nav__link">
         
   
   
@@ -2818,7 +2818,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/generalized_data_converter/datasets/single_dlc/" class="md-nav__link">
+      <a href="../../modelzoo/generalized_data_converter/datasets/single_dlc/" class="md-nav__link">
         
   
   
@@ -2846,7 +2846,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/generalized_data_converter/datasets/single_dlc_dataframe/" class="md-nav__link">
+      <a href="../../modelzoo/generalized_data_converter/datasets/single_dlc_dataframe/" class="md-nav__link">
         
   
   
@@ -2874,7 +2874,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/generalized_data_converter/datasets/utils/" class="md-nav__link">
+      <a href="../../modelzoo/generalized_data_converter/datasets/utils/" class="md-nav__link">
         
   
   
@@ -2910,7 +2910,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/generalized_data_converter/utils/" class="md-nav__link">
+      <a href="../../modelzoo/generalized_data_converter/utils/" class="md-nav__link">
         
   
   
@@ -2946,7 +2946,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/utils/" class="md-nav__link">
+      <a href="../../modelzoo/utils/" class="md-nav__link">
         
   
   
@@ -2974,7 +2974,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/video_inference/" class="md-nav__link">
+      <a href="../../modelzoo/video_inference/" class="md-nav__link">
         
   
   
@@ -3027,7 +3027,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../modelzoo/webapp/" class="md-nav__link ">
+            <a href="../../modelzoo/webapp/" class="md-nav__link ">
               
   
   
@@ -3071,7 +3071,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/webapp/inference/" class="md-nav__link">
+      <a href="../../modelzoo/webapp/inference/" class="md-nav__link">
         
   
   
@@ -3107,7 +3107,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../modelzoo/weight_initialization/" class="md-nav__link">
+      <a href="../../modelzoo/weight_initialization/" class="md-nav__link">
         
   
   
@@ -3172,7 +3172,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_3d/" class="md-nav__link ">
+            <a href="../../pose_estimation_3d/" class="md-nav__link ">
               
   
   
@@ -3216,7 +3216,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_3d/camera_calibration/" class="md-nav__link">
+      <a href="../../pose_estimation_3d/camera_calibration/" class="md-nav__link">
         
   
   
@@ -3244,7 +3244,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_3d/plotting3D/" class="md-nav__link">
+      <a href="../../pose_estimation_3d/plotting3D/" class="md-nav__link">
         
   
   
@@ -3272,7 +3272,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_3d/triangulation/" class="md-nav__link">
+      <a href="../../pose_estimation_3d/triangulation/" class="md-nav__link">
         
   
   
@@ -3305,8 +3305,6 @@
                 
   
   
-    
-  
   
   
     
@@ -3349,15 +3347,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_9" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_9" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/" class="md-nav__link ">
               
   
   
@@ -3381,7 +3379,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_1_9_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_1_9_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4_1_9">
             <span class="md-nav__icon md-icon"></span>
             
@@ -3446,7 +3444,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../apis/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/apis/" class="md-nav__link ">
               
   
   
@@ -3490,7 +3488,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../apis/analyze_images/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/apis/analyze_images/" class="md-nav__link">
         
   
   
@@ -3518,7 +3516,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../apis/ctd/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/apis/ctd/" class="md-nav__link">
         
   
   
@@ -3546,7 +3544,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../apis/evaluation/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/apis/evaluation/" class="md-nav__link">
         
   
   
@@ -3574,7 +3572,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../apis/export/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/apis/export/" class="md-nav__link">
         
   
   
@@ -3602,7 +3600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../apis/prune_paf_graph/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/apis/prune_paf_graph/" class="md-nav__link">
         
   
   
@@ -3630,7 +3628,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../apis/tracking_dataset/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/apis/tracking_dataset/" class="md-nav__link">
         
   
   
@@ -3658,7 +3656,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../apis/tracklets/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/apis/tracklets/" class="md-nav__link">
         
   
   
@@ -3686,7 +3684,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../apis/training/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/apis/training/" class="md-nav__link">
         
   
   
@@ -3714,7 +3712,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../apis/utils/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/apis/utils/" class="md-nav__link">
         
   
   
@@ -3742,7 +3740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../apis/videos/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/apis/videos/" class="md-nav__link">
         
   
   
@@ -3770,7 +3768,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../apis/visualization/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/apis/visualization/" class="md-nav__link">
         
   
   
@@ -3831,7 +3829,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../benchmark/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/benchmark/" class="md-nav__link ">
               
   
   
@@ -3875,7 +3873,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmark/profile_HRNetCoAM/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/benchmark/profile_HRNetCoAM/" class="md-nav__link">
         
   
   
@@ -3960,7 +3958,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../config/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/config/" class="md-nav__link ">
               
   
   
@@ -4004,7 +4002,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/ctd_conditions/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/ctd_conditions/" class="md-nav__link">
         
   
   
@@ -4032,7 +4030,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/data/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/data/" class="md-nav__link">
         
   
   
@@ -4060,7 +4058,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/enums/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/enums/" class="md-nav__link">
         
   
   
@@ -4088,7 +4086,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/inference/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/inference/" class="md-nav__link">
         
   
   
@@ -4116,7 +4114,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/logger/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/logger/" class="md-nav__link">
         
   
   
@@ -4144,7 +4142,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/make_pose_config/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/make_pose_config/" class="md-nav__link">
         
   
   
@@ -4172,7 +4170,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/metadata/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/metadata/" class="md-nav__link">
         
   
   
@@ -4200,7 +4198,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/model/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/model/" class="md-nav__link">
         
   
   
@@ -4228,7 +4226,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/paf_parameters/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/paf_parameters/" class="md-nav__link">
         
   
   
@@ -4256,7 +4254,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/pose/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/pose/" class="md-nav__link">
         
   
   
@@ -4284,7 +4282,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/runner/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/runner/" class="md-nav__link">
         
   
   
@@ -4312,7 +4310,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/training/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/training/" class="md-nav__link">
         
   
   
@@ -4340,7 +4338,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/utils/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/config/utils/" class="md-nav__link">
         
   
   
@@ -4427,7 +4425,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../data/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/data/" class="md-nav__link ">
               
   
   
@@ -4471,7 +4469,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/base/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/base/" class="md-nav__link">
         
   
   
@@ -4499,7 +4497,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/cocoloader/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/cocoloader/" class="md-nav__link">
         
   
   
@@ -4527,7 +4525,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/collate/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/collate/" class="md-nav__link">
         
   
   
@@ -4555,7 +4553,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/ctd/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/ctd/" class="md-nav__link">
         
   
   
@@ -4583,7 +4581,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/dataset/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/dataset/" class="md-nav__link">
         
   
   
@@ -4611,7 +4609,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/dlcloader/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/dlcloader/" class="md-nav__link">
         
   
   
@@ -4639,7 +4637,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/generative_sampling/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/generative_sampling/" class="md-nav__link">
         
   
   
@@ -4667,7 +4665,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/helper/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/helper/" class="md-nav__link">
         
   
   
@@ -4695,7 +4693,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/image/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/image/" class="md-nav__link">
         
   
   
@@ -4723,7 +4721,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/postprocessor/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/postprocessor/" class="md-nav__link">
         
   
   
@@ -4751,7 +4749,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/preprocessor/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/preprocessor/" class="md-nav__link">
         
   
   
@@ -4779,7 +4777,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/snapshots/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/snapshots/" class="md-nav__link">
         
   
   
@@ -4807,7 +4805,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/transforms/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/transforms/" class="md-nav__link">
         
   
   
@@ -4835,7 +4833,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../data/utils/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/data/utils/" class="md-nav__link">
         
   
   
@@ -4896,7 +4894,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../metrics/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/metrics/" class="md-nav__link ">
               
   
   
@@ -4940,7 +4938,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../metrics/scoring/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/metrics/scoring/" class="md-nav__link">
         
   
   
@@ -4973,8 +4971,6 @@
                 
   
   
-    
-  
   
   
     
@@ -5013,15 +5009,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_9_7" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_9_7" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/models/" class="md-nav__link ">
               
   
   
@@ -5045,7 +5041,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_4_1_9_7_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_4_1_9_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4_1_9_7">
             <span class="md-nav__icon md-icon"></span>
             
@@ -5062,8 +5058,6 @@
                 
   
   
-    
-  
   
   
     
@@ -5094,15 +5088,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_9_7_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_9_7_2" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
+            <a href="../../pose_estimation_pytorch/models/backbones/" class="md-nav__link ">
               
   
   
@@ -5120,13 +5114,13 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_4_1_9_7_2" id="__nav_4_1_9_7_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4_1_9_7_2" id="__nav_4_1_9_7_2_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="5" aria-labelledby="__nav_4_1_9_7_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="5" aria-labelledby="__nav_4_1_9_7_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4_1_9_7_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -5146,7 +5140,7 @@
   
   
     <li class="md-nav__item">
-      <a href="base/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/backbones/base/" class="md-nav__link">
         
   
   
@@ -5174,7 +5168,7 @@
   
   
     <li class="md-nav__item">
-      <a href="cond_prenet/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/backbones/cond_prenet/" class="md-nav__link">
         
   
   
@@ -5202,7 +5196,7 @@
   
   
     <li class="md-nav__item">
-      <a href="cspnext/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/backbones/cspnext/" class="md-nav__link">
         
   
   
@@ -5230,7 +5224,7 @@
   
   
     <li class="md-nav__item">
-      <a href="hrnet/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/backbones/hrnet/" class="md-nav__link">
         
   
   
@@ -5258,7 +5252,7 @@
   
   
     <li class="md-nav__item">
-      <a href="hrnet_coam/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/backbones/hrnet_coam/" class="md-nav__link">
         
   
   
@@ -5286,7 +5280,7 @@
   
   
     <li class="md-nav__item">
-      <a href="resnet/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/backbones/resnet/" class="md-nav__link">
         
   
   
@@ -5357,7 +5351,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../criterions/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/models/criterions/" class="md-nav__link ">
               
   
   
@@ -5401,7 +5395,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../criterions/aggregators/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/criterions/aggregators/" class="md-nav__link">
         
   
   
@@ -5429,7 +5423,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../criterions/base/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/criterions/base/" class="md-nav__link">
         
   
   
@@ -5457,7 +5451,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../criterions/dekr/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/criterions/dekr/" class="md-nav__link">
         
   
   
@@ -5485,7 +5479,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../criterions/kl_discrete/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/criterions/kl_discrete/" class="md-nav__link">
         
   
   
@@ -5513,7 +5507,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../criterions/utils/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/criterions/utils/" class="md-nav__link">
         
   
   
@@ -5541,7 +5535,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../criterions/weighted/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/criterions/weighted/" class="md-nav__link">
         
   
   
@@ -5610,7 +5604,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../detectors/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/models/detectors/" class="md-nav__link ">
               
   
   
@@ -5654,7 +5648,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../detectors/base/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/detectors/base/" class="md-nav__link">
         
   
   
@@ -5682,7 +5676,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../detectors/fasterRCNN/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/detectors/fasterRCNN/" class="md-nav__link">
         
   
   
@@ -5710,7 +5704,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../detectors/filtered_detector/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/detectors/filtered_detector/" class="md-nav__link">
         
   
   
@@ -5738,7 +5732,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../detectors/ssd/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/detectors/ssd/" class="md-nav__link">
         
   
   
@@ -5766,7 +5760,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../detectors/torchvision/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/detectors/torchvision/" class="md-nav__link">
         
   
   
@@ -5837,7 +5831,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../heads/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/models/heads/" class="md-nav__link ">
               
   
   
@@ -5881,7 +5875,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../heads/base/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/heads/base/" class="md-nav__link">
         
   
   
@@ -5909,7 +5903,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../heads/dekr/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/heads/dekr/" class="md-nav__link">
         
   
   
@@ -5937,7 +5931,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../heads/dlcrnet/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/heads/dlcrnet/" class="md-nav__link">
         
   
   
@@ -5965,7 +5959,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../heads/rtmcc_head/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/heads/rtmcc_head/" class="md-nav__link">
         
   
   
@@ -5993,7 +5987,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../heads/simple_head/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/heads/simple_head/" class="md-nav__link">
         
   
   
@@ -6021,7 +6015,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../heads/transformer/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/heads/transformer/" class="md-nav__link">
         
   
   
@@ -6057,7 +6051,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../model/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/model/" class="md-nav__link">
         
   
   
@@ -6122,7 +6116,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../modules/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/models/modules/" class="md-nav__link ">
               
   
   
@@ -6166,7 +6160,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../modules/coam_module/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/modules/coam_module/" class="md-nav__link">
         
   
   
@@ -6194,7 +6188,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../modules/conv_block/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/modules/conv_block/" class="md-nav__link">
         
   
   
@@ -6222,7 +6216,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../modules/conv_module/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/modules/conv_module/" class="md-nav__link">
         
   
   
@@ -6250,7 +6244,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../modules/csp/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/modules/csp/" class="md-nav__link">
         
   
   
@@ -6278,7 +6272,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../modules/gated_attention_unit/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/modules/gated_attention_unit/" class="md-nav__link">
         
   
   
@@ -6306,7 +6300,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../modules/kpt_encoders/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/modules/kpt_encoders/" class="md-nav__link">
         
   
   
@@ -6334,7 +6328,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../modules/norm/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/modules/norm/" class="md-nav__link">
         
   
   
@@ -6401,7 +6395,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../necks/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/models/necks/" class="md-nav__link ">
               
   
   
@@ -6445,7 +6439,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../necks/base/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/necks/base/" class="md-nav__link">
         
   
   
@@ -6473,7 +6467,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../necks/layers/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/necks/layers/" class="md-nav__link">
         
   
   
@@ -6501,7 +6495,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../necks/transformer/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/necks/transformer/" class="md-nav__link">
         
   
   
@@ -6529,7 +6523,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../necks/utils/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/necks/utils/" class="md-nav__link">
         
   
   
@@ -6600,7 +6594,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../predictors/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/models/predictors/" class="md-nav__link ">
               
   
   
@@ -6644,7 +6638,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../predictors/base/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/predictors/base/" class="md-nav__link">
         
   
   
@@ -6672,7 +6666,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../predictors/dekr_predictor/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/predictors/dekr_predictor/" class="md-nav__link">
         
   
   
@@ -6700,7 +6694,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../predictors/identity_predictor/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/predictors/identity_predictor/" class="md-nav__link">
         
   
   
@@ -6728,7 +6722,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../predictors/paf_predictor/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/predictors/paf_predictor/" class="md-nav__link">
         
   
   
@@ -6756,7 +6750,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../predictors/sim_cc/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/predictors/sim_cc/" class="md-nav__link">
         
   
   
@@ -6784,7 +6778,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../predictors/single_predictor/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/predictors/single_predictor/" class="md-nav__link">
         
   
   
@@ -6853,7 +6847,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../target_generators/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/models/target_generators/" class="md-nav__link ">
               
   
   
@@ -6897,7 +6891,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../target_generators/base/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/target_generators/base/" class="md-nav__link">
         
   
   
@@ -6925,7 +6919,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../target_generators/dekr_targets/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/target_generators/dekr_targets/" class="md-nav__link">
         
   
   
@@ -6953,7 +6947,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../target_generators/heatmap_targets/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/target_generators/heatmap_targets/" class="md-nav__link">
         
   
   
@@ -6981,7 +6975,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../target_generators/pafs_targets/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/target_generators/pafs_targets/" class="md-nav__link">
         
   
   
@@ -7009,7 +7003,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../target_generators/sim_cc/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/target_generators/sim_cc/" class="md-nav__link">
         
   
   
@@ -7045,7 +7039,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../weight_init/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/models/weight_init/" class="md-nav__link">
         
   
   
@@ -7118,7 +7112,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../modelzoo/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/modelzoo/" class="md-nav__link ">
               
   
   
@@ -7162,7 +7156,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../modelzoo/config/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/modelzoo/config/" class="md-nav__link">
         
   
   
@@ -7217,7 +7211,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../modelzoo/fmpose_3d/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/modelzoo/fmpose_3d/" class="md-nav__link ">
               
   
   
@@ -7261,7 +7255,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../modelzoo/fmpose_3d/fmpose3d/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/modelzoo/fmpose_3d/fmpose3d/" class="md-nav__link">
         
   
   
@@ -7289,7 +7283,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../modelzoo/fmpose_3d/inference/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/modelzoo/fmpose_3d/inference/" class="md-nav__link">
         
   
   
@@ -7325,7 +7319,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../modelzoo/inference/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/modelzoo/inference/" class="md-nav__link">
         
   
   
@@ -7353,7 +7347,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../modelzoo/inference_helpers/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/modelzoo/inference_helpers/" class="md-nav__link">
         
   
   
@@ -7381,7 +7375,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../modelzoo/memory_replay/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/modelzoo/memory_replay/" class="md-nav__link">
         
   
   
@@ -7409,7 +7403,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../modelzoo/train_from_coco/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/modelzoo/train_from_coco/" class="md-nav__link">
         
   
   
@@ -7437,7 +7431,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../modelzoo/utils/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/modelzoo/utils/" class="md-nav__link">
         
   
   
@@ -7502,7 +7496,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../post_processing/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/post_processing/" class="md-nav__link ">
               
   
   
@@ -7546,7 +7540,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../post_processing/identity/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/post_processing/identity/" class="md-nav__link">
         
   
   
@@ -7574,7 +7568,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../post_processing/match_predictions_to_gt/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/post_processing/match_predictions_to_gt/" class="md-nav__link">
         
   
   
@@ -7602,7 +7596,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../post_processing/nms/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/post_processing/nms/" class="md-nav__link">
         
   
   
@@ -7638,7 +7632,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../registry/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/registry/" class="md-nav__link">
         
   
   
@@ -7707,7 +7701,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../runners/" class="md-nav__link ">
+            <a href="../../pose_estimation_pytorch/runners/" class="md-nav__link ">
               
   
   
@@ -7751,7 +7745,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runners/base/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/runners/base/" class="md-nav__link">
         
   
   
@@ -7779,7 +7773,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runners/ctd/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/runners/ctd/" class="md-nav__link">
         
   
   
@@ -7807,7 +7801,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runners/dynamic_cropping/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/runners/dynamic_cropping/" class="md-nav__link">
         
   
   
@@ -7835,7 +7829,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runners/inference/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/runners/inference/" class="md-nav__link">
         
   
   
@@ -7863,7 +7857,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runners/logger/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/runners/logger/" class="md-nav__link">
         
   
   
@@ -7891,7 +7885,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runners/schedulers/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/runners/schedulers/" class="md-nav__link">
         
   
   
@@ -7919,7 +7913,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runners/shelving/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/runners/shelving/" class="md-nav__link">
         
   
   
@@ -7947,7 +7941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runners/snapshots/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/runners/snapshots/" class="md-nav__link">
         
   
   
@@ -7975,7 +7969,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../runners/train/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/runners/train/" class="md-nav__link">
         
   
   
@@ -8011,7 +8005,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../task/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/task/" class="md-nav__link">
         
   
   
@@ -8039,7 +8033,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../utils/" class="md-nav__link">
+      <a href="../../pose_estimation_pytorch/utils/" class="md-nav__link">
         
   
   
@@ -8130,7 +8124,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/" class="md-nav__link ">
               
   
   
@@ -8205,7 +8199,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/backbones/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/backbones/" class="md-nav__link ">
               
   
   
@@ -8249,7 +8243,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/backbones/efficientnet_builder/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/backbones/efficientnet_builder/" class="md-nav__link">
         
   
   
@@ -8277,7 +8271,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/backbones/efficientnet_model/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/backbones/efficientnet_model/" class="md-nav__link">
         
   
   
@@ -8305,7 +8299,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/backbones/mobilenet/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/backbones/mobilenet/" class="md-nav__link">
         
   
   
@@ -8333,7 +8327,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/backbones/mobilenet_v2/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/backbones/mobilenet_v2/" class="md-nav__link">
         
   
   
@@ -8369,7 +8363,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/config/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/config/" class="md-nav__link">
         
   
   
@@ -8436,7 +8430,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/core/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/core/" class="md-nav__link ">
               
   
   
@@ -8480,7 +8474,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/core/evaluate/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/core/evaluate/" class="md-nav__link">
         
   
   
@@ -8508,7 +8502,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/core/evaluate_multianimal/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/core/evaluate_multianimal/" class="md-nav__link">
         
   
   
@@ -8563,7 +8557,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/core/openvino/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/core/openvino/" class="md-nav__link ">
               
   
   
@@ -8632,7 +8626,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/core/openvino/mo_extensions/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/core/openvino/mo_extensions/" class="md-nav__link ">
               
   
   
@@ -8701,7 +8695,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/core/openvino/mo_extensions/front/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/core/openvino/mo_extensions/front/" class="md-nav__link ">
               
   
   
@@ -8770,7 +8764,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/core/openvino/mo_extensions/front/tf/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/core/openvino/mo_extensions/front/tf/" class="md-nav__link ">
               
   
   
@@ -8814,7 +8808,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/core/openvino/mo_extensions/front/tf/unravel_index/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/core/openvino/mo_extensions/front/tf/unravel_index/" class="md-nav__link">
         
   
   
@@ -8866,7 +8860,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/core/openvino/session/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/core/openvino/session/" class="md-nav__link">
         
   
   
@@ -8902,7 +8896,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/core/predict/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/core/predict/" class="md-nav__link">
         
   
   
@@ -8930,7 +8924,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/core/predict_multianimal/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/core/predict_multianimal/" class="md-nav__link">
         
   
   
@@ -8958,7 +8952,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/core/test/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/core/test/" class="md-nav__link">
         
   
   
@@ -8986,7 +8980,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/core/train/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/core/train/" class="md-nav__link">
         
   
   
@@ -9014,7 +9008,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/core/train_multianimal/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/core/train_multianimal/" class="md-nav__link">
         
   
   
@@ -9091,7 +9085,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/datasets/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/datasets/" class="md-nav__link ">
               
   
   
@@ -9135,7 +9129,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/datasets/augmentation/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/datasets/augmentation/" class="md-nav__link">
         
   
   
@@ -9163,7 +9157,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/datasets/factory/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/datasets/factory/" class="md-nav__link">
         
   
   
@@ -9191,7 +9185,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/datasets/pose_base/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/datasets/pose_base/" class="md-nav__link">
         
   
   
@@ -9219,7 +9213,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/datasets/pose_deterministic/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/datasets/pose_deterministic/" class="md-nav__link">
         
   
   
@@ -9247,7 +9241,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/datasets/pose_imgaug/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/datasets/pose_imgaug/" class="md-nav__link">
         
   
   
@@ -9275,7 +9269,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/datasets/pose_multianimal_imgaug/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/datasets/pose_multianimal_imgaug/" class="md-nav__link">
         
   
   
@@ -9303,7 +9297,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/datasets/pose_scalecrop/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/datasets/pose_scalecrop/" class="md-nav__link">
         
   
   
@@ -9331,7 +9325,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/datasets/pose_tensorpack/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/datasets/pose_tensorpack/" class="md-nav__link">
         
   
   
@@ -9359,7 +9353,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/datasets/utils/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/datasets/utils/" class="md-nav__link">
         
   
   
@@ -9395,7 +9389,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/default_config/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/default_config/" class="md-nav__link">
         
   
   
@@ -9423,7 +9417,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/export/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/export/" class="md-nav__link">
         
   
   
@@ -9480,7 +9474,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/lib/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/lib/" class="md-nav__link ">
               
   
   
@@ -9524,7 +9518,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/lib/crossvalutils/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/lib/crossvalutils/" class="md-nav__link">
         
   
   
@@ -9552,7 +9546,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/lib/inferenceutils/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/lib/inferenceutils/" class="md-nav__link">
         
   
   
@@ -9580,7 +9574,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/lib/trackingutils/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/lib/trackingutils/" class="md-nav__link">
         
   
   
@@ -9641,7 +9635,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/models/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/models/" class="md-nav__link ">
               
   
   
@@ -9685,7 +9679,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/models/pretrained/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/models/pretrained/" class="md-nav__link">
         
   
   
@@ -9746,7 +9740,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/modelzoo/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/modelzoo/" class="md-nav__link ">
               
   
   
@@ -9817,7 +9811,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/modelzoo/api/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/modelzoo/api/" class="md-nav__link ">
               
   
   
@@ -9861,7 +9855,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/modelzoo/api/spatiotemporal_adapt/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/modelzoo/api/spatiotemporal_adapt/" class="md-nav__link">
         
   
   
@@ -9889,7 +9883,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/modelzoo/api/superanimal_inference/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/modelzoo/api/superanimal_inference/" class="md-nav__link">
         
   
   
@@ -9974,7 +9968,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/nnets/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/nnets/" class="md-nav__link ">
               
   
   
@@ -10018,7 +10012,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/nnets/base/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/nnets/base/" class="md-nav__link">
         
   
   
@@ -10046,7 +10040,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/nnets/conv_blocks/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/nnets/conv_blocks/" class="md-nav__link">
         
   
   
@@ -10074,7 +10068,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/nnets/efficientnet/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/nnets/efficientnet/" class="md-nav__link">
         
   
   
@@ -10102,7 +10096,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/nnets/factory/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/nnets/factory/" class="md-nav__link">
         
   
   
@@ -10130,7 +10124,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/nnets/layers/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/nnets/layers/" class="md-nav__link">
         
   
   
@@ -10158,7 +10152,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/nnets/mobilenet/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/nnets/mobilenet/" class="md-nav__link">
         
   
   
@@ -10186,7 +10180,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/nnets/multi/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/nnets/multi/" class="md-nav__link">
         
   
   
@@ -10214,7 +10208,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/nnets/resnet/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/nnets/resnet/" class="md-nav__link">
         
   
   
@@ -10242,7 +10236,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/nnets/utils/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/nnets/utils/" class="md-nav__link">
         
   
   
@@ -10278,7 +10272,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/predict_multianimal/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/predict_multianimal/" class="md-nav__link">
         
   
   
@@ -10306,7 +10300,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/predict_videos/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/predict_videos/" class="md-nav__link">
         
   
   
@@ -10334,7 +10328,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/training/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/training/" class="md-nav__link">
         
   
   
@@ -10389,7 +10383,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_estimation_tensorflow/util/" class="md-nav__link ">
+            <a href="../../pose_estimation_tensorflow/util/" class="md-nav__link ">
               
   
   
@@ -10433,7 +10427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/util/logging/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/util/logging/" class="md-nav__link">
         
   
   
@@ -10461,7 +10455,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/util/visualize/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/util/visualize/" class="md-nav__link">
         
   
   
@@ -10497,7 +10491,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/vis_dataset/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/vis_dataset/" class="md-nav__link">
         
   
   
@@ -10525,7 +10519,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_estimation_tensorflow/visualizemaps/" class="md-nav__link">
+      <a href="../../pose_estimation_tensorflow/visualizemaps/" class="md-nav__link">
         
   
   
@@ -10606,7 +10600,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_tracking_pytorch/" class="md-nav__link ">
+            <a href="../../pose_tracking_pytorch/" class="md-nav__link ">
               
   
   
@@ -10650,7 +10644,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/apis/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/apis/" class="md-nav__link">
         
   
   
@@ -10678,7 +10672,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/config/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/config/" class="md-nav__link">
         
   
   
@@ -10706,7 +10700,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/create_dataset/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/create_dataset/" class="md-nav__link">
         
   
   
@@ -10761,7 +10755,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_tracking_pytorch/datasets/" class="md-nav__link ">
+            <a href="../../pose_tracking_pytorch/datasets/" class="md-nav__link ">
               
   
   
@@ -10805,7 +10799,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/datasets/dlc_vec/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/datasets/dlc_vec/" class="md-nav__link">
         
   
   
@@ -10833,7 +10827,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/datasets/make_dataloader/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/datasets/make_dataloader/" class="md-nav__link">
         
   
   
@@ -10869,7 +10863,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/inference/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/inference/" class="md-nav__link">
         
   
   
@@ -10922,7 +10916,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_tracking_pytorch/loss/" class="md-nav__link ">
+            <a href="../../pose_tracking_pytorch/loss/" class="md-nav__link ">
               
   
   
@@ -10966,7 +10960,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/loss/make_loss/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/loss/make_loss/" class="md-nav__link">
         
   
   
@@ -11029,7 +11023,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_tracking_pytorch/model/" class="md-nav__link ">
+            <a href="../../pose_tracking_pytorch/model/" class="md-nav__link ">
               
   
   
@@ -11098,7 +11092,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_tracking_pytorch/model/backbones/" class="md-nav__link ">
+            <a href="../../pose_tracking_pytorch/model/backbones/" class="md-nav__link ">
               
   
   
@@ -11142,7 +11136,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/model/backbones/vit_pytorch/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/model/backbones/vit_pytorch/" class="md-nav__link">
         
   
   
@@ -11178,7 +11172,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/model/make_model/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/model/make_model/" class="md-nav__link">
         
   
   
@@ -11239,7 +11233,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_tracking_pytorch/processor/" class="md-nav__link ">
+            <a href="../../pose_tracking_pytorch/processor/" class="md-nav__link ">
               
   
   
@@ -11283,7 +11277,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/processor/processor/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/processor/processor/" class="md-nav__link">
         
   
   
@@ -11350,7 +11344,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_tracking_pytorch/solver/" class="md-nav__link ">
+            <a href="../../pose_tracking_pytorch/solver/" class="md-nav__link ">
               
   
   
@@ -11394,7 +11388,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/solver/cosine_lr/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/solver/cosine_lr/" class="md-nav__link">
         
   
   
@@ -11422,7 +11416,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/solver/make_optimizer/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/solver/make_optimizer/" class="md-nav__link">
         
   
   
@@ -11450,7 +11444,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/solver/scheduler/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/solver/scheduler/" class="md-nav__link">
         
   
   
@@ -11478,7 +11472,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/solver/scheduler_factory/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/solver/scheduler_factory/" class="md-nav__link">
         
   
   
@@ -11545,7 +11539,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../pose_tracking_pytorch/tracking_utils/" class="md-nav__link ">
+            <a href="../../pose_tracking_pytorch/tracking_utils/" class="md-nav__link ">
               
   
   
@@ -11589,7 +11583,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/tracking_utils/meter/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/tracking_utils/meter/" class="md-nav__link">
         
   
   
@@ -11617,7 +11611,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/tracking_utils/metrics/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/tracking_utils/metrics/" class="md-nav__link">
         
   
   
@@ -11645,7 +11639,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/tracking_utils/preprocessing/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/tracking_utils/preprocessing/" class="md-nav__link">
         
   
   
@@ -11673,7 +11667,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/tracking_utils/reranking/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/tracking_utils/reranking/" class="md-nav__link">
         
   
   
@@ -11709,7 +11703,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../pose_tracking_pytorch/train_dlctransreid/" class="md-nav__link">
+      <a href="../../pose_tracking_pytorch/train_dlctransreid/" class="md-nav__link">
         
   
   
@@ -11772,7 +11766,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../post_processing/" class="md-nav__link ">
+            <a href="../../post_processing/" class="md-nav__link ">
               
   
   
@@ -11816,7 +11810,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../post_processing/analyze_skeleton/" class="md-nav__link">
+      <a href="../../post_processing/analyze_skeleton/" class="md-nav__link">
         
   
   
@@ -11844,7 +11838,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../post_processing/filtering/" class="md-nav__link">
+      <a href="../../post_processing/filtering/" class="md-nav__link">
         
   
   
@@ -11909,7 +11903,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../refine_training_dataset/" class="md-nav__link ">
+            <a href="../../refine_training_dataset/" class="md-nav__link ">
               
   
   
@@ -11953,7 +11947,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../refine_training_dataset/outlier_frames/" class="md-nav__link">
+      <a href="../../refine_training_dataset/outlier_frames/" class="md-nav__link">
         
   
   
@@ -11981,7 +11975,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../refine_training_dataset/stitch/" class="md-nav__link">
+      <a href="../../refine_training_dataset/stitch/" class="md-nav__link">
         
   
   
@@ -12009,7 +12003,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../refine_training_dataset/tracklets/" class="md-nav__link">
+      <a href="../../refine_training_dataset/tracklets/" class="md-nav__link">
         
   
   
@@ -12042,6 +12036,8 @@
                 
   
   
+    
+  
   
   
     
@@ -12092,15 +12088,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_14" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_14" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../utils/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -12124,7 +12120,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_1_14_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_1_14_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4_1_14">
             <span class="md-nav__icon md-icon"></span>
             
@@ -12144,7 +12140,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/auxfun_models/" class="md-nav__link">
+      <a href="../auxfun_models/" class="md-nav__link">
         
   
   
@@ -12172,7 +12168,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/auxfun_multianimal/" class="md-nav__link">
+      <a href="../auxfun_multianimal/" class="md-nav__link">
         
   
   
@@ -12200,7 +12196,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/auxfun_videos/" class="md-nav__link">
+      <a href="../auxfun_videos/" class="md-nav__link">
         
   
   
@@ -12228,7 +12224,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/auxiliaryfunctions/" class="md-nav__link">
+      <a href="../auxiliaryfunctions/" class="md-nav__link">
         
   
   
@@ -12256,7 +12252,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/auxiliaryfunctions_3d/" class="md-nav__link">
+      <a href="../auxiliaryfunctions_3d/" class="md-nav__link">
         
   
   
@@ -12284,7 +12280,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/conversioncode/" class="md-nav__link">
+      <a href="../conversioncode/" class="md-nav__link">
         
   
   
@@ -12312,7 +12308,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/frameselectiontools/" class="md-nav__link">
+      <a href="../frameselectiontools/" class="md-nav__link">
         
   
   
@@ -12340,7 +12336,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/make_labeled_video/" class="md-nav__link">
+      <a href="../make_labeled_video/" class="md-nav__link">
         
   
   
@@ -12365,10 +12361,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../utils/matplotlib_utils/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>matplotlib_utils
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -12384,6 +12407,54 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#deeplabcut.utils.matplotlib_utils.silence_axes_logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        silence_axes_logger
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="silence_axes_logger">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deeplabcut.utils.matplotlib_utils.silence_axes_logger(level)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        level
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -12396,7 +12467,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/multiprocessing/" class="md-nav__link">
+      <a href="../multiprocessing/" class="md-nav__link">
         
   
   
@@ -12424,7 +12495,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/pandas_future_mode/" class="md-nav__link">
+      <a href="../pandas_future_mode/" class="md-nav__link">
         
   
   
@@ -12452,7 +12523,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/plotting/" class="md-nav__link">
+      <a href="../plotting/" class="md-nav__link">
         
   
   
@@ -12480,7 +12551,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/pseudo_label/" class="md-nav__link">
+      <a href="../pseudo_label/" class="md-nav__link">
         
   
   
@@ -12508,7 +12579,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/skeleton/" class="md-nav__link">
+      <a href="../skeleton/" class="md-nav__link">
         
   
   
@@ -12536,7 +12607,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/video_processor/" class="md-nav__link">
+      <a href="../video_processor/" class="md-nav__link">
         
   
   
@@ -12564,7 +12635,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../utils/visualization/" class="md-nav__link">
+      <a href="../visualization/" class="md-nav__link">
         
   
   
@@ -12628,6 +12699,42 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#deeplabcut.utils.matplotlib_utils.silence_axes_logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        silence_axes_logger
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="silence_axes_logger">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deeplabcut.utils.matplotlib_utils.silence_axes_logger(level)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        level
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -12657,7 +12764,7 @@
     
     
       <li class="md-path__item">
-        <a href="../../../" class="md-path__link">
+        <a href="../../" class="md-path__link">
           
   <span class="md-ellipsis">
     API Reference
@@ -12678,7 +12785,7 @@
     
     
       <li class="md-path__item">
-        <a href="../../../" class="md-path__link">
+        <a href="../../" class="md-path__link">
           
   <span class="md-ellipsis">
     <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>deeplabcut
@@ -12696,46 +12803,10 @@
     
     
       <li class="md-path__item">
-        <a href="../../" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>pose_estimation_pytorch
-  </span>
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-    
-    
-      <li class="md-path__item">
         <a href="../" class="md-path__link">
           
   <span class="md-ellipsis">
-    <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>models
-  </span>
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-    
-    
-      <li class="md-path__item">
-        <a href="./" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>backbones
+    <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>utils
   </span>
 
         </a>
@@ -12758,8 +12829,8 @@
 
 
 
-<h1 id="deeplabcut.pose_estimation_pytorch.models.backbones" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <span class="doc doc-object-name doc-module-name">deeplabcut.pose_estimation_pytorch.models.backbones</span>
+<h1 id="deeplabcut.utils.matplotlib_utils" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <span class="doc doc-object-name doc-module-name">deeplabcut.utils.matplotlib_utils</span>
 
 
 </h1>
@@ -12771,7 +12842,13 @@
 
 
 
-<p><span class="doc-section-title">Modules:</span></p>
+
+
+
+
+
+
+<p><span class="doc-section-title">Functions:</span></p>
     <table>
       <thead>
         <tr>
@@ -12780,62 +12857,16 @@
         </tr>
       </thead>
       <tbody>
-          <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" href="base/#deeplabcut.pose_estimation_pytorch.models.backbones.base">base</a></code></td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" href="cond_prenet/#deeplabcut.pose_estimation_pytorch.models.backbones.cond_prenet">cond_prenet</a></code></td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" href="cspnext/#deeplabcut.pose_estimation_pytorch.models.backbones.cspnext">cspnext</a></code></td>
-            <td>
-              <div class="doc-md-description">
-                <p>Implementation of the CSPNeXt Backbone.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" href="hrnet/#deeplabcut.pose_estimation_pytorch.models.backbones.hrnet">hrnet</a></code></td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" href="hrnet_coam/#deeplabcut.pose_estimation_pytorch.models.backbones.hrnet_coam">hrnet_coam</a></code></td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" href="resnet/#deeplabcut.pose_estimation_pytorch.models.backbones.resnet">resnet</a></code></td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-          </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" href="#deeplabcut.utils.matplotlib_utils.silence_axes_logger">silence_axes_logger</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Raise the log level of Matplotlib's <code>Axes</code> logger.</p>
+                </div>
+              </td>
+            </tr>
       </tbody>
     </table>
-
-
-
-
-
-
 
 
 
@@ -12851,6 +12882,82 @@
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="deeplabcut.utils.matplotlib_utils.silence_axes_logger" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">silence_axes_logger</span>
+
+
+</h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">silence_axes_logger</span><span class="p">(</span><span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'ERROR'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Raise the log level of Matplotlib's <code>Axes</code> logger.</p>
+<p>Suppresses the chatty per-artist messages Matplotlib emits while drawing,
+most notably the invalid-color warnings raised during 3D plotting.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+<h3 id="deeplabcut.utils.matplotlib_utils.silence_axes_logger(level)" class="doc doc-heading doc-heading-parameter">                  <code>level</code>
+</h3>            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Any level accepted by <code>logging.Logger.setLevel</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;ERROR&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>deeplabcut/utils/matplotlib_utils.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-18">18</a></span>
+<span class="normal"><a href="#__codelineno-0-19">19</a></span>
+<span class="normal"><a href="#__codelineno-0-20">20</a></span>
+<span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span>
+<span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="k">def</span><span class="w"> </span><span class="nf">silence_axes_logger</span><span class="p">(</span><span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ERROR"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="w">    </span><span class="sd">"""Raise the log level of Matplotlib's ``Axes`` logger.</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">    Suppresses the chatty per-artist messages Matplotlib emits while drawing,</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">    most notably the invalid-color warnings raised during 3D plotting.</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="sd">        level: Any level accepted by ``logging.Logger.setLevel``.</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="sd">    """</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a>    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">AXES_LOGGER_NAME</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 
@@ -12925,10 +13032,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../../../..", "features": ["announce.dismiss", "content.code.annotate", "content.code.copy", "content.tabs.link", "navigation.indexes", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.instant.progress", "navigation.path", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.suggest", "toc.follow"], "search": "../../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest-release", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["announce.dismiss", "content.code.annotate", "content.code.copy", "content.tabs.link", "navigation.indexes", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.preview", "navigation.instant.progress", "navigation.path", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.suggest", "toc.follow"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest-release", "provider": "mike"}}</script>
     
     
-      <script src="../../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

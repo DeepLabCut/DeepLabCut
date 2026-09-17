@@ -12148,6 +12148,8 @@
       
         
       
+        
+      
     
     
     
@@ -12413,6 +12415,34 @@
     
   
     <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>make_labeled_video
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../utils/matplotlib_utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>matplotlib_utils
   
 
     
@@ -12903,7 +12933,7 @@
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.model.DetectorModelConfig.type">type</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -12914,7 +12944,7 @@
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.model.DetectorModelConfig.freeze_bn_stats">freeze_bn_stats</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -12925,7 +12955,7 @@
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.model.DetectorModelConfig.freeze_bn_weights">freeze_bn_weights</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -12936,11 +12966,26 @@
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.model.DetectorModelConfig.variant">variant</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
                 <p>Specific variant of the detector model</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="deeplabcut.pose_estimation_pytorch.config.model.DetectorModelConfig.box_score_thresh">box_score_thresh</span></code></td>
+            <td>
+                  <code><span title="deeplabcut.core.config.validation.DefaultIfNone">DefaultIfNone</span>[<span title="deeplabcut.core.config.validation.Fraction">Fraction</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The score below which the detector discards proposals
+internally. <code>null</code> is normalized to the default. The value is
+deliberately permissive, as raising this value silently drops
+detections. Note the distinction with <code>bboxes_pcutoff</code> in the
+project config, which is the cutoff used to <em>plot</em> bounding boxes.</p>
               </div>
             </td>
           </tr>
@@ -12975,7 +13020,12 @@
 <span class="normal"><a href="#__codelineno-0-48">48</a></span>
 <span class="normal"><a href="#__codelineno-0-49">49</a></span>
 <span class="normal"><a href="#__codelineno-0-50">50</a></span>
-<span class="normal"><a href="#__codelineno-0-51">51</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="k">class</span><span class="w"> </span><span class="nc">DetectorModelConfig</span><span class="p">(</span><span class="n">DLCBaseConfig</span><span class="p">):</span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="k">class</span><span class="w"> </span><span class="nc">DetectorModelConfig</span><span class="p">(</span><span class="n">DLCBaseConfig</span><span class="p">):</span>
 </span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="w">    </span><span class="sd">"""Configuration for detector models</span>
 </span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>
 </span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">    Attributes:</span>
@@ -12983,13 +13033,18 @@
 </span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        freeze_bn_stats: Whether to freeze batch normalization statistics</span>
 </span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        freeze_bn_weights: Whether to freeze batch normalization weights</span>
 </span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">        variant: Specific variant of the detector model</span>
-</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    """</span>
-</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>
-</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a>    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
-</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a>    <span class="n">freeze_bn_stats</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a>    <span class="n">freeze_bn_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>    <span class="n">variant</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>    <span class="n">box_score_thresh</span><span class="p">:</span> <span class="n">Fraction</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        box_score_thresh: The score below which the detector discards proposals</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">            internally. ``null`` is normalized to the default. The value is</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">            deliberately permissive, as raising this value silently drops</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">            detections. Note the distinction with ``bboxes_pcutoff`` in the</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">            project config, which is the cutoff used to *plot* bounding boxes.</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    """</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>    <span class="n">freeze_bn_stats</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a>    <span class="n">freeze_bn_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span class="n">variant</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="n">box_score_thresh</span><span class="p">:</span> <span class="n">DefaultIfNone</span><span class="p">[</span><span class="n">Fraction</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.01</span>
 </span></code></pre></div></td></tr></table></div>
               </details>
 
@@ -13058,7 +13113,7 @@
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.model.ModelConfig.backbone_output_channels">backbone_output_channels</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13069,7 +13124,7 @@
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.model.ModelConfig.heads">heads</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">

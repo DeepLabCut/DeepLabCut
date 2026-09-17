@@ -12077,6 +12077,8 @@
       
         
       
+        
+      
     
     
     
@@ -12342,6 +12344,34 @@
     
   
     <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>make_labeled_video
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../utils/matplotlib_utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>matplotlib_utils
   
 
     
@@ -12650,6 +12680,17 @@
     <span class="md-ellipsis">
       
         exclude_patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deeplabcut.post_processing.collect_video_paths(warn_on_unsupported_ext)" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        warn_on_unsupported_ext
       
     </span>
   </a>
@@ -13193,7 +13234,9 @@ Licensed under GNU Lesser General Public License v3.0</p>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">extensions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">shuffle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">exclude_patterns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_EXCLUDE_PATTERNS</span><span class="p">,</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="o">*</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">warn_on_unsupported_ext</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -13224,7 +13267,7 @@ of both. Directories are scanned one level deep (non-recursively).</p>
 <h3 id="deeplabcut.post_processing.collect_video_paths(data_path)" class="doc doc-heading doc-heading-parameter">                  <code>data_path</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/glossary.html#term-list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/glossary.html#term-list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13241,7 +13284,7 @@ video files. Can be a mix of directories and files.</p>
 <h3 id="deeplabcut.post_processing.collect_video_paths(extensions)" class="doc doc-heading doc-heading-parameter">                  <code>extensions</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13264,7 +13307,7 @@ video files. Can be a mix of directories and files.</p>
 <h3 id="deeplabcut.post_processing.collect_video_paths(shuffle)" class="doc doc-heading doc-heading-parameter">                  <code>shuffle</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13281,7 +13324,7 @@ returned in sorted order for deterministic behavior.</p>
 <h3 id="deeplabcut.post_processing.collect_video_paths(exclude_patterns)" class="doc doc-heading doc-heading-parameter">                  <code>exclude_patterns</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>
+                  <code><a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13291,6 +13334,24 @@ returned in sorted order for deterministic behavior.</p>
             </td>
             <td>
                   <code><span title="deeplabcut.utils.auxfun_videos.DEFAULT_EXCLUDE_PATTERNS">DEFAULT_EXCLUDE_PATTERNS</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+<h3 id="deeplabcut.post_processing.collect_video_paths(warn_on_unsupported_ext)" class="doc doc-heading doc-heading-parameter">                  <code>warn_on_unsupported_ext</code>
+</h3>            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to warn when collected files have an extension
+outside <code>SUPPORTED_VIDEOS</code>. Set to <code>False</code> when deliberately collecting
+non-video files (e.g. <code>extensions=".h5"</code>), where the warning is misleading.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
             </td>
           </tr>
       </tbody>
@@ -13331,7 +13392,7 @@ returned in sorted order for deterministic behavior.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError">FileNotFoundError</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError">FileNotFoundError</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13341,7 +13402,7 @@ returned in sorted order for deterministic behavior.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError">ValueError</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13457,109 +13518,129 @@ returned in sorted order for deterministic behavior.</p>
 <span class="normal"><a href="#__codelineno-0-727">727</a></span>
 <span class="normal"><a href="#__codelineno-0-728">728</a></span>
 <span class="normal"><a href="#__codelineno-0-729">729</a></span>
-<span class="normal"><a href="#__codelineno-0-730">730</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-628"><a id="__codelineno-0-628" name="__codelineno-0-628"></a><span class="k">def</span><span class="w"> </span><span class="nf">collect_video_paths</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-730">730</a></span>
+<span class="normal"><a href="#__codelineno-0-731">731</a></span>
+<span class="normal"><a href="#__codelineno-0-732">732</a></span>
+<span class="normal"><a href="#__codelineno-0-733">733</a></span>
+<span class="normal"><a href="#__codelineno-0-734">734</a></span>
+<span class="normal"><a href="#__codelineno-0-735">735</a></span>
+<span class="normal"><a href="#__codelineno-0-736">736</a></span>
+<span class="normal"><a href="#__codelineno-0-737">737</a></span>
+<span class="normal"><a href="#__codelineno-0-738">738</a></span>
+<span class="normal"><a href="#__codelineno-0-739">739</a></span>
+<span class="normal"><a href="#__codelineno-0-740">740</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-628"><a id="__codelineno-0-628" name="__codelineno-0-628"></a><span class="k">def</span><span class="w"> </span><span class="nf">collect_video_paths</span><span class="p">(</span>
 </span><span id="__span-0-629"><a id="__codelineno-0-629" name="__codelineno-0-629"></a>    <span class="n">data_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">],</span>
 </span><span id="__span-0-630"><a id="__codelineno-0-630" name="__codelineno-0-630"></a>    <span class="n">extensions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-631"><a id="__codelineno-0-631" name="__codelineno-0-631"></a>    <span class="n">shuffle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 </span><span id="__span-0-632"><a id="__codelineno-0-632" name="__codelineno-0-632"></a>    <span class="n">exclude_patterns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_EXCLUDE_PATTERNS</span><span class="p">,</span>
-</span><span id="__span-0-633"><a id="__codelineno-0-633" name="__codelineno-0-633"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
-</span><span id="__span-0-634"><a id="__codelineno-0-634" name="__codelineno-0-634"></a><span class="w">    </span><span class="sd">"""</span>
-</span><span id="__span-0-635"><a id="__codelineno-0-635" name="__codelineno-0-635"></a><span class="sd">    Collects video paths from a given set of data paths: directories, files, or a mix</span>
-</span><span id="__span-0-636"><a id="__codelineno-0-636" name="__codelineno-0-636"></a><span class="sd">    of both. Directories are scanned one level deep (non-recursively).</span>
-</span><span id="__span-0-637"><a id="__codelineno-0-637" name="__codelineno-0-637"></a>
-</span><span id="__span-0-638"><a id="__codelineno-0-638" name="__codelineno-0-638"></a><span class="sd">    Files and directories are treated differently with respect to extension filtering:</span>
-</span><span id="__span-0-639"><a id="__codelineno-0-639" name="__codelineno-0-639"></a><span class="sd">    - File paths are accepted as-is when ``extensions`` is ``None``; only filtered when</span>
-</span><span id="__span-0-640"><a id="__codelineno-0-640" name="__codelineno-0-640"></a><span class="sd">      ``extensions`` is explicitly set.</span>
-</span><span id="__span-0-641"><a id="__codelineno-0-641" name="__codelineno-0-641"></a><span class="sd">    - Directory contents are always filtered by extension: by ``SUPPORTED_VIDEOS`` when</span>
-</span><span id="__span-0-642"><a id="__codelineno-0-642" name="__codelineno-0-642"></a><span class="sd">      ``extensions`` is ``None``, or by the given value(s) otherwise.</span>
-</span><span id="__span-0-643"><a id="__codelineno-0-643" name="__codelineno-0-643"></a><span class="sd">    - ``exclude_patterns`` are always applied to both files and directory contents.</span>
-</span><span id="__span-0-644"><a id="__codelineno-0-644" name="__codelineno-0-644"></a>
-</span><span id="__span-0-645"><a id="__codelineno-0-645" name="__codelineno-0-645"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-646"><a id="__codelineno-0-646" name="__codelineno-0-646"></a><span class="sd">        data_path: Path or list of paths to folders containing videos, or individual</span>
-</span><span id="__span-0-647"><a id="__codelineno-0-647" name="__codelineno-0-647"></a><span class="sd">            video files. Can be a mix of directories and files.</span>
-</span><span id="__span-0-648"><a id="__codelineno-0-648" name="__codelineno-0-648"></a><span class="sd">        extensions: Controls extension filtering for collected video files.</span>
-</span><span id="__span-0-649"><a id="__codelineno-0-649" name="__codelineno-0-649"></a><span class="sd">            - ``None`` (default): file paths are accepted without extension filtering;</span>
-</span><span id="__span-0-650"><a id="__codelineno-0-650" name="__codelineno-0-650"></a><span class="sd">              directories are scanned for files with a recognized video extension.</span>
-</span><span id="__span-0-651"><a id="__codelineno-0-651" name="__codelineno-0-651"></a><span class="sd">            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):</span>
-</span><span id="__span-0-652"><a id="__codelineno-0-652" name="__codelineno-0-652"></a><span class="sd">              both file paths and directory contents are filtered to only include files</span>
-</span><span id="__span-0-653"><a id="__codelineno-0-653" name="__codelineno-0-653"></a><span class="sd">              matching the given extension(s).</span>
-</span><span id="__span-0-654"><a id="__codelineno-0-654" name="__codelineno-0-654"></a><span class="sd">            - Empty ``str`` ``""`` is treated as ``None`` (deprecated, keep for backwards</span>
-</span><span id="__span-0-655"><a id="__codelineno-0-655" name="__codelineno-0-655"></a><span class="sd">              compatibility).</span>
-</span><span id="__span-0-656"><a id="__codelineno-0-656" name="__codelineno-0-656"></a><span class="sd">        shuffle: Whether to shuffle the order of videos. If ``False``, videos are</span>
-</span><span id="__span-0-657"><a id="__codelineno-0-657" name="__codelineno-0-657"></a><span class="sd">            returned in sorted order for deterministic behavior.</span>
-</span><span id="__span-0-658"><a id="__codelineno-0-658" name="__codelineno-0-658"></a><span class="sd">        exclude_patterns: Patterns to exclude from the collection. Defaults to</span>
-</span><span id="__span-0-659"><a id="__codelineno-0-659" name="__codelineno-0-659"></a><span class="sd">            ``DEFAULT_EXCLUDE_PATTERNS``. Set to ``[]`` to disable pattern exclusion.</span>
-</span><span id="__span-0-660"><a id="__codelineno-0-660" name="__codelineno-0-660"></a>
-</span><span id="__span-0-661"><a id="__codelineno-0-661" name="__codelineno-0-661"></a><span class="sd">    Returns:</span>
-</span><span id="__span-0-662"><a id="__codelineno-0-662" name="__codelineno-0-662"></a><span class="sd">        The paths of videos to analyze. Duplicate paths are removed.</span>
-</span><span id="__span-0-663"><a id="__codelineno-0-663" name="__codelineno-0-663"></a>
-</span><span id="__span-0-664"><a id="__codelineno-0-664" name="__codelineno-0-664"></a><span class="sd">    Raises:</span>
-</span><span id="__span-0-665"><a id="__codelineno-0-665" name="__codelineno-0-665"></a><span class="sd">        FileNotFoundError: If any path in ``data_path`` does not exist.</span>
-</span><span id="__span-0-666"><a id="__codelineno-0-666" name="__codelineno-0-666"></a><span class="sd">        ValueError: If ``extensions`` is an empty sequence.</span>
-</span><span id="__span-0-667"><a id="__codelineno-0-667" name="__codelineno-0-667"></a><span class="sd">    """</span>
-</span><span id="__span-0-668"><a id="__codelineno-0-668" name="__codelineno-0-668"></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
-</span><span id="__span-0-669"><a id="__codelineno-0-669" name="__codelineno-0-669"></a>        <span class="n">data_path</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_path</span><span class="p">]</span>
-</span><span id="__span-0-670"><a id="__codelineno-0-670" name="__codelineno-0-670"></a>
-</span><span id="__span-0-671"><a id="__codelineno-0-671" name="__codelineno-0-671"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_coerce_extensions</span><span class="p">(</span><span class="n">extensions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-672"><a id="__codelineno-0-672" name="__codelineno-0-672"></a><span class="w">        </span><span class="sd">"""Coerce the extensions argument to a set of dot-prefixed suffixes, or None."""</span>
-</span><span id="__span-0-673"><a id="__codelineno-0-673" name="__codelineno-0-673"></a>        <span class="k">if</span> <span class="n">extensions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-674"><a id="__codelineno-0-674" name="__codelineno-0-674"></a>            <span class="k">return</span> <span class="kc">None</span>
+</span><span id="__span-0-633"><a id="__codelineno-0-633" name="__codelineno-0-633"></a>    <span class="o">*</span><span class="p">,</span>
+</span><span id="__span-0-634"><a id="__codelineno-0-634" name="__codelineno-0-634"></a>    <span class="n">warn_on_unsupported_ext</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-635"><a id="__codelineno-0-635" name="__codelineno-0-635"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+</span><span id="__span-0-636"><a id="__codelineno-0-636" name="__codelineno-0-636"></a><span class="w">    </span><span class="sd">"""</span>
+</span><span id="__span-0-637"><a id="__codelineno-0-637" name="__codelineno-0-637"></a><span class="sd">    Collects video paths from a given set of data paths: directories, files, or a mix</span>
+</span><span id="__span-0-638"><a id="__codelineno-0-638" name="__codelineno-0-638"></a><span class="sd">    of both. Directories are scanned one level deep (non-recursively).</span>
+</span><span id="__span-0-639"><a id="__codelineno-0-639" name="__codelineno-0-639"></a>
+</span><span id="__span-0-640"><a id="__codelineno-0-640" name="__codelineno-0-640"></a><span class="sd">    Files and directories are treated differently with respect to extension filtering:</span>
+</span><span id="__span-0-641"><a id="__codelineno-0-641" name="__codelineno-0-641"></a><span class="sd">    - File paths are accepted as-is when ``extensions`` is ``None``; only filtered when</span>
+</span><span id="__span-0-642"><a id="__codelineno-0-642" name="__codelineno-0-642"></a><span class="sd">      ``extensions`` is explicitly set.</span>
+</span><span id="__span-0-643"><a id="__codelineno-0-643" name="__codelineno-0-643"></a><span class="sd">    - Directory contents are always filtered by extension: by ``SUPPORTED_VIDEOS`` when</span>
+</span><span id="__span-0-644"><a id="__codelineno-0-644" name="__codelineno-0-644"></a><span class="sd">      ``extensions`` is ``None``, or by the given value(s) otherwise.</span>
+</span><span id="__span-0-645"><a id="__codelineno-0-645" name="__codelineno-0-645"></a><span class="sd">    - ``exclude_patterns`` are always applied to both files and directory contents.</span>
+</span><span id="__span-0-646"><a id="__codelineno-0-646" name="__codelineno-0-646"></a>
+</span><span id="__span-0-647"><a id="__codelineno-0-647" name="__codelineno-0-647"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-648"><a id="__codelineno-0-648" name="__codelineno-0-648"></a><span class="sd">        data_path: Path or list of paths to folders containing videos, or individual</span>
+</span><span id="__span-0-649"><a id="__codelineno-0-649" name="__codelineno-0-649"></a><span class="sd">            video files. Can be a mix of directories and files.</span>
+</span><span id="__span-0-650"><a id="__codelineno-0-650" name="__codelineno-0-650"></a><span class="sd">        extensions: Controls extension filtering for collected video files.</span>
+</span><span id="__span-0-651"><a id="__codelineno-0-651" name="__codelineno-0-651"></a><span class="sd">            - ``None`` (default): file paths are accepted without extension filtering;</span>
+</span><span id="__span-0-652"><a id="__codelineno-0-652" name="__codelineno-0-652"></a><span class="sd">              directories are scanned for files with a recognized video extension.</span>
+</span><span id="__span-0-653"><a id="__codelineno-0-653" name="__codelineno-0-653"></a><span class="sd">            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):</span>
+</span><span id="__span-0-654"><a id="__codelineno-0-654" name="__codelineno-0-654"></a><span class="sd">              both file paths and directory contents are filtered to only include files</span>
+</span><span id="__span-0-655"><a id="__codelineno-0-655" name="__codelineno-0-655"></a><span class="sd">              matching the given extension(s).</span>
+</span><span id="__span-0-656"><a id="__codelineno-0-656" name="__codelineno-0-656"></a><span class="sd">            - Empty ``str`` ``""`` is treated as ``None`` (deprecated, keep for backwards</span>
+</span><span id="__span-0-657"><a id="__codelineno-0-657" name="__codelineno-0-657"></a><span class="sd">              compatibility).</span>
+</span><span id="__span-0-658"><a id="__codelineno-0-658" name="__codelineno-0-658"></a><span class="sd">        shuffle: Whether to shuffle the order of videos. If ``False``, videos are</span>
+</span><span id="__span-0-659"><a id="__codelineno-0-659" name="__codelineno-0-659"></a><span class="sd">            returned in sorted order for deterministic behavior.</span>
+</span><span id="__span-0-660"><a id="__codelineno-0-660" name="__codelineno-0-660"></a><span class="sd">        exclude_patterns: Patterns to exclude from the collection. Defaults to</span>
+</span><span id="__span-0-661"><a id="__codelineno-0-661" name="__codelineno-0-661"></a><span class="sd">            ``DEFAULT_EXCLUDE_PATTERNS``. Set to ``[]`` to disable pattern exclusion.</span>
+</span><span id="__span-0-662"><a id="__codelineno-0-662" name="__codelineno-0-662"></a><span class="sd">        warn_on_unsupported_ext: Whether to warn when collected files have an extension</span>
+</span><span id="__span-0-663"><a id="__codelineno-0-663" name="__codelineno-0-663"></a><span class="sd">            outside ``SUPPORTED_VIDEOS``. Set to ``False`` when deliberately collecting</span>
+</span><span id="__span-0-664"><a id="__codelineno-0-664" name="__codelineno-0-664"></a><span class="sd">            non-video files (e.g. ``extensions=".h5"``), where the warning is misleading.</span>
+</span><span id="__span-0-665"><a id="__codelineno-0-665" name="__codelineno-0-665"></a>
+</span><span id="__span-0-666"><a id="__codelineno-0-666" name="__codelineno-0-666"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-667"><a id="__codelineno-0-667" name="__codelineno-0-667"></a><span class="sd">        The paths of videos to analyze. Duplicate paths are removed.</span>
+</span><span id="__span-0-668"><a id="__codelineno-0-668" name="__codelineno-0-668"></a>
+</span><span id="__span-0-669"><a id="__codelineno-0-669" name="__codelineno-0-669"></a><span class="sd">    Raises:</span>
+</span><span id="__span-0-670"><a id="__codelineno-0-670" name="__codelineno-0-670"></a><span class="sd">        FileNotFoundError: If any path in ``data_path`` does not exist.</span>
+</span><span id="__span-0-671"><a id="__codelineno-0-671" name="__codelineno-0-671"></a><span class="sd">        ValueError: If ``extensions`` is an empty sequence.</span>
+</span><span id="__span-0-672"><a id="__codelineno-0-672" name="__codelineno-0-672"></a><span class="sd">    """</span>
+</span><span id="__span-0-673"><a id="__codelineno-0-673" name="__codelineno-0-673"></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
+</span><span id="__span-0-674"><a id="__codelineno-0-674" name="__codelineno-0-674"></a>        <span class="n">data_path</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_path</span><span class="p">]</span>
 </span><span id="__span-0-675"><a id="__codelineno-0-675" name="__codelineno-0-675"></a>
-</span><span id="__span-0-676"><a id="__codelineno-0-676" name="__codelineno-0-676"></a>        <span class="k">if</span> <span class="n">extensions</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">""</span><span class="p">,</span> <span class="p">(</span><span class="s2">""</span><span class="p">,),</span> <span class="p">[</span><span class="s2">""</span><span class="p">],</span> <span class="p">{</span><span class="s2">""</span><span class="p">}]:</span>
-</span><span id="__span-0-677"><a id="__codelineno-0-677" name="__codelineno-0-677"></a>            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-</span><span id="__span-0-678"><a id="__codelineno-0-678" name="__codelineno-0-678"></a>                <span class="s2">"Passing an empty string for filtering video type extensions is deprecated; pass None instead."</span><span class="p">,</span>
-</span><span id="__span-0-679"><a id="__codelineno-0-679" name="__codelineno-0-679"></a>                <span class="n">DLCDeprecationWarning</span><span class="p">,</span>
-</span><span id="__span-0-680"><a id="__codelineno-0-680" name="__codelineno-0-680"></a>                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-</span><span id="__span-0-681"><a id="__codelineno-0-681" name="__codelineno-0-681"></a>            <span class="p">)</span>
-</span><span id="__span-0-682"><a id="__codelineno-0-682" name="__codelineno-0-682"></a>            <span class="k">return</span> <span class="kc">None</span>
-</span><span id="__span-0-683"><a id="__codelineno-0-683" name="__codelineno-0-683"></a>
-</span><span id="__span-0-684"><a id="__codelineno-0-684" name="__codelineno-0-684"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extensions</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-</span><span id="__span-0-685"><a id="__codelineno-0-685" name="__codelineno-0-685"></a>            <span class="k">return</span> <span class="p">{</span><span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">extensions</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">'.'</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">}</span>
-</span><span id="__span-0-686"><a id="__codelineno-0-686" name="__codelineno-0-686"></a>
-</span><span id="__span-0-687"><a id="__codelineno-0-687" name="__codelineno-0-687"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extensions</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
-</span><span id="__span-0-688"><a id="__codelineno-0-688" name="__codelineno-0-688"></a>            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"extensions must be a string, a sequence or None, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">extensions</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-</span><span id="__span-0-689"><a id="__codelineno-0-689" name="__codelineno-0-689"></a>
-</span><span id="__span-0-690"><a id="__codelineno-0-690" name="__codelineno-0-690"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">extensions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span id="__span-0-691"><a id="__codelineno-0-691" name="__codelineno-0-691"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Video type extensions filter needs to be a non-empty sequence."</span><span class="p">)</span>
-</span><span id="__span-0-692"><a id="__codelineno-0-692" name="__codelineno-0-692"></a>        <span class="k">return</span> <span class="p">{</span><span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">'.'</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">extensions</span><span class="p">}</span>
-</span><span id="__span-0-693"><a id="__codelineno-0-693" name="__codelineno-0-693"></a>
-</span><span id="__span-0-694"><a id="__codelineno-0-694" name="__codelineno-0-694"></a>    <span class="n">explicit_suffixes</span> <span class="o">=</span> <span class="n">_coerce_extensions</span><span class="p">(</span><span class="n">extensions</span><span class="p">)</span>
-</span><span id="__span-0-695"><a id="__codelineno-0-695" name="__codelineno-0-695"></a>    <span class="n">implicit_suffixes</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">SUPPORTED_VIDEOS</span><span class="p">}</span>
-</span><span id="__span-0-696"><a id="__codelineno-0-696" name="__codelineno-0-696"></a>
-</span><span id="__span-0-697"><a id="__codelineno-0-697" name="__codelineno-0-697"></a>    <span class="n">videos</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="__span-0-698"><a id="__codelineno-0-698" name="__codelineno-0-698"></a>    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="n">Path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">):</span>
-</span><span id="__span-0-699"><a id="__codelineno-0-699" name="__codelineno-0-699"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-</span><span id="__span-0-700"><a id="__codelineno-0-700" name="__codelineno-0-700"></a>            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not find: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">. Check access rights."</span><span class="p">)</span>
+</span><span id="__span-0-676"><a id="__codelineno-0-676" name="__codelineno-0-676"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_coerce_extensions</span><span class="p">(</span><span class="n">extensions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-677"><a id="__codelineno-0-677" name="__codelineno-0-677"></a><span class="w">        </span><span class="sd">"""Coerce the extensions argument to a set of dot-prefixed suffixes, or None."""</span>
+</span><span id="__span-0-678"><a id="__codelineno-0-678" name="__codelineno-0-678"></a>        <span class="k">if</span> <span class="n">extensions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-679"><a id="__codelineno-0-679" name="__codelineno-0-679"></a>            <span class="k">return</span> <span class="kc">None</span>
+</span><span id="__span-0-680"><a id="__codelineno-0-680" name="__codelineno-0-680"></a>
+</span><span id="__span-0-681"><a id="__codelineno-0-681" name="__codelineno-0-681"></a>        <span class="k">if</span> <span class="n">extensions</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">""</span><span class="p">,</span> <span class="p">(</span><span class="s2">""</span><span class="p">,),</span> <span class="p">[</span><span class="s2">""</span><span class="p">],</span> <span class="p">{</span><span class="s2">""</span><span class="p">}]:</span>
+</span><span id="__span-0-682"><a id="__codelineno-0-682" name="__codelineno-0-682"></a>            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+</span><span id="__span-0-683"><a id="__codelineno-0-683" name="__codelineno-0-683"></a>                <span class="s2">"Passing an empty string for filtering video type extensions is deprecated; pass None instead."</span><span class="p">,</span>
+</span><span id="__span-0-684"><a id="__codelineno-0-684" name="__codelineno-0-684"></a>                <span class="n">DLCDeprecationWarning</span><span class="p">,</span>
+</span><span id="__span-0-685"><a id="__codelineno-0-685" name="__codelineno-0-685"></a>                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+</span><span id="__span-0-686"><a id="__codelineno-0-686" name="__codelineno-0-686"></a>            <span class="p">)</span>
+</span><span id="__span-0-687"><a id="__codelineno-0-687" name="__codelineno-0-687"></a>            <span class="k">return</span> <span class="kc">None</span>
+</span><span id="__span-0-688"><a id="__codelineno-0-688" name="__codelineno-0-688"></a>
+</span><span id="__span-0-689"><a id="__codelineno-0-689" name="__codelineno-0-689"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extensions</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+</span><span id="__span-0-690"><a id="__codelineno-0-690" name="__codelineno-0-690"></a>            <span class="k">return</span> <span class="p">{</span><span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">extensions</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">'.'</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">}</span>
+</span><span id="__span-0-691"><a id="__codelineno-0-691" name="__codelineno-0-691"></a>
+</span><span id="__span-0-692"><a id="__codelineno-0-692" name="__codelineno-0-692"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extensions</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
+</span><span id="__span-0-693"><a id="__codelineno-0-693" name="__codelineno-0-693"></a>            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"extensions must be a string, a sequence or None, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">extensions</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="__span-0-694"><a id="__codelineno-0-694" name="__codelineno-0-694"></a>
+</span><span id="__span-0-695"><a id="__codelineno-0-695" name="__codelineno-0-695"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">extensions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span><span id="__span-0-696"><a id="__codelineno-0-696" name="__codelineno-0-696"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Video type extensions filter needs to be a non-empty sequence."</span><span class="p">)</span>
+</span><span id="__span-0-697"><a id="__codelineno-0-697" name="__codelineno-0-697"></a>        <span class="k">return</span> <span class="p">{</span><span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">'.'</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">extensions</span><span class="p">}</span>
+</span><span id="__span-0-698"><a id="__codelineno-0-698" name="__codelineno-0-698"></a>
+</span><span id="__span-0-699"><a id="__codelineno-0-699" name="__codelineno-0-699"></a>    <span class="n">explicit_suffixes</span> <span class="o">=</span> <span class="n">_coerce_extensions</span><span class="p">(</span><span class="n">extensions</span><span class="p">)</span>
+</span><span id="__span-0-700"><a id="__codelineno-0-700" name="__codelineno-0-700"></a>    <span class="n">implicit_suffixes</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">SUPPORTED_VIDEOS</span><span class="p">}</span>
 </span><span id="__span-0-701"><a id="__codelineno-0-701" name="__codelineno-0-701"></a>
-</span><span id="__span-0-702"><a id="__codelineno-0-702" name="__codelineno-0-702"></a>        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-</span><span id="__span-0-703"><a id="__codelineno-0-703" name="__codelineno-0-703"></a>            <span class="c1"># Discriminate videos from other files; skip excluded patterns (e.g. prior DLC outputs).</span>
-</span><span id="__span-0-704"><a id="__codelineno-0-704" name="__codelineno-0-704"></a>            <span class="n">allowed</span> <span class="o">=</span> <span class="n">explicit_suffixes</span> <span class="k">if</span> <span class="n">explicit_suffixes</span> <span class="k">else</span> <span class="n">implicit_suffixes</span>
-</span><span id="__span-0-705"><a id="__codelineno-0-705" name="__codelineno-0-705"></a>            <span class="n">videos</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-</span><span id="__span-0-706"><a id="__codelineno-0-706" name="__codelineno-0-706"></a>                <span class="n">f</span>
-</span><span id="__span-0-707"><a id="__codelineno-0-707" name="__codelineno-0-707"></a>                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span>
-</span><span id="__span-0-708"><a id="__codelineno-0-708" name="__codelineno-0-708"></a>                <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
-</span><span id="__span-0-709"><a id="__codelineno-0-709" name="__codelineno-0-709"></a>                <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">allowed</span>
-</span><span id="__span-0-710"><a id="__codelineno-0-710" name="__codelineno-0-710"></a>                <span class="ow">and</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span> <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">exclude_patterns</span><span class="p">)</span>
-</span><span id="__span-0-711"><a id="__codelineno-0-711" name="__codelineno-0-711"></a>            <span class="p">)</span>
-</span><span id="__span-0-712"><a id="__codelineno-0-712" name="__codelineno-0-712"></a>        <span class="k">elif</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-</span><span id="__span-0-713"><a id="__codelineno-0-713" name="__codelineno-0-713"></a>            <span class="c1"># Accept all caller-supplied files; ONLY filter extensions if set. ALWAYS filter exclude patterns.</span>
-</span><span id="__span-0-714"><a id="__codelineno-0-714" name="__codelineno-0-714"></a>            <span class="k">if</span> <span class="n">explicit_suffixes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">explicit_suffixes</span><span class="p">:</span>
-</span><span id="__span-0-715"><a id="__codelineno-0-715" name="__codelineno-0-715"></a>                <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span> <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">exclude_patterns</span><span class="p">):</span>
-</span><span id="__span-0-716"><a id="__codelineno-0-716" name="__codelineno-0-716"></a>                    <span class="n">videos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</span><span id="__span-0-717"><a id="__codelineno-0-717" name="__codelineno-0-717"></a>
-</span><span id="__span-0-718"><a id="__codelineno-0-718" name="__codelineno-0-718"></a>    <span class="c1"># Resolve video paths and remove duplicates</span>
-</span><span id="__span-0-719"><a id="__codelineno-0-719" name="__codelineno-0-719"></a>    <span class="n">unique_videos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">videos</span><span class="p">))</span>
-</span><span id="__span-0-720"><a id="__codelineno-0-720" name="__codelineno-0-720"></a>    <span class="k">if</span> <span class="n">shuffle</span><span class="p">:</span>
-</span><span id="__span-0-721"><a id="__codelineno-0-721" name="__codelineno-0-721"></a>        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">unique_videos</span><span class="p">)</span>
-</span><span id="__span-0-722"><a id="__codelineno-0-722" name="__codelineno-0-722"></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="__span-0-723"><a id="__codelineno-0-723" name="__codelineno-0-723"></a>        <span class="n">unique_videos</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-</span><span id="__span-0-724"><a id="__codelineno-0-724" name="__codelineno-0-724"></a>
-</span><span id="__span-0-725"><a id="__codelineno-0-725" name="__codelineno-0-725"></a>    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">fn</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SUPPORTED_VIDEOS</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">unique_videos</span> <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">suffix</span><span class="p">):</span>
-</span><span id="__span-0-726"><a id="__codelineno-0-726" name="__codelineno-0-726"></a>        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-</span><span id="__span-0-727"><a id="__codelineno-0-727" name="__codelineno-0-727"></a>            <span class="sa">f</span><span class="s2">"Some videos have unsupported extensions: </span><span class="si">{</span><span class="n">unique_videos</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">Supported extensions are: </span><span class="si">{</span><span class="n">SUPPORTED_VIDEOS</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-</span><span id="__span-0-728"><a id="__codelineno-0-728" name="__codelineno-0-728"></a>            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-</span><span id="__span-0-729"><a id="__codelineno-0-729" name="__codelineno-0-729"></a>        <span class="p">)</span>
-</span><span id="__span-0-730"><a id="__codelineno-0-730" name="__codelineno-0-730"></a>    <span class="k">return</span> <span class="n">unique_videos</span>
+</span><span id="__span-0-702"><a id="__codelineno-0-702" name="__codelineno-0-702"></a>    <span class="n">videos</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-0-703"><a id="__codelineno-0-703" name="__codelineno-0-703"></a>    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="n">Path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">):</span>
+</span><span id="__span-0-704"><a id="__codelineno-0-704" name="__codelineno-0-704"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+</span><span id="__span-0-705"><a id="__codelineno-0-705" name="__codelineno-0-705"></a>            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not find: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">. Check access rights."</span><span class="p">)</span>
+</span><span id="__span-0-706"><a id="__codelineno-0-706" name="__codelineno-0-706"></a>
+</span><span id="__span-0-707"><a id="__codelineno-0-707" name="__codelineno-0-707"></a>        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+</span><span id="__span-0-708"><a id="__codelineno-0-708" name="__codelineno-0-708"></a>            <span class="c1"># Discriminate videos from other files; skip excluded patterns (e.g. prior DLC outputs).</span>
+</span><span id="__span-0-709"><a id="__codelineno-0-709" name="__codelineno-0-709"></a>            <span class="n">allowed</span> <span class="o">=</span> <span class="n">explicit_suffixes</span> <span class="k">if</span> <span class="n">explicit_suffixes</span> <span class="k">else</span> <span class="n">implicit_suffixes</span>
+</span><span id="__span-0-710"><a id="__codelineno-0-710" name="__codelineno-0-710"></a>            <span class="n">videos</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+</span><span id="__span-0-711"><a id="__codelineno-0-711" name="__codelineno-0-711"></a>                <span class="n">f</span>
+</span><span id="__span-0-712"><a id="__codelineno-0-712" name="__codelineno-0-712"></a>                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span>
+</span><span id="__span-0-713"><a id="__codelineno-0-713" name="__codelineno-0-713"></a>                <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+</span><span id="__span-0-714"><a id="__codelineno-0-714" name="__codelineno-0-714"></a>                <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">allowed</span>
+</span><span id="__span-0-715"><a id="__codelineno-0-715" name="__codelineno-0-715"></a>                <span class="ow">and</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span> <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">exclude_patterns</span><span class="p">)</span>
+</span><span id="__span-0-716"><a id="__codelineno-0-716" name="__codelineno-0-716"></a>            <span class="p">)</span>
+</span><span id="__span-0-717"><a id="__codelineno-0-717" name="__codelineno-0-717"></a>        <span class="k">elif</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+</span><span id="__span-0-718"><a id="__codelineno-0-718" name="__codelineno-0-718"></a>            <span class="c1"># Accept all caller-supplied files; ONLY filter extensions if set. ALWAYS filter exclude patterns.</span>
+</span><span id="__span-0-719"><a id="__codelineno-0-719" name="__codelineno-0-719"></a>            <span class="k">if</span> <span class="n">explicit_suffixes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">explicit_suffixes</span><span class="p">:</span>
+</span><span id="__span-0-720"><a id="__codelineno-0-720" name="__codelineno-0-720"></a>                <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span> <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">exclude_patterns</span><span class="p">):</span>
+</span><span id="__span-0-721"><a id="__codelineno-0-721" name="__codelineno-0-721"></a>                    <span class="n">videos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span id="__span-0-722"><a id="__codelineno-0-722" name="__codelineno-0-722"></a>
+</span><span id="__span-0-723"><a id="__codelineno-0-723" name="__codelineno-0-723"></a>    <span class="c1"># Resolve video paths and remove duplicates</span>
+</span><span id="__span-0-724"><a id="__codelineno-0-724" name="__codelineno-0-724"></a>    <span class="n">unique_videos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">videos</span><span class="p">))</span>
+</span><span id="__span-0-725"><a id="__codelineno-0-725" name="__codelineno-0-725"></a>    <span class="k">if</span> <span class="n">shuffle</span><span class="p">:</span>
+</span><span id="__span-0-726"><a id="__codelineno-0-726" name="__codelineno-0-726"></a>        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">unique_videos</span><span class="p">)</span>
+</span><span id="__span-0-727"><a id="__codelineno-0-727" name="__codelineno-0-727"></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-0-728"><a id="__codelineno-0-728" name="__codelineno-0-728"></a>        <span class="n">unique_videos</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+</span><span id="__span-0-729"><a id="__codelineno-0-729" name="__codelineno-0-729"></a>
+</span><span id="__span-0-730"><a id="__codelineno-0-730" name="__codelineno-0-730"></a>    <span class="k">if</span> <span class="n">warn_on_unsupported_ext</span><span class="p">:</span>
+</span><span id="__span-0-731"><a id="__codelineno-0-731" name="__codelineno-0-731"></a>        <span class="n">unsupported</span> <span class="o">=</span> <span class="p">[</span>
+</span><span id="__span-0-732"><a id="__codelineno-0-732" name="__codelineno-0-732"></a>            <span class="n">fn</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">unique_videos</span> <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">suffix</span> <span class="ow">and</span> <span class="n">fn</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SUPPORTED_VIDEOS</span>
+</span><span id="__span-0-733"><a id="__codelineno-0-733" name="__codelineno-0-733"></a>        <span class="p">]</span>
+</span><span id="__span-0-734"><a id="__codelineno-0-734" name="__codelineno-0-734"></a>        <span class="k">if</span> <span class="n">unsupported</span><span class="p">:</span>
+</span><span id="__span-0-735"><a id="__codelineno-0-735" name="__codelineno-0-735"></a>            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+</span><span id="__span-0-736"><a id="__codelineno-0-736" name="__codelineno-0-736"></a>                <span class="sa">f</span><span class="s2">"Some videos have unsupported extensions: </span><span class="si">{</span><span class="n">unsupported</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">"</span>
+</span><span id="__span-0-737"><a id="__codelineno-0-737" name="__codelineno-0-737"></a>                <span class="sa">f</span><span class="s2">"Supported extensions are: </span><span class="si">{</span><span class="n">SUPPORTED_VIDEOS</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+</span><span id="__span-0-738"><a id="__codelineno-0-738" name="__codelineno-0-738"></a>                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+</span><span id="__span-0-739"><a id="__codelineno-0-739" name="__codelineno-0-739"></a>            <span class="p">)</span>
+</span><span id="__span-0-740"><a id="__codelineno-0-740" name="__codelineno-0-740"></a>    <span class="k">return</span> <span class="n">unique_videos</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -13615,7 +13696,7 @@ lower than or equal to <em>max_gap</em> are filled, and data slightly smoothed.<
 <h3 id="deeplabcut.post_processing.columnwise_spline_interp(max_gap)" class="doc doc-heading doc-heading-parameter">                  <code>max_gap</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13781,7 +13862,7 @@ filter (default).</p>
 <h3 id="deeplabcut.post_processing.filterpredictions(config)" class="doc doc-heading doc-heading-parameter">                  <code>config</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13797,7 +13878,7 @@ filter (default).</p>
 <h3 id="deeplabcut.post_processing.filterpredictions(video)" class="doc doc-heading doc-heading-parameter">                  <code>video</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13814,7 +13895,7 @@ already analyzed.</p>
 <h3 id="deeplabcut.post_processing.filterpredictions(video_extensions)" class="doc doc-heading doc-heading-parameter">                  <code>video_extensions</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13837,7 +13918,7 @@ treated differently:
 <h3 id="deeplabcut.post_processing.filterpredictions(shuffle)" class="doc doc-heading doc-heading-parameter">                  <code>shuffle</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13854,7 +13935,7 @@ the labeled-dataset for the corresponding shuffle of training dataset. Defaults 
 <h3 id="deeplabcut.post_processing.filterpredictions(trainingsetindex)" class="doc doc-heading doc-heading-parameter">                  <code>trainingsetindex</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13887,7 +13968,7 @@ Note that TrainingFraction is a list in config.yaml. Defaults to 0.</p>
 <h3 id="deeplabcut.post_processing.filterpredictions(windowlength)" class="doc doc-heading doc-heading-parameter">                  <code>windowlength</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13907,7 +13988,7 @@ If filtertype='spline', windowlength is the maximal gap size to fill. Defaults t
 <h3 id="deeplabcut.post_processing.filterpredictions(p_bound)" class="doc doc-heading doc-heading-parameter">                  <code>p_bound</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13925,7 +14006,7 @@ Defaults to 0.001.</p>
 <h3 id="deeplabcut.post_processing.filterpredictions(ARdegree)" class="doc doc-heading doc-heading-parameter">                  <code>ARdegree</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13943,7 +14024,7 @@ Defaults to 3.</p>
 <h3 id="deeplabcut.post_processing.filterpredictions(MAdegree)" class="doc doc-heading doc-heading-parameter">                  <code>MAdegree</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13961,7 +14042,7 @@ Defaults to 1.</p>
 <h3 id="deeplabcut.post_processing.filterpredictions(alpha)" class="doc doc-heading doc-heading-parameter">                  <code>alpha</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -13978,7 +14059,7 @@ confidence interval of the fitted SARIMAX model. Defaults to 0.01.</p>
 <h3 id="deeplabcut.post_processing.filterpredictions(save_as_csv)" class="doc doc-heading doc-heading-parameter">                  <code>save_as_csv</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14012,7 +14093,7 @@ also needs to be passed. Defaults to None.</p>
 <h3 id="deeplabcut.post_processing.filterpredictions(modelprefix)" class="doc doc-heading doc-heading-parameter">                  <code>modelprefix</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14048,7 +14129,7 @@ be taken from the config.yaml file if none is given. Defaults to "".</p>
 <h3 id="deeplabcut.post_processing.filterpredictions(return_data)" class="doc doc-heading doc-heading-parameter">                  <code>return_data</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14357,7 +14438,9 @@ For torch-based shuffles, can be used to specify:
 <span class="normal"><a href="#__codelineno-0-274">274</a></span>
 <span class="normal"><a href="#__codelineno-0-275">275</a></span>
 <span class="normal"><a href="#__codelineno-0-276">276</a></span>
-<span class="normal"><a href="#__codelineno-0-277">277</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="nd">@renamed_parameter</span><span class="p">(</span><span class="n">old</span><span class="o">=</span><span class="s2">"videotype"</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="s2">"video_extensions"</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="s2">"3.0.0"</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-277">277</a></span>
+<span class="normal"><a href="#__codelineno-0-278">278</a></span>
+<span class="normal"><a href="#__codelineno-0-279">279</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="nd">@renamed_parameter</span><span class="p">(</span><span class="n">old</span><span class="o">=</span><span class="s2">"videotype"</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="s2">"video_extensions"</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="s2">"3.0.0"</span><span class="p">)</span>
 </span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="k">def</span><span class="w"> </span><span class="nf">filterpredictions</span><span class="p">(</span>
 </span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="n">config</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
 </span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="n">video</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -14544,33 +14627,35 @@ For torch-based shuffles, can be used to specify:
 </span><span id="__span-0-248"><a id="__codelineno-0-248" name="__codelineno-0-248"></a>        <span class="k">elif</span> <span class="n">filtertype</span> <span class="o">==</span> <span class="s2">"spline"</span><span class="p">:</span>
 </span><span id="__span-0-249"><a id="__codelineno-0-249" name="__codelineno-0-249"></a>            <span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </span><span id="__span-0-250"><a id="__codelineno-0-250" name="__codelineno-0-250"></a>            <span class="n">mask_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">"coords"</span><span class="p">)</span><span class="o">.</span><span class="n">isin</span><span class="p">((</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">))</span>
-</span><span id="__span-0-251"><a id="__codelineno-0-251" name="__codelineno-0-251"></a>            <span class="n">xy</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">mask_data</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-</span><span id="__span-0-252"><a id="__codelineno-0-252" name="__codelineno-0-252"></a>            <span class="n">prob</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="o">~</span><span class="n">mask_data</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-</span><span id="__span-0-253"><a id="__codelineno-0-253" name="__codelineno-0-253"></a>            <span class="n">missing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span>
-</span><span id="__span-0-254"><a id="__codelineno-0-254" name="__codelineno-0-254"></a>            <span class="n">xy_filled</span> <span class="o">=</span> <span class="n">columnwise_spline_interp</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">windowlength</span><span class="p">)</span>
-</span><span id="__span-0-255"><a id="__codelineno-0-255" name="__codelineno-0-255"></a>            <span class="n">filled</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">xy_filled</span><span class="p">)</span>
-</span><span id="__span-0-256"><a id="__codelineno-0-256" name="__codelineno-0-256"></a>            <span class="n">xy</span><span class="p">[</span><span class="n">filled</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy_filled</span><span class="p">[</span><span class="n">filled</span><span class="p">]</span>
-</span><span id="__span-0-257"><a id="__codelineno-0-257" name="__codelineno-0-257"></a>            <span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">missing</span> <span class="o">&amp;</span> <span class="n">filled</span><span class="p">)</span>
-</span><span id="__span-0-258"><a id="__codelineno-0-258" name="__codelineno-0-258"></a>            <span class="k">if</span> <span class="n">inds</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
-</span><span id="__span-0-259"><a id="__codelineno-0-259" name="__codelineno-0-259"></a>                <span class="c1"># Retrieve original individual label indices</span>
-</span><span id="__span-0-260"><a id="__codelineno-0-260" name="__codelineno-0-260"></a>                <span class="n">inds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">//=</span> <span class="mi">2</span>
-</span><span id="__span-0-261"><a id="__codelineno-0-261" name="__codelineno-0-261"></a>                <span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">inds</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</span><span id="__span-0-262"><a id="__codelineno-0-262" name="__codelineno-0-262"></a>                <span class="n">prob</span><span class="p">[</span><span class="n">inds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">inds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">0.01</span>
-</span><span id="__span-0-263"><a id="__codelineno-0-263" name="__codelineno-0-263"></a>                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="o">~</span><span class="n">mask_data</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span>
-</span><span id="__span-0-264"><a id="__codelineno-0-264" name="__codelineno-0-264"></a>            <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">mask_data</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy</span>
-</span><span id="__span-0-265"><a id="__codelineno-0-265" name="__codelineno-0-265"></a>        <span class="k">else</span><span class="p">:</span>
-</span><span id="__span-0-266"><a id="__codelineno-0-266" name="__codelineno-0-266"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown filter type </span><span class="si">{</span><span class="n">filtertype</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-</span><span id="__span-0-267"><a id="__codelineno-0-267" name="__codelineno-0-267"></a>
-</span><span id="__span-0-268"><a id="__codelineno-0-268" name="__codelineno-0-268"></a>        <span class="n">video_to_filtered_df</span><span class="p">[</span><span class="n">video</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+</span><span id="__span-0-251"><a id="__codelineno-0-251" name="__codelineno-0-251"></a>            <span class="c1"># copy=True: under pandas 3 CoW, homogeneous float selections</span>
+</span><span id="__span-0-252"><a id="__codelineno-0-252" name="__codelineno-0-252"></a>            <span class="c1"># via .values/.to_numpy() are read-only views.</span>
+</span><span id="__span-0-253"><a id="__codelineno-0-253" name="__codelineno-0-253"></a>            <span class="n">xy</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">mask_data</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-0-254"><a id="__codelineno-0-254" name="__codelineno-0-254"></a>            <span class="n">prob</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="o">~</span><span class="n">mask_data</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-0-255"><a id="__codelineno-0-255" name="__codelineno-0-255"></a>            <span class="n">missing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span>
+</span><span id="__span-0-256"><a id="__codelineno-0-256" name="__codelineno-0-256"></a>            <span class="n">xy_filled</span> <span class="o">=</span> <span class="n">columnwise_spline_interp</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">windowlength</span><span class="p">)</span>
+</span><span id="__span-0-257"><a id="__codelineno-0-257" name="__codelineno-0-257"></a>            <span class="n">filled</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">xy_filled</span><span class="p">)</span>
+</span><span id="__span-0-258"><a id="__codelineno-0-258" name="__codelineno-0-258"></a>            <span class="n">xy</span><span class="p">[</span><span class="n">filled</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy_filled</span><span class="p">[</span><span class="n">filled</span><span class="p">]</span>
+</span><span id="__span-0-259"><a id="__codelineno-0-259" name="__codelineno-0-259"></a>            <span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">missing</span> <span class="o">&amp;</span> <span class="n">filled</span><span class="p">)</span>
+</span><span id="__span-0-260"><a id="__codelineno-0-260" name="__codelineno-0-260"></a>            <span class="k">if</span> <span class="n">inds</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+</span><span id="__span-0-261"><a id="__codelineno-0-261" name="__codelineno-0-261"></a>                <span class="c1"># Retrieve original individual label indices</span>
+</span><span id="__span-0-262"><a id="__codelineno-0-262" name="__codelineno-0-262"></a>                <span class="n">inds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">//=</span> <span class="mi">2</span>
+</span><span id="__span-0-263"><a id="__codelineno-0-263" name="__codelineno-0-263"></a>                <span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">inds</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-0-264"><a id="__codelineno-0-264" name="__codelineno-0-264"></a>                <span class="n">prob</span><span class="p">[</span><span class="n">inds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">inds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">0.01</span>
+</span><span id="__span-0-265"><a id="__codelineno-0-265" name="__codelineno-0-265"></a>                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="o">~</span><span class="n">mask_data</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span>
+</span><span id="__span-0-266"><a id="__codelineno-0-266" name="__codelineno-0-266"></a>            <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">mask_data</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy</span>
+</span><span id="__span-0-267"><a id="__codelineno-0-267" name="__codelineno-0-267"></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-0-268"><a id="__codelineno-0-268" name="__codelineno-0-268"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown filter type </span><span class="si">{</span><span class="n">filtertype</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span id="__span-0-269"><a id="__codelineno-0-269" name="__codelineno-0-269"></a>
-</span><span id="__span-0-270"><a id="__codelineno-0-270" name="__codelineno-0-270"></a>        <span class="n">outdataname</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">".h5"</span><span class="p">,</span> <span class="s2">"_filtered.h5"</span><span class="p">)</span>
-</span><span id="__span-0-271"><a id="__codelineno-0-271" name="__codelineno-0-271"></a>        <span class="n">data</span><span class="o">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="n">outdataname</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">"df_with_missing"</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"table"</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"w"</span><span class="p">)</span>
-</span><span id="__span-0-272"><a id="__codelineno-0-272" name="__codelineno-0-272"></a>        <span class="k">if</span> <span class="n">save_as_csv</span><span class="p">:</span>
-</span><span id="__span-0-273"><a id="__codelineno-0-273" name="__codelineno-0-273"></a>            <span class="nb">print</span><span class="p">(</span><span class="s2">"Saving filtered csv poses!"</span><span class="p">)</span>
-</span><span id="__span-0-274"><a id="__codelineno-0-274" name="__codelineno-0-274"></a>            <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">outdataname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">".h5"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">".csv"</span><span class="p">)</span>
-</span><span id="__span-0-275"><a id="__codelineno-0-275" name="__codelineno-0-275"></a>
-</span><span id="__span-0-276"><a id="__codelineno-0-276" name="__codelineno-0-276"></a>    <span class="k">if</span> <span class="n">return_data</span><span class="p">:</span>
-</span><span id="__span-0-277"><a id="__codelineno-0-277" name="__codelineno-0-277"></a>        <span class="k">return</span> <span class="n">video_to_filtered_df</span>
+</span><span id="__span-0-270"><a id="__codelineno-0-270" name="__codelineno-0-270"></a>        <span class="n">video_to_filtered_df</span><span class="p">[</span><span class="n">video</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+</span><span id="__span-0-271"><a id="__codelineno-0-271" name="__codelineno-0-271"></a>
+</span><span id="__span-0-272"><a id="__codelineno-0-272" name="__codelineno-0-272"></a>        <span class="n">outdataname</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">".h5"</span><span class="p">,</span> <span class="s2">"_filtered.h5"</span><span class="p">)</span>
+</span><span id="__span-0-273"><a id="__codelineno-0-273" name="__codelineno-0-273"></a>        <span class="n">data</span><span class="o">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="n">outdataname</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">"df_with_missing"</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"table"</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"w"</span><span class="p">)</span>
+</span><span id="__span-0-274"><a id="__codelineno-0-274" name="__codelineno-0-274"></a>        <span class="k">if</span> <span class="n">save_as_csv</span><span class="p">:</span>
+</span><span id="__span-0-275"><a id="__codelineno-0-275" name="__codelineno-0-275"></a>            <span class="nb">print</span><span class="p">(</span><span class="s2">"Saving filtered csv poses!"</span><span class="p">)</span>
+</span><span id="__span-0-276"><a id="__codelineno-0-276" name="__codelineno-0-276"></a>            <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">outdataname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">".h5"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">".csv"</span><span class="p">)</span>
+</span><span id="__span-0-277"><a id="__codelineno-0-277" name="__codelineno-0-277"></a>
+</span><span id="__span-0-278"><a id="__codelineno-0-278" name="__codelineno-0-278"></a>    <span class="k">if</span> <span class="n">return_data</span><span class="p">:</span>
+</span><span id="__span-0-279"><a id="__codelineno-0-279" name="__codelineno-0-279"></a>        <span class="k">return</span> <span class="n">video_to_filtered_df</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -14609,7 +14694,7 @@ For torch-based shuffles, can be used to specify:
 <h3 id="deeplabcut.post_processing.renamed_parameter(old)" class="doc doc-heading doc-heading-parameter">                  <code>old</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14625,7 +14710,7 @@ For torch-based shuffles, can be used to specify:
 <h3 id="deeplabcut.post_processing.renamed_parameter(new)" class="doc doc-heading doc-heading-parameter">                  <code>new</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14641,7 +14726,7 @@ For torch-based shuffles, can be used to specify:
 <h3 id="deeplabcut.post_processing.renamed_parameter(since)" class="doc doc-heading doc-heading-parameter">                  <code>since</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14680,13 +14765,7 @@ For torch-based shuffles, can be used to specify:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>deeplabcut/core/deprecation.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-120">120</a></span>
-<span class="normal"><a href="#__codelineno-0-121">121</a></span>
-<span class="normal"><a href="#__codelineno-0-122">122</a></span>
-<span class="normal"><a href="#__codelineno-0-123">123</a></span>
-<span class="normal"><a href="#__codelineno-0-124">124</a></span>
-<span class="normal"><a href="#__codelineno-0-125">125</a></span>
-<span class="normal"><a href="#__codelineno-0-126">126</a></span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-126">126</a></span>
 <span class="normal"><a href="#__codelineno-0-127">127</a></span>
 <span class="normal"><a href="#__codelineno-0-128">128</a></span>
 <span class="normal"><a href="#__codelineno-0-129">129</a></span>
@@ -14763,90 +14842,96 @@ For torch-based shuffles, can be used to specify:
 <span class="normal"><a href="#__codelineno-0-200">200</a></span>
 <span class="normal"><a href="#__codelineno-0-201">201</a></span>
 <span class="normal"><a href="#__codelineno-0-202">202</a></span>
-<span class="normal"><a href="#__codelineno-0-203">203</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-120"><a id="__codelineno-0-120" name="__codelineno-0-120"></a><span class="k">def</span><span class="w"> </span><span class="nf">renamed_parameter</span><span class="p">(</span>
-</span><span id="__span-0-121"><a id="__codelineno-0-121" name="__codelineno-0-121"></a>    <span class="o">*</span><span class="p">,</span>
-</span><span id="__span-0-122"><a id="__codelineno-0-122" name="__codelineno-0-122"></a>    <span class="n">old</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="__span-0-123"><a id="__codelineno-0-123" name="__codelineno-0-123"></a>    <span class="n">new</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="__span-0-124"><a id="__codelineno-0-124" name="__codelineno-0-124"></a>    <span class="n">since</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-0-125"><a id="__codelineno-0-125" name="__codelineno-0-125"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">]],</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">]]:</span>
-</span><span id="__span-0-126"><a id="__codelineno-0-126" name="__codelineno-0-126"></a><span class="w">    </span><span class="sd">"""Support a renamed keyword argument while warning callers to update.</span>
-</span><span id="__span-0-127"><a id="__codelineno-0-127" name="__codelineno-0-127"></a>
-</span><span id="__span-0-128"><a id="__codelineno-0-128" name="__codelineno-0-128"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="sd">        old: The old parameter name that callers may still pass.</span>
-</span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a><span class="sd">        new: The current parameter name the function actually accepts.</span>
-</span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a><span class="sd">        since: Version when the rename happened.</span>
-</span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a>
-</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a><span class="sd">    Rules:</span>
-</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a><span class="sd">        - ``new`` must be the name used in the function signature and all</span>
-</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a><span class="sd">          internal call-sites.  ``old`` must **not** appear in the signature.</span>
-</span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a><span class="sd">        - Do **not** chain renames.  If ``A`` was renamed to ``B`` and ``B``</span>
-</span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a><span class="sd">          is later renamed to ``C``, replace the ``A→B`` decorator with</span>
-</span><span id="__span-0-138"><a id="__codelineno-0-138" name="__codelineno-0-138"></a><span class="sd">          ``A→C`` directly rather than stacking a second decorator.</span>
-</span><span id="__span-0-139"><a id="__codelineno-0-139" name="__codelineno-0-139"></a><span class="sd">            Example:</span>
-</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a><span class="sd">                @renamed_parameter(old="A", new="C", since="12.4.0")</span>
-</span><span id="__span-0-141"><a id="__codelineno-0-141" name="__codelineno-0-141"></a><span class="sd">                @renamed_parameter(old="B", new="C", since="13.0.0")</span>
-</span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a><span class="sd">                def func(*, C: int):</span>
-</span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a><span class="sd">                    print(f"C={C}")</span>
-</span><span id="__span-0-144"><a id="__codelineno-0-144" name="__codelineno-0-144"></a><span class="sd">        - Multiple independent renames on the same function (e.g.</span>
-</span><span id="__span-0-145"><a id="__codelineno-0-145" name="__codelineno-0-145"></a><span class="sd">          ``batchsize→batch_size`` *and* ``videotype→video_extensions``) are fine</span>
-</span><span id="__span-0-146"><a id="__codelineno-0-146" name="__codelineno-0-146"></a><span class="sd">          as long as they do not form a chain.</span>
-</span><span id="__span-0-147"><a id="__codelineno-0-147" name="__codelineno-0-147"></a><span class="sd">        - This decorator only intercepts **keyword** arguments.  Positional</span>
-</span><span id="__span-0-148"><a id="__codelineno-0-148" name="__codelineno-0-148"></a><span class="sd">          arguments are passed through unchanged; renaming a parameter that</span>
-</span><span id="__span-0-149"><a id="__codelineno-0-149" name="__codelineno-0-149"></a><span class="sd">          callers commonly pass positionally will not be caught.</span>
-</span><span id="__span-0-150"><a id="__codelineno-0-150" name="__codelineno-0-150"></a><span class="sd">    """</span>
-</span><span id="__span-0-151"><a id="__codelineno-0-151" name="__codelineno-0-151"></a>
-</span><span id="__span-0-152"><a id="__codelineno-0-152" name="__codelineno-0-152"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">]:</span>
-</span><span id="__span-0-153"><a id="__codelineno-0-153" name="__codelineno-0-153"></a>        <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-</span><span id="__span-0-154"><a id="__codelineno-0-154" name="__codelineno-0-154"></a>
-</span><span id="__span-0-155"><a id="__codelineno-0-155" name="__codelineno-0-155"></a>        <span class="c1"># Guard: disallow chaining renames (A→B stacked on top of B→C).</span>
-</span><span id="__span-0-156"><a id="__codelineno-0-156" name="__codelineno-0-156"></a>        <span class="n">existing</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s2">"__deprecated_params__"</span><span class="p">,</span> <span class="p">())</span>
-</span><span id="__span-0-157"><a id="__codelineno-0-157" name="__codelineno-0-157"></a>        <span class="k">for</span> <span class="n">prev</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">:</span>
-</span><span id="__span-0-158"><a id="__codelineno-0-158" name="__codelineno-0-158"></a>            <span class="k">if</span> <span class="n">prev</span><span class="o">.</span><span class="n">old_parameter</span> <span class="o">==</span> <span class="n">new</span><span class="p">:</span>
-</span><span id="__span-0-159"><a id="__codelineno-0-159" name="__codelineno-0-159"></a>                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="__span-0-160"><a id="__codelineno-0-160" name="__codelineno-0-160"></a>                    <span class="sa">f</span><span class="s2">"@renamed_parameter: chaining renames is not allowed. "</span>
-</span><span id="__span-0-161"><a id="__codelineno-0-161" name="__codelineno-0-161"></a>                    <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">old</span><span class="si">}</span><span class="s2">' → '</span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2">' would chain with the existing "</span>
-</span><span id="__span-0-162"><a id="__codelineno-0-162" name="__codelineno-0-162"></a>                    <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">prev</span><span class="o">.</span><span class="n">old_parameter</span><span class="si">}</span><span class="s2">' → '</span><span class="si">{</span><span class="n">prev</span><span class="o">.</span><span class="n">new_parameter</span><span class="si">}</span><span class="s2">' rename "</span>
-</span><span id="__span-0-163"><a id="__codelineno-0-163" name="__codelineno-0-163"></a>                    <span class="sa">f</span><span class="s2">"on </span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">. "</span>
-</span><span id="__span-0-164"><a id="__codelineno-0-164" name="__codelineno-0-164"></a>                    <span class="sa">f</span><span class="s2">"Use '</span><span class="si">{</span><span class="n">old</span><span class="si">}</span><span class="s2">' → '</span><span class="si">{</span><span class="n">prev</span><span class="o">.</span><span class="n">new_parameter</span><span class="si">}</span><span class="s2">' directly instead."</span>
-</span><span id="__span-0-165"><a id="__codelineno-0-165" name="__codelineno-0-165"></a>                <span class="p">)</span>
-</span><span id="__span-0-166"><a id="__codelineno-0-166" name="__codelineno-0-166"></a>
-</span><span id="__span-0-167"><a id="__codelineno-0-167" name="__codelineno-0-167"></a>        <span class="c1"># Guard: 'new' must actually exist in the function's signature.</span>
-</span><span id="__span-0-168"><a id="__codelineno-0-168" name="__codelineno-0-168"></a>        <span class="k">if</span> <span class="n">new</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
-</span><span id="__span-0-169"><a id="__codelineno-0-169" name="__codelineno-0-169"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a>                <span class="sa">f</span><span class="s2">"@renamed_parameter: '</span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2">' is not a parameter of "</span>
-</span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a>                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">. "</span>
-</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a>                <span class="sa">f</span><span class="s2">"Available parameters: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
-</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a>            <span class="p">)</span>
-</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a>
-</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a>        <span class="c1"># Guard: 'old' must NOT exist in the signature.</span>
-</span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a>        <span class="k">if</span> <span class="n">old</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
-</span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-</span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a>                <span class="sa">f</span><span class="s2">"@renamed_parameter: '</span><span class="si">{</span><span class="n">old</span><span class="si">}</span><span class="s2">' is still a parameter of "</span>
-</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a>                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">. Use either old name or new name: '</span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2">'."</span>
-</span><span id="__span-0-180"><a id="__codelineno-0-180" name="__codelineno-0-180"></a>            <span class="p">)</span>
-</span><span id="__span-0-181"><a id="__codelineno-0-181" name="__codelineno-0-181"></a>
-</span><span id="__span-0-182"><a id="__codelineno-0-182" name="__codelineno-0-182"></a>        <span class="n">info</span> <span class="o">=</span> <span class="n">DeprecationInfo</span><span class="p">(</span>
-</span><span id="__span-0-183"><a id="__codelineno-0-183" name="__codelineno-0-183"></a>            <span class="n">kind</span><span class="o">=</span><span class="s2">"parameter"</span><span class="p">,</span>
-</span><span id="__span-0-184"><a id="__codelineno-0-184" name="__codelineno-0-184"></a>            <span class="n">target</span><span class="o">=</span><span class="n">fn</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">,</span>
-</span><span id="__span-0-185"><a id="__codelineno-0-185" name="__codelineno-0-185"></a>            <span class="n">since</span><span class="o">=</span><span class="n">since</span><span class="p">,</span>
-</span><span id="__span-0-186"><a id="__codelineno-0-186" name="__codelineno-0-186"></a>            <span class="n">old_parameter</span><span class="o">=</span><span class="n">old</span><span class="p">,</span>
-</span><span id="__span-0-187"><a id="__codelineno-0-187" name="__codelineno-0-187"></a>            <span class="n">new_parameter</span><span class="o">=</span><span class="n">new</span><span class="p">,</span>
-</span><span id="__span-0-188"><a id="__codelineno-0-188" name="__codelineno-0-188"></a>        <span class="p">)</span>
-</span><span id="__span-0-189"><a id="__codelineno-0-189" name="__codelineno-0-189"></a>        <span class="n">message</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">format_message</span><span class="p">()</span>
-</span><span id="__span-0-190"><a id="__codelineno-0-190" name="__codelineno-0-190"></a>
-</span><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a>        <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-</span><span id="__span-0-192"><a id="__codelineno-0-192" name="__codelineno-0-192"></a>        <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">:</span>
-</span><span id="__span-0-193"><a id="__codelineno-0-193" name="__codelineno-0-193"></a>            <span class="k">if</span> <span class="n">old</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-</span><span id="__span-0-194"><a id="__codelineno-0-194" name="__codelineno-0-194"></a>                <span class="k">if</span> <span class="n">new</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-</span><span id="__span-0-195"><a id="__codelineno-0-195" name="__codelineno-0-195"></a>                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2"> received both '</span><span class="si">{</span><span class="n">old</span><span class="si">}</span><span class="s2">' and '</span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2">'. Use only '</span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
-</span><span id="__span-0-196"><a id="__codelineno-0-196" name="__codelineno-0-196"></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">DLCDeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</span><span id="__span-0-197"><a id="__codelineno-0-197" name="__codelineno-0-197"></a>                <span class="n">kwargs</span><span class="p">[</span><span class="n">new</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">old</span><span class="p">)</span>
-</span><span id="__span-0-198"><a id="__codelineno-0-198" name="__codelineno-0-198"></a>            <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</span><span id="__span-0-199"><a id="__codelineno-0-199" name="__codelineno-0-199"></a>
-</span><span id="__span-0-200"><a id="__codelineno-0-200" name="__codelineno-0-200"></a>        <span class="n">wrapper</span><span class="o">.</span><span class="n">__deprecated_params__</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">existing</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
-</span><span id="__span-0-201"><a id="__codelineno-0-201" name="__codelineno-0-201"></a>        <span class="k">return</span> <span class="n">wrapper</span>
-</span><span id="__span-0-202"><a id="__codelineno-0-202" name="__codelineno-0-202"></a>
-</span><span id="__span-0-203"><a id="__codelineno-0-203" name="__codelineno-0-203"></a>    <span class="k">return</span> <span class="n">decorator</span>
+<span class="normal"><a href="#__codelineno-0-203">203</a></span>
+<span class="normal"><a href="#__codelineno-0-204">204</a></span>
+<span class="normal"><a href="#__codelineno-0-205">205</a></span>
+<span class="normal"><a href="#__codelineno-0-206">206</a></span>
+<span class="normal"><a href="#__codelineno-0-207">207</a></span>
+<span class="normal"><a href="#__codelineno-0-208">208</a></span>
+<span class="normal"><a href="#__codelineno-0-209">209</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-126"><a id="__codelineno-0-126" name="__codelineno-0-126"></a><span class="k">def</span><span class="w"> </span><span class="nf">renamed_parameter</span><span class="p">(</span>
+</span><span id="__span-0-127"><a id="__codelineno-0-127" name="__codelineno-0-127"></a>    <span class="o">*</span><span class="p">,</span>
+</span><span id="__span-0-128"><a id="__codelineno-0-128" name="__codelineno-0-128"></a>    <span class="n">old</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a>    <span class="n">new</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a>    <span class="n">since</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">]],</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">]]:</span>
+</span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a><span class="w">    </span><span class="sd">"""Support a renamed keyword argument while warning callers to update.</span>
+</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>
+</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a><span class="sd">        old: The old parameter name that callers may still pass.</span>
+</span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a><span class="sd">        new: The current parameter name the function actually accepts.</span>
+</span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a><span class="sd">        since: Version when the rename happened.</span>
+</span><span id="__span-0-138"><a id="__codelineno-0-138" name="__codelineno-0-138"></a>
+</span><span id="__span-0-139"><a id="__codelineno-0-139" name="__codelineno-0-139"></a><span class="sd">    Rules:</span>
+</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a><span class="sd">        - ``new`` must be the name used in the function signature and all</span>
+</span><span id="__span-0-141"><a id="__codelineno-0-141" name="__codelineno-0-141"></a><span class="sd">          internal call-sites.  ``old`` must **not** appear in the signature.</span>
+</span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a><span class="sd">        - Do **not** chain renames.  If ``A`` was renamed to ``B`` and ``B``</span>
+</span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a><span class="sd">          is later renamed to ``C``, replace the ``A→B`` decorator with</span>
+</span><span id="__span-0-144"><a id="__codelineno-0-144" name="__codelineno-0-144"></a><span class="sd">          ``A→C`` directly rather than stacking a second decorator.</span>
+</span><span id="__span-0-145"><a id="__codelineno-0-145" name="__codelineno-0-145"></a><span class="sd">            Example:</span>
+</span><span id="__span-0-146"><a id="__codelineno-0-146" name="__codelineno-0-146"></a><span class="sd">                @renamed_parameter(old="A", new="C", since="12.4.0")</span>
+</span><span id="__span-0-147"><a id="__codelineno-0-147" name="__codelineno-0-147"></a><span class="sd">                @renamed_parameter(old="B", new="C", since="13.0.0")</span>
+</span><span id="__span-0-148"><a id="__codelineno-0-148" name="__codelineno-0-148"></a><span class="sd">                def func(*, C: int):</span>
+</span><span id="__span-0-149"><a id="__codelineno-0-149" name="__codelineno-0-149"></a><span class="sd">                    print(f"C={C}")</span>
+</span><span id="__span-0-150"><a id="__codelineno-0-150" name="__codelineno-0-150"></a><span class="sd">        - Multiple independent renames on the same function (e.g.</span>
+</span><span id="__span-0-151"><a id="__codelineno-0-151" name="__codelineno-0-151"></a><span class="sd">          ``batchsize→batch_size`` *and* ``videotype→video_extensions``) are fine</span>
+</span><span id="__span-0-152"><a id="__codelineno-0-152" name="__codelineno-0-152"></a><span class="sd">          as long as they do not form a chain.</span>
+</span><span id="__span-0-153"><a id="__codelineno-0-153" name="__codelineno-0-153"></a><span class="sd">        - This decorator only intercepts **keyword** arguments.  Positional</span>
+</span><span id="__span-0-154"><a id="__codelineno-0-154" name="__codelineno-0-154"></a><span class="sd">          arguments are passed through unchanged; renaming a parameter that</span>
+</span><span id="__span-0-155"><a id="__codelineno-0-155" name="__codelineno-0-155"></a><span class="sd">          callers commonly pass positionally will not be caught.</span>
+</span><span id="__span-0-156"><a id="__codelineno-0-156" name="__codelineno-0-156"></a><span class="sd">    """</span>
+</span><span id="__span-0-157"><a id="__codelineno-0-157" name="__codelineno-0-157"></a>
+</span><span id="__span-0-158"><a id="__codelineno-0-158" name="__codelineno-0-158"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">]:</span>
+</span><span id="__span-0-159"><a id="__codelineno-0-159" name="__codelineno-0-159"></a>        <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+</span><span id="__span-0-160"><a id="__codelineno-0-160" name="__codelineno-0-160"></a>
+</span><span id="__span-0-161"><a id="__codelineno-0-161" name="__codelineno-0-161"></a>        <span class="c1"># Guard: disallow chaining renames (A→B stacked on top of B→C).</span>
+</span><span id="__span-0-162"><a id="__codelineno-0-162" name="__codelineno-0-162"></a>        <span class="n">existing</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s2">"__deprecated_params__"</span><span class="p">,</span> <span class="p">())</span>
+</span><span id="__span-0-163"><a id="__codelineno-0-163" name="__codelineno-0-163"></a>        <span class="k">for</span> <span class="n">prev</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">:</span>
+</span><span id="__span-0-164"><a id="__codelineno-0-164" name="__codelineno-0-164"></a>            <span class="k">if</span> <span class="n">prev</span><span class="o">.</span><span class="n">old_parameter</span> <span class="o">==</span> <span class="n">new</span><span class="p">:</span>
+</span><span id="__span-0-165"><a id="__codelineno-0-165" name="__codelineno-0-165"></a>                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span id="__span-0-166"><a id="__codelineno-0-166" name="__codelineno-0-166"></a>                    <span class="sa">f</span><span class="s2">"@renamed_parameter: chaining renames is not allowed. "</span>
+</span><span id="__span-0-167"><a id="__codelineno-0-167" name="__codelineno-0-167"></a>                    <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">old</span><span class="si">}</span><span class="s2">' → '</span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2">' would chain with the existing "</span>
+</span><span id="__span-0-168"><a id="__codelineno-0-168" name="__codelineno-0-168"></a>                    <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">prev</span><span class="o">.</span><span class="n">old_parameter</span><span class="si">}</span><span class="s2">' → '</span><span class="si">{</span><span class="n">prev</span><span class="o">.</span><span class="n">new_parameter</span><span class="si">}</span><span class="s2">' rename "</span>
+</span><span id="__span-0-169"><a id="__codelineno-0-169" name="__codelineno-0-169"></a>                    <span class="sa">f</span><span class="s2">"on </span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">. "</span>
+</span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a>                    <span class="sa">f</span><span class="s2">"Use '</span><span class="si">{</span><span class="n">old</span><span class="si">}</span><span class="s2">' → '</span><span class="si">{</span><span class="n">prev</span><span class="o">.</span><span class="n">new_parameter</span><span class="si">}</span><span class="s2">' directly instead."</span>
+</span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a>                <span class="p">)</span>
+</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a>
+</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a>        <span class="c1"># Guard: 'new' must actually exist in the function's signature.</span>
+</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a>        <span class="k">if</span> <span class="n">new</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
+</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a>                <span class="sa">f</span><span class="s2">"@renamed_parameter: '</span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2">' is not a parameter of "</span>
+</span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a>                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">. "</span>
+</span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a>                <span class="sa">f</span><span class="s2">"Available parameters: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a>            <span class="p">)</span>
+</span><span id="__span-0-180"><a id="__codelineno-0-180" name="__codelineno-0-180"></a>
+</span><span id="__span-0-181"><a id="__codelineno-0-181" name="__codelineno-0-181"></a>        <span class="c1"># Guard: 'old' must NOT exist in the signature.</span>
+</span><span id="__span-0-182"><a id="__codelineno-0-182" name="__codelineno-0-182"></a>        <span class="k">if</span> <span class="n">old</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
+</span><span id="__span-0-183"><a id="__codelineno-0-183" name="__codelineno-0-183"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span id="__span-0-184"><a id="__codelineno-0-184" name="__codelineno-0-184"></a>                <span class="sa">f</span><span class="s2">"@renamed_parameter: '</span><span class="si">{</span><span class="n">old</span><span class="si">}</span><span class="s2">' is still a parameter of "</span>
+</span><span id="__span-0-185"><a id="__codelineno-0-185" name="__codelineno-0-185"></a>                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">. Use either old name or new name: '</span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2">'."</span>
+</span><span id="__span-0-186"><a id="__codelineno-0-186" name="__codelineno-0-186"></a>            <span class="p">)</span>
+</span><span id="__span-0-187"><a id="__codelineno-0-187" name="__codelineno-0-187"></a>
+</span><span id="__span-0-188"><a id="__codelineno-0-188" name="__codelineno-0-188"></a>        <span class="n">info</span> <span class="o">=</span> <span class="n">DeprecationInfo</span><span class="p">(</span>
+</span><span id="__span-0-189"><a id="__codelineno-0-189" name="__codelineno-0-189"></a>            <span class="n">kind</span><span class="o">=</span><span class="s2">"parameter"</span><span class="p">,</span>
+</span><span id="__span-0-190"><a id="__codelineno-0-190" name="__codelineno-0-190"></a>            <span class="n">target</span><span class="o">=</span><span class="n">fn</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">,</span>
+</span><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a>            <span class="n">since</span><span class="o">=</span><span class="n">since</span><span class="p">,</span>
+</span><span id="__span-0-192"><a id="__codelineno-0-192" name="__codelineno-0-192"></a>            <span class="n">old_parameter</span><span class="o">=</span><span class="n">old</span><span class="p">,</span>
+</span><span id="__span-0-193"><a id="__codelineno-0-193" name="__codelineno-0-193"></a>            <span class="n">new_parameter</span><span class="o">=</span><span class="n">new</span><span class="p">,</span>
+</span><span id="__span-0-194"><a id="__codelineno-0-194" name="__codelineno-0-194"></a>        <span class="p">)</span>
+</span><span id="__span-0-195"><a id="__codelineno-0-195" name="__codelineno-0-195"></a>        <span class="n">message</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">format_message</span><span class="p">()</span>
+</span><span id="__span-0-196"><a id="__codelineno-0-196" name="__codelineno-0-196"></a>
+</span><span id="__span-0-197"><a id="__codelineno-0-197" name="__codelineno-0-197"></a>        <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+</span><span id="__span-0-198"><a id="__codelineno-0-198" name="__codelineno-0-198"></a>        <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">:</span>
+</span><span id="__span-0-199"><a id="__codelineno-0-199" name="__codelineno-0-199"></a>            <span class="k">if</span> <span class="n">old</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+</span><span id="__span-0-200"><a id="__codelineno-0-200" name="__codelineno-0-200"></a>                <span class="k">if</span> <span class="n">new</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+</span><span id="__span-0-201"><a id="__codelineno-0-201" name="__codelineno-0-201"></a>                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2"> received both '</span><span class="si">{</span><span class="n">old</span><span class="si">}</span><span class="s2">' and '</span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2">'. Use only '</span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
+</span><span id="__span-0-202"><a id="__codelineno-0-202" name="__codelineno-0-202"></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">DLCDeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span><span id="__span-0-203"><a id="__codelineno-0-203" name="__codelineno-0-203"></a>                <span class="n">kwargs</span><span class="p">[</span><span class="n">new</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">old</span><span class="p">)</span>
+</span><span id="__span-0-204"><a id="__codelineno-0-204" name="__codelineno-0-204"></a>            <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span id="__span-0-205"><a id="__codelineno-0-205" name="__codelineno-0-205"></a>
+</span><span id="__span-0-206"><a id="__codelineno-0-206" name="__codelineno-0-206"></a>        <span class="n">wrapper</span><span class="o">.</span><span class="n">__deprecated_params__</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">existing</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+</span><span id="__span-0-207"><a id="__codelineno-0-207" name="__codelineno-0-207"></a>        <span class="k">return</span> <span class="n">wrapper</span>
+</span><span id="__span-0-208"><a id="__codelineno-0-208" name="__codelineno-0-208"></a>
+</span><span id="__span-0-209"><a id="__codelineno-0-209" name="__codelineno-0-209"></a>    <span class="k">return</span> <span class="n">decorator</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>

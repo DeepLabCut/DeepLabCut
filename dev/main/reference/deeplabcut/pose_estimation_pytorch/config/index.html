@@ -12079,6 +12079,8 @@
       
         
       
+        
+      
     
     
     
@@ -12344,6 +12346,34 @@
     
   
     <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>make_labeled_video
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utils/matplotlib_utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>matplotlib_utils
   
 
     
@@ -13269,6 +13299,34 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="WandbLoggerConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deeplabcut.pose_estimation_pytorch.config.WandbLoggerConfig.scoop_extra_wandb_kwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scoop_extra_wandb_kwargs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deeplabcut.pose_estimation_pytorch.config.WandbLoggerConfig.validate_wandb_kwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validate_wandb_kwargs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -14356,7 +14414,7 @@
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.AutocastConfig.enabled">enabled</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14367,7 +14425,7 @@
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.AutocastConfig.dtype">dtype</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14575,7 +14633,7 @@
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.CSVLoggerConfig.train_folder">train_folder</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14586,7 +14644,7 @@
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.CSVLoggerConfig.log_filename">log_filename</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14611,33 +14669,33 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>deeplabcut/pose_estimation_pytorch/config/logger.py</code></summary>
-                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-60">60</a></span>
-<span class="normal"><a href="#__codelineno-0-61">61</a></span>
-<span class="normal"><a href="#__codelineno-0-62">62</a></span>
-<span class="normal"><a href="#__codelineno-0-63">63</a></span>
-<span class="normal"><a href="#__codelineno-0-64">64</a></span>
-<span class="normal"><a href="#__codelineno-0-65">65</a></span>
-<span class="normal"><a href="#__codelineno-0-66">66</a></span>
-<span class="normal"><a href="#__codelineno-0-67">67</a></span>
-<span class="normal"><a href="#__codelineno-0-68">68</a></span>
-<span class="normal"><a href="#__codelineno-0-69">69</a></span>
-<span class="normal"><a href="#__codelineno-0-70">70</a></span>
-<span class="normal"><a href="#__codelineno-0-71">71</a></span>
-<span class="normal"><a href="#__codelineno-0-72">72</a></span>
-<span class="normal"><a href="#__codelineno-0-73">73</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="k">class</span><span class="w"> </span><span class="nc">CSVLoggerConfig</span><span class="p">(</span><span class="n">LoggerConfig</span><span class="p">):</span>  <span class="c1">#</span>
-</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="w">    </span><span class="sd">"""Configuration for CSV logger.</span>
-</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a>
-</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    This logger saves training stats and metrics to a CSV file.</span>
-</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a>
-</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">    Attributes:</span>
-</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a><span class="sd">        type: Logger type (should be 'CSVLogger')</span>
-</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="sd">        train_folder: The path of the folder containing training files.</span>
-</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="sd">        log_filename: The name of the file in which to store training stats</span>
-</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="sd">    """</span>
-</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a>
-</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">LoggerType</span><span class="o">.</span><span class="n">CSVLogger</span><span class="p">]</span>
-</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a>    <span class="n">train_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
-</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a>    <span class="n">log_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"learning_stats.csv"</span>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-108">108</a></span>
+<span class="normal"><a href="#__codelineno-0-109">109</a></span>
+<span class="normal"><a href="#__codelineno-0-110">110</a></span>
+<span class="normal"><a href="#__codelineno-0-111">111</a></span>
+<span class="normal"><a href="#__codelineno-0-112">112</a></span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span>
+<span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span>
+<span class="normal"><a href="#__codelineno-0-119">119</a></span>
+<span class="normal"><a href="#__codelineno-0-120">120</a></span>
+<span class="normal"><a href="#__codelineno-0-121">121</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-108"><a id="__codelineno-0-108" name="__codelineno-0-108"></a><span class="k">class</span><span class="w"> </span><span class="nc">CSVLoggerConfig</span><span class="p">(</span><span class="n">LoggerConfig</span><span class="p">):</span>  <span class="c1">#</span>
+</span><span id="__span-0-109"><a id="__codelineno-0-109" name="__codelineno-0-109"></a><span class="w">    </span><span class="sd">"""Configuration for CSV logger.</span>
+</span><span id="__span-0-110"><a id="__codelineno-0-110" name="__codelineno-0-110"></a>
+</span><span id="__span-0-111"><a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="sd">    This logger saves training stats and metrics to a CSV file.</span>
+</span><span id="__span-0-112"><a id="__codelineno-0-112" name="__codelineno-0-112"></a>
+</span><span id="__span-0-113"><a id="__codelineno-0-113" name="__codelineno-0-113"></a><span class="sd">    Attributes:</span>
+</span><span id="__span-0-114"><a id="__codelineno-0-114" name="__codelineno-0-114"></a><span class="sd">        type: Logger type (should be 'CSVLogger')</span>
+</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a><span class="sd">        train_folder: The path of the folder containing training files.</span>
+</span><span id="__span-0-116"><a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="sd">        log_filename: The name of the file in which to store training stats</span>
+</span><span id="__span-0-117"><a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="sd">    """</span>
+</span><span id="__span-0-118"><a id="__codelineno-0-118" name="__codelineno-0-118"></a>
+</span><span id="__span-0-119"><a id="__codelineno-0-119" name="__codelineno-0-119"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">LoggerType</span><span class="o">.</span><span class="n">CSVLogger</span><span class="p">]</span>
+</span><span id="__span-0-120"><a id="__codelineno-0-120" name="__codelineno-0-120"></a>    <span class="n">train_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
+</span><span id="__span-0-121"><a id="__codelineno-0-121" name="__codelineno-0-121"></a>    <span class="n">log_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"learning_stats.csv"</span>
 </span></code></pre></div></td></tr></table></div>
               </details>
 
@@ -14695,7 +14753,7 @@
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.CompileConfig.enabled">enabled</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -14706,7 +14764,7 @@
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.CompileConfig.mode">mode</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -15013,7 +15071,7 @@ the project config is available.</p>
 <h4 id="deeplabcut.pose_estimation_pytorch.config.ConditionsConfig.build(v)" class="doc doc-heading doc-heading-parameter">                  <code>v</code>
 </h4>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | <a class="autorefs autorefs-internal" href="ctd_conditions/#deeplabcut.pose_estimation_pytorch.config.ctd_conditions.ConditionsConfig">ConditionsConfig</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | <a class="autorefs autorefs-internal" href="ctd_conditions/#deeplabcut.pose_estimation_pytorch.config.ctd_conditions.ConditionsConfig">ConditionsConfig</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -15324,7 +15382,7 @@ the project config is available.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.ConditionsModelConfig.scorer">scorer</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -15719,7 +15777,7 @@ to a BU model for live inference; they are rejected.</p>
 <h4 id="deeplabcut.pose_estimation_pytorch.config.ConditionsModelConfig.resolve_from_conditions(config)" class="doc doc-heading doc-heading-parameter">                  <code>config</code>
 </h4>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -15770,7 +15828,7 @@ to a BU model for live inference; they are rejected.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError">ValueError</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -15781,7 +15839,7 @@ if a shuffle config has no project config available.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#TypeError">TypeError</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError">TypeError</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -15971,7 +16029,7 @@ when the project config is available:</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.ConditionsShuffleConfig.shuffle">shuffle</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -15994,7 +16052,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.ConditionsShuffleConfig.trainset_index">trainset_index</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16005,7 +16063,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.ConditionsShuffleConfig.modelprefix">modelprefix</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16016,7 +16074,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.ConditionsShuffleConfig.snapshot">snapshot</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16028,7 +16086,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.ConditionsShuffleConfig.snapshot_index">snapshot_index</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16174,7 +16232,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DLCLoaderConfig.config">config</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16207,7 +16265,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DLCLoaderConfig.modelprefix">modelprefix</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16525,7 +16583,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DataTransformationConfig.longest_max_size">longest_max_size</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16536,7 +16594,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DataTransformationConfig.hflip">hflip</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#float">float</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16580,7 +16638,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DataTransformationConfig.hist_eq">hist_eq</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16591,7 +16649,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DataTransformationConfig.motion_blur">motion_blur</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16602,7 +16660,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DataTransformationConfig.covering">covering</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16613,7 +16671,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DataTransformationConfig.elastic_transform">elastic_transform</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16624,7 +16682,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DataTransformationConfig.grayscale">grayscale</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16635,7 +16693,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DataTransformationConfig.gaussian_noise">gaussian_noise</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#float">float</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16657,7 +16715,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DataTransformationConfig.normalize_images">normalize_images</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16668,7 +16726,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DataTransformationConfig.scale_to_unit_range">scale_to_unit_range</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16831,7 +16889,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, <code><a class="autorefs autorefs-external" title="enum.Enum" href="https://docs.python.org/3/library/enum.html#enum.Enum">Enum</a></code></p>
+              Bases: <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>, <code><a class="autorefs autorefs-external" title="enum.Enum" href="https://docs.python.org/3/library/enum.html#enum.Enum">Enum</a></code></p>
 
 
 
@@ -16917,7 +16975,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DetectorModelConfig.type">type</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16928,7 +16986,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DetectorModelConfig.freeze_bn_stats">freeze_bn_stats</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16939,7 +16997,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DetectorModelConfig.freeze_bn_weights">freeze_bn_weights</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -16950,11 +17008,26 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DetectorModelConfig.variant">variant</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
                 <p>Specific variant of the detector model</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="deeplabcut.pose_estimation_pytorch.config.DetectorModelConfig.box_score_thresh">box_score_thresh</span></code></td>
+            <td>
+                  <code><span title="deeplabcut.core.config.validation.DefaultIfNone">DefaultIfNone</span>[<span title="deeplabcut.core.config.validation.Fraction">Fraction</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The score below which the detector discards proposals
+internally. <code>null</code> is normalized to the default. The value is
+deliberately permissive, as raising this value silently drops
+detections. Note the distinction with <code>bboxes_pcutoff</code> in the
+project config, which is the cutoff used to <em>plot</em> bounding boxes.</p>
               </div>
             </td>
           </tr>
@@ -16989,7 +17062,12 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
 <span class="normal"><a href="#__codelineno-0-48">48</a></span>
 <span class="normal"><a href="#__codelineno-0-49">49</a></span>
 <span class="normal"><a href="#__codelineno-0-50">50</a></span>
-<span class="normal"><a href="#__codelineno-0-51">51</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="k">class</span><span class="w"> </span><span class="nc">DetectorModelConfig</span><span class="p">(</span><span class="n">DLCBaseConfig</span><span class="p">):</span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="k">class</span><span class="w"> </span><span class="nc">DetectorModelConfig</span><span class="p">(</span><span class="n">DLCBaseConfig</span><span class="p">):</span>
 </span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="w">    </span><span class="sd">"""Configuration for detector models</span>
 </span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>
 </span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">    Attributes:</span>
@@ -16997,13 +17075,18 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
 </span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        freeze_bn_stats: Whether to freeze batch normalization statistics</span>
 </span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        freeze_bn_weights: Whether to freeze batch normalization weights</span>
 </span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">        variant: Specific variant of the detector model</span>
-</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    """</span>
-</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>
-</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a>    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
-</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a>    <span class="n">freeze_bn_stats</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a>    <span class="n">freeze_bn_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>    <span class="n">variant</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>    <span class="n">box_score_thresh</span><span class="p">:</span> <span class="n">Fraction</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        box_score_thresh: The score below which the detector discards proposals</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">            internally. ``null`` is normalized to the default. The value is</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">            deliberately permissive, as raising this value silently drops</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">            detections. Note the distinction with ``bboxes_pcutoff`` in the</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">            project config, which is the cutoff used to *plot* bounding boxes.</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    """</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>    <span class="n">freeze_bn_stats</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a>    <span class="n">freeze_bn_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span class="n">variant</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="n">box_score_thresh</span><span class="p">:</span> <span class="n">DefaultIfNone</span><span class="p">[</span><span class="n">Fraction</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.01</span>
 </span></code></pre></div></td></tr></table></div>
               </details>
 
@@ -17041,7 +17124,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, <code><a class="autorefs autorefs-external" title="enum.Enum" href="https://docs.python.org/3/library/enum.html#enum.Enum">Enum</a></code></p>
+              Bases: <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>, <code><a class="autorefs autorefs-external" title="enum.Enum" href="https://docs.python.org/3/library/enum.html#enum.Enum">Enum</a></code></p>
 
 
 
@@ -17129,7 +17212,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.EvaluationConfig.pcutoff">pcutoff</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/glossary.html#term-list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#float">float</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/glossary.html#term-list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#float">float</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#float">float</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -17143,7 +17226,7 @@ injected later via <code>resolve_from_conditions(config=...)</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.EvaluationConfig.comparison_bodyparts">comparison_bodyparts</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;all&#39;] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/glossary.html#term-list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>] | None</code>
+                  <code><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;all&#39;] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/glossary.html#term-list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -17155,7 +17238,7 @@ Can be "all", None (all bodyparts), or a list of bodypart names.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.EvaluationConfig.per_keypoint_evaluation">per_keypoint_evaluation</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -17167,7 +17250,7 @@ for each keypoint individually.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.EvaluationConfig.force_multi_animal">force_multi_animal</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -17555,7 +17638,7 @@ evaluation-only; Shuffle/Model are used for live analyze.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.InferenceConfig.snapshot">snapshot</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/glossary.html#term-list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/glossary.html#term-list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -17697,7 +17780,7 @@ evaluation-only; Shuffle/Model are used for live analyze.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.LoggerConfig.type">type</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -17722,21 +17805,21 @@ evaluation-only; Shuffle/Model are used for live analyze.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>deeplabcut/pose_estimation_pytorch/config/logger.py</code></summary>
-                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-24">24</a></span>
-<span class="normal"><a href="#__codelineno-0-25">25</a></span>
-<span class="normal"><a href="#__codelineno-0-26">26</a></span>
-<span class="normal"><a href="#__codelineno-0-27">27</a></span>
-<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-28">28</a></span>
 <span class="normal"><a href="#__codelineno-0-29">29</a></span>
 <span class="normal"><a href="#__codelineno-0-30">30</a></span>
-<span class="normal"><a href="#__codelineno-0-31">31</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="k">class</span><span class="w"> </span><span class="nc">LoggerConfig</span><span class="p">(</span><span class="n">DLCBaseConfig</span><span class="p">):</span>
-</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span class="w">    </span><span class="sd">"""Base configuration for all loggers.</span>
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a>
-</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">    Attributes:</span>
-</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        type: The type of logger to use (WandbLogger or CSVLogger)</span>
-</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">    """</span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="k">class</span><span class="w"> </span><span class="nc">LoggerConfig</span><span class="p">(</span><span class="n">DLCBaseConfig</span><span class="p">):</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="w">    </span><span class="sd">"""Base configuration for all loggers.</span>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a>    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">    Attributes:</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        type: The type of logger to use (WandbLogger or CSVLogger)</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">    """</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a>    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>
 </span></code></pre></div></td></tr></table></div>
               </details>
 
@@ -17774,7 +17857,7 @@ evaluation-only; Shuffle/Model are used for live analyze.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, <code><a class="autorefs autorefs-external" title="enum.Enum" href="https://docs.python.org/3/library/enum.html#enum.Enum">Enum</a></code></p>
+              Bases: <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>, <code><a class="autorefs autorefs-external" title="enum.Enum" href="https://docs.python.org/3/library/enum.html#enum.Enum">Enum</a></code></p>
 
 
 
@@ -17873,7 +17956,7 @@ evaluation-only; Shuffle/Model are used for live analyze.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.ModelConfig.backbone_output_channels">backbone_output_channels</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -17884,7 +17967,7 @@ evaluation-only; Shuffle/Model are used for live analyze.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.ModelConfig.heads">heads</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -18019,7 +18102,7 @@ evaluation-only; Shuffle/Model are used for live analyze.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.MultithreadingConfig.enabled">enabled</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -18030,7 +18113,7 @@ evaluation-only; Shuffle/Model are used for live analyze.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.MultithreadingConfig.queue_length">queue_length</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -18041,7 +18124,7 @@ evaluation-only; Shuffle/Model are used for live analyze.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.MultithreadingConfig.timeout">timeout</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#float">float</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -18126,7 +18209,7 @@ evaluation-only; Shuffle/Model are used for live analyze.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, <code><a class="autorefs autorefs-external" title="enum.Enum" href="https://docs.python.org/3/library/enum.html#enum.Enum">Enum</a></code></p>
+              Bases: <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>, <code><a class="autorefs autorefs-external" title="enum.Enum" href="https://docs.python.org/3/library/enum.html#enum.Enum">Enum</a></code></p>
 
 
 
@@ -18523,7 +18606,7 @@ a canonical member plus an optional top-down flag. See <code>alias</code>,
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.OptimizerConfig.type">type</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -18534,7 +18617,7 @@ a canonical member plus an optional top-down flag. See <code>alias</code>,
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.OptimizerConfig.params">params</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -18659,7 +18742,7 @@ configuration domains (project, model, data, training, etc.).</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.PoseConfig.device">device</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -18670,7 +18753,7 @@ configuration domains (project, model, data, training, etc.).</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.PoseConfig.project">project</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -18747,7 +18830,7 @@ configuration domains (project, model, data, training, etc.).</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.PoseConfig.with_center_keypoints">with_center_keypoints</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -19237,7 +19320,7 @@ configuration domains (project, model, data, training, etc.).</p>
 <h4 id="deeplabcut.pose_estimation_pytorch.config.PoseConfig.build(project_config)" class="doc doc-heading doc-heading-parameter">                  <code>project_config</code>
 </h4>            </td>
             <td>
-                  <code><a class="autorefs autorefs-internal" href="../../core/config/#deeplabcut.core.config.ProjectConfig">ProjectConfig</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-internal" href="../../core/config/#deeplabcut.core.config.ProjectConfig">ProjectConfig</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -19253,7 +19336,7 @@ configuration domains (project, model, data, training, etc.).</p>
 <h4 id="deeplabcut.pose_estimation_pytorch.config.PoseConfig.build(pose_config_path)" class="doc doc-heading doc-heading-parameter">                  <code>pose_config_path</code>
 </h4>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -19269,7 +19352,7 @@ configuration domains (project, model, data, training, etc.).</p>
 <h4 id="deeplabcut.pose_estimation_pytorch.config.PoseConfig.build(top_down)" class="doc doc-heading doc-heading-parameter">                  <code>top_down</code>
 </h4>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -19285,7 +19368,7 @@ configuration domains (project, model, data, training, etc.).</p>
 <h4 id="deeplabcut.pose_estimation_pytorch.config.PoseConfig.build(net_type)" class="doc doc-heading doc-heading-parameter">                  <code>net_type</code>
 </h4>            </td>
             <td>
-                  <code><a class="autorefs autorefs-internal" href="enums/#deeplabcut.pose_estimation_pytorch.config.enums.NetType">NetType</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+                  <code><a class="autorefs autorefs-internal" href="enums/#deeplabcut.pose_estimation_pytorch.config.enums.NetType">NetType</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -19302,7 +19385,7 @@ If None, the default net type from the project config will be used.</p>
 <h4 id="deeplabcut.pose_estimation_pytorch.config.PoseConfig.build(detector_type)" class="doc doc-heading doc-heading-parameter">                  <code>detector_type</code>
 </h4>            </td>
             <td>
-                  <code><a class="autorefs autorefs-internal" href="enums/#deeplabcut.pose_estimation_pytorch.config.enums.DetectorType">DetectorType</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+                  <code><a class="autorefs autorefs-internal" href="enums/#deeplabcut.pose_estimation_pytorch.config.enums.DetectorType">DetectorType</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -19334,7 +19417,7 @@ If None, the default net type from the project config will be used.</p>
 <h4 id="deeplabcut.pose_estimation_pytorch.config.PoseConfig.build(ctd_conditions)" class="doc doc-heading doc-heading-parameter">                  <code>ctd_conditions</code>
 </h4>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -19352,7 +19435,7 @@ both evaluation and live analyze.</p>
 <h4 id="deeplabcut.pose_estimation_pytorch.config.PoseConfig.build(save)" class="doc doc-heading doc-heading-parameter">                  <code>save</code>
 </h4>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -19890,7 +19973,7 @@ the <code>top_down</code> is ignored and <code>method</code> is resolved from th
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.RunnerConfig.type">type</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -19912,7 +19995,7 @@ the <code>top_down</code> is ignored and <code>method</code> is resolved from th
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.RunnerConfig.key_metric">key_metric</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -19923,7 +20006,7 @@ the <code>top_down</code> is ignored and <code>method</code> is resolved from th
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.RunnerConfig.key_metric_asc">key_metric_asc</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -19934,7 +20017,7 @@ the <code>top_down</code> is ignored and <code>method</code> is resolved from th
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.RunnerConfig.eval_interval">eval_interval</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -19978,7 +20061,7 @@ the <code>top_down</code> is ignored and <code>method</code> is resolved from th
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.RunnerConfig.load_weights_only">load_weights_only</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20117,7 +20200,7 @@ the <code>top_down</code> is ignored and <code>method</code> is resolved from th
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.SchedulerConfig.type">type</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20128,7 +20211,7 @@ the <code>top_down</code> is ignored and <code>method</code> is resolved from th
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.SchedulerConfig.params">params</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>] | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/expressions.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20229,7 +20312,7 @@ the <code>top_down</code> is ignored and <code>method</code> is resolved from th
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.SnapshotCheckpointConfig.max_snapshots">max_snapshots</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20240,7 +20323,7 @@ the <code>top_down</code> is ignored and <code>method</code> is resolved from th
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.SnapshotCheckpointConfig.save_epochs">save_epochs</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20251,7 +20334,7 @@ the <code>top_down</code> is ignored and <code>method</code> is resolved from th
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.SnapshotCheckpointConfig.save_optimizer_state">save_optimizer_state</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20642,7 +20725,7 @@ the essential metadata about joints and network architecture.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.TrainSettingsConfig.batch_size">batch_size</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20653,7 +20736,7 @@ the essential metadata about joints and network architecture.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.TrainSettingsConfig.dataloader_workers">dataloader_workers</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20664,7 +20747,7 @@ the essential metadata about joints and network architecture.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.TrainSettingsConfig.dataloader_pin_memory">dataloader_pin_memory</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20675,7 +20758,7 @@ the essential metadata about joints and network architecture.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.TrainSettingsConfig.display_iters">display_iters</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20686,7 +20769,7 @@ the essential metadata about joints and network architecture.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.TrainSettingsConfig.epochs">epochs</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20697,7 +20780,7 @@ the essential metadata about joints and network architecture.</p>
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.TrainSettingsConfig.seed">seed</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20822,6 +20905,12 @@ the essential metadata about joints and network architecture.</p>
 Refer to: <a href="https://docs.wandb.ai/guides">https://docs.wandb.ai/guides</a> for more information.</p>
 
 
+<details class="notes" open>
+  <summary>Notes</summary>
+  <p>Different config versions might have top-level WandB options instead of
+wandb_kwargs. Unknown top-level fields are scooped into wandb_kwargs.</p>
+</details>
+
 <p><span class="doc-section-title">Attributes:</span></p>
     <table>
       <thead>
@@ -20846,7 +20935,7 @@ Refer to: <a href="https://docs.wandb.ai/guides">https://docs.wandb.ai/guides</a
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.WandbLoggerConfig.project_name">project_name</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20857,7 +20946,7 @@ Refer to: <a href="https://docs.wandb.ai/guides">https://docs.wandb.ai/guides</a
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.WandbLoggerConfig.run_name">run_name</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20868,7 +20957,7 @@ Refer to: <a href="https://docs.wandb.ai/guides">https://docs.wandb.ai/guides</a
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.WandbLoggerConfig.image_log_interval">image_log_interval</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20891,7 +20980,7 @@ Refer to: <a href="https://docs.wandb.ai/guides">https://docs.wandb.ai/guides</a
           <tr class="doc-section-item">
             <td><code><span title="deeplabcut.pose_estimation_pytorch.config.WandbLoggerConfig.train_folder">train_folder</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -20924,56 +21013,173 @@ Refer to: <a href="https://docs.wandb.ai/guides">https://docs.wandb.ai/guides</a
 
 
 
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" href="#deeplabcut.pose_estimation_pytorch.config.WandbLoggerConfig.scoop_extra_wandb_kwargs">scoop_extra_wandb_kwargs</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Move unknown top-level keys into <code>wandb_kwargs</code></p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" href="#deeplabcut.pose_estimation_pytorch.config.WandbLoggerConfig.validate_wandb_kwargs">validate_wandb_kwargs</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Reject nested keys that collide with reserved wandb.init options.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>deeplabcut/pose_estimation_pytorch/config/logger.py</code></summary>
-                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-34">34</a></span>
-<span class="normal"><a href="#__codelineno-0-35">35</a></span>
-<span class="normal"><a href="#__codelineno-0-36">36</a></span>
-<span class="normal"><a href="#__codelineno-0-37">37</a></span>
-<span class="normal"><a href="#__codelineno-0-38">38</a></span>
-<span class="normal"><a href="#__codelineno-0-39">39</a></span>
-<span class="normal"><a href="#__codelineno-0-40">40</a></span>
-<span class="normal"><a href="#__codelineno-0-41">41</a></span>
-<span class="normal"><a href="#__codelineno-0-42">42</a></span>
-<span class="normal"><a href="#__codelineno-0-43">43</a></span>
-<span class="normal"><a href="#__codelineno-0-44">44</a></span>
-<span class="normal"><a href="#__codelineno-0-45">45</a></span>
-<span class="normal"><a href="#__codelineno-0-46">46</a></span>
-<span class="normal"><a href="#__codelineno-0-47">47</a></span>
-<span class="normal"><a href="#__codelineno-0-48">48</a></span>
-<span class="normal"><a href="#__codelineno-0-49">49</a></span>
-<span class="normal"><a href="#__codelineno-0-50">50</a></span>
-<span class="normal"><a href="#__codelineno-0-51">51</a></span>
-<span class="normal"><a href="#__codelineno-0-52">52</a></span>
-<span class="normal"><a href="#__codelineno-0-53">53</a></span>
-<span class="normal"><a href="#__codelineno-0-54">54</a></span>
-<span class="normal"><a href="#__codelineno-0-55">55</a></span>
-<span class="normal"><a href="#__codelineno-0-56">56</a></span>
-<span class="normal"><a href="#__codelineno-0-57">57</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="k">class</span><span class="w"> </span><span class="nc">WandbLoggerConfig</span><span class="p">(</span><span class="n">LoggerConfig</span><span class="p">):</span>  <span class="c1">#</span>
-</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="w">    </span><span class="sd">"""Configuration for Weights &amp; Biases (wandb) logger.</span>
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>
-</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">    This logger tracks experiments and logs data to Weights &amp; Biases.</span>
-</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">    Refer to: https://docs.wandb.ai/guides for more information.</span>
-</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>
-</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">    Attributes:</span>
-</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        type: Logger type (should be 'WandbLogger')</span>
-</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        project_name: The name of the wandb project</span>
-</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">        run_name: The name of the wandb run</span>
-</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">        image_log_interval: How often train/test images are logged in epochs</span>
-</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">            (if None, train/test inputs are never logged)</span>
-</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        model: The model architecture to log</span>
-</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">        train_folder: The path of the folder containing training files.</span>
-</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        wandb_kwargs: Additional keyword arguments to pass to wandb.init</span>
-</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    """</span>
-</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
-</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">LoggerType</span><span class="o">.</span><span class="n">WandbLogger</span><span class="p">]</span>
-</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"deeplabcut"</span>
-</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>    <span class="n">run_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"tmp"</span>
-</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a>    <span class="n">image_log_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span class="n">model</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="n">train_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span class="n">wandb_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-38"> 38</a></span>
+<span class="normal"><a href="#__codelineno-0-39"> 39</a></span>
+<span class="normal"><a href="#__codelineno-0-40"> 40</a></span>
+<span class="normal"><a href="#__codelineno-0-41"> 41</a></span>
+<span class="normal"><a href="#__codelineno-0-42"> 42</a></span>
+<span class="normal"><a href="#__codelineno-0-43"> 43</a></span>
+<span class="normal"><a href="#__codelineno-0-44"> 44</a></span>
+<span class="normal"><a href="#__codelineno-0-45"> 45</a></span>
+<span class="normal"><a href="#__codelineno-0-46"> 46</a></span>
+<span class="normal"><a href="#__codelineno-0-47"> 47</a></span>
+<span class="normal"><a href="#__codelineno-0-48"> 48</a></span>
+<span class="normal"><a href="#__codelineno-0-49"> 49</a></span>
+<span class="normal"><a href="#__codelineno-0-50"> 50</a></span>
+<span class="normal"><a href="#__codelineno-0-51"> 51</a></span>
+<span class="normal"><a href="#__codelineno-0-52"> 52</a></span>
+<span class="normal"><a href="#__codelineno-0-53"> 53</a></span>
+<span class="normal"><a href="#__codelineno-0-54"> 54</a></span>
+<span class="normal"><a href="#__codelineno-0-55"> 55</a></span>
+<span class="normal"><a href="#__codelineno-0-56"> 56</a></span>
+<span class="normal"><a href="#__codelineno-0-57"> 57</a></span>
+<span class="normal"><a href="#__codelineno-0-58"> 58</a></span>
+<span class="normal"><a href="#__codelineno-0-59"> 59</a></span>
+<span class="normal"><a href="#__codelineno-0-60"> 60</a></span>
+<span class="normal"><a href="#__codelineno-0-61"> 61</a></span>
+<span class="normal"><a href="#__codelineno-0-62"> 62</a></span>
+<span class="normal"><a href="#__codelineno-0-63"> 63</a></span>
+<span class="normal"><a href="#__codelineno-0-64"> 64</a></span>
+<span class="normal"><a href="#__codelineno-0-65"> 65</a></span>
+<span class="normal"><a href="#__codelineno-0-66"> 66</a></span>
+<span class="normal"><a href="#__codelineno-0-67"> 67</a></span>
+<span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
+<span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
+<span class="normal"><a href="#__codelineno-0-70"> 70</a></span>
+<span class="normal"><a href="#__codelineno-0-71"> 71</a></span>
+<span class="normal"><a href="#__codelineno-0-72"> 72</a></span>
+<span class="normal"><a href="#__codelineno-0-73"> 73</a></span>
+<span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
+<span class="normal"><a href="#__codelineno-0-75"> 75</a></span>
+<span class="normal"><a href="#__codelineno-0-76"> 76</a></span>
+<span class="normal"><a href="#__codelineno-0-77"> 77</a></span>
+<span class="normal"><a href="#__codelineno-0-78"> 78</a></span>
+<span class="normal"><a href="#__codelineno-0-79"> 79</a></span>
+<span class="normal"><a href="#__codelineno-0-80"> 80</a></span>
+<span class="normal"><a href="#__codelineno-0-81"> 81</a></span>
+<span class="normal"><a href="#__codelineno-0-82"> 82</a></span>
+<span class="normal"><a href="#__codelineno-0-83"> 83</a></span>
+<span class="normal"><a href="#__codelineno-0-84"> 84</a></span>
+<span class="normal"><a href="#__codelineno-0-85"> 85</a></span>
+<span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
+<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
+<span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
+<span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
+<span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
+<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
+<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
+<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
+<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
+<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span>
+<span class="normal"><a href="#__codelineno-0-103">103</a></span>
+<span class="normal"><a href="#__codelineno-0-104">104</a></span>
+<span class="normal"><a href="#__codelineno-0-105">105</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="k">class</span><span class="w"> </span><span class="nc">WandbLoggerConfig</span><span class="p">(</span><span class="n">LoggerConfig</span><span class="p">):</span>  <span class="c1">#</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="w">    </span><span class="sd">"""Configuration for Weights &amp; Biases (wandb) logger.</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    This logger tracks experiments and logs data to Weights &amp; Biases.</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    Refer to: https://docs.wandb.ai/guides for more information.</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">    Notes:</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">        Different config versions might have top-level WandB options instead of</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        wandb_kwargs. Unknown top-level fields are scooped into wandb_kwargs.</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    Attributes:</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        type: Logger type (should be 'WandbLogger')</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        project_name: The name of the wandb project</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">        run_name: The name of the wandb run</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        image_log_interval: How often train/test images are logged in epochs</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">            (if None, train/test inputs are never logged)</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">        model: The model architecture to log</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">        train_folder: The path of the folder containing training files.</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">        wandb_kwargs: Additional keyword arguments to pass to wandb.init</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">    """</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>    <span class="c1"># These options are reserved since they are explicitly passed to wandb.init (from `project_name` and `run_name`)</span>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span class="n">_FORBIDDEN_WANDB_KWARGS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"project"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">})</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a>
+</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">LoggerType</span><span class="o">.</span><span class="n">WandbLogger</span><span class="p">]</span>
+</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a>    <span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"deeplabcut"</span>
+</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span class="n">run_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"tmp"</span>
+</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a>    <span class="n">image_log_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="n">model</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="n">train_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a>    <span class="n">wandb_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a>
+</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a>    <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">"before"</span><span class="p">)</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="nd">@classmethod</span>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">scoop_extra_wandb_kwargs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="w">        </span><span class="sd">"""Move unknown top-level keys into ``wandb_kwargs``"""</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a>            <span class="k">return</span> <span class="n">data</span>
+</span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a>        <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78"></a>        <span class="n">known</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">model_fields</span><span class="p">)</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_alias_map</span><span class="p">())</span>
+</span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a>        <span class="n">provided</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a>        <span class="n">extras</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">provided</span> <span class="o">-</span> <span class="n">known</span><span class="p">}</span>
+</span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">extras</span><span class="p">:</span>
+</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a>            <span class="k">return</span> <span class="n">data</span>
+</span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83"></a>
+</span><span id="__span-0-84"><a id="__codelineno-0-84" name="__codelineno-0-84"></a>        <span class="n">nested</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"wandb_kwargs"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+</span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nested</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+</span><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"wandb_kwargs must be a dictionary when provided"</span><span class="p">)</span>
+</span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87"></a>
+</span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a>        <span class="n">overlap</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">nested</span><span class="p">)</span>
+</span><span id="__span-0-89"><a id="__codelineno-0-89" name="__codelineno-0-89"></a>        <span class="k">if</span> <span class="n">overlap</span><span class="p">:</span>
+</span><span id="__span-0-90"><a id="__codelineno-0-90" name="__codelineno-0-90"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Duplicate wandb.init options at top-level and in wandb_kwargs: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">overlap</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91"></a>
+</span><span id="__span-0-92"><a id="__codelineno-0-92" name="__codelineno-0-92"></a>        <span class="n">data</span><span class="p">[</span><span class="s2">"wandb_kwargs"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">nested</span><span class="p">,</span> <span class="o">**</span><span class="n">extras</span><span class="p">}</span>
+</span><span id="__span-0-93"><a id="__codelineno-0-93" name="__codelineno-0-93"></a>        <span class="k">return</span> <span class="n">data</span>
+</span><span id="__span-0-94"><a id="__codelineno-0-94" name="__codelineno-0-94"></a>
+</span><span id="__span-0-95"><a id="__codelineno-0-95" name="__codelineno-0-95"></a>    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">"wandb_kwargs"</span><span class="p">)</span>
+</span><span id="__span-0-96"><a id="__codelineno-0-96" name="__codelineno-0-96"></a>    <span class="nd">@classmethod</span>
+</span><span id="__span-0-97"><a id="__codelineno-0-97" name="__codelineno-0-97"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">validate_wandb_kwargs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-98"><a id="__codelineno-0-98" name="__codelineno-0-98"></a><span class="w">        </span><span class="sd">"""Reject nested keys that collide with reserved wandb.init options."""</span>
+</span><span id="__span-0-99"><a id="__codelineno-0-99" name="__codelineno-0-99"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span><span class="p">:</span>
+</span><span id="__span-0-100"><a id="__codelineno-0-100" name="__codelineno-0-100"></a>            <span class="k">return</span> <span class="n">v</span>
+</span><span id="__span-0-101"><a id="__codelineno-0-101" name="__codelineno-0-101"></a>        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&amp;</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_FORBIDDEN_WANDB_KWARGS</span><span class="p">:</span>
+</span><span id="__span-0-102"><a id="__codelineno-0-102" name="__codelineno-0-102"></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span id="__span-0-103"><a id="__codelineno-0-103" name="__codelineno-0-103"></a>                <span class="sa">f</span><span class="s2">"wandb_kwargs cannot include any of the reserved options: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_FORBIDDEN_WANDB_KWARGS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+</span><span id="__span-0-104"><a id="__codelineno-0-104" name="__codelineno-0-104"></a>            <span class="p">)</span>
+</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105"></a>        <span class="k">return</span> <span class="n">v</span>
 </span></code></pre></div></td></tr></table></div>
               </details>
 
@@ -20989,6 +21195,130 @@ Refer to: <a href="https://docs.wandb.ai/guides">https://docs.wandb.ai/guides</a
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="deeplabcut.pose_estimation_pytorch.config.WandbLoggerConfig.scoop_extra_wandb_kwargs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">scoop_extra_wandb_kwargs</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">scoop_extra_wandb_kwargs</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Move unknown top-level keys into <code>wandb_kwargs</code></p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>deeplabcut/pose_estimation_pytorch/config/logger.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span>
+<span class="normal"><a href="#__codelineno-0-72">72</a></span>
+<span class="normal"><a href="#__codelineno-0-73">73</a></span>
+<span class="normal"><a href="#__codelineno-0-74">74</a></span>
+<span class="normal"><a href="#__codelineno-0-75">75</a></span>
+<span class="normal"><a href="#__codelineno-0-76">76</a></span>
+<span class="normal"><a href="#__codelineno-0-77">77</a></span>
+<span class="normal"><a href="#__codelineno-0-78">78</a></span>
+<span class="normal"><a href="#__codelineno-0-79">79</a></span>
+<span class="normal"><a href="#__codelineno-0-80">80</a></span>
+<span class="normal"><a href="#__codelineno-0-81">81</a></span>
+<span class="normal"><a href="#__codelineno-0-82">82</a></span>
+<span class="normal"><a href="#__codelineno-0-83">83</a></span>
+<span class="normal"><a href="#__codelineno-0-84">84</a></span>
+<span class="normal"><a href="#__codelineno-0-85">85</a></span>
+<span class="normal"><a href="#__codelineno-0-86">86</a></span>
+<span class="normal"><a href="#__codelineno-0-87">87</a></span>
+<span class="normal"><a href="#__codelineno-0-88">88</a></span>
+<span class="normal"><a href="#__codelineno-0-89">89</a></span>
+<span class="normal"><a href="#__codelineno-0-90">90</a></span>
+<span class="normal"><a href="#__codelineno-0-91">91</a></span>
+<span class="normal"><a href="#__codelineno-0-92">92</a></span>
+<span class="normal"><a href="#__codelineno-0-93">93</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">"before"</span><span class="p">)</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a><span class="nd">@classmethod</span>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="k">def</span><span class="w"> </span><span class="nf">scoop_extra_wandb_kwargs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="w">    </span><span class="sd">"""Move unknown top-level keys into ``wandb_kwargs``"""</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a>        <span class="k">return</span> <span class="n">data</span>
+</span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a>    <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78"></a>    <span class="n">known</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">model_fields</span><span class="p">)</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_alias_map</span><span class="p">())</span>
+</span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a>    <span class="n">provided</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a>    <span class="n">extras</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">provided</span> <span class="o">-</span> <span class="n">known</span><span class="p">}</span>
+</span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">extras</span><span class="p">:</span>
+</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a>        <span class="k">return</span> <span class="n">data</span>
+</span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83"></a>
+</span><span id="__span-0-84"><a id="__codelineno-0-84" name="__codelineno-0-84"></a>    <span class="n">nested</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"wandb_kwargs"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+</span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nested</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+</span><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"wandb_kwargs must be a dictionary when provided"</span><span class="p">)</span>
+</span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87"></a>
+</span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a>    <span class="n">overlap</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">nested</span><span class="p">)</span>
+</span><span id="__span-0-89"><a id="__codelineno-0-89" name="__codelineno-0-89"></a>    <span class="k">if</span> <span class="n">overlap</span><span class="p">:</span>
+</span><span id="__span-0-90"><a id="__codelineno-0-90" name="__codelineno-0-90"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Duplicate wandb.init options at top-level and in wandb_kwargs: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">overlap</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91"></a>
+</span><span id="__span-0-92"><a id="__codelineno-0-92" name="__codelineno-0-92"></a>    <span class="n">data</span><span class="p">[</span><span class="s2">"wandb_kwargs"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">nested</span><span class="p">,</span> <span class="o">**</span><span class="n">extras</span><span class="p">}</span>
+</span><span id="__span-0-93"><a id="__codelineno-0-93" name="__codelineno-0-93"></a>    <span class="k">return</span> <span class="n">data</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="deeplabcut.pose_estimation_pytorch.config.WandbLoggerConfig.validate_wandb_kwargs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">validate_wandb_kwargs</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">validate_wandb_kwargs</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Reject nested keys that collide with reserved wandb.init options.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>deeplabcut/pose_estimation_pytorch/config/logger.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span>
+<span class="normal"><a href="#__codelineno-0-103">103</a></span>
+<span class="normal"><a href="#__codelineno-0-104">104</a></span>
+<span class="normal"><a href="#__codelineno-0-105">105</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-95"><a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">"wandb_kwargs"</span><span class="p">)</span>
+</span><span id="__span-0-96"><a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="nd">@classmethod</span>
+</span><span id="__span-0-97"><a id="__codelineno-0-97" name="__codelineno-0-97"></a><span class="k">def</span><span class="w"> </span><span class="nf">validate_wandb_kwargs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-98"><a id="__codelineno-0-98" name="__codelineno-0-98"></a><span class="w">    </span><span class="sd">"""Reject nested keys that collide with reserved wandb.init options."""</span>
+</span><span id="__span-0-99"><a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span><span class="p">:</span>
+</span><span id="__span-0-100"><a id="__codelineno-0-100" name="__codelineno-0-100"></a>        <span class="k">return</span> <span class="n">v</span>
+</span><span id="__span-0-101"><a id="__codelineno-0-101" name="__codelineno-0-101"></a>    <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&amp;</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_FORBIDDEN_WANDB_KWARGS</span><span class="p">:</span>
+</span><span id="__span-0-102"><a id="__codelineno-0-102" name="__codelineno-0-102"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+</span><span id="__span-0-103"><a id="__codelineno-0-103" name="__codelineno-0-103"></a>            <span class="sa">f</span><span class="s2">"wandb_kwargs cannot include any of the reserved options: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_FORBIDDEN_WANDB_KWARGS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+</span><span id="__span-0-104"><a id="__codelineno-0-104" name="__codelineno-0-104"></a>        <span class="p">)</span>
+</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105"></a>    <span class="k">return</span> <span class="n">v</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 
@@ -21283,7 +21613,7 @@ DeepLabCut</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/glossary.html#term-list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/glossary.html#term-list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -21420,7 +21750,7 @@ DeepLabCut</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/glossary.html#term-list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/glossary.html#term-list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -21564,7 +21894,7 @@ DeepLabCut</p>
 <h3 id="deeplabcut.pose_estimation_pytorch.config.pretty_print(indent)" class="doc doc-heading doc-heading-parameter">                  <code>indent</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -21580,7 +21910,7 @@ DeepLabCut</p>
 <h3 id="deeplabcut.pose_estimation_pytorch.config.pretty_print(print_fn)" class="doc doc-heading doc-heading-parameter">                  <code>print_fn</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>], None] | None</code>
+                  <code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a>], None] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -21675,7 +22005,7 @@ DeepLabCut</p>
 <h3 id="deeplabcut.pose_estimation_pytorch.config.read_config_as_dict(config_path)" class="doc doc-heading doc-heading-parameter">                  <code>config_path</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -21724,7 +22054,7 @@ DeepLabCut</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError">FileNotFoundError</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/exceptions.html#FileNotFoundError">FileNotFoundError</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -21850,7 +22180,7 @@ keyword arguments (such as "paf_graph": list[tuple[int, int]] or
 <h3 id="deeplabcut.pose_estimation_pytorch.config.replace_default_values(num_bodyparts)" class="doc doc-heading doc-heading-parameter">                  <code>num_bodyparts</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -21866,7 +22196,7 @@ keyword arguments (such as "paf_graph": list[tuple[int, int]] or
 <h3 id="deeplabcut.pose_estimation_pytorch.config.replace_default_values(num_individuals)" class="doc doc-heading doc-heading-parameter">                  <code>num_individuals</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -21882,7 +22212,7 @@ keyword arguments (such as "paf_graph": list[tuple[int, int]] or
 <h3 id="deeplabcut.pose_estimation_pytorch.config.replace_default_values(backbone_output_channels)" class="doc doc-heading doc-heading-parameter">                  <code>backbone_output_channels</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -21946,7 +22276,7 @@ keyword arguments (such as "paf_graph": list[tuple[int, int]] or
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError">ValueError</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -22263,7 +22593,7 @@ e.g. {"device": "cuda", "runner.gpus": [0,1]}</p>
 <h3 id="deeplabcut.pose_estimation_pytorch.config.update_config_by_dotpath(copy_original)" class="doc doc-heading doc-heading-parameter">                  <code>copy_original</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -22426,7 +22756,7 @@ e.g. {"device": "cuda", "runner.gpus": [0,1]}</p>
 <h3 id="deeplabcut.pose_estimation_pytorch.config.write_config(config_path)" class="doc doc-heading doc-heading-parameter">                  <code>config_path</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -22458,7 +22788,7 @@ e.g. {"device": "cuda", "runner.gpus": [0,1]}</p>
 <h3 id="deeplabcut.pose_estimation_pytorch.config.write_config(overwrite)" class="doc doc-heading doc-heading-parameter">                  <code>overwrite</code>
 </h3>            </td>
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></code>
             </td>
             <td>
               <div class="doc-md-description">
