@@ -261,3 +261,29 @@ def test_stitcher_with_identity(real_tracklets):
     assert all(0.998 <= track.likelihood <= 1 for track in stitcher.tracks)
     tracks = sorted(stitcher.tracks, key=lambda t: t.identity)
     assert all(track.identity == i for i, track in enumerate(tracks))
+
+
+_n_frames = 20
+_t = np.linspace(0, 4 * np.pi, _n_frames)
+
+
+@pytest.mark.parametrize(
+    "signal, expected",
+    [
+        (np.sin(_t), 2),
+        (np.sin(_t) + np.sin(2 * _t), 4),
+    ],
+)
+def test_estimate_rank(signal, expected):
+    """A Hankelet of a pure frequency signal has rank 2 per complex exponential
+    (two real dimensions); a second distinct frequency doubles it to rank 4.
+    """
+    n_frames = len(signal)
+    data = np.zeros((n_frames, 2, 3))
+    data[:, 0, 0] = signal
+    data[:, 0, 1] = signal
+    data[:, 1, 0] = signal
+    data[:, 1, 1] = signal
+    data[:, :, 2] = 1.0
+    tracklet = Tracklet(data, np.arange(n_frames))
+    assert tracklet.estimate_rank(tol=0.01) == expected
