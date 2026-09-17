@@ -16,11 +16,11 @@ import cv2
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes._axes import _log as matplotlib_axes_logger
 
 from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
+from deeplabcut.utils.matplotlib_utils import silence_axes_logger
 
-matplotlib_axes_logger.setLevel("ERROR")
+silence_axes_logger()
 
 
 def calibrate_cameras(

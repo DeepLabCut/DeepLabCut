@@ -384,7 +384,9 @@ def analyze_videos(
         detector_batch_size: the batch size to use for detector inference. Takes the
             value from the project config as a default.
         transform: Optional custom transforms to apply to the video
-        overwrite: Overwrite any existing videos
+        overwrite: Re-analyze videos for which prediction files already exist. When
+            ``True`` and ``auto_track`` is enabled, existing tracklet files are also
+            regenerated.
         use_shelve: By default, data are dumped in a pickle file at the end of the video
             analysis. Otherwise, data are written to disk on the fly using a "shelf";
             i.e., a pickle-based, persistent, database-like object by default, resulting
@@ -698,7 +700,7 @@ def analyze_videos(
                         video_extensions=video_extensions,
                         shuffle=shuffle,
                         trainingsetindex=trainingsetindex,
-                        overwrite=False,
+                        overwrite=overwrite,
                         identity_only=identity_only,
                         destfolder=str(output_path),
                         snapshot_index=snapshot_index,

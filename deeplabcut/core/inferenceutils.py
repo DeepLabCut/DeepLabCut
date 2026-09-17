@@ -89,7 +89,7 @@ class Assembly:
     def __init__(self, size):
         self.data = np.full((size, 4), np.nan)
         self.confidence = 0  # 0 by default, overwritten otherwise with `add_joint`
-        self._affinity = 0
+        self._affinity: float = 0.0
         self._links = []
         self._visible = set()
         self._idx = set()
@@ -158,11 +158,11 @@ class Assembly:
         return dict(zip(unq.astype(int), soft, strict=False))
 
     @property
-    def affinity(self):
+    def affinity(self) -> float:
         n_links = self.n_links
         if not n_links:
-            return 0
-        return self._affinity / n_links
+            return 0.0
+        return float(self._affinity / n_links)
 
     @property
     def n_links(self):
