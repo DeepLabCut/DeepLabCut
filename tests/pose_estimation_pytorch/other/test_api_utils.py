@@ -15,7 +15,7 @@ import deeplabcut.pose_estimation_pytorch.data.transforms as transforms
 
 TRANSFORM_DICTS = {
     "auto-padding": {"auto_padding": {"pad_height_divisor": 64, "pad_width_divisor": 27}},
-    "resize": {"resize": {"height": 512, "width": 256, "keep_ration": True}},
+    "resize": {"resize": {"height": 512, "width": 256, "keep_ratio": True}},
     "typical-augmentations": {
         "covering": True,
         "gaussian_noise": 12.75,
