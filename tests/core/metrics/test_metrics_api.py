@@ -29,12 +29,16 @@ def _get_gt_and_pred_with_constant_err(num_idv: int, num_bpt: int, error: float)
 def test_computing_metrics_with_no_predictions():
     gt = np.arange(5 * 6 * 3).astype(float).reshape((5, 6, 3))
     gt[..., 2] = 2
-    metrics.compute_metrics(
+    results = metrics.compute_metrics(
         ground_truth={"image": gt},
         predictions={"image": np.zeros((0, 12, 3))},
         unique_bodypart_gt=None,
         unique_bodypart_poses=None,
     )
+    # ground truth exists but nothing was predicted -> score of 0
+    # != the NaN case (OKS cannot be computed at all)
+    assert results["mAP"] == 0
+    assert results["mAR"] == 0
 
 
 @pytest.mark.parametrize("error", [0.5, 1, 2])
@@ -108,3 +112,26 @@ def test_computing_metrics_single_animal(error):
     )
     assert_almost_equal(results["rmse"], np.sqrt(2) * error)
     assert_almost_equal(results["rmse_pcutoff"], np.sqrt(2) * error)
+
+
+@pytest.mark.parametrize("error", [0.5, 1, 2])
+def test_computing_metrics_single_animal_single_keypoint(error):
+    # see https://github.com/DeepLabCut/DeepLabCut/issues/3518: RMSE must be finite
+    # for one-bodypart projects, and mAP/mAR undefined rather than 0
+    gt = np.arange(3 * 1 * 1 * 3).astype(float).reshape((3, 1, 1, 3))
+    gt[..., 2] = 2
+    predictions = gt.copy()
+    predictions[..., 2] = 0.9
+    predictions[..., :2] += error
+
+    results = metrics.compute_metrics(
+        ground_truth={f"image{i}": img_gt for i, img_gt in enumerate(gt)},
+        predictions={f"image{i}": img_pred for i, img_pred in enumerate(predictions)},
+        single_animal=True,
+        unique_bodypart_gt=None,
+        unique_bodypart_poses=None,
+    )
+    assert_almost_equal(results["rmse"], np.sqrt(2) * error)
+    assert_almost_equal(results["rmse_pcutoff"], np.sqrt(2) * error)
+    assert np.isnan(results["mAP"])
+    assert np.isnan(results["mAR"])
