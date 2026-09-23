@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "api_version_label": "3.0.2",
+  "api_aliases": [
+    "latest-release"
+  ],
+  "api": {
+    "package_version": "3.0.2",
+    "revision": "4dcb9a7d5a701427ef78ecc8103d38eeef70601a",
+    "generated_at": "2026-09-23T11:13:03+00:00"
+  },
+  "docs": null,
+  "extractor_version": "0.0.1",
+  "generated_by": "tools/knowledge_indexing"
+}

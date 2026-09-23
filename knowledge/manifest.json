@@ -6,10 +6,13 @@
   },
   "api": {
     "versioned": true,
-    "latest": "main",
+    "latest": "3.0.2",
     "versions": [
+      "3.0.2",
       "main"
     ],
-    "aliases": {}
+    "aliases": {
+      "latest-release": "3.0.2"
+    }
   }
 }
