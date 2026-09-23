@@ -1,3 +1,7 @@
+# NOTE: @C-Achard 2026-09-04 : [CLEANUP-COLLECTEDDATA-FIXTURES] two CollectedData frames are built inline below, with
+# index level names "set"/"video"/"image" which is a third naming convention among the test modules that
+# each build this frame themselves.
+# Reuse target: the collected_data fixture in tests/utils/test_skeleton.py, once it is promoted to a shared conftest.
 from types import SimpleNamespace
 
 import numpy as np

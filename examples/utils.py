@@ -10,6 +10,10 @@
 #
 from __future__ import annotations
 
+# NOTE: @C-Achard 2026-09-04 : [CLEANUP-COLLECTEDDATA-FIXTURES] gen_fake_data / create_fake_project below are the most
+# complete synthetic-project builders in the repo, writing down if later we consider consolidating
+# the six test modules that each build CollectedData frames and project trees by hand.
+# They pull in cv2, PIL and top-level deeplabcut.
 import shutil
 import string
 import time

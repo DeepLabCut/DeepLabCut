@@ -8,6 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+# NOTE: @C-Achard 2026-09-04 : [CLEANUP-COLLECTEDDATA-FIXTURES] evaluation_dataframe_factory below duplicates the
+# CollectedData frame builder that at least six test modules each roll their own version of,
+# here with likelihood columns and its own index level names. Reuse target: the
+# collected_data fixture in tests/utils/test_skeleton.py, once it is promoted to a shared conftest.
 import logging
 from unittest.mock import Mock
 
