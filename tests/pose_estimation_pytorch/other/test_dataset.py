@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
-import random
 from pathlib import Path
 
 import albumentations as A
@@ -67,7 +66,7 @@ anno_key_set = {
 }
 
 
-@pytest.mark.parametrize("batch_size", [1, 2, random.randint(2, 20)])
+@pytest.mark.parametrize("batch_size", [1, 2, 20])
 def test_iter_all_dataset_no_transform(batch_size):
     if batch_size > 1:  # if batched, all images need to be the same size
         transform = A.Compose(
@@ -109,21 +108,12 @@ def test_iter_all_dataset_no_transform(batch_size):
         )
 
 
-def _generate_random_test_values_aug(min_exa):
-    batch_size = random.randint(1, 20)
-    x_size = random.randint(50, 600)
-    y_size = random.randint(50, 600)
-    exaggeration = random.randint(min_exa, 99)
-
-    return batch_size, x_size, y_size, exaggeration
-
-
 @pytest.mark.parametrize(
     "batch_size, x_size, y_size, exaggeration",
     [
-        (1, 512, 512, 1),
-        _generate_random_test_values_aug(1),
-        _generate_random_test_values_aug(50),
+        pytest.param(1, 512, 512, 1, id="no-augmentation"),
+        pytest.param(20, 50, 600, 50, id="max-batch-min-width"),
+        pytest.param(1, 600, 50, 99, id="max-augmentation-min-height"),
     ],
 )
 def test_iter_all_augmented_dataset(batch_size, x_size, y_size, exaggeration):

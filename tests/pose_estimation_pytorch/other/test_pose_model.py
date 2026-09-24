@@ -9,8 +9,8 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import copy
-import random
 
+import numpy as np
 import pytest
 import torch
 
@@ -179,21 +179,30 @@ heads_dicts = [
 ]
 
 
-def _generate_random_backbone_inputs(i):
-    # Returns sizes that are divisible by 64to be able to predict consistently output size
-    # (and be able to do the forward pass of HRNet)
-    x_size_tmp, y_size_tmp = random.randint(100, 1000), random.randint(100, 1000)
-    return (
-        backbones_dicts[i],
-        (x_size_tmp - x_size_tmp % 64, y_size_tmp - y_size_tmp % 64),
-    )
+def _backbone_id(backbone: dict) -> str:
+    """A stable test id, so a backbone can be selected by name from the CLI or an IDE."""
+    if backbone["type"] == "HRNet":
+        branches = "interpolated" if backbone.get("interpolate_branches") else "branches"
+        return f"{backbone['model_name']}-{branches}"
+
+    return backbone["model_name"]
 
 
-@pytest.mark.parametrize(
-    "backbone_dict, input_size",
-    [_generate_random_backbone_inputs(i) for i in range(len(backbones_dicts))],
-)
-def test_backbone(backbone_dict, input_size):
+BACKBONE_CASES = [
+    pytest.param(backbone, seed, id=_backbone_id(backbone)) for seed, backbone in enumerate(backbones_dicts)
+]
+HEAD_CASES = [pytest.param(head, seed, id=head["type"]) for seed, head in enumerate(heads_dicts)]
+
+
+@pytest.mark.parametrize("backbone_dict, seed", BACKBONE_CASES)
+def test_backbone(backbone_dict, seed):
+    # Sizes divisible by 64, to be able to predict the output size consistently
+    # (and to be able to do the forward pass of HRNet)
+    rng = np.random.default_rng(seed)
+    x_size, y_size = (int(size) - int(size) % 64 for size in rng.integers(100, 1001, size=2))
+
+    input_size = (x_size, y_size)
+    backbone_dict = copy.deepcopy(backbone_dict)
     input_tensor = torch.Tensor(1, 3, input_size[1], input_size[0])
 
     stride = backbone_dict.pop("stride")
@@ -207,24 +216,13 @@ def test_backbone(backbone_dict, input_size):
     assert w == input_size[0] // stride
 
 
-def _generate_random_head_inputs(i):
-    # Returns sizes that are divisible by 64to be able to predict consistently output size
-    # (and be able to do the forward pass of HRNet)
-    x_size_tmp, y_size_tmp = random.randint(8, 500), random.randint(8, 500)
-    num_kpts = random.randint(2, 50)
-    return (
-        heads_dicts[i],
-        (x_size_tmp - x_size_tmp % 4, y_size_tmp - y_size_tmp % 4),
-        num_kpts,
-    )
+@pytest.mark.parametrize("head_dict, seed", HEAD_CASES)
+def test_head(head_dict, seed):
+    # Sizes divisible by 4, to be able to predict the output size consistently
+    rng = np.random.default_rng(seed)
+    w, h = (int(size) - int(size) % 4 for size in rng.integers(8, 501, size=2))
+    num_keypoints = int(rng.integers(2, 51))
 
-
-@pytest.mark.parametrize(
-    "head_dict, input_shape, num_keypoints",
-    [_generate_random_head_inputs(i) for i in range(len(heads_dicts))],
-)
-def test_head(head_dict, input_shape, num_keypoints):
-    w, h = input_shape
     head_dict = copy.deepcopy(head_dict)
 
     head_type = head_dict["type"]
