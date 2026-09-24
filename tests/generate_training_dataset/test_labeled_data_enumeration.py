@@ -121,6 +121,8 @@ def test_a_directory_the_config_does_not_name_is_not_merged(valid_project: Path)
     rendered images only, so the loop skips it.
     """
 
+    _declare_videos(valid_project, ("session-01",))
+
     config = read_config_as_dict(valid_project / "config.yaml")
     scorer = config["scorer"]
 
