@@ -38,6 +38,7 @@ from deeplabcut.pose_estimation_pytorch.runners.logger import (
 )
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import TorchSnapshotManager
 from deeplabcut.pose_estimation_pytorch.task import Task
+from deeplabcut.pose_estimation_pytorch.utils import is_mps_device
 
 
 class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
@@ -532,6 +533,17 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         self._epoch_predictions[name] = epoch_metric
 
 
+def _move_target_to_device(tensor: torch.Tensor, device: str | torch.device) -> torch.Tensor:
+    """Moves a detector target tensor to ``device``.
+
+    MPS has no float64 support, so float64 targets such as boxes and areas are cast to
+    float32; integer labels are moved unchanged.
+    """
+    if is_mps_device(device) and tensor.dtype == torch.float64:
+        return tensor.to(device, dtype=torch.float32)
+    return tensor.to(device)
+
+
 class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
     """Runner to train object detection models."""
 
@@ -588,7 +600,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         for item in target:  # target is a list here
             for key in item:
                 if item[key] is not None:
-                    item[key] = item[key].to(self.device)
+                    item[key] = _move_target_to_device(item[key], self.device)
 
         losses, predictions = self.model(images, target)
 

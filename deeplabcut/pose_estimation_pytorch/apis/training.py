@@ -60,7 +60,9 @@ def train(
         loader: the loader containing the data to train on/validate with
         run_config: the model and run configuration
         task: the task to train the model for
-        device: the torch device to train on (such as "cpu", "cuda", "mps")
+        device: the torch device to train on (such as "cpu", "cuda", "mps"). Detectors
+            only run on MPS for validated variants, and fall back to the CPU with a
+            warning otherwise.
         gpus: the list of GPU indices to use for multi-GPU training
         logger_config: the configuration of a logger to use
         snapshot_path: if continuing to train from a snapshot, the path containing the
@@ -114,8 +116,8 @@ def train(
     if gpus is None:
         gpus = run_config["runner"].get("gpus")
 
-    if device == "mps" and task == Task.DETECT:
-        device = "cpu"  # FIXME: Cannot train detectors on MPS
+    if task == Task.DETECT:
+        device = utils.resolve_detector_device(device, utils.detector_variant(run_config))
 
     if snapshot_path is None:
         snapshot_path = run_config.get("resume_training_from")
@@ -228,7 +230,15 @@ def train_network(
         modelprefix: directory containing the deeplabcut configuration files to use
             to train the network (and where snapshots will be saved). By default, they
              are assumed to exist in the project folder.
-        device: the torch device to train on (such as "cpu", "cuda", "mps")
+        device: the torch device to train on (such as "cpu", "cuda", "mps"). For top-down
+            models this applies to both the detector and the pose model. When None, the
+            devices set in the model configuration are used: the detector inherits the
+            top-level device unless detector.device is set in the model configuration,
+            and picks its own device when both are "auto". With "auto" the auto policy is
+            applied to both models regardless of the configured top-level device (an
+            explicit detector.device is still kept).
+            Detectors run on MPS only for validated variants (they fall back to the CPU
+            with a warning otherwise).
         snapshot_path: if resuming training, the snapshot from which to resume
         detector_path: if resuming training of a top-down model, used to specify the
             detector snapshot from which to resume
@@ -348,13 +358,15 @@ def train_network(
             logger_config["run_name"] += "-detector"
 
         detector_run_config = loader.model_cfg["detector"]
-        detector_run_config["device"] = loader.model_cfg["device"]
+        if detector_run_config["device"] == "auto":
+            # an explicit detector.device is kept; "auto" leaves the detector its own policy
+            detector_run_config["device"] = "auto" if device == "auto" else loader.model_cfg["device"]
         detector_run_config["train_settings"]["weight_init"] = loader.model_cfg["train_settings"].get("weight_init")
         train(
             loader=loader,
             run_config=detector_run_config,
             task=Task.DETECT,
-            device=device,
+            device=None if device == "auto" else device,  # "auto": resolved from the detector config
             logger_config=logger_config,
             snapshot_path=detector_path,
             max_snapshots_to_keep=max_snapshots_to_keep,
