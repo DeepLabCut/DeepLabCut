@@ -7,6 +7,8 @@ deeplabcut:
   last_content_updated: '2026-05-08'
 ---
 
+(file:napari-dlc-tracking-basic-usage)=
+
 # Automated annotation with point tracking
 
 ```{seealso}
