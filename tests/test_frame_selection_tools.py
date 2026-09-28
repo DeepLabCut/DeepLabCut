@@ -13,6 +13,7 @@
 import math
 from unittest.mock import Mock
 
+import numpy as np
 import pytest
 
 import deeplabcut.utils.frameselectiontools as fst
@@ -84,3 +85,43 @@ def test_uniform_frames_cv2(fps, nframes, n_to_pick, start, end, index):
         assert index in valid_indices, f"Invalid index: {index} not in {valid_indices}"
     # Check that all frames are unique
     assert len(set(frames)) == len(frames), "Duplicate indices found"
+
+
+class _FakeVideoReader:
+    """Synthetic video whose frames are filled with their own frame index."""
+
+    def __init__(self, nframes, fps=10, width=40, height=30):
+        self._nframes = nframes
+        self.fps = fps
+        self.dimensions = width, height
+        self._pos = 0
+        self.read_indices = []
+
+    def __len__(self):
+        return self._nframes
+
+    def set_to_frame(self, ind):
+        self._pos = ind
+
+    def read_frame(self, crop=False):
+        if self._pos >= self._nframes:
+            return None
+        width, height = self.dimensions
+        frame = np.full((height, width, 3), self._pos, dtype=np.uint8)
+        self.read_indices.append(self._pos)
+        self._pos += 1
+        return frame
+
+
+@pytest.mark.parametrize("color", [False, True])
+@pytest.mark.parametrize("start, stop", [(0, 1), (0.5, 1), (0.25, 0.75)])
+def test_kmeans_cv2_reads_frames_in_requested_range(start, stop, color):
+    nframes = 100
+    cap = _FakeVideoReader(nframes)
+    frames = fst.KmeansbasedFrameselectioncv2(cap, 5, start, stop, resizewidth=20, color=color)
+
+    start_idx = int(math.floor(start * nframes))
+    stop_idx = int(math.ceil(stop * nframes))
+    # The frames that are clustered must be the ones in the requested range
+    assert cap.read_indices == list(range(start_idx, stop_idx))
+    assert all(start_idx <= frame < stop_idx for frame in frames)
