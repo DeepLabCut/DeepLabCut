@@ -1,3 +1,12 @@
+---
+deeplabcut:
+  last_metadata_updated: '2026-09-28'
+  last_verified: '2026-09-28'
+  verified_for: 3.0.2
+  ignore: false
+  last_content_updated: '2026-09-28'
+---
+
 (file:napari-dlc-troubleshooting)=
 
 # Troubleshooting the napari plugin
