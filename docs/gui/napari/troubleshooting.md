@@ -25,21 +25,40 @@ Please find several of the common messages you may encounter when opening a fold
 
 ### "does not match the frames now in ..."
 
-**Your annotations are unchanged and still save to their own folder.**
+**Your annotations are unchanged and still save to their own folder. The layer is locked
+for editing.**
 
 A keypoints layer from another dataset folder is still open, or the frames were renamed or
-re-extracted.
+re-extracted. Keypoints are tied to a position in the frame order, not to a filename, so
+labelling the layer now would store them against the frames it was loaded with rather than
+the ones on screen. The layer is locked until it matches the folder on screen again.
 
-- Switching video or project: save, remove the layers, open the next folder
-- Same folder, re-extracted frames: informational, nothing to do
+To label the folder you opened:
+
+1. Save the locked layer if it has unsaved changes
+1. Clear all layers, including the images
+1. Open the folder again
+1. If it has no annotations yet, drag in the project's `config.yaml` to get a keypoints
+   layer carrying the project's bodyparts
+
+To go back to the previous folder instead, clear all layers and reopen it. The lock lifts
+on its own once the layer's frames match the folder on screen.
+
+```{note}
+Saving a locked layer still works, and writes to its own folder. Only editing is blocked.
+```
 
 ### "Annotated frames lost their path"
 
-**Your annotation file is not modified. Do not move or replace the keypoints.**
+**Your annotation file is not modified. The layer is locked for editing.**
 
 A labeled frame was renamed or deleted. Keypoints are tied to a position in the frame
 order, not to a filename, and said position now belongs to a different image.
 Keypoints after the missing frame may display one frame off.
+
+Unlike the message above, reopening the folder does not lift this lock: the frame is still
+missing, so the plugin refuses again. The annotation file and the folder have to agree
+first.
 
 Restore the frame in the folder, or remove its row:
 

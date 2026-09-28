@@ -295,6 +295,14 @@ After finishing one folder, simply:
 
 This helps keep saving behavior unambiguous.
 
+```{warning}
+Keypoint layers do not carry over from one folder to the next. If you leave one open, it
+is **locked** and you will not be able to label with it. Save it, remove it, and start the
+new folder from scratch, see {ref}`Labeling from scratch <sec:napari-dlc-labeling-from-scratch>`.
+
+See {ref}`Troubleshooting <file:napari-dlc-troubleshooting>` if you see such a message.
+```
+
 (sec:napari-dlc-update-keypoints-from-config)=
 
 ## Updating the keypoints definitions and color scheme while labeling
