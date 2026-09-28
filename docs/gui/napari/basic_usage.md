@@ -171,6 +171,7 @@ DeepLabCut uses the `.h5` file as the authoritative annotation file. CSVs and ma
 - If saving would overwrite existing annotations, the plugin will ask for confirmation.
   - Removing a keypoint that exists in the file counts as a **deletion**, and is listed separately in that confirmation.
   - This confirmation can be disabled by unchecking **Warn on overwrite** in the dock widget. **Deletions are then no longer reported either.**
+- **Removing a bodypart from `config.yaml` and then loading that config drops its annotations.** It is removed from the current layer, and its existing annotations are dropped from `CollectedData...` on the next save. This will be adjusted in the future, please use this behavior with caution. We recommend keeping legacy bodyparts and filtering on subsequent steps; DeepLabCut will **NOT** use undeclared bodyparts for training data generation.
 
 ```{note}
 Several plugin functions expect `config.yaml` to be located two folders above the saved `CollectedData...` file, matching the standard DeepLabCut project structure.<br>
