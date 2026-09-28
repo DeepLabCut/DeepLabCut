@@ -169,7 +169,8 @@ DeepLabCut uses the `.h5` file as the authoritative annotation file. CSVs and ma
 - Make sure the correct **Points** layer is selected before saving.
 - If several Points layers are selected at the same time, the plugin will not save them in order to avoid ambiguity.
 - If saving would overwrite existing annotations, the plugin will ask for confirmation.
-  - This confirmation can be disabled by unchecking **Warn on overwrite** in the dock widget.
+  - Removing a keypoint that exists in the file counts as a **deletion**, and is listed separately in that confirmation.
+  - This confirmation can be disabled by unchecking **Warn on overwrite** in the dock widget. **Deletions are then no longer reported either.**
 
 ```{note}
 Several plugin functions expect `config.yaml` to be located two folders above the saved `CollectedData...` file, matching the standard DeepLabCut project structure.<br>

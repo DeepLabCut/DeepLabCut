@@ -9,7 +9,7 @@ deeplabcut:
 
 (file:napari-dlc-tracking-basic-usage)=
 
-# Automated annotation with point tracking
+# Semi-automated annotation with point tracking
 
 ```{seealso}
 For basic usage of the annotation plugin, see {ref}`file:napari-dlc-basic-usage` for the recommended workflow.
