@@ -24,6 +24,8 @@ deeplabcut:
 - {ref}`Resuming labeling <sec:napari-dlc-resuming-labeling>`
 - {ref}`Refining machine labels <sec:napari-dlc-refining-machine-labels>`
 
+Also see {ref}`file:napari-dlc-troubleshooting` for troubleshooting tips.
+
 ## Before you start
 
 If you installed `DeepLabCut[gui]`, `napari-deeplabcut` is already included.
