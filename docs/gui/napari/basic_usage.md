@@ -308,7 +308,9 @@ If the config contains keypoints the current layer does not have, you will be pr
 | **Keep both**        | Leaves your layer untouched and keeps the config layer      |
 | **Cancel**           | Discards the temporary layer                                |
 
-To update the color scheme, no confirmation is needed; the plugin will automatically apply the colors defined in the new config to the current Points layer.
+```{note}
+If the config adds no new keypoints, there is no prompt and it is applied directly. This is the usual case when only the color scheme changed: the colors defined in the new config are applied to the current Points layer.
+```
 
 ## Demo
 
