@@ -10,7 +10,7 @@
 #
 
 from itertools import islice
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import numpy as np
 import pandas as pd
@@ -119,12 +119,12 @@ def adapt_labeled_data_to_new_project(
     # Iterate over each labeled data video
 
     # Use tqdm for a progress bar
-    for video in tqdm.tqdm(cfg["video_sets"]):
+    for video in tqdm(cfg["video_sets"]):
         print("Video:", video)
 
-        video_name = video.split("\\")[-1]
-        # discard the file extension
-        video_name = video_name.split(".")[0]
+        # PureWindowsPath accepts both "\\" and "/" separators, so the video name is
+        # found regardless of the OS the project was created on.
+        video_name = PureWindowsPath(video).stem
         # Load the csv file
         label_path = Path(project_path) / "labeled-data" / video_name
         csv_files = [f.name for f in label_path.iterdir() if f.name.endswith(".csv")]
