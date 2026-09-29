@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>DeepLabCut-live-GUI &#8212; DeepLabCut</title>
+    <title>Troubleshooting &#8212; DeepLabCut</title>
   
   
   
@@ -58,11 +58,11 @@
     <script async="async" src="../../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/dlc-live/dlc-live-gui/index';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/gui/napari/troubleshooting';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Installation" href="quickstart/install.html" />
-    <link rel="prev" title="Running DeepLabCut models in real-time" href="../deeplabcutlive.html" />
+    <link rel="next" title="Semi-automated annotation with point tracking" href="tracking/basic_usage.html" />
+    <link rel="prev" title="Advanced features" href="advanced_usage.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -199,8 +199,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../Overviewof3D.html">3D DeepLabCut</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">GUI workflow</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../gui/PROJECT_GUI.html">Project Manager GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../PROJECT_GUI.html">Project Manager GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../beginner-guides/beginners-guide.html">Setting up a new project</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../beginner-guides/manage-project.html">Editing and working with the configuration file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../beginner-guides/labeling.html">Labeling GUI</a></li>
@@ -208,11 +208,11 @@
 <li class="toctree-l2"><a class="reference internal" href="../../beginner-guides/video-analysis.html">Video analysis in the GUI</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../gui/napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../gui/napari/basic_usage.html">Basic usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../gui/napari/advanced_usage.html">Advanced features</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../gui/napari/troubleshooting.html">Troubleshooting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../gui/napari/tracking/basic_usage.html">Semi-automated annotation with point tracking</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../napari_GUI.html">napari GUI</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="basic_usage.html">Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced_usage.html">Advanced features</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tracking/basic_usage.html">Semi-automated annotation with point tracking</a></li>
 </ul>
 </details></li>
 </ul>
@@ -252,26 +252,26 @@
 </details></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced, Performance &amp; Live</span></p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../ModelZoo.html">The DeepLabCut Model Zoo!</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1"><a class="reference internal" href="../deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
-<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">DeepLabCut-live-GUI</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="quickstart/install.html">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user_guide/overview.html">GUI overview</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="user_guide/cameras_backends/camera_support.html">Camera support</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="user_guide/cameras_backends/opencv_backend.html">OpenCV backend</a></li>
-<li class="toctree-l3"><a class="reference internal" href="user_guide/cameras_backends/basler_backend.html">Basler backend</a></li>
-<li class="toctree-l3"><a class="reference internal" href="user_guide/cameras_backends/aravis_backend.html">Aravis backend</a></li>
-<li class="toctree-l3"><a class="reference internal" href="user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dlc-live/deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../dlc-live/dlc-live-gui/index.html">DeepLabCut-live-GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../dlc-live/dlc-live-gui/quickstart/install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/overview.html">GUI overview</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support.html">Camera support</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/opencv_backend.html">OpenCV backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/basler_backend.html">Basler backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend.html">Aravis backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2"><a class="reference internal" href="user_guide/camera_config.html">Camera configuration</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
 </ul>
 </details></li>
 </ul>
@@ -389,7 +389,7 @@
       
       
       
-      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/dlc-live/dlc-live-gui/index.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/gui/napari/troubleshooting.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -419,7 +419,7 @@
       
       
       
-      <li><a href="../../../_sources/docs/dlc-live/dlc-live-gui/index.md" target="_blank"
+      <li><a href="../../../_sources/docs/gui/napari/troubleshooting.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -503,7 +503,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>DeepLabCut-live-GUI</h1>
+    <h1>Troubleshooting</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -513,15 +513,14 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of contents</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#description">Description</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-software-does">What this software does</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#typical-workflow">Typical workflow</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#who-this-is-for">Who this is for</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#useful-tips">Useful tips</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#messages-when-opening-a-folder">Messages when opening a folder</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#does-not-match-the-frames-now-in">“does not match the frames now in …”</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#annotated-frames-lost-their-path">“Annotated frames lost their path”</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#these-annotations-are-already-open-as">“These annotations are already open as …”</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#current-limitations">Current limitations</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#feedback-issues-and-contributions">Feedback, issues, and contributions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#annotations-written-into-the-wrong-folder">Annotations written into the wrong folder</a></li>
 </ul>
             </nav>
         </div>
@@ -533,105 +532,87 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-live-gui">
-<h1>DeepLabCut-live-GUI<a class="headerlink" href="#deeplabcut-live-gui" title="Link to this heading">#</a></h1>
-<p>A graphical application for <strong>real-time pose estimation with DeepLabCut</strong> using one or more cameras.</p>
-<p>This GUI is designed for <strong>scientists and experimenters</strong> who want to preview, run inference, and record synchronized video with pose overlays—without writing code.</p>
-<section id="table-of-contents">
-<h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Link to this heading">#</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="quickstart/install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="user_guide/overview.html">GUI overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="user_guide/cameras_backends/camera_support.html">Camera support</a></li>
-<li class="toctree-l1"><a class="reference internal" href="user_guide/camera_config.html">Camera configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="user_guide/misc/misc_landing.html">Additional resources</a></li>
-</ul>
-</div>
-<div class="admonition caution">
-<p class="admonition-title">Caution</p>
-<p>Please be aware of the <a class="reference internal" href="#sec-dlclivegui-index-limitations"><span class="std std-ref">Current limitations</span></a></p>
-</div>
-</section>
-<hr class="docutils" />
-<section id="description">
-<h2>Description<a class="headerlink" href="#description" title="Link to this heading">#</a></h2>
-<section id="what-this-software-does">
-<h3>What this software does<a class="headerlink" href="#what-this-software-does" title="Link to this heading">#</a></h3>
-<ul class="simple">
-<li><p><strong>Live camera preview</strong> from one or multiple cameras</p></li>
-<li><p><strong>Real-time pose inference</strong> using DeepLabCut Live models</p></li>
-<li><p><strong>Multi-camera support</strong> with tiled display</p></li>
-<li><p><strong>Video recording</strong> (raw or with pose and bounding-box overlays)</p></li>
-<li><p><strong>Session-based data organization</strong> with reproducible naming</p></li>
-<li><p><strong>Optional processor plugins</strong> to extend behavior (e.g. remote control, triggers)</p></li>
-</ul>
-<p>The application is built with <strong>PySide6 (Qt)</strong> and is intended for interactive experimental use rather than offline batch processing.</p>
-<!-- TODO mention and link to DLC live standalone -->
-</section>
-<section id="typical-workflow">
-<h3>Typical workflow<a class="headerlink" href="#typical-workflow" title="Link to this heading">#</a></h3>
-<ol class="arabic simple">
-<li><p><strong>Install</strong> the application and required camera backends</p></li>
-<li><p><strong>Configure cameras</strong> (single or multi-camera)</p></li>
-<li><p><strong>Select a DeepLabCut Live model</strong></p></li>
-<li><p><strong>Start preview</strong> and verify frame rate</p></li>
-<li><p><strong>Run pose inference</strong> on a selected camera</p></li>
-<li><p><strong>Record video</strong> (optionally with overlays)</p>
-<ul class="simple">
-<li><p>With <strong>organized results</strong> by session and run</p></li>
-</ul>
-</li>
-</ol>
-<p>Each of these steps is covered in the <em><a class="reference internal" href="quickstart/install.html"><span class="doc">Quickstart</span></a></em>
-and <em><a class="reference internal" href="user_guide/overview.html"><span class="doc">User Guide</span></a></em> sections of this documentation.</p>
-</section>
-<section id="who-this-is-for">
-<h3>Who this is for<a class="headerlink" href="#who-this-is-for" title="Link to this heading">#</a></h3>
-<ul class="simple">
-<li><p>Neuroscience and behavior labs</p></li>
-<li><p>Experimentalists running real-time tracking</p></li>
-<li><p>Anyone who wants a <strong>GUI-first</strong> workflow for DeepLabCut Live</p></li>
-</ul>
-<hr class="docutils" />
-</section>
-</section>
-<section id="current-limitations">
-<span id="sec-dlclivegui-index-limitations"></span><h2>Current limitations<a class="headerlink" href="#current-limitations" title="Link to this heading">#</a></h2>
-<p>Before getting started, be aware of the following constraints:</p>
-<ul class="simple">
-<li><p>Pose inference runs on <strong>one selected camera at a time</strong> (even in multi-camera mode)</p></li>
-<li><p>Camera synchronization depends on <strong>backend capabilities and hardware</strong></p>
-<ul>
-<li><p>OpenCV controls for resolution and FPS are “best effort” and may not work with all cameras
-Expect inconsistencies when setting certain frame rates or resolutions as resolution depends on the device driver</p></li>
-<li><p>Trigger settings and hardware timestamps are supported for some backends only</p></li>
-</ul>
-</li>
-<li><p>DeepLabCut Live models must be <strong>exported and compatible</strong> with the selected backend</p>
-<ul>
-<li><p>Some SuperAnimal models from <a class="reference internal" href="../../ModelZoo.html#file-model-zoo"><span class="std std-ref">The DeepLabCut Model Zoo!</span></a> may not work out of the box.<br>This is currently a known issue for:</p>
-<ul>
-<li><p>SuperHuman model (missing detector)</p></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p><strong>Performance</strong> depends on camera resolution, frame rate, GPU availability, and codec choice</p>
-<ul>
-<li><p>Use faster encoding presets and retain Mono format on supported mono cameras for best performance</p></li>
-<li><p>Expect bottlenecks with heavy models, multiple high-resolution cameras, or CPU-only inference</p></li>
-</ul>
-</li>
-</ul>
-</section>
-<hr class="docutils" />
-<section id="feedback-issues-and-contributions">
-<h2>Feedback, issues, and contributions<a class="headerlink" href="#feedback-issues-and-contributions" title="Link to this heading">#</a></h2>
+  <section class="tex2jax_ignore mathjax_ignore" id="troubleshooting">
+<span id="file-napari-dlc-troubleshooting"></span><h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h1>
+<section id="useful-tips">
+<h2>Useful tips<a class="headerlink" href="#useful-tips" title="Link to this heading">#</a></h2>
+<p>When the Keypoint or Tracking controls have been opened at least once, you may use</p>
 <blockquote>
-<div><p><em>This project is under active development. Feedback from real experimental use is highly valued.</em></p>
-<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut-live-GUI">Please report issues, suggest features, or contribute to the codebase on GitHub !</a></p>
+<div><p><strong><code class="docutils literal notranslate"><span class="pre">Help</span> <span class="pre">-&gt;</span> <span class="pre">Generate</span> <span class="pre">napari-dlc</span> <span class="pre">logs</span></code></strong></p>
 </div></blockquote>
+<p>to collect diagnostic information for troubleshooting.</p>
+<p>Use <strong><code class="docutils literal notranslate"><span class="pre">Copy</span> <span class="pre">to</span> <span class="pre">clipboard</span></code></strong> to copy the generated logs for issues reporting on GitHub.</p>
+<p><strong>This is one of the most helpful ways to provide detailed information when reporting issues on GitHub.</strong>
+We may also ask that you share some configuration files or additional context to help us diagnose the issue.</p>
+</section>
+<section id="messages-when-opening-a-folder">
+<h2>Messages when opening a folder<a class="headerlink" href="#messages-when-opening-a-folder" title="Link to this heading">#</a></h2>
+<p>Please find several of the common messages you may encounter when opening a folder below.</p>
+<section id="does-not-match-the-frames-now-in">
+<h3>“does not match the frames now in …”<a class="headerlink" href="#does-not-match-the-frames-now-in" title="Link to this heading">#</a></h3>
+<p><strong>Your annotations are unchanged and still save to their own folder. The layer is locked
+for editing.</strong></p>
+<p>A keypoints layer from another dataset folder is still open, or the frames were renamed or
+re-extracted. Labelling the layer and saving would store them against the frames that were loaded with it rather than the ones in the folder you just opened.
+The layer is locked until it matches the opened folder.</p>
+<p>To label the folder you opened:</p>
+<ol class="arabic simple">
+<li><p>Save the locked layer if it has unsaved changes</p></li>
+<li><p>Clear all layers, including the images</p></li>
+<li><p>Open the folder again</p></li>
+<li><p>If it has no annotations yet, drag in the project’s <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> to get a keypoints
+layer carrying the project’s bodyparts</p></li>
+</ol>
+<p>To go back to the previous folder instead, clear all layers and reopen it.
+The lock lifts on its own once the layer’s frames match the Image layer in the viewer.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Saving a locked layer still works, and writes to its own folder. Only editing is blocked.</p>
+</div>
+</section>
+<section id="annotated-frames-lost-their-path">
+<h3>“Annotated frames lost their path”<a class="headerlink" href="#annotated-frames-lost-their-path" title="Link to this heading">#</a></h3>
+<p><strong>Your annotation file is not modified. The layer is locked for editing.</strong></p>
+<p>A labeled frame was renamed or deleted. Keypoints are tied to a position in the frame
+order, not to a filename, and said position now belongs to a different image.
+Keypoints after the missing frame may display one frame off.</p>
+<p>Unlike the message above, reopening the folder does not lift this lock: the frame is still
+missing, so the plugin refuses again. The annotation file and the folder have to agree
+first.</p>
+<p>Restore the frame in the folder, or remove its row:</p>
+<ol class="arabic simple">
+<li><p>Delete the row for the missing frame in <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.csv</span></code></p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">deeplabcut.convertcsv2h5(&quot;/path/to/config.yaml&quot;)</span></code></p></li>
+<li><p>Reopen the folder</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">convertcsv2h5</span></code> prompts per folder, and only visits folders listed in <code class="docutils literal notranslate"><span class="pre">video_sets</span></code>.</p>
+</div>
+</section>
+<section id="these-annotations-are-already-open-as">
+<h3>“These annotations are already open as …”<a class="headerlink" href="#these-annotations-are-already-open-as" title="Link to this heading">#</a></h3>
+<p><strong>Keep working in the layer you already had.</strong></p>
+<p>The folder was opened twice. Both layers would save to the same file, so
+the second copy is closed automatically.</p>
+</section>
+</section>
+<section id="annotations-written-into-the-wrong-folder">
+<span id="sec-napari-dlc-repair-wrong-folder"></span><h2>Annotations written into the wrong folder<a class="headerlink" href="#annotations-written-into-the-wrong-folder" title="Link to this heading">#</a></h2>
+<p><strong>This affects files written before v0.4.0 of the plugin. Current versions refuse the write that causes it.</strong></p>
+<p>A keypoints layer left open while a different extracted frames folder was opened could follow that folder and, on the next save, write annotations to the wrong folder. The result is a <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;</span></code> file holding rows for frames belonging to another folder.</p>
+<p>No message is shown for this, since it happened in an earlier session. To check a file, open the <code class="docutils literal notranslate"><span class="pre">.csv</span></code> next to it: the first column lists one frame per row, and every row should name the folder the file sits in.</p>
+<p>To repair it:</p>
+<ol class="arabic simple">
+<li><p>Copy any row naming another folder into that folder’s <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.csv</span></code>, if the annotations are not already there</p></li>
+<li><p>Delete those rows from the file you are repairing</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">deeplabcut.convertcsv2h5(&quot;/path/to/config.yaml&quot;)</span></code></p></li>
+<li><p>Reopen the folder</p></li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Deleting the rows discards those annotations unless they exist in the folder they belong to. Check before deleting.</p>
+</div>
 </section>
 </section>
 
@@ -648,7 +629,7 @@ Expect inconsistencies when setting certain frame rates or resolutions as resolu
         },
         kernelOptions: {
             name: "python3",
-            path: "./docs/dlc-live/dlc-live-gui"
+            path: "./docs/gui/napari"
         },
         predefinedOutput: true
     }
@@ -666,20 +647,20 @@ Expect inconsistencies when setting certain frame rates or resolutions as resolu
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../deeplabcutlive.html"
+       href="advanced_usage.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Running DeepLabCut models in real-time</p>
+        <p class="prev-next-title">Advanced features</p>
       </div>
     </a>
     <a class="right-next"
-       href="quickstart/install.html"
+       href="tracking/basic_usage.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Installation</p>
+        <p class="prev-next-title">Semi-automated annotation with point tracking</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -699,15 +680,14 @@ Expect inconsistencies when setting certain frame rates or resolutions as resolu
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of contents</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#description">Description</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-software-does">What this software does</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#typical-workflow">Typical workflow</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#who-this-is-for">Who this is for</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#useful-tips">Useful tips</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#messages-when-opening-a-folder">Messages when opening a folder</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#does-not-match-the-frames-now-in">“does not match the frames now in …”</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#annotated-frames-lost-their-path">“Annotated frames lost their path”</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#these-annotations-are-already-open-as">“These annotations are already open as …”</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#current-limitations">Current limitations</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#feedback-issues-and-contributions">Feedback, issues, and contributions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#annotations-written-into-the-wrong-folder">Annotations written into the wrong folder</a></li>
 </ul>
   </nav></div>
 
