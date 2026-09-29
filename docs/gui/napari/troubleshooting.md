@@ -41,8 +41,8 @@ To label the folder you opened:
 1. If it has no annotations yet, drag in the project's `config.yaml` to get a keypoints
    layer carrying the project's bodyparts
 
-To go back to the previous folder instead, clear all layers and reopen it. The lock lifts
-on its own once the layer's frames match the folder on screen.
+To go back to the previous folder instead, clear all layers and reopen it.
+The lock lifts on its own once the layer's frames match the folder on screen.
 
 ```{note}
 Saving a locked layer still works, and writes to its own folder. Only editing is blocked.
