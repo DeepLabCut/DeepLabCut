@@ -13,7 +13,12 @@ deeplabcut:
 
 ## Useful tips
 
-When the Keypoint or Tracking controls have been opened at least once, you may use **`Help -> Generate napari-dlc logs`** to collect diagnostic information for troubleshooting.
+When the Keypoint or Tracking controls have been opened at least once, you may use
+
+> **`Help -> Generate napari-dlc logs`**
+
+to collect diagnostic information for troubleshooting.
+
 Use **`Copy to clipboard`** to copy the generated logs for issues reporting on GitHub.
 
 **This is one of the most helpful ways to provide detailed information when reporting issues on GitHub.**
@@ -29,9 +34,8 @@ Please find several of the common messages you may encounter when opening a fold
 for editing.**
 
 A keypoints layer from another dataset folder is still open, or the frames were renamed or
-re-extracted. Keypoints are tied to a position in the frame order, not to a filename, so
-labelling the layer now would store them against the frames it was loaded with rather than
-the ones on screen. The layer is locked until it matches the folder on screen again.
+re-extracted. Labelling the layer and saving would store them against the frames that were loaded with it rather than the ones in the folder you just opened.
+The layer is locked until it matches the opened folder.
 
 To label the folder you opened:
 
