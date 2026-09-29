@@ -46,7 +46,7 @@ To label the folder you opened:
    layer carrying the project's bodyparts
 
 To go back to the previous folder instead, clear all layers and reopen it.
-The lock lifts on its own once the layer's frames match the folder on screen.
+The lock lifts on its own once the layer's frames match the Image layer in the viewer.
 
 ```{note}
 Saving a locked layer still works, and writes to its own folder. Only editing is blocked.
