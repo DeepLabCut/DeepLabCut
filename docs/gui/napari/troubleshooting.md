@@ -9,7 +9,7 @@ deeplabcut:
 
 (file:napari-dlc-troubleshooting)=
 
-# Troubleshooting the napari plugin
+# Troubleshooting
 
 ## Useful tips
 
