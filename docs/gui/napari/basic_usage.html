@@ -211,7 +211,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../napari_GUI.html">napari GUI</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Basic usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="advanced_usage.html">Advanced features</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tracking/basic_usage.html">Automated annotation with point tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tracking/basic_usage.html">Semi-automated annotation with point tracking</a></li>
 </ul>
 </details></li>
 </ul>
@@ -512,25 +512,25 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-stages">Labeling stages</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#before-you-start">Before you start</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#in-the-deeplabcut-gui">In the DeepLabCut GUI</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#as-a-standalone-plugin">As a standalone plugin</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-in-the-deeplabcut-gui">Usage in the DeepLabCut GUI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-as-a-standalone-plugin">Usage as a standalone plugin</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#supported-inputs">Supported inputs</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-napari">Using napari</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#recommended-basic-labeling-workflow">Recommended basic labeling workflow</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling">Labeling</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#widget-options">Widget options</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-mode">Labeling mode</a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#useful-shortcuts">Useful shortcuts</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-quality-of-life-features">More quality-of-life features</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-annotations">Saving annotations</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#save-behavior-and-notes">Save behavior and notes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#useful-shortcuts">Useful shortcuts</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-quality-of-life-features">More quality-of-life features</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-workflows">Labeling workflows</a><ul class="nav section-nav flex-column">
@@ -541,6 +541,7 @@ document.write(`
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#video-workflow-crop-and-frame-extraction">Video workflow (crop and frame extraction)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-multiple-folders">Working with multiple folders</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#updating-the-keypoints-definitions-and-color-scheme-while-labeling">Updating the keypoints definitions and color scheme while labeling</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo">Demo</a></li>
 </ul>
             </nav>
@@ -556,15 +557,30 @@ document.write(`
   <section class="tex2jax_ignore mathjax_ignore" id="basic-usage">
 <span id="file-napari-dlc-basic-usage"></span><h1>Basic usage<a class="headerlink" href="#basic-usage" title="Link to this heading">#</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code> is a napari plugin for keypoint annotation and label refinement. It can be used either as part of the DeepLabCut GUI or as a standalone annotation tool.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p><strong>New:</strong> check out the new <a class="reference internal" href="tracking/basic_usage.html#file-napari-dlc-tracking-basic-usage"><span class="std std-ref">semi-automated annotation workflow</span></a> to speed up your work in the plugin.</p>
+</div>
+<section id="labeling-stages">
+<h2>Labeling stages<a class="headerlink" href="#labeling-stages" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="#sec-napari-dlc-video-workflow"><span class="std std-ref">Extracting frames from a video</span></a></p></li>
+<li><p><a class="reference internal" href="#sec-napari-dlc-labeling-from-scratch"><span class="std std-ref">Labeling from scratch</span></a></p></li>
+<li><p><a class="reference internal" href="#sec-napari-dlc-resuming-labeling"><span class="std std-ref">Resuming labeling</span></a></p></li>
+<li><p><a class="reference internal" href="#sec-napari-dlc-refining-machine-labels"><span class="std std-ref">Refining machine labels</span></a></p></li>
+</ul>
+<p>Also see <span class="xref std std-ref">file:napari-dlc-troubleshooting</span> for troubleshooting tips.</p>
+</section>
 <section id="before-you-start">
 <h2>Before you start<a class="headerlink" href="#before-you-start" title="Link to this heading">#</a></h2>
 <p>If you installed <code class="docutils literal notranslate"><span class="pre">DeepLabCut[gui]</span></code>, <code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code> is already included.</p>
-<section id="in-the-deeplabcut-gui">
-<h3>In the DeepLabCut GUI<a class="headerlink" href="#in-the-deeplabcut-gui" title="Link to this heading">#</a></h3>
+<p>You may use <code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code> in two ways, described below.</p>
+<section id="usage-in-the-deeplabcut-gui">
+<h3>Usage in the DeepLabCut GUI<a class="headerlink" href="#usage-in-the-deeplabcut-gui" title="Link to this heading">#</a></h3>
 <p>When labeling frames, checking labels, or manually extracting frames from videos, the napari plugin will open automatically.</p>
 </section>
-<section id="as-a-standalone-plugin">
-<h3>As a standalone plugin<a class="headerlink" href="#as-a-standalone-plugin" title="Link to this heading">#</a></h3>
+<section id="usage-as-a-standalone-plugin">
+<h3>Usage as a standalone plugin<a class="headerlink" href="#usage-as-a-standalone-plugin" title="Link to this heading">#</a></h3>
 <p>You can also install it as a standalone plugin:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>napari-deeplabcut
 </pre></div>
@@ -588,6 +604,10 @@ document.write(`
 </ul>
 <p>You can load files either by:</p>
 <ul class="simple">
+<li><p>using the main DeepLabCut GUI “Label Frames” button</p></li>
+</ul>
+<p><em>OR</em></p>
+<ul class="simple">
 <li><p>dragging and dropping them onto the napari viewer, or</p></li>
 <li><p>using the <strong>File</strong> menu</p></li>
 </ul>
@@ -603,42 +623,16 @@ document.write(`
 <p>To familiarize yourself with napari, we recommend checking out the <a class="reference external" href="https://napari.org/stable/usage.html">official napari documentation and tutorials</a>.</p>
 </div>
 </section>
-<section id="recommended-basic-labeling-workflow">
-<span id="sec-napari-dlc-basic-workflow"></span><h2>Recommended basic labeling workflow<a class="headerlink" href="#recommended-basic-labeling-workflow" title="Link to this heading">#</a></h2>
-<p>The simplest way to <strong>start labeling</strong> is:</p>
-<ol class="arabic simple">
-<li><p>Open an image-only folder</p></li>
-<li><p>Open the corresponding <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> from your DeepLabCut project</p></li>
-</ol>
-<p><strong>OR</strong></p>
-<ol class="arabic simple">
-<li><p>Open a folder inside a DeepLabCut project’s <code class="docutils literal notranslate"><span class="pre">labeled-data</span></code> directory with a <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file already present</p></li>
-</ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>In this case, you do not have to load in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> as the plugin will automatically read the project config from the expected location relative to the <code class="docutils literal notranslate"><span class="pre">CollectedData...</span></code> file.</p>
-</div>
-<p>This creates:</p>
-<ul class="simple">
-<li><p>an <strong>Image</strong> layer containing the images (or video frames)</p></li>
-<li><p>a <strong>Points</strong> layer initialized with the keypoints defined in the project config</p>
-<ul>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> contains your ground truth annotations</p></li>
-<li><p>Any <code class="docutils literal notranslate"><span class="pre">machinelabels-iter&lt;...&gt;.h5</span></code> files contain machine predictions that can be refined and saved into <code class="docutils literal notranslate"><span class="pre">CollectedData...</span></code></p></li>
-</ul>
-</li>
-</ul>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>When machine labels are present, you will see keypoints from ALL current layers.
-Before editing, make sure to hide other layers to avoid confusion, and select the correct layer to edit (e.g. the <code class="docutils literal notranslate"><span class="pre">machinelabels...</span></code> layer if you want to refine machine predictions).</p>
-</div>
-<p>You can then start annotating directly in the <strong>Points</strong> layer.
-To do so, make sure the correct <strong>Points</strong> layer is selected in the layer list (left panel of the viewer). Click on the <strong>+</strong> icon to start adding keypoints; the selection tool to edit existing keypoints; and the pan/zoom tool to navigate the viewer.</p>
-</section>
 <section id="labeling">
-<h2>Labeling<a class="headerlink" href="#labeling" title="Link to this heading">#</a></h2>
+<span id="sec-napari-dlc-basic-workflow"></span><h2>Labeling<a class="headerlink" href="#labeling" title="Link to this heading">#</a></h2>
 <p>Once the <strong>Points</strong> layer is active, you can place and edit keypoints in the viewer.</p>
+<p>Select the correct <strong>Points</strong> layer in the layer list. Use the <strong>+</strong> tool to add keypoints, the selection tool to edit existing keypoints, and the pan/zoom tool to navigate the viewer.</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>There is no built-in backup or undo functionality in current plugin versions.
+Do not iterate on the only copy of your project files.
+We recommend backing up your project files as you would any other experimental data.</p>
+</div>
 <section id="widget-options">
 <h3>Widget options<a class="headerlink" href="#widget-options" title="Link to this heading">#</a></h3>
 <ul class="simple">
@@ -662,6 +656,26 @@ To do so, make sure the correct <strong>Points</strong> layer is selected in the
 <li><p><strong>Video tools</strong>: extract frames and store crop coordinates when a video is loaded</p></li>
 </ul>
 </section>
+</section>
+<section id="useful-shortcuts">
+<h3>Useful shortcuts<a class="headerlink" href="#useful-shortcuts" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>napari native:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">2</span></code> / <code class="docutils literal notranslate"><span class="pre">3</span></code>: switch between labeling and selection mode</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">4</span></code>: pan and zoom mode</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ctrl+R</span></code>: reset the viewer to the default zoom and position</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Use the <strong>View shortcuts</strong> button in the dock widget for a quick reference of napari-deeplabcut shortcuts and when they are active.</p>
+</div>
+</section>
+<section id="more-quality-of-life-features">
+<h3>More quality-of-life features<a class="headerlink" href="#more-quality-of-life-features" title="Link to this heading">#</a></h3>
+<p>See the <a class="reference internal" href="advanced_usage.html#file-napari-dlc-advanced-features"><span class="std std-ref">Advanced features</span></a> for useful features such as copy-pasting annotations, quick bodypart selection, and more.</p>
 </section>
 </section>
 <section id="saving-annotations">
@@ -696,9 +710,11 @@ A companion CSV file is also written:</p>
 <li><p>If several Points layers are selected at the same time, the plugin will not save them in order to avoid ambiguity.</p></li>
 <li><p>If saving would overwrite existing annotations, the plugin will ask for confirmation.</p>
 <ul>
-<li><p>This confirmation can be disabled by unchecking <strong>Warn on overwrite</strong> in the dock widget.</p></li>
+<li><p>Removing a keypoint that exists in the file counts as a <strong>deletion</strong>, and is listed separately in that confirmation.</p></li>
+<li><p>This confirmation can be disabled by unchecking <strong>Warn on overwrite</strong> in the dock widget. <strong>Deletions are then no longer reported either.</strong></p></li>
 </ul>
 </li>
+<li><p><strong>Removing a bodypart from <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and then loading that config drops its annotations.</strong> It is removed from the current layer, and its existing annotations are dropped from <code class="docutils literal notranslate"><span class="pre">CollectedData...</span></code> on the next save. This will be adjusted in the future, please use this behavior with caution. We recommend keeping legacy bodyparts and filtering on subsequent steps; DeepLabCut will <strong>NOT</strong> use undeclared bodyparts for training data generation.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -706,45 +722,18 @@ A companion CSV file is also written:</p>
 Keeping data inside the project directory is recommended for best compatibility. Fallbacks asking for the config file location are provided when this structure is not respected, but some features may be disabled or limited in that case.</p>
 </div>
 </section>
-<section id="useful-shortcuts">
-<h3>Useful shortcuts<a class="headerlink" href="#useful-shortcuts" title="Link to this heading">#</a></h3>
-<ul class="simple">
-<li><p>napari native:</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">2</span></code> / <code class="docutils literal notranslate"><span class="pre">3</span></code>: switch between labeling and selection mode</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">4</span></code>: pan and zoom mode</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Ctrl+R</span></code>: reset the viewer to the default zoom and position</p></li>
-</ul>
-</li>
-<li><p>napari-deeplabcut specific:</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">M</span></code>: cycle through annotation modes</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">E</span></code>: toggle edge coloring</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">F</span></code>: toggle between individual and bodypart coloring modes</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">V</span></code>: toggle visibility of the selected layer</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Backspace</span></code>: delete selected point(s)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Ctrl+C</span></code> / <code class="docutils literal notranslate"><span class="pre">Ctrl+V</span></code>: copy and paste selected points</p></li>
-</ul>
-</li>
-</ul>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>Use the <strong>View shortcuts</strong> button in the dock widget for a quick reference of napari-deeplabcut shortcuts and their context (i.e. when they are active).</p>
-</div>
-</section>
-<section id="more-quality-of-life-features">
-<h3>More quality-of-life features<a class="headerlink" href="#more-quality-of-life-features" title="Link to this heading">#</a></h3>
-<p>See the <a class="reference internal" href="advanced_usage.html#file-napari-dlc-advanced-features"><span class="std std-ref">Advanced features</span></a> for useful features such as copy-pasting annotations, quick bodypart selection, and more.</p>
-</section>
 </section>
 <section id="labeling-workflows">
 <h2>Labeling workflows<a class="headerlink" href="#labeling-workflows" title="Link to this heading">#</a></h2>
 <section id="labeling-from-scratch">
-<h3>Labeling from scratch<a class="headerlink" href="#labeling-from-scratch" title="Link to this heading">#</a></h3>
+<span id="sec-napari-dlc-labeling-from-scratch"></span><h3>Labeling from scratch<a class="headerlink" href="#labeling-from-scratch" title="Link to this heading">#</a></h3>
 <p>Use this when the image folder does <strong>not</strong> yet contain a <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file.</p>
+<p><strong>From the DeepLabCut GUI</strong></p>
+<p>Click the <strong>Label Frames</strong> button to start labeling from scratch.</p>
+<p><strong>In napari directly</strong></p>
 <ol class="arabic simple">
 <li><p>Open a folder of extracted images</p></li>
-<li><p>Open the corresponding DeepLabCut <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p></li>
+<li><p>Open the corresponding DeepLabCut <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>, this creates an empty <strong>Points</strong> layer named <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;</span></code></p></li>
 <li><p>Select the created <strong>Points</strong> layer</p></li>
 <li><p>Label keypoints</p></li>
 <li><p>Save with <code class="docutils literal notranslate"><span class="pre">Ctrl+S</span></code></p></li>
@@ -756,30 +745,40 @@ CollectedData_&lt;ScorerName&gt;.csv
 </div>
 </section>
 <section id="resuming-labeling">
-<h3>Resuming labeling<a class="headerlink" href="#resuming-labeling" title="Link to this heading">#</a></h3>
+<span id="sec-napari-dlc-resuming-labeling"></span><h3>Resuming labeling<a class="headerlink" href="#resuming-labeling" title="Link to this heading">#</a></h3>
 <p>Use this when the folder already contains a <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file.</p>
-<ul class="simple">
-<li><p>Open (or drag and drop) the folder in napari.</p></li>
-</ul>
+<ol class="arabic simple">
+<li><p>Open or drag and drop the folder in napari.</p></li>
+<li><p>Select the loaded <strong>Points</strong> layer.</p></li>
+<li><p>Continue labeling and save with <code class="docutils literal notranslate"><span class="pre">Ctrl+S</span></code>.</p></li>
+</ol>
 <p>Existing annotations and keypoint metadata will be loaded automatically from the H5 file.
-In this case, loading <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> is usually <strong>not needed</strong> unless:</p>
+In this case, loading <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> manually is usually <strong>not needed</strong> unless:</p>
 <ul class="simple">
-<li><p>The project’s bodyparts have changed or</p></li>
-<li><p>You want to refresh the configured color scheme</p></li>
+<li><p>The project’s bodyparts have changed</p></li>
+<li><p>The color scheme in <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> has changed since you last opened the folder</p></li>
 </ul>
+<p>See <a class="reference internal" href="#sec-napari-dlc-update-keypoints-from-config"><span class="std std-ref">Updating the keypoints definitions and color scheme while labeling</span></a></p>
 </section>
 <section id="refining-machine-labels">
-<h3>Refining machine labels<a class="headerlink" href="#refining-machine-labels" title="Link to this heading">#</a></h3>
+<span id="sec-napari-dlc-refining-machine-labels"></span><h3>Refining machine labels<a class="headerlink" href="#refining-machine-labels" title="Link to this heading">#</a></h3>
 <p>Use this when the folder contains a machine predictions file such as:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>machinelabels-iter&lt;...&gt;.h5
 </pre></div>
 </div>
 <p>Open the folder in napari.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>When machine labels are present, an extra layer is added and you will see keypoints from ALL current layers.
+GT labels are shown with a <strong>disk marker</strong>, whereas machine labels use a <strong>cross marker</strong>.
+<strong>Try hiding each point layer individually to better distinguish between GT and machine labels.</strong>
+Before editing, <strong>make sure to select the correct layer to edit</strong> in the viewer list (e.g. the <code class="docutils literal notranslate"><span class="pre">machinelabels...</span></code> layer if you want to refine machine predictions).</p>
+</div>
 <p>If both a <code class="docutils literal notranslate"><span class="pre">CollectedData...</span></code> file and a <code class="docutils literal notranslate"><span class="pre">machinelabels...</span></code> file are present:</p>
 <ol class="arabic simple">
-<li><p>Edit the <code class="docutils literal notranslate"><span class="pre">machinelabels</span></code> layer</p></li>
+<li><p>Select the <code class="docutils literal notranslate"><span class="pre">machinelabels</span></code> layer</p></li>
 <li><p>Optionally press <code class="docutils literal notranslate"><span class="pre">E</span></code> to show edge coloring (red edges indicate confidence below the threshold defined in <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>)</p></li>
-<li><p>Hide other layers to avoid confusion while editing</p></li>
+<li><p>Hide other Points layers to make editing easier if needed</p></li>
 <li><p>Edit keypoints in the <code class="docutils literal notranslate"><span class="pre">machinelabels</span></code> layer to refine machine predictions</p></li>
 <li><p>Save the selected <code class="docutils literal notranslate"><span class="pre">machinelabels</span></code> layer</p></li>
 </ol>
@@ -794,7 +793,7 @@ Make sure overwrite confirmation is enabled if you want to avoid accidentally ov
 </section>
 </section>
 <section id="video-workflow-crop-and-frame-extraction">
-<h2>Video workflow (crop and frame extraction)<a class="headerlink" href="#video-workflow-crop-and-frame-extraction" title="Link to this heading">#</a></h2>
+<span id="sec-napari-dlc-video-workflow"></span><h2>Video workflow (crop and frame extraction)<a class="headerlink" href="#video-workflow-crop-and-frame-extraction" title="Link to this heading">#</a></h2>
 <p>Videos can also be opened directly in napari.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
@@ -811,8 +810,9 @@ The workflow is otherwise the same when opening a video directly in napari.</p>
 </section>
 <section id="working-with-multiple-folders">
 <h2>Working with multiple folders<a class="headerlink" href="#working-with-multiple-folders" title="Link to this heading">#</a></h2>
-<p>We do not currently support working on <strong>more than one dataset folder at a time</strong>.
-If a new folder is opened while another one is already open, the plugin will prevent new frames from being loaded, attempt to load annotations using the current folder context, and show a warning.</p>
+<p>We do not currently support working on <strong>more than one dataset folder at a time</strong>.</p>
+<p>When using the main DeepLabCut GUI, the recommended way to switch folders is to close napari and open the next folder from the GUI.</p>
+<p>If a new folder is opened while another one is already open, the plugin will prevent new frames from being loaded, attempt to load annotations using the current folder context, and show a warning.</p>
 <p>After finishing one folder, simply:</p>
 <ol class="arabic simple">
 <li><p>Save the relevant <strong>Points</strong> layer</p></li>
@@ -820,14 +820,49 @@ If a new folder is opened while another one is already open, the plugin will pre
 <li><p>Open the next folder (e.g. by dragging and dropping it onto the viewer)</p></li>
 </ol>
 <p>This helps keep saving behavior unambiguous.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Keypoint layers do not carry over from one folder to the next. If you leave one open, it
+is <strong>locked</strong> and you will not be able to label with it. Save it, remove it, and start the
+new folder from scratch, see <a class="reference internal" href="#sec-napari-dlc-labeling-from-scratch"><span class="std std-ref">Labeling from scratch</span></a>.</p>
+<p>See <span class="xref std std-ref">Troubleshooting</span> if you see such a message.</p>
+</div>
+</section>
+<section id="updating-the-keypoints-definitions-and-color-scheme-while-labeling">
+<span id="sec-napari-dlc-update-keypoints-from-config"></span><h2>Updating the keypoints definitions and color scheme while labeling<a class="headerlink" href="#updating-the-keypoints-definitions-and-color-scheme-while-labeling" title="Link to this heading">#</a></h2>
+<p>To update in place the current keypoint list, you can drag-and-drop a new <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> with the updated keypoints into the viewer.</p>
+<p>If the config contains keypoints the current layer does not have, you will be prompted to choose how to handle the new keypoints:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Choice</p></th>
+<th class="head"><p>Effect</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Apply to current</strong></p></td>
+<td><p>Adds the updated keypoints to the layer you were working on</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Keep both</strong></p></td>
+<td><p>Leaves your layer untouched and keeps the config layer</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Cancel</strong></p></td>
+<td><p>Discards the temporary layer</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the config adds no new keypoints, there is no prompt and it is applied directly. This is the usual case when only the color scheme changed: the colors defined in the new config are applied to the current Points layer.</p>
+</div>
 </section>
 <section id="demo">
 <h2>Demo<a class="headerlink" href="#demo" title="Link to this heading">#</a></h2>
 <p>A short demo video is available here:</p>
 <p><a class="reference external" href="https://youtu.be/hsA9IB5r73E">Link to video</a></p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This demo may be outdated, but the general annotation workflow remains the same. If you would like an updated video tutorial, please open a feature request issue on GitHub, and we will update it.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The interface shown in this video may differ from the current version, but the general annotation workflow remains applicable.</p>
 </div>
 </section>
 </section>
@@ -896,25 +931,25 @@ If a new folder is opened while another one is already open, the plugin will pre
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-stages">Labeling stages</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#before-you-start">Before you start</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#in-the-deeplabcut-gui">In the DeepLabCut GUI</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#as-a-standalone-plugin">As a standalone plugin</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-in-the-deeplabcut-gui">Usage in the DeepLabCut GUI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-as-a-standalone-plugin">Usage as a standalone plugin</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#supported-inputs">Supported inputs</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-napari">Using napari</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#recommended-basic-labeling-workflow">Recommended basic labeling workflow</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling">Labeling</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#widget-options">Widget options</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-mode">Labeling mode</a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#useful-shortcuts">Useful shortcuts</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-quality-of-life-features">More quality-of-life features</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-annotations">Saving annotations</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#save-behavior-and-notes">Save behavior and notes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#useful-shortcuts">Useful shortcuts</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-quality-of-life-features">More quality-of-life features</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-workflows">Labeling workflows</a><ul class="nav section-nav flex-column">
@@ -925,6 +960,7 @@ If a new folder is opened while another one is already open, the plugin will pre
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#video-workflow-crop-and-frame-extraction">Video workflow (crop and frame extraction)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-multiple-folders">Working with multiple folders</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#updating-the-keypoints-definitions-and-color-scheme-while-labeling">Updating the keypoints definitions and color scheme while labeling</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo">Demo</a></li>
 </ul>
   </nav></div>
