@@ -76,3 +76,24 @@ Restore the frame in the folder, or remove its row:
 
 The folder was opened twice. Both layers would save to the same file, so
 the second copy is closed automatically.
+
+(sec:napari-dlc-repair-wrong-folder)=
+
+## Annotations written into the wrong folder
+
+**This affects files written before v0.4.0 of the plugin. Current versions refuse the write that causes it.**
+
+A keypoints layer left open while a different extracted frames folder was opened could follow that folder and, on the next save, write annotations to the wrong folder. The result is a `CollectedData_<ScorerName>` file holding rows for frames belonging to another folder.
+
+No message is shown for this, since it happened in an earlier session. To check a file, open the `.csv` next to it: the first column lists one frame per row, and every row should name the folder the file sits in.
+
+To repair it:
+
+1. Copy any row naming another folder into that folder's `CollectedData_<ScorerName>.csv`, if the annotations are not already there
+1. Delete those rows from the file you are repairing
+1. Run `deeplabcut.convertcsv2h5("/path/to/config.yaml")`
+1. Reopen the folder
+
+```{warning}
+Deleting the rows discards those annotations unless they exist in the folder they belong to. Check before deleting.
+```
