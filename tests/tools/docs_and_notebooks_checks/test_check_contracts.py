@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import os
 import subprocess
 from collections.abc import Callable
 from datetime import date, datetime, timezone
 from pathlib import Path
-from types import ModuleType
 
 import pytest
 
@@ -15,26 +13,6 @@ import pytest
 @pytest.fixture(autouse=True)
 def no_github_step_summary(monkeypatch):
     monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
-
-
-# -----------------------------
-# Module loader (tools/ is not necessarily a package)
-# -----------------------------
-def load_tool_module() -> ModuleType:
-    repo_root = Path(__file__).resolve().parents[3]
-    tool_path = repo_root / "tools" / "docs_and_notebooks_check.py"
-    assert tool_path.exists(), f"Missing tool: {tool_path}"
-
-    spec = importlib.util.spec_from_file_location("docs_and_notebooks_check", tool_path)
-    assert spec and spec.loader
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)  # type: ignore[attr-defined]
-    return mod
-
-
-@pytest.fixture(scope="session")
-def tool() -> ModuleType:
-    return load_tool_module()
 
 
 def _write_default_cfg(repo: Path, include: list[str]) -> Path:
