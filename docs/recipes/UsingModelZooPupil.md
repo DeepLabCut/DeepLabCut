@@ -96,7 +96,7 @@ The `create_pretrained_project` function will create a new project directory wit
 It will also initialize your project with a pre-trained model from the DeepLabCut ModelZoo.
 
 The rest of the code should be run within your DeepLabCut environment.
-Check [here](how-to-install) for the instructions for the DeepLabCut installation.
+Check {ref}`here <file:how-to-install>` for the instructions for the DeepLabCut installation.
 
 To initialize a new project directory with a pre-trained model from the DeepLabCut ModelZoo, run the code below.
 
