@@ -25,12 +25,12 @@ performance). In short, expect a boost 🔥.
 In short, PyTorch models can be trained in any DeepLabCut project. If you have a project
 already made, simply add a new key to your project `config.yaml` file specifying
 `engine: pytorch`. Then any new training dataset that will be created will be a PyTorch
-model (see [Creating Shuffles and Model Configuration](#Creating-Shuffles-and-Model-Configuration)) to learn more about training PyTorch
+model (see [Creating Shuffles and Model Configuration](#creating-shuffles-and-model-configuration)) to learn more about training PyTorch
 models. To train Tensorflow models again, you can set `engine: tensorflow`.
 
 ### Installation
 
-To see the DeepLabCut 3.0 installation guide, check the [installation docs](how-to-install).
+To see the DeepLabCut 3.0 installation guide, check the {ref}`installation docs <file:how-to-install>`.
 
 ### Using the GUI
 
@@ -39,7 +39,7 @@ and TensorFlow engine through the drop-down menu in the top right corner.
 
 ### Quick guide (standard API)
 
-The standard use of DLC does not change (via the high-level API), as you can see in the standard guide: for [single](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide) and [multiple individuals](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide).
+The standard use of DLC does not change (via the high-level API), as you can see in the {ref}`user guide <file:dlc-userguide>`, for single and multiple individuals.
 
 Also check out several COLAB notebooks on how you can use the code.
 
