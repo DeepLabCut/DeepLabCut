@@ -161,6 +161,31 @@ Write:
 python tools/docs_and_notebooks_check.py normalize   --write   --targets docs/notebook.ipynb   --ack-meta-commit-marker
 ```
 
+### 5) TOC coverage (read-only; fails)
+
+`_config.yml` sets `only_build_toc_files: true`, so a page missing from `_toc.yml` is not built and not published. This command fails if any `docs/**/*.md` is neither listed in `_toc.yml` nor marked as intentionally off-TOC:
+
+```bash
+python tools/docs_and_notebooks_check.py toc
+```
+
+To keep a page out of the TOC on purpose, set its `visibility` to `unlisted`, `archived` or `orphaned` (the `Visibility` values from `tools/docs_and_notebooks_audit.py`):
+
+```yaml
+---
+deeplabcut:
+  visibility: archived
+---
+```
+
+- **Error** (exit 1): page not in `_toc.yml`, and `visibility` is missing, `online` or invalid.
+- **Warning** (exit 0): page in `_toc.yml` but marked `unlisted`, `archived` or `orphaned`.
+
+Pages matching `scan.exclude` in the config are skipped. Under GitHub Actions, issues are also emitted as file annotations and a step-summary table (`--no-step-summary` disables the table).
+
+> [!NOTE]
+> Adding `visibility` is a metadata-only change; commit it with the metadata marker (see above).
+
 ---
 
 ## CI integration
@@ -169,6 +194,7 @@ Recommended CI usage:
 
 - Run `report` on PRs and upload the outputs as artifacts.
 - Run `check` once allowlists are populated (start empty to avoid failures).
+- `toc` runs as a failing step of the main docs build (`.github/workflows/build-main-docs.yml`), on pull requests only. That build is dispatched by intelligent testing when the PR changes docs files.
 
 > [!IMPORTANT]
 > Use `actions/checkout` with `fetch-depth: 0` (or sufficiently deep) so `git log` sees history; shallow clones can cause missing or fallback timestamps.
