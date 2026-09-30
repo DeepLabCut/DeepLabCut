@@ -151,32 +151,26 @@ In such cases, file columns will default to dummy animal names (ind1, ind2, ...,
 
 ##### API Docs
 
-````{admonition} Click the button to see API Docs for analyze_videos
+```{admonition} Click the button to see API Docs for analyze_videos
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.analyze_videos.rst
+[View the `analyze_videos` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/compat/?h=analyze_videos#deeplabcut.compat.analyze_videos)
 ```
-````
 
-````{admonition} Click the button to see API Docs for convert_detections2tracklets
+```{admonition} Click the button to see API Docs for convert_detections2tracklets
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.convert_detections2tracklets.rst
+[View the `convert_detections2tracklets` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/compat/?h=convert_detections2tracklets#deeplabcut.compat.convert_detections2tracklets)
 ```
-````
 
-````{admonition} Click the button to see API Docs for stitch_tracklets
+```{admonition} Click the button to see API Docs for stitch_tracklets
 ---
 class: dropdown
 ---
-```{eval-rst}
-.. include:: ./api/deeplabcut.stitch_tracklets.rst
+[View the `stitch_tracklets` API documentation](https://deeplabcut.github.io/DeepLabCut/dev/latest-release/reference/deeplabcut/refine_training_dataset/stitch/?h=stitch_tracklets#deeplabcut.refine_training_dataset.stitch.stitch_tracklets)
 ```
-````
 
 ##### Using Unsupervised Identity Tracking:
 
@@ -213,8 +207,6 @@ Tracklet refinement GUI. Key settings to configure are described in the text.
 \*note, setting `max_gap=0` can be used to fill in all frames across the video; otherwise, 1-n is the # of frames you want to fill in, i.e. maybe you want to fill in short gaps of 5 frames, but 15 frames indicates another issue, etc. You can test this in the GUI very easy by editing the value and then re-launch pop-up GUI.
 
 If you fill in gaps, they will be associated to an ultra low probability, 0.01, so you are aware this is not the networks best estimate, this is the human-override! Thus, if you create a video, you need to set your pcutoff to 0 if you want to see these filled in frames.
-
-[Read more here!](functionDetails.md#madeeplabcut-critical-point---assemble--refine-tracklets)
 
 Short demo:
 

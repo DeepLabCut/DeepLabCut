@@ -182,7 +182,7 @@ There are several options to use DeepLabCut, and we recommend you pick the one t
 [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=DRT-Cq2vdWs)
 
 We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user's
-own dataset. See all the demo's [here!](../examples/README.md)
+own dataset. See all the demo's [here!](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/README.md)
 Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.
 
 (using-project-manager-gui)=
