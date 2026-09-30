@@ -39,7 +39,7 @@ and TensorFlow engine through the drop-down menu in the top right corner.
 
 ### Quick guide (standard API)
 
-The standard use of DLC does not change (via the high-level API), as you can see in the standard guide: for [single](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide) and [multiple individuals](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide).
+The standard use of DLC does not change (via the high-level API), as you can see in the {ref}`user guide <file:dlc-userguide>`, for single and multiple individuals.
 
 Also check out several COLAB notebooks on how you can use the code.
 
