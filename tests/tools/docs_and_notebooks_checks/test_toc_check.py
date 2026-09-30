@@ -5,7 +5,6 @@ All repositories and pages here are synthetic fixtures built in `tmp_path`.
 
 from __future__ import annotations
 
-import importlib
 import subprocess
 import sys
 from pathlib import Path
@@ -95,16 +94,6 @@ def test_unresolved_repo_root(tool, tmp_path):
     repo = _make_repo(tmp_path, [], {"docs/page.md": _page()})
     unresolved = repo / "docs" / ".."
     assert _issues(tool, unresolved) == {"docs/page.md": "error"}
-
-
-def test_import_sibling_does_not_mask_missing_dependency(tool, monkeypatch):
-    def fake_import(name):
-        raise ModuleNotFoundError("No module named 'nbformat'", name="nbformat")
-
-    monkeypatch.setattr(importlib, "import_module", fake_import)
-    with pytest.raises(ModuleNotFoundError) as exc:
-        tool._import_sibling("docs_and_notebooks_audit")
-    assert exc.value.name == "nbformat"
 
 
 def test_listed_page_marked_orphaned_warns(tool, tmp_path):

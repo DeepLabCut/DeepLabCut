@@ -98,6 +98,13 @@ import yaml
 from nbformat.validator import NotebookValidationError
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+try:
+    from tools.docs_and_notebooks_audit import Visibility
+    from tools.knowledge_indexing.toc import TOC_FILE, read_toc
+except ImportError:  # pragma: no cover
+    from docs_and_notebooks_audit import Visibility
+    from knowledge_indexing.toc import TOC_FILE, read_toc
+
 REPORT_SCHEMA_VERSION: Literal[1, 2] = 2
 GLOB_CHARS = set("*?[")
 DLC_NAMESPACE = "deeplabcut"
@@ -1161,19 +1168,6 @@ class TocIssue(BaseModel):
 TocIssue.model_rebuild()
 
 
-def _import_sibling(name: str) -> Any:
-    """Import a module from `tools/`, whether run as a script or as the `tools` package."""
-    import importlib
-
-    try:
-        return importlib.import_module(f"tools.{name}")
-    except ModuleNotFoundError as exc:
-        # Fall back only when `tools` itself is not importable, not on a missing dependency.
-        if exc.name != "tools" and not (exc.name or "").startswith("tools."):
-            raise
-        return importlib.import_module(name)
-
-
 def check_toc(repo_root: Path, cfg: ToolConfig) -> list[TocIssue]:
     """Check that every docs page is listed in `_toc.yml` or marked off-TOC.
 
@@ -1191,13 +1185,11 @@ def check_toc(repo_root: Path, cfg: ToolConfig) -> list[TocIssue]:
     Returns:
         Issues sorted by path.
     """
-    toc = _import_sibling("knowledge_indexing.toc")
-    visibility = _import_sibling("docs_and_notebooks_audit").Visibility
-    off_toc = {v.value for v in visibility if v is not visibility.ONLINE}
-    valid = {v.value for v in visibility}
-    fix = f"add it to {toc.TOC_FILE} or set `{DLC_NAMESPACE}.visibility` to one of {sorted(off_toc)}"
+    off_toc = {v.value for v in Visibility if v is not Visibility.ONLINE}
+    valid = {v.value for v in Visibility}
+    fix = f"add it to {TOC_FILE} or set `{DLC_NAMESPACE}.visibility` to one of {sorted(off_toc)}"
 
-    listed = {entry.file for entry in toc.read_toc(repo_root / toc.TOC_FILE)}
+    listed = {entry.file for entry in read_toc(repo_root / TOC_FILE)}
     issues: list[TocIssue] = []
     for path in sorted(p for p in repo_root.glob(TOC_SCAN_PATTERN) if p.is_file()):
         rel = path.relative_to(repo_root).as_posix()
@@ -1216,7 +1208,7 @@ def check_toc(repo_root: Path, cfg: ToolConfig) -> list[TocIssue]:
 
         if rel.removesuffix(".md") in listed:
             if value in off_toc:
-                reason = f"listed in {toc.TOC_FILE} but visibility is {value!r}"
+                reason = f"listed in {TOC_FILE} but visibility is {value!r}"
                 issues.append(TocIssue(path=rel, severity="warning", reason=reason))
             continue
 
@@ -1230,7 +1222,7 @@ def check_toc(repo_root: Path, cfg: ToolConfig) -> list[TocIssue]:
             cause = f"invalid visibility {value!r}"
         else:
             cause = f"visibility is {value!r}"
-        issues.append(TocIssue(path=rel, severity="error", reason=f"not in {toc.TOC_FILE} ({cause}); {fix}"))
+        issues.append(TocIssue(path=rel, severity="error", reason=f"not in {TOC_FILE} ({cause}); {fix}"))
     return issues
 
 
