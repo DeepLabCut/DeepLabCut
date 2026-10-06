@@ -1,3 +1,10 @@
+---
+deeplabcut:
+  last_content_updated: '2026-06-29'
+  last_metadata_updated: '2026-10-06'
+  ignore: false
+---
+
 (file:xamalab-dlc-integration)=
 
 # XROMM + DeepLabCut local integration
