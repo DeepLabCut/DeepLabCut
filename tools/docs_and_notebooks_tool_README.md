@@ -81,7 +81,10 @@ If a doc page has **no** frontmatter, the tool can still report staleness (read-
 
 ## How `last_content_updated` is computed
 
-For each commit touching a file, the tool compares the file before and after the commit, ignoring Markdown frontmatter and, for notebooks, everything except cell types and sources (metadata, outputs, execution counts, JSON formatting). The most recent commit with a difference sets the date; adding a file counts as a change.
+For each commit touching a file, the tool compares the file before and after the commit. The most recent commit with a difference sets the date; adding a file counts as a change. Ignored:
+
+- Markdown frontmatter, and formatting that renders the same: line wrapping, trailing whitespace, escapes, bullet characters, list numbering, indented vs fenced code. Markdown is compared as HTML rendered by `markdown-it-py`, with whitespace collapsed.
+- In notebooks, everything except cell types and sources: metadata, outputs, execution counts, JSON formatting. Markdown cells are compared as above; code cells by Python syntax tree, so formatting and comments are ignored.
 
 Commit messages are not read, so metadata-only and normalization commits need no special message, and squash merges are classified by their actual diff. `update --write` and `normalize --write` still print `chore(metadata): update docs/notebooks metadata` as a suggested message.
 
@@ -188,7 +191,7 @@ Recommended CI usage:
 Dependencies required for this tool (install in the CI job):
 
 ```bash
-pip install pydantic pyyaml nbformat
+pip install pydantic pyyaml nbformat markdown-it-py
 ```
 
 ---
