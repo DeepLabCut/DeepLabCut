@@ -62,6 +62,20 @@ def test_sort_ellipse():
     assert all(np.array_equal(tracklets[n][0], pose) for n, pose in enumerate(poses))
 
 
+def test_sort_ellipse_unfitted_pose_keeps_animal_index():
+    template = np.c_[np.linspace(-40, 40, 10), np.tile([-10.0, 10.0], 5), np.ones(10)]
+    poses = np.stack([template + [150, 150, 0], template + [600, 450, 0]])
+    mot_tracker = trackingutils.SORTEllipse(1, 1, 0.6)
+    trackers = mot_tracker.track(poses[..., :2])
+    pose_to_tracker = {int(ind): int(tid) for tid, ind in trackers[:, -2:]}
+    poses[0, 2:, :2] = np.nan
+    tracklets = dict()
+    trackers = mot_tracker.track(poses[..., :2])
+    trackingutils.fill_tracklets(tracklets, trackers, poses, imname=1)
+    assert pose_to_tracker[0] not in tracklets
+    np.testing.assert_equal(tracklets[pose_to_tracker[1]][1], poses[1])
+
+
 def test_tracking_ellipse(real_assemblies, real_tracklets):
     tracklets_ref = real_tracklets.copy()
     _ = tracklets_ref.pop("header", None)
