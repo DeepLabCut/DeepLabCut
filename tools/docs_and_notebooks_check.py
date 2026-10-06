@@ -13,8 +13,9 @@ Goals
 Terminology
 -----------
 last_content_updated
-    Computed from git history, excluding metadata-only commits.
-    (Metadata commits must include META_COMMIT_MARKER in the commit message.)
+    Computed from git history: date of the last commit that changed the Markdown body
+    or the notebook cell sources. Frontmatter, notebook metadata, outputs,
+    normalization and formatting that renders the same are ignored.
 
 last_verified
     Human-controlled date indicating the file was verified to work/be accurate.
@@ -73,8 +74,9 @@ Notes for CI
   - pydantic>=2,<3
   - PyYAML
   - nbformat>=5
+  - markdown-it-py>=3,<4 (content dates only; not needed by `toc`)
   to be installed in the environment.
-  Recommended : install in CI job directly (pip install pydantic pyyaml nbformat)
+  Recommended : install in CI job directly (pip install pydantic pyyaml nbformat markdown-it-py)
   rather than adding to requirements, since these are only needed for this tool.
 """
 
@@ -82,6 +84,7 @@ Notes for CI
 from __future__ import annotations
 
 import argparse
+import ast
 import fnmatch
 import json
 import os
@@ -90,6 +93,7 @@ import shlex
 import subprocess
 from collections.abc import Sequence
 from datetime import date, datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal, TypedDict
 
@@ -116,10 +120,8 @@ DEFAULT_CFG = SCRIPT_DIR / "docs_and_notebooks_report_config.yml"
 # -----------------------------
 # Metadata commit marker / guidance
 # -----------------------------
-# IMPORTANT:
-#   Metadata-only updates and notebook normalization rewrite files and will change
-#   "git last touched" timestamps. To preserve meaningful "content age", all such
-#   commits must include this marker in the commit message.
+# Suggested message for metadata-only commits. Content dates are computed from
+# the diff (see `git_last_content_updated`), so the marker is a convention only.
 META_COMMIT_MARKER = "chore(metadata)"
 SUGGESTED_TAGGED_COMMIT = f"{META_COMMIT_MARKER}: update docs/notebooks metadata"
 
@@ -489,19 +491,124 @@ def git_last_touched(repo_root: Path, rel_path: str) -> date | None:
     return _git_log_date(repo_root, rel_path)
 
 
-def git_last_content_updated(repo_root: Path, rel_path: str) -> tuple[date | None, bool]:
-    d = _git_log_date(
-        repo_root,
-        rel_path,
-        extra_args=[
-            "--fixed-strings",
-            "--invert-grep",
-            "--grep",
-            META_COMMIT_MARKER,
-        ],
+def _read_git_blobs(repo_root: Path, shas: set[str]) -> dict[str, str]:
+    """Read blobs with one `git cat-file --batch` call; missing and all-zero ids are left out."""
+    wanted = sorted(sha for sha in shas if sha.strip("0"))
+    if not wanted:
+        return {}
+    p = subprocess.run(
+        ["git", "cat-file", "--batch"],
+        cwd=str(repo_root),
+        input=("\n".join(wanted) + "\n").encode(),
+        capture_output=True,
     )
-    if d is not None:
-        return d, False
+    if p.returncode != 0:
+        return {}
+
+    blobs: dict[str, str] = {}
+    data, pos = p.stdout, 0
+    for sha in wanted:
+        end = data.index(b"\n", pos)
+        header = data[pos:end].split()
+        pos = end + 1
+        if len(header) != 3:  # "<sha> missing"
+            continue
+        size = int(header[2])
+        blobs[sha] = data[pos : pos + size].decode("utf-8", errors="replace")
+        pos += size + 1
+    return blobs
+
+
+@lru_cache(maxsize=1)
+def _markdown_parser() -> Any:
+    # Imported lazily: only content dates need it, not e.g. the `toc` subcommand.
+    from markdown_it import MarkdownIt
+
+    return MarkdownIt("commonmark").enable("table")
+
+
+def _code_key(source: str) -> str:
+    """Code text without trailing whitespace or surrounding blank lines."""
+    return "\n".join(line.rstrip() for line in source.splitlines()).strip("\n")
+
+
+def _markdown_key(text: str) -> str:
+    """Rendered HTML with whitespace collapsed, so formatting that renders the same
+    (wrapping, escapes, bullet characters, list numbering, indented vs fenced code) is ignored."""
+    return re.sub(r"\s+", " ", _markdown_parser().render(text)).strip()
+
+
+def _python_key(source: str) -> str:
+    """Python syntax tree, ignoring formatting and comments; raw code if it does not parse."""
+    # IPython magics and shell escapes are kept as string literals so changes to them still count.
+    lines = [
+        f"{line[: len(line) - len(line.lstrip())]}{line.strip()!r}" if line.lstrip().startswith(("%", "!")) else line
+        for line in source.splitlines()
+    ]
+    try:
+        return ast.dump(ast.parse("\n".join(lines)))
+    except (SyntaxError, ValueError):
+        return _code_key(source)
+
+
+def _content_key(text: str, rel_path: str) -> str:
+    """Return what counts as a file's content: the Markdown body as rendered HTML, or notebook
+    cell types and sources (Markdown cells rendered the same way, code cells by syntax tree)."""
+    text = text.replace("\r\n", "\n")
+    if rel_path.endswith(".ipynb"):
+        try:
+            key = []
+            for cell in json.loads(text).get("cells", []):
+                source = cell.get("source", "")
+                source = "".join(source) if isinstance(source, list) else source
+                cell_type = cell.get("cell_type")
+                if cell_type == "markdown":
+                    key.append((cell_type, _markdown_key(source)))
+                elif cell_type == "code":
+                    key.append((cell_type, _python_key(source)))
+                else:
+                    key.append((cell_type, _code_key(source)))
+            return json.dumps(key)
+        except (ValueError, AttributeError, TypeError):
+            return text
+    if rel_path.endswith(".md"):
+        try:
+            _fm, body, _err = read_md_frontmatter(text)
+        except yaml.YAMLError:
+            body = text
+        return _markdown_key(body)
+    return text
+
+
+def git_last_content_updated(repo_root: Path, rel_path: str) -> tuple[date | None, bool]:
+    """Date of the last commit that changed the file's content, per `_content_key`.
+
+    Commits are judged by their diff, not their message, so squash merges and
+    metadata-only commits are classified correctly whatever they are called.
+    Falls back to `git_last_touched` (second item True) if no such commit is found.
+    """
+    code, out, _err = _run_git(
+        ["log", "--date=short", "--format=@%cd", "--raw", "--no-abbrev", "--no-renames", "--", rel_path],
+        cwd=repo_root,
+    )
+    changes: list[tuple[str, str, str]] = []  # (commit date, old blob, new blob), newest first
+    if code == 0:
+        commit_date = None
+        for line in out.splitlines():
+            if line.startswith("@"):
+                commit_date = line[1:]
+            elif line.startswith(":") and commit_date:
+                _old_mode, _new_mode, old, new, status = line[1:].split(maxsplit=4)
+                if not status.startswith("D"):
+                    changes.append((commit_date, old, new))
+
+    blobs = _read_git_blobs(repo_root, {sha for _d, old, new in changes for sha in (old, new)})
+    for commit_date, old, new in changes:
+        if old not in blobs or new not in blobs:
+            # Added file, or a blob this clone does not have
+            return _parse_git_iso_date(commit_date), False
+        if _content_key(blobs[old], rel_path) != _content_key(blobs[new], rel_path):
+            return _parse_git_iso_date(commit_date), False
     return git_last_touched(repo_root, rel_path), True
 
 
@@ -665,8 +772,7 @@ def build_metadata_sync_command(config_path: str, paths: list[str]) -> str | Non
         "  --write \\\n"
         "  --set-content-date-from-git \\\n"
         "  --targets \\\n"
-        f"  {target_lines} \\\n"
-        "  --ack-meta-commit-marker"
+        f"  {target_lines}"
     )
 
 
@@ -805,22 +911,8 @@ def scan_files(repo_root: Path, cfg: ToolConfig, targets: list[str] | None = Non
 # -----------------------------
 # Update mode
 # -----------------------------
-def _require_meta_marker_ack(write: bool, ack_marker: bool) -> None:
-    """
-    Guardrail: writing metadata/normalization without the marker convention will
-    destroy the meaning of content freshness signals. Require an explicit ack.
-    """
-    if not write:
-        return
-    if ack_marker:
-        return
-    raise SystemExit(
-        "Refusing to write without acknowledging metadata-commit convention.\n"
-        "Re-run with --ack-meta-commit-marker and commit with:\n"
-        f"  {SUGGESTED_TAGGED_COMMIT}\n"
-    )
-
-
+# `ack_meta_commit_marker` parameters below are accepted for compatibility and ignored:
+# content dates no longer depend on commit messages.
 def update_files(
     repo_root: Path,
     cfg: ToolConfig,
@@ -868,8 +960,6 @@ def update_files(
             if merged_base != prev:
                 changed = True
                 if write:
-                    _require_meta_marker_ack(write=True, ack_marker=ack_meta_commit_marker)
-
                     meta.last_metadata_updated = today
                     desired_final = meta_to_jsonable(meta)
 
@@ -899,8 +989,6 @@ def update_files(
             if merged_base != prev:
                 changed = True
                 if write:
-                    _require_meta_marker_ack(write=True, ack_marker=ack_meta_commit_marker)
-
                     meta.last_metadata_updated = today
                     desired_final = meta_to_jsonable(meta)
 
@@ -930,7 +1018,6 @@ def normalize_notebooks(
     Normalize notebooks deterministically (canonical nbformat JSON).
     This is intentionally separated from update() because it causes churn.
     """
-    _require_meta_marker_ack(write=write, ack_marker=ack_meta_commit_marker)
     records = scan_files(repo_root, cfg, targets=targets)
     today = _iso_today()
 
@@ -1342,7 +1429,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     up.add_argument(
         "--ack-meta-commit-marker",
         action="store_true",
-        help=f"Acknowledge that you will commit changes using marker: {META_COMMIT_MARKER}",
+        help="Deprecated; no effect. Content dates no longer depend on commit messages.",
     )
 
     norm = sub.add_parser(
@@ -1367,7 +1454,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     norm.add_argument(
         "--ack-meta-commit-marker",
         action="store_true",
-        help=f"Acknowledge that you will commit changes using marker: {META_COMMIT_MARKER}",
+        help="Deprecated; no effect. Content dates no longer depend on commit messages.",
     )
 
     sub.add_parser(

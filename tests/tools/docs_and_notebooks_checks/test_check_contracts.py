@@ -139,11 +139,8 @@ def test_git_content_date_skips_meta_commits(tool, repo: Path):
     assert used_fallback is False
 
 
-def test_git_content_date_fallback_when_only_meta_commits(tool, repo: Path):
-    """
-    If all commits touching the file are meta-marker commits, we fall back to git_last_touched
-    and flag used_fallback=True.
-    """
+def test_git_content_date_counts_initial_add_despite_marker(tool, repo: Path):
+    """Adding a file is a content change, even in a commit carrying the marker."""
     rel = "docs/page.md"
     _write(repo, rel, "---\ndeeplabcut:\n  notes: hi\n---\n")
     _git_commit(
@@ -154,7 +151,182 @@ def test_git_content_date_fallback_when_only_meta_commits(tool, repo: Path):
 
     content_date, used_fallback = tool.git_last_content_updated(repo, rel)
     assert content_date == date(2026, 3, 1)
+    assert used_fallback is False
+
+
+def test_git_content_date_fallback_when_no_history(tool, repo: Path):
+    """An untracked file has no content commit: fall back to git_last_touched (None)."""
+    rel = "docs/page.md"
+    _write(repo, rel, "# hello\n")
+
+    content_date, used_fallback = tool.git_last_content_updated(repo, rel)
+    assert content_date is None
     assert used_fallback is True
+
+
+def test_git_content_date_counts_squash_commit_mentioning_marker(tool, repo: Path):
+    """A squash merge lists branch commits in its body; content changes in it still count."""
+    rel = "docs/page.md"
+    _write(repo, rel, "# hello\n")
+    _git_commit(repo, "docs: initial content", "2020-01-01T12:00:00+00:00")
+
+    _write(repo, rel, "---\ndeeplabcut:\n  last_metadata_updated: 2026-06-29\n---\n# hello, world\n")
+    _git_commit(
+        repo,
+        f"Docs audit (#3341)\n\n* Rewrite page\n\n* {tool.SUGGESTED_TAGGED_COMMIT}\n",
+        "2026-06-29T12:00:00+00:00",
+    )
+
+    content_date, used_fallback = tool.git_last_content_updated(repo, rel)
+    assert content_date == date(2026, 6, 29)
+    assert used_fallback is False
+
+
+def test_git_content_date_skips_frontmatter_only_commit_without_marker(tool, repo: Path):
+    rel = "docs/page.md"
+    _write(repo, rel, "---\ndeeplabcut:\n  last_verified: 2020-01-01\n---\n\n# hello\n")
+    _git_commit(repo, "docs: initial content", "2020-01-01T12:00:00+00:00")
+
+    # Frontmatter rewritten as dump_md_frontmatter does (leading blank body line dropped)
+    _write(repo, rel, "---\ndeeplabcut:\n  last_verified: 2026-03-01\n---\n# hello\n")
+    _git_commit(repo, "Verify page", "2026-03-01T12:00:00+00:00")
+
+    content_date, used_fallback = tool.git_last_content_updated(repo, rel)
+    assert content_date == date(2020, 1, 1)
+    assert used_fallback is False
+
+
+@pytest.mark.parametrize("body", ["# hello\n", "\n# hello\n"])
+def test_git_content_date_skips_frontmatter_added_by_update(tool, repo: Path, cfg, body: str):
+    """Committing frontmatter that `update` adds to a page without any is not a content change."""
+    rel = "docs/page.md"
+    _write(repo, rel, body)
+    _git_commit(repo, "docs: initial content", "2020-01-01T12:00:00+00:00")
+
+    tool_cfg = cfg(include=[rel])
+    tool.update_files(
+        repo_root=repo,
+        cfg=tool_cfg,
+        targets=[rel],
+        write=True,
+        set_content_date_from_git=True,
+        set_last_verified=None,
+        set_verified_for=None,
+        ack_meta_commit_marker=False,
+    )
+    assert (repo / rel).read_text(encoding="utf-8").startswith("---\n")
+    _git_commit(repo, "Add metadata", "2026-03-01T12:00:00+00:00")
+
+    assert tool.git_last_content_updated(repo, rel) == (date(2020, 1, 1), False)
+    records = tool.scan_files(repo, tool_cfg, targets=[rel])
+    assert tool.collect_metadata_sync_targets(records) == []
+
+
+def test_git_content_date_notebook_counts_only_cell_sources(tool, repo: Path):
+    rel = "docs/nbs/nb.ipynb"
+    nbformat = tool.nbformat
+
+    nb = nbformat.v4.new_notebook(cells=[nbformat.v4.new_code_cell("x = 1")])
+    _write(repo, rel, nbformat.writes(nb, version=4, indent=1))
+    _git_commit(repo, "docs: add notebook", "2020-01-01T12:00:00+00:00")
+
+    # Re-serialised with different indentation, new metadata and outputs: not content
+    nb.metadata[tool.DLC_NAMESPACE] = {"last_verified": "2026-03-01"}
+    nb.cells[0].outputs = [nbformat.v4.new_output("stream", text="1\n")]
+    _write(repo, rel, nbformat.writes(nb, version=4, indent=2) + "\n")
+    _git_commit(repo, "Normalize notebook", "2026-03-01T12:00:00+00:00")
+
+    assert tool.git_last_content_updated(repo, rel) == (date(2020, 1, 1), False)
+
+    nb.cells[0].source = "x = 2"
+    _write(repo, rel, nbformat.writes(nb, version=4, indent=2) + "\n")
+    _git_commit(repo, "Edit notebook", "2026-04-01T12:00:00+00:00")
+
+    assert tool.git_last_content_updated(repo, rel) == (date(2026, 4, 1), False)
+
+
+_MD_ORIGINAL = (
+    "# Title  \n"
+    "\n"
+    "Some *emphasis* and a [link](https://example.com/a)\n"
+    "wrapped over two lines.   \n"
+    "\n"
+    "* item one\n"
+    "* item two with 2.X.X)*\n"
+    "\n"
+    "Cite:\n"
+    "\n"
+    "    @article{key,\n"
+    "        title = {T}}\n"
+    "        \n"
+)
+# The same page as mdformat rewrites it: rewrapped, escaped, `-` bullets, fenced code.
+_MD_REFORMATTED = (
+    "# Title\n"
+    "\n"
+    "Some *emphasis* and a [link](https://example.com/a) wrapped over two lines.\n"
+    "\n"
+    "- item one\n"
+    "- item two with 2.X.X)\\*\n"
+    "\n"
+    "Cite:\n"
+    "\n"
+    "```\n"
+    "@article{key,\n"
+    "    title = {T}}\n"
+    "```\n"
+)
+
+
+@pytest.mark.parametrize(
+    ("edited", "is_content"),
+    [
+        (_MD_REFORMATTED, False),
+        (_MD_REFORMATTED.replace("item two", "item 2"), True),
+        (_MD_REFORMATTED.replace("example.com/a", "example.com/b"), True),
+        (_MD_REFORMATTED.replace("title = {T}", "title = {U}"), True),
+        (_MD_REFORMATTED.replace("# Title", "## Title"), True),
+    ],
+    ids=["reformat-only", "text", "link-target", "code", "heading-level"],
+)
+def test_git_content_date_ignores_markdown_reformatting(tool, repo: Path, edited: str, is_content: bool):
+    rel = "docs/page.md"
+    _write(repo, rel, _MD_ORIGINAL)
+    _git_commit(repo, "docs: initial content", "2020-01-01T12:00:00+00:00")
+    _write(repo, rel, edited)
+    _git_commit(repo, "Format docs", "2026-03-01T12:00:00+00:00")
+
+    expected = date(2026, 3, 1) if is_content else date(2020, 1, 1)
+    assert tool.git_last_content_updated(repo, rel) == (expected, False)
+
+
+@pytest.mark.parametrize(
+    ("code", "markdown", "is_content"),
+    [
+        ("x = {'a': 1}  # set x\n%matplotlib inline", "Some text\nwrapped.", False),
+        ('x={"a":1}\n%matplotlib widget', "Some text wrapped.", True),
+        ('x={"a":2}\n%matplotlib inline', "Some text wrapped.", True),
+        ('x={"a":1}\n%matplotlib inline', "Other text.", True),
+    ],
+    ids=["reformat-only", "magic", "code", "markdown"],
+)
+def test_git_content_date_ignores_notebook_reformatting(tool, repo: Path, code: str, markdown: str, is_content: bool):
+    rel = "docs/nbs/nb.ipynb"
+    nbformat = tool.nbformat
+
+    def write(code_src: str, md_src: str) -> None:
+        nb = nbformat.v4.new_notebook(
+            cells=[nbformat.v4.new_markdown_cell(md_src), nbformat.v4.new_code_cell(code_src)]
+        )
+        _write(repo, rel, nbformat.writes(nb, version=4, indent=1))
+
+    write('x={"a":1}\n%matplotlib inline', "Some text wrapped.")
+    _git_commit(repo, "docs: add notebook", "2020-01-01T12:00:00+00:00")
+    write(code, markdown)
+    _git_commit(repo, "Lint notebook", "2026-03-01T12:00:00+00:00")
+
+    expected = date(2026, 3, 1) if is_content else date(2020, 1, 1)
+    assert tool.git_last_content_updated(repo, rel) == (expected, False)
 
 
 def test_scan_is_read_only(tool, repo: Path, cfg):
@@ -267,9 +439,9 @@ def test_validate_requested_targets_reports_unmatched(tool, repo: Path, cfg):
     assert unmatched == ["docs/missing/", "examples/**/*.ipynb"]
 
 
-def test_update_requires_ack_when_write(tool, repo: Path, cfg):
+def test_update_writes_without_ack(tool, repo: Path, cfg):
     """
-    Contract: write mode should refuse unless --ack-meta-commit-marker is provided.
+    Contract: --ack-meta-commit-marker is no longer required to write.
     """
     rel = "docs/page.md"
     _write(repo, rel, "# hello\n")
@@ -277,18 +449,19 @@ def test_update_requires_ack_when_write(tool, repo: Path, cfg):
 
     tool_cfg = cfg(include=[rel])
 
-    # should refuse to write without ack
-    with pytest.raises(SystemExit):
-        tool.update_files(
-            repo_root=repo,
-            cfg=tool_cfg,
-            targets=[rel],
-            write=True,
-            set_content_date_from_git=True,
-            set_last_verified=None,
-            set_verified_for=None,
-            ack_meta_commit_marker=False,
-        )
+    tool.update_files(
+        repo_root=repo,
+        cfg=tool_cfg,
+        targets=[rel],
+        write=True,
+        set_content_date_from_git=True,
+        set_last_verified=None,
+        set_verified_for=None,
+        ack_meta_commit_marker=False,
+    )
+
+    fm, _body, _ = tool.read_md_frontmatter((repo / rel).read_text(encoding="utf-8"))
+    assert fm[tool.DLC_NAMESPACE]["last_content_updated"] == "2020-01-01"
 
 
 def test_update_set_content_date_from_git_only_changes_that_field(tool, repo: Path, cfg):
