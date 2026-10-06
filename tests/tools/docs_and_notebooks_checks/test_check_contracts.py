@@ -196,6 +196,32 @@ def test_git_content_date_skips_frontmatter_only_commit_without_marker(tool, rep
     assert used_fallback is False
 
 
+@pytest.mark.parametrize("body", ["# hello\n", "\n# hello\n"])
+def test_git_content_date_skips_frontmatter_added_by_update(tool, repo: Path, cfg, body: str):
+    """Committing frontmatter that `update` adds to a page without any is not a content change."""
+    rel = "docs/page.md"
+    _write(repo, rel, body)
+    _git_commit(repo, "docs: initial content", "2020-01-01T12:00:00+00:00")
+
+    tool_cfg = cfg(include=[rel])
+    tool.update_files(
+        repo_root=repo,
+        cfg=tool_cfg,
+        targets=[rel],
+        write=True,
+        set_content_date_from_git=True,
+        set_last_verified=None,
+        set_verified_for=None,
+        ack_meta_commit_marker=False,
+    )
+    assert (repo / rel).read_text(encoding="utf-8").startswith("---\n")
+    _git_commit(repo, "Add metadata", "2026-03-01T12:00:00+00:00")
+
+    assert tool.git_last_content_updated(repo, rel) == (date(2020, 1, 1), False)
+    records = tool.scan_files(repo, tool_cfg, targets=[rel])
+    assert tool.collect_metadata_sync_targets(records) == []
+
+
 def test_git_content_date_notebook_counts_only_cell_sources(tool, repo: Path):
     rel = "docs/nbs/nb.ipynb"
     nbformat = tool.nbformat
