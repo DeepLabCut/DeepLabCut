@@ -350,6 +350,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         model: PoseModel,
         optimizer: torch.optim.Optimizer,
         load_head_weights: bool = True,
+        single_animal: bool = False,
         **kwargs,
     ):
         """
@@ -358,9 +359,14 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             optimizer: A PyTorch optimizer for updating model parameters.
             load_head_weights: When `snapshot_path` is not None, whether to load the
                 head weights from the saved snapshot or just the backbone weights.
+            single_animal: Whether the model is trained on a single animal dataset.
+                This must match the value used by `evaluate_network`, otherwise the
+                metrics logged during training are computed through a different code
+                path than the ones reported by standalone evaluation.
             **kwargs: TrainingRunner kwargs
         """
         self._load_head_weights = load_head_weights
+        self._single_animal = single_animal
         super().__init__(model, optimizer, **kwargs)
 
     def load_snapshot(
@@ -483,7 +489,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         scores = metrics.compute_metrics(
             ground_truth=self._epoch_ground_truth["bodyparts"],
             predictions=self._epoch_predictions["bodyparts"],
-            single_animal=False,
+            single_animal=self._single_animal,
             unique_bodypart_gt=self._epoch_ground_truth.get("unique_bodyparts"),
             unique_bodypart_poses=self._epoch_predictions.get("unique_bodyparts"),
             pcutoff=0.6,
@@ -685,6 +691,7 @@ def build_training_runner(
     snapshot_path: str | Path | None = None,
     load_head_weights: bool = True,
     logger: BaseLogger | None = None,
+    single_animal: bool = False,
 ) -> TrainingRunner:
     """Build a runner object according to a pytorch configuration file.
 
@@ -699,6 +706,9 @@ def build_training_runner(
         load_head_weights: When `snapshot_path` is not None and a pose model is being
             trained, whether to load the head weights from the saved snapshot.
         logger: the logger to use, if any
+        single_animal: Whether a pose model is being trained on a single animal
+            dataset, which is needed to compute metrics during training the same way
+            `evaluate_network` does.
 
     Returns:
         the runner that was built
@@ -736,6 +746,7 @@ def build_training_runner(
         return DetectorTrainingRunner(**kwargs)
 
     kwargs["load_head_weights"] = load_head_weights
+    kwargs["single_animal"] = single_animal
     return PoseTrainingRunner(**kwargs)
 
 
