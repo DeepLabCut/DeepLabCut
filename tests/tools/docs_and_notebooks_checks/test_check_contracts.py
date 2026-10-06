@@ -245,6 +245,90 @@ def test_git_content_date_notebook_counts_only_cell_sources(tool, repo: Path):
     assert tool.git_last_content_updated(repo, rel) == (date(2026, 4, 1), False)
 
 
+_MD_ORIGINAL = (
+    "# Title  \n"
+    "\n"
+    "Some *emphasis* and a [link](https://example.com/a)\n"
+    "wrapped over two lines.   \n"
+    "\n"
+    "* item one\n"
+    "* item two with 2.X.X)*\n"
+    "\n"
+    "Cite:\n"
+    "\n"
+    "    @article{key,\n"
+    "        title = {T}}\n"
+    "        \n"
+)
+# The same page as mdformat rewrites it: rewrapped, escaped, `-` bullets, fenced code.
+_MD_REFORMATTED = (
+    "# Title\n"
+    "\n"
+    "Some *emphasis* and a [link](https://example.com/a) wrapped over two lines.\n"
+    "\n"
+    "- item one\n"
+    "- item two with 2.X.X)\\*\n"
+    "\n"
+    "Cite:\n"
+    "\n"
+    "```\n"
+    "@article{key,\n"
+    "    title = {T}}\n"
+    "```\n"
+)
+
+
+@pytest.mark.parametrize(
+    ("edited", "is_content"),
+    [
+        (_MD_REFORMATTED, False),
+        (_MD_REFORMATTED.replace("item two", "item 2"), True),
+        (_MD_REFORMATTED.replace("example.com/a", "example.com/b"), True),
+        (_MD_REFORMATTED.replace("title = {T}", "title = {U}"), True),
+        (_MD_REFORMATTED.replace("# Title", "## Title"), True),
+    ],
+    ids=["reformat-only", "text", "link-target", "code", "heading-level"],
+)
+def test_git_content_date_ignores_markdown_reformatting(tool, repo: Path, edited: str, is_content: bool):
+    rel = "docs/page.md"
+    _write(repo, rel, _MD_ORIGINAL)
+    _git_commit(repo, "docs: initial content", "2020-01-01T12:00:00+00:00")
+    _write(repo, rel, edited)
+    _git_commit(repo, "Format docs", "2026-03-01T12:00:00+00:00")
+
+    expected = date(2026, 3, 1) if is_content else date(2020, 1, 1)
+    assert tool.git_last_content_updated(repo, rel) == (expected, False)
+
+
+@pytest.mark.parametrize(
+    ("code", "markdown", "is_content"),
+    [
+        ("x = {'a': 1}  # set x\n%matplotlib inline", "Some text\nwrapped.", False),
+        ('x={"a":1}\n%matplotlib widget', "Some text wrapped.", True),
+        ('x={"a":2}\n%matplotlib inline', "Some text wrapped.", True),
+        ('x={"a":1}\n%matplotlib inline', "Other text.", True),
+    ],
+    ids=["reformat-only", "magic", "code", "markdown"],
+)
+def test_git_content_date_ignores_notebook_reformatting(tool, repo: Path, code: str, markdown: str, is_content: bool):
+    rel = "docs/nbs/nb.ipynb"
+    nbformat = tool.nbformat
+
+    def write(code_src: str, md_src: str) -> None:
+        nb = nbformat.v4.new_notebook(
+            cells=[nbformat.v4.new_markdown_cell(md_src), nbformat.v4.new_code_cell(code_src)]
+        )
+        _write(repo, rel, nbformat.writes(nb, version=4, indent=1))
+
+    write('x={"a":1}\n%matplotlib inline', "Some text wrapped.")
+    _git_commit(repo, "docs: add notebook", "2020-01-01T12:00:00+00:00")
+    write(code, markdown)
+    _git_commit(repo, "Lint notebook", "2026-03-01T12:00:00+00:00")
+
+    expected = date(2026, 3, 1) if is_content else date(2020, 1, 1)
+    assert tool.git_last_content_updated(repo, rel) == (expected, False)
+
+
 def test_scan_is_read_only(tool, repo: Path, cfg):
     """
     Contract: report/check (scan_files) must be read-only.

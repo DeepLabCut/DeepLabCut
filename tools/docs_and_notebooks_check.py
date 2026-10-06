@@ -14,8 +14,8 @@ Terminology
 -----------
 last_content_updated
     Computed from git history: date of the last commit that changed the Markdown body
-    or the notebook cell sources. Frontmatter, notebook metadata, outputs and
-    normalization changes are ignored.
+    or the notebook cell sources. Frontmatter, notebook metadata, outputs,
+    normalization and formatting that renders the same are ignored.
 
 last_verified
     Human-controlled date indicating the file was verified to work/be accurate.
@@ -74,8 +74,9 @@ Notes for CI
   - pydantic>=2,<3
   - PyYAML
   - nbformat>=5
+  - markdown-it-py>=3,<4 (content dates only; not needed by `toc`)
   to be installed in the environment.
-  Recommended : install in CI job directly (pip install pydantic pyyaml nbformat)
+  Recommended : install in CI job directly (pip install pydantic pyyaml nbformat markdown-it-py)
   rather than adding to requirements, since these are only needed for this tool.
 """
 
@@ -83,6 +84,7 @@ Notes for CI
 from __future__ import annotations
 
 import argparse
+import ast
 import fnmatch
 import json
 import os
@@ -91,6 +93,7 @@ import shlex
 import subprocess
 from collections.abc import Sequence
 from datetime import date, datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal, TypedDict
 
@@ -516,15 +519,55 @@ def _read_git_blobs(repo_root: Path, shas: set[str]) -> dict[str, str]:
     return blobs
 
 
+@lru_cache(maxsize=1)
+def _markdown_parser() -> Any:
+    # Imported lazily: only content dates need it, not e.g. the `toc` subcommand.
+    from markdown_it import MarkdownIt
+
+    return MarkdownIt("commonmark").enable("table")
+
+
+def _code_key(source: str) -> str:
+    """Code text without trailing whitespace or surrounding blank lines."""
+    return "\n".join(line.rstrip() for line in source.splitlines()).strip("\n")
+
+
+def _markdown_key(text: str) -> str:
+    """Rendered HTML with whitespace collapsed, so formatting that renders the same
+    (wrapping, escapes, bullet characters, list numbering, indented vs fenced code) is ignored."""
+    return re.sub(r"\s+", " ", _markdown_parser().render(text)).strip()
+
+
+def _python_key(source: str) -> str:
+    """Python syntax tree, ignoring formatting and comments; raw code if it does not parse."""
+    # IPython magics and shell escapes are kept as string literals so changes to them still count.
+    lines = [
+        f"{line[: len(line) - len(line.lstrip())]}{line.strip()!r}" if line.lstrip().startswith(("%", "!")) else line
+        for line in source.splitlines()
+    ]
+    try:
+        return ast.dump(ast.parse("\n".join(lines)))
+    except (SyntaxError, ValueError):
+        return _code_key(source)
+
+
 def _content_key(text: str, rel_path: str) -> str:
-    """Return the part of a file that counts as content: Markdown body or notebook cell sources."""
+    """Return what counts as a file's content: the Markdown body as rendered HTML, or notebook
+    cell types and sources (Markdown cells rendered the same way, code cells by syntax tree)."""
     text = text.replace("\r\n", "\n")
     if rel_path.endswith(".ipynb"):
         try:
             key = []
             for cell in json.loads(text).get("cells", []):
                 source = cell.get("source", "")
-                key.append((cell.get("cell_type"), "".join(source) if isinstance(source, list) else source))
+                source = "".join(source) if isinstance(source, list) else source
+                cell_type = cell.get("cell_type")
+                if cell_type == "markdown":
+                    key.append((cell_type, _markdown_key(source)))
+                elif cell_type == "code":
+                    key.append((cell_type, _python_key(source)))
+                else:
+                    key.append((cell_type, _code_key(source)))
             return json.dumps(key)
         except (ValueError, AttributeError, TypeError):
             return text
@@ -532,9 +575,8 @@ def _content_key(text: str, rel_path: str) -> str:
         try:
             _fm, body, _err = read_md_frontmatter(text)
         except yaml.YAMLError:
-            return text
-        # dump_md_frontmatter drops one leading newline from the body
-        return body.lstrip("\n")
+            body = text
+        return _markdown_key(body)
     return text
 
 
