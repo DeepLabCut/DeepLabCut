@@ -1,8 +1,9 @@
 ---
 deeplabcut:
-  last_metadata_updated: '2026-08-19'
+  last_metadata_updated: '2026-10-06'
   ignore: false
   last_verified: '2026-08-19'
+  last_content_updated: '2026-08-24'
 ---
 
 # GUI overview
