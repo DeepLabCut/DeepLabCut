@@ -1,9 +1,10 @@
 ---
 deeplabcut:
-  last_metadata_updated: '2026-05-06'
+  last_metadata_updated: '2026-10-06'
   last_verified: '2026-05-06'
   verified_for: 3.0.0rc14
   ignore: false
+  last_content_updated: '2026-06-29'
 ---
 
 # DeepLabCut-Utils - Community contributions
