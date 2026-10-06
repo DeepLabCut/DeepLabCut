@@ -2,7 +2,7 @@
 
 This tool scans DeepLabCut documentation pages and notebooks and produces **two independent signals**:
 
-- **`last_content_updated`**: computed from git history as the last *meaningful content* update **excluding metadata-only commits**.
+- **`last_content_updated`**: computed from git history as the date of the last commit that changed the page body or notebook cell sources.
 - **`last_verified`**: a human-controlled date indicating the content was verified to work/be accurate.
 
 In addition, the tool can optionally track:
@@ -79,22 +79,11 @@ If a doc page has **no** frontmatter, the tool can still report staleness (read-
 
 ---
 
-## The metadata-commit marker (critical)
+## How `last_content_updated` is computed
 
-Because metadata updates and notebook normalization can rewrite files, they would normally make git (correctly) report that the file was “updated now”.
+For each commit touching a file, the tool compares the file before and after the commit, ignoring Markdown frontmatter and, for notebooks, everything except cell types and sources (metadata, outputs, execution counts, JSON formatting). The most recent commit with a difference sets the date; adding a file counts as a change.
 
-To preserve a meaningful **`last_content_updated`**, **all metadata-only / normalization commits must include the marker**:
-
-- **Marker**: `META_COMMIT_MARKER` (see `tools/docs_and_notebooks_check.py`)
-- **Suggested commit message**: `SUGGESTED_META_COMMIT_MESSAGE`
-
-When you run `update --write` or `normalize --write`, the tool will:
-
-- Require `--ack-meta-commit-marker` (guardrail)
-- Print a suggested commit message
-
-> [!WARNING]
-> If the marker changes in the future, previous iterations still HAVE to be acknowledged to avoid false positives.
+Commit messages are not read, so metadata-only and normalization commits need no special message, and squash merges are classified by their actual diff. `update --write` and `normalize --write` still print `chore(metadata): update docs/notebooks metadata` as a suggested message.
 
 ---
 
@@ -129,16 +118,16 @@ They are currently empty, but can help enforce stricter policies once populated 
 > [!WARNING]
 > `update --write` modifies tracked files. Intended for maintainers (manual), not CI.
 
-#### 3a) Set `last_content_updated` from git (excluding meta commits)
+#### 3a) Set `last_content_updated` from git
 
 ```bash
-python tools/docs_and_notebooks_check.py update   --write   --set-content-date-from-git   --ack-meta-commit-marker
+python tools/docs_and_notebooks_check.py update   --write   --set-content-date-from-git
 ```
 
 #### 3b) Set verification fields (human-controlled)
 
 ```bash
-python tools/docs_and_notebooks_check.py update   --write   --targets docs/page.md examples/JUPYTER/foo.ipynb   --set-last-verified today   --set-verified-for 3.0.0rc13   --ack-meta-commit-marker
+python tools/docs_and_notebooks_check.py update   --write   --targets docs/page.md examples/JUPYTER/foo.ipynb   --set-last-verified today   --set-verified-for 3.0.0rc13
 ```
 
 > Tip: omit `--targets` to operate on all scanned files.
@@ -158,7 +147,7 @@ python tools/docs_and_notebooks_check.py normalize --targets docs/notebook.ipynb
 Write:
 
 ```bash
-python tools/docs_and_notebooks_check.py normalize   --write   --targets docs/notebook.ipynb   --ack-meta-commit-marker
+python tools/docs_and_notebooks_check.py normalize   --write   --targets docs/notebook.ipynb
 ```
 
 ### 5) TOC coverage (read-only; fails)
@@ -183,9 +172,6 @@ deeplabcut:
 
 Pages matching `scan.exclude` in the config are skipped. Under GitHub Actions, issues are also emitted as file annotations and a step-summary table (`--no-step-summary` disables the table).
 
-> [!NOTE]
-> Adding `visibility` is a metadata-only change; commit it with the metadata marker (see above).
-
 ---
 
 ## CI integration
@@ -209,8 +195,4 @@ pip install pydantic pyyaml nbformat
 
 ## Troubleshooting
 
-- If you see `content_date_fallback_to_git_touched`, it usually means one of:
-  - The checkout history is too shallow, or
-  - *All* commits touching the file are metadata commits with the marker.
-
-- If Pydantic raises `class-not-fully-defined` errors, ensure the tool calls `.model_rebuild()` for its models (this is already done in the tool).
+- If you see `content_date_fallback_to_git_touched`, the checkout history is usually too shallow to reach the commit that added the file.
