@@ -1,7 +1,7 @@
 ---
 deeplabcut:
   ignore: false
-  visibility: online
+  visibility: unlisted
   status: viable
   recommendation: keep
   last_metadata_updated: '2026-05-12'
