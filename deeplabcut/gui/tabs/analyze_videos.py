@@ -13,7 +13,7 @@ from functools import partial
 from pathlib import Path
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer, Slot
 
 import deeplabcut
 from deeplabcut.core.config import ProjectConfig
@@ -53,11 +53,73 @@ class AnalyzeVideos(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super().__init__(root, parent, h1_description)
 
+        self._pending_plot_timer = QTimer(self)
+        self._pending_plot_timer.setSingleShot(True)
+        self._pending_plot_timer.setInterval(0)
+        self._pending_plot_timer.timeout.connect(self._show_pending_trajectory_plots)
+        self._pending_plot_options: AnalyzeVideosOptions | None = None
+        self._pending_plot_batches: list[tuple[str, list[Path]]] | None = None
+        self._analysis_failed = False
+
         self._set_page()
 
     @property
     def files(self):
         return self.video_selection_widget.files
+
+    @Slot(object)
+    def _handle_analysis_error(self, _error):
+        self._analysis_failed = True
+
+    def _show_trajectory_plots_safely(
+        self,
+        options: AnalyzeVideosOptions,
+        batches: list[tuple[str, list[Path]]],
+    ):
+        try:
+            self._show_trajectory_plots(options, batches)
+        except Exception as error:
+            self.root.logger.error(
+                "Failed to display trajectory plots.",
+                exc_info=True,
+            )
+            self.root.show_task_error(error)
+
+    def _clear_pending_trajectory_plots(self) -> None:
+        self._pending_plot_options = None
+        self._pending_plot_batches = None
+
+    @Slot()
+    def _show_pending_trajectory_plots(self):
+        options = self._pending_plot_options
+        batches = self._pending_plot_batches
+
+        self._clear_pending_trajectory_plots()
+
+        if options is None or batches is None:
+            return
+
+        self._show_trajectory_plots_safely(options, batches)
+
+    @Slot()
+    def _handle_analysis_finished(self):
+        should_show_plots = (
+            not self._analysis_failed
+            and self._pending_plot_options is not None
+            and self._pending_plot_batches is not None
+            and self._pending_plot_options.plot_trajectories
+            and self._pending_plot_options.show_trajectory_plots
+        )
+
+        self._analysis_failed = False
+
+        if should_show_plots:
+            self._pending_plot_timer.start()
+        else:
+            self._clear_pending_trajectory_plots()
+
+        self.analyze_videos_btn.setEnabled(True)
+        self.root._progress_bar.hide()
 
     def _set_page(self):
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
@@ -392,7 +454,7 @@ class AnalyzeVideos(DefaultTab):
                 track_method=options.track_method,
             )
 
-        if options.plot_trajectories:
+        if options.plot_trajectories and not options.show_trajectory_plots:
             deeplabcut.plot_trajectories(
                 options.config_path,
                 videos=videos,
@@ -400,7 +462,7 @@ class AnalyzeVideos(DefaultTab):
                 video_extensions=videotype,
                 shuffle=options.shuffle,
                 filtered=options.filter_data,
-                showfigures=options.show_trajectory_plots,
+                showfigures=False,
                 track_method=options.track_method,
             )
 
@@ -414,7 +476,26 @@ class AnalyzeVideos(DefaultTab):
                 listofvideos=False,
             )
 
+    def _show_trajectory_plots(
+        self,
+        options: AnalyzeVideosOptions,
+        batches: list[tuple[str, list[Path]]],
+    ):
+        for videotype, videos in batches:
+            deeplabcut.plot_trajectories(
+                options.config_path,
+                videos=videos,
+                displayedbodyparts=options.displayed_bodyparts,
+                video_extensions=videotype,
+                shuffle=options.shuffle,
+                filtered=options.filter_data,
+                showfigures=True,
+                track_method=options.track_method,
+            )
+
     def analyze_videos(self):
+        self._pending_plot_timer.stop()
+
         options = self._collect_options()
         batches = self._get_video_batches()
 
@@ -431,12 +512,22 @@ class AnalyzeVideos(DefaultTab):
             cfg.default_track_method = options.track_method
             cfg.to_yaml(self.root.config_path, overwrite=True, log_changes=True, mark_clean=True)
 
+        self._pending_plot_options = options
+        self._pending_plot_batches = batches
+        self._analysis_failed = False
+
         func = partial(self._run_pipeline, options, batches)
 
         self.worker, self.thread = move_to_separate_thread(func)
+
+        self.worker.error.connect(self._handle_analysis_error)
         self.worker.error.connect(self.root.show_task_error)
-        self.worker.finished.connect(lambda: self.analyze_videos_btn.setEnabled(True))
-        self.worker.finished.connect(lambda: self.root._progress_bar.hide())
+
+        self.worker.finished.connect(
+            self._handle_analysis_finished,
+            Qt.ConnectionType.QueuedConnection,
+        )
+
         self.thread.start()
         self.analyze_videos_btn.setEnabled(False)
         self.root._progress_bar.show()
