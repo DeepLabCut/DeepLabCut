@@ -8,6 +8,9 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+# NOTE: @C-Achard 2026-09-04 : [CLEANUP-COLLECTEDDATA-FIXTURES] the same maDLC CollectedData columns are built inline
+# twice in this file, and again in five or so other test modules. Reuse target: the
+# collected_data fixture in tests/utils/test_skeleton.py.
 import pathlib
 import socket
 from types import SimpleNamespace
