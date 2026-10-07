@@ -64,7 +64,10 @@ def test_build_update_commands_uses_uv_when_available(monkeypatch):
                 "install",
                 "--python",
                 sys.executable,
-                "-U",
+                "--upgrade-package",
+                "deeplabcut",
+                "--upgrade-package",
+                "napari-deeplabcut",
                 "deeplabcut[gui]",
                 "napari-deeplabcut",
             ],
@@ -103,7 +106,8 @@ def test_build_update_commands_uses_uv_then_pip(monkeypatch):
                 "install",
                 "--python",
                 sys.executable,
-                "-U",
+                "--upgrade-package",
+                "deeplabcut",
                 "deeplabcut[gui]",
             ],
         ),
@@ -118,6 +122,27 @@ def test_build_update_commands_uses_uv_then_pip(monkeypatch):
                 "deeplabcut[gui]",
             ],
         ),
+    ]
+
+
+def test_build_update_commands_uv_upgrades_only_named_packages(monkeypatch):
+    monkeypatch.setattr(
+        "deeplabcut.gui.utils.shutil.which",
+        lambda name: "/mock/bin/uv" if name == "uv" else None,
+    )
+
+    (_backend, _program, uv_args), _pip = _build_update_commands(["napari-deeplabcut"])
+
+    assert "-U" not in uv_args
+    assert "--upgrade" not in uv_args
+    assert uv_args == [
+        "pip",
+        "install",
+        "--python",
+        sys.executable,
+        "--upgrade-package",
+        "napari-deeplabcut",
+        "napari-deeplabcut",
     ]
 
 
