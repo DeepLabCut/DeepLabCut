@@ -13,10 +13,13 @@ import os
 import pickle
 import urllib.request
 import zipfile
+from enum import Enum, unique
 from io import BytesIO
+from typing import NamedTuple
 
 import numpy as np
 import pytest
+from packaging.version import Version
 from PIL import Image
 from tqdm import tqdm
 
@@ -26,6 +29,7 @@ from deeplabcut.utils.pandas_future_mode import configure_pandas_future_if_enabl
 configure_pandas_future_if_enabled()
 
 from deeplabcut.core import inferenceutils  # noqa: E402
+from deeplabcut.version import __version__ as _dlc_version  # noqa: E402
 
 TESTS_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_DATA_DIR = os.path.join(TESTS_DIR, "data")
@@ -157,3 +161,69 @@ def evaluation_data_and_metadata_montblanc():
     with open(metadata_file, "rb") as file:
         metadata = pickle.load(file)
     return data, metadata
+
+
+# -----------------------------------------------------------------------------
+# Known defects
+#
+# Mark a test that captures a known defect with
+# ``@pytest.mark.known_defect("NAME")``.
+#
+# Through the defect's ``affects_through`` version, the test is treated as a
+# strict xfail. Only an AssertionError is considered an expected failure;
+# setup, import, and other errors still fail the test.
+#
+# After ``affects_through``, the xfail is disabled and the test result is
+# determined by its assertions. Each marked test also emits a PytestWarning
+# indicating that the marker should be removed or assigned a later version.
+#
+# If the defect is fixed before or during the affected version range, the test
+# produces XPASS(strict). Remove the registry entry and all markers that
+# reference it once the defect is fixed.
+# -----------------------------------------------------------------------------
+
+
+class KnownDefectInfo(NamedTuple):
+    affects_through: Version  # last DeepLabCut version known to carry the defect
+    reason: str
+
+
+@unique
+class KnownDefect(Enum):
+    """Known defects pinned by strict-xfail tests, one entry per topic."""
+
+
+_DLC_VERSION = Version(_dlc_version)
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    config.addinivalue_line(
+        "markers",
+        "known_defect(name): strict xfail for the KnownDefect entry `name`, see tests/conftest.py",
+    )
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    for item in items:
+        for marker in item.iter_markers("known_defect"):
+            (name,) = marker.args
+            try:
+                defect = KnownDefect[name].value
+            except KeyError:
+                raise pytest.UsageError(f"{item.nodeid}: unknown KnownDefect {name!r}") from None
+            if _DLC_VERSION > defect.affects_through:
+                item.warn(
+                    pytest.PytestWarning(
+                        f"KnownDefect.{name} is past {defect.affects_through}, so known_defect no longer applies. "
+                        "If this test passes, delete the marker and the entry; "
+                        "if it fails, fix the defect or move affects_through forward."
+                    )
+                )
+            item.add_marker(
+                pytest.mark.xfail(
+                    _DLC_VERSION <= defect.affects_through,
+                    reason=f"{name} (known through {defect.affects_through}): {defect.reason}",
+                    raises=AssertionError,
+                    strict=True,
+                )
+            )
