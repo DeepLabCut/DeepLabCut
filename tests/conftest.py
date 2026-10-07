@@ -31,6 +31,9 @@ configure_pandas_future_if_enabled()
 from deeplabcut.core import inferenceutils  # noqa: E402
 from deeplabcut.version import __version__ as _dlc_version  # noqa: E402
 
+# Project-on-disk fixtures (``valid_project``) live in
+# tests/generate_training_dataset/conftest.py; promote them here when needed elsewhere.
+
 TESTS_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_DATA_DIR = os.path.join(TESTS_DIR, "data")
 
@@ -184,13 +187,36 @@ def evaluation_data_and_metadata_montblanc():
 
 
 class KnownDefectInfo(NamedTuple):
-    affects_through: Version  # last DeepLabCut version known to carry the defect
+    """A known defect and the last DeepLabCut version it is known to affect.
+
+    Attributes:
+        affects_through: Last DeepLabCut version known to carry the defect. The
+            ``known_defect`` xfail applies while the running version is at most this.
+        reason: Human-readable description of the defect, used as the xfail reason.
+    """
+
+    affects_through: Version
     reason: str
 
 
 @unique
 class KnownDefect(Enum):
     """Known defects pinned by strict-xfail tests, one entry per topic."""
+
+    LABELED_SUFFIX_PLOTS_FILTER = KnownDefectInfo(
+        Version("3.0.2"),
+        "labeled-data folders are filtered with the substring '_labeled', so a legitimately named "
+        "dataset folder is invisible to DeepLabCut's own enumeration",
+    )
+    STEM_SUBSTRING_REMOVAL = KnownDefectInfo(
+        Version("3.0.2"),
+        "the video_sets removal loop matches stems with 'in', so dropping Sample1 also drops Sample10",
+    )
+    UNFILTERED_LABELED_DATA_MERGE = KnownDefectInfo(
+        Version("3.0.2"),
+        "labeled-data is enumerated with an unfiltered iterdir(), so any directory holding a "
+        "CollectedData file is merged whatever its name",
+    )
 
 
 _DLC_VERSION = Version(_dlc_version)
