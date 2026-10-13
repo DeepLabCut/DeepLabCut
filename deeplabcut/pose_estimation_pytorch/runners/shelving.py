@@ -95,7 +95,8 @@ class ShelfWriter(ShelfManager):
 
         self._str_width = 5
         if num_frames is not None:
-            self._str_width = int(np.ceil(np.log10(num_frames)))
+            # Guard log10(0) for empty videos and width 0 for a single frame.
+            self._str_width = max(1, int(np.ceil(np.log10(max(num_frames, 1)))))
 
     def add_prediction(
         self,

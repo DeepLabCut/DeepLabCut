@@ -720,11 +720,6 @@ def create_df_from_prediction(
     output_prefix: str | Path,
     save_as_csv: bool = False,
 ) -> pd.DataFrame:
-    pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
-    pred_unique_bodyparts = None
-    if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
-        pred_unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
-
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
 
@@ -743,6 +738,28 @@ def create_df_from_prediction(
         cols_names.insert(1, "individuals")
 
     results_df_index = pd.MultiIndex.from_product(cols, names=cols_names)
+
+    if len(predictions) == 0:
+        # No detections on any frame (e.g. the animal is absent from the whole
+        # clip). Write a valid but empty h5/csv instead of crashing in
+        # np.stack([]) below, so analyze_videos completes normally.
+        df = pd.DataFrame(columns=results_df_index)
+        if len(unique_bodyparts) > 0:
+            unique_columns = [dlc_scorer], ["single"], unique_bodyparts, coords
+            df_u = pd.DataFrame(
+                columns=pd.MultiIndex.from_product(unique_columns, names=cols_names),
+            )
+            df = df.join(df_u, how="outer")
+        df.to_hdf(output_h5, key="df_with_missing", format="table", mode="w")
+        if save_as_csv:
+            df.to_csv(output_h5.with_suffix(".csv"))
+        return df
+
+    pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
+    pred_unique_bodyparts = None
+    if "unique_bodyparts" in predictions[0]:
+        pred_unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
+
     pred_bodyparts = pred_bodyparts[:, :n_individuals]
     df = pd.DataFrame(
         pred_bodyparts.reshape((len(pred_bodyparts), -1)),
@@ -783,7 +800,12 @@ def _generate_assemblies_file(
     str_width = data["metadata"].get("key_str_width")
     if str_width is None:
         keys = [k for k in data.keys() if k != "metadata"]
-        str_width = len(keys[0]) - len("frame")
+        if len(keys) == 0:
+            # Empty output (no detections on any frame): nothing to assemble,
+            # but still write a valid assemblies file.
+            str_width = 1
+        else:
+            str_width = len(keys[0]) - len("frame")
 
     assemblies = dict(single=dict())
     for frame_index in range(num_frames):
@@ -887,7 +909,11 @@ def _generate_output_data(
     pose_config: dict,
     predictions: list[dict[str, np.ndarray]],
 ) -> dict:
-    str_width = int(np.ceil(np.log10(len(predictions))))
+    nframes = len(predictions)
+    # log10(0) is -inf and log10(1) is 0, both of which break key formatting:
+    # an empty video (no detections on any frame) must not crash the whole
+    # analyze_videos run, and a single frame still needs width 1 for zfill.
+    str_width = max(1, int(np.ceil(np.log10(max(nframes, 1)))))
     output = {
         "metadata": {
             "nms radius": pose_config.get("nmsradius"),
@@ -900,7 +926,7 @@ def _generate_output_data(
             ),
             "all_joints": [[i] for i in range(len(pose_config["all_joints"]))],
             "all_joints_names": [pose_config["all_joints_names"][i] for i in range(len(pose_config["all_joints"]))],
-            "nframes": len(predictions),
+            "nframes": nframes,
             "key_str_width": str_width,
         }
     }
