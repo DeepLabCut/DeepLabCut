@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import copy
+import dbm
 import logging
 import pickle
 import time
@@ -803,10 +804,9 @@ def _generate_assemblies_file(
     num_unique_bodyparts: int,
 ) -> None:
     """Generates the assemblies file from predictions."""
-    if full_data_path.exists():
+    if dbm.whichdb(str(full_data_path)) == "":
         with full_data_path.open("rb") as f:
             data = pickle.load(f)
-
     else:
         data = shelving.ShelfReader(full_data_path)
         data.open()
