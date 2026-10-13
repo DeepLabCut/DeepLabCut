@@ -41,5 +41,7 @@ train_settings:
   batch_size: 1
   dataloader_workers: 0
   dataloader_pin_memory: false
+  dataloader_persistent_workers: false
+  dataloader_prefetch_factor: null
   display_iters: 500
   epochs: 250

@@ -438,12 +438,19 @@ and [memory pinning](https://pytorch.org/docs/stable/data.html#memory-pinning). 
 `dataloader_workers: 0` uses single-process data loading, while setting it to 1 or more
 will use multi-process data loading. You should always keep
 `dataloader_pin_memory: true` when training on an NVIDIA GPU.
+`dataloader_persistent_workers: true` keeps workers alive between epochs instead of
+respawning them, which helps small datasets trained over many epochs; it requires
+`dataloader_workers > 0` and is ignored otherwise. `dataloader_prefetch_factor` controls
+how many batches each worker prefetches (`null` uses the PyTorch default of 2, values
+must be >= 1); it also requires `dataloader_workers > 0`.
 
 ```yaml
 train_settings:
   batch_size: 1  # the batch size used for training
   dataloader_workers: 0  # the number of workers for the PyTorch Dataloader
   dataloader_pin_memory: true  # pin DataLoader memory
+  dataloader_persistent_workers: false  # keep workers alive between epochs (needs workers > 0)
+  dataloader_prefetch_factor: null  # batches prefetched per worker (needs workers > 0, null = PyTorch default 2)
   display_iters: 500  # the number of iterations (steps) between each log print
   epochs: 200  # the maximum number of epochs for which to train the model
   seed: 42  # the random seed to set for reproducibility

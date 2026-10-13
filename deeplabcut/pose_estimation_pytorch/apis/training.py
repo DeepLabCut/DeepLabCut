@@ -153,6 +153,19 @@ def train(
     batch_size = run_config["train_settings"]["batch_size"]
     num_workers = run_config["train_settings"]["dataloader_workers"]
     pin_memory = run_config["train_settings"]["dataloader_pin_memory"]
+    persistent_workers = run_config["train_settings"].get("dataloader_persistent_workers", False)
+    prefetch_factor = run_config["train_settings"].get("dataloader_prefetch_factor")
+    dataloader_kwargs: dict = {}
+    if num_workers > 0:
+        if persistent_workers:
+            dataloader_kwargs["persistent_workers"] = True
+        if prefetch_factor is not None:
+            dataloader_kwargs["prefetch_factor"] = prefetch_factor
+    elif persistent_workers or prefetch_factor is not None:
+        logging.warning(
+            "dataloader_persistent_workers/prefetch_factor require "
+            "dataloader_workers > 0; ignoring them for single-process loading."
+        )
     train_dataloader = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -160,6 +173,7 @@ def train(
         collate_fn=collate_fn,
         num_workers=num_workers,
         pin_memory=pin_memory,
+        **dataloader_kwargs,
     )
     valid_dataloader = DataLoader(valid_dataset, batch_size=1, shuffle=False)
 
