@@ -10,9 +10,8 @@
 #
 """Training configuration classes for DeepLabCut pose estimation models."""
 
-from pydantic import Field
-
 from deeplabcut.core.config import DLCBaseConfig
+from deeplabcut.core.config.validation import StrictPositiveInt
 from deeplabcut.core.weight_init import WeightInitialization
 
 
@@ -39,7 +38,7 @@ class TrainSettingsConfig(DLCBaseConfig):
     dataloader_workers: int = 0
     dataloader_pin_memory: bool = False
     dataloader_persistent_workers: bool = False
-    dataloader_prefetch_factor: int | None = Field(default=None, ge=1)
+    dataloader_prefetch_factor: StrictPositiveInt | None = None
     display_iters: int = 500
     epochs: int = 200
     seed: int = 42

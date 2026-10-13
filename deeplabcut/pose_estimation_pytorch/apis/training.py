@@ -41,6 +41,30 @@ from deeplabcut.pose_estimation_pytorch.runners.logger import (
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
+def build_dataloader_kwargs(
+    num_workers: int,
+    persistent_workers: bool = False,
+    prefetch_factor: int | None = None,
+) -> dict:
+    """Builds extra DataLoader kwargs for the throughput settings.
+
+    ``persistent_workers``/``prefetch_factor`` only apply with
+    ``num_workers > 0``; otherwise they are dropped with a warning.
+    """
+    kwargs: dict = {}
+    if num_workers > 0:
+        if persistent_workers:
+            kwargs["persistent_workers"] = True
+        if prefetch_factor is not None:
+            kwargs["prefetch_factor"] = prefetch_factor
+    elif persistent_workers or prefetch_factor is not None:
+        logging.warning(
+            "dataloader_persistent_workers/prefetch_factor require "
+            "dataloader_workers > 0; ignoring them for single-process loading."
+        )
+    return kwargs
+
+
 def train(
     loader: Loader,
     run_config: dict,
@@ -155,17 +179,11 @@ def train(
     pin_memory = run_config["train_settings"]["dataloader_pin_memory"]
     persistent_workers = run_config["train_settings"].get("dataloader_persistent_workers", False)
     prefetch_factor = run_config["train_settings"].get("dataloader_prefetch_factor")
-    dataloader_kwargs: dict = {}
-    if num_workers > 0:
-        if persistent_workers:
-            dataloader_kwargs["persistent_workers"] = True
-        if prefetch_factor is not None:
-            dataloader_kwargs["prefetch_factor"] = prefetch_factor
-    elif persistent_workers or prefetch_factor is not None:
-        logging.warning(
-            "dataloader_persistent_workers/prefetch_factor require "
-            "dataloader_workers > 0; ignoring them for single-process loading."
-        )
+    dataloader_kwargs = build_dataloader_kwargs(
+        num_workers,
+        persistent_workers=persistent_workers,
+        prefetch_factor=prefetch_factor,
+    )
     train_dataloader = DataLoader(
         train_dataset,
         batch_size=batch_size,

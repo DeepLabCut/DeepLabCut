@@ -42,3 +42,16 @@ def test_dataloader_prefetch_factor_must_be_positive():
     """prefetch_factor=0 is rejected at config load, not deep in training."""
     with pytest.raises(ValidationError):
         TrainSettingsConfig(dataloader_prefetch_factor=0)
+
+
+def test_old_configs_without_throughput_settings_still_validate():
+    """Configs written before the new keys existed load with safe defaults.
+
+    This pins the backward-compatibility contract that train() relies on
+    when it reads the settings with .get() fallbacks.
+    """
+    cfg = TrainSettingsConfig.model_validate({"batch_size": 4})
+
+    assert cfg.batch_size == 4
+    assert cfg.dataloader_persistent_workers is False
+    assert cfg.dataloader_prefetch_factor is None
