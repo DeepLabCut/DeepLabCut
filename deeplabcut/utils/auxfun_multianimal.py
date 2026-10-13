@@ -18,6 +18,7 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
+import dbm
 import math
 import pickle
 import random
@@ -206,11 +207,11 @@ def LoadFullMultiAnimalData(dataname):
     dataname = Path(dataname)
     data_file = dataname.with_name(dataname.stem + "_full.pickle")
     metadata_file = dataname.with_name(dataname.stem + "_meta.pickle")
-    try:
+    if dbm.whichdb(str(data_file)) == "":
         with data_file.open("rb") as handle:
             data = pickle.load(handle)
-    except (pickle.UnpicklingError, FileNotFoundError):
-        data = shelve.open(data_file, flag="r")
+    else:
+        data = shelve.open(str(data_file), flag="r")
     metadata = auxiliaryfunctions.read_pickle(metadata_file)
     return data, metadata
 
