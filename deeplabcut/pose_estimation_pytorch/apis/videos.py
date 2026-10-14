@@ -14,6 +14,7 @@ import copy
 import dbm
 import logging
 import pickle
+import shelve
 import time
 from collections.abc import Sequence
 from pathlib import Path
@@ -650,8 +651,11 @@ def analyze_videos(
                 # when running CTD tracking, don't auto-track as CTD did the tracking
                 # for us!
                 if ctd_tracking:
-                    full_data = auxiliaryfunctions.read_pickle(output_pkl)
-                    full_data_meta = full_data.pop("metadata")
+                    if dbm.whichdb(str(output_pkl)) == "":
+                        full_data = auxiliaryfunctions.read_pickle(output_pkl)
+                    else:
+                        full_data = shelve.open(str(output_pkl), flag="r")
+                    full_data_meta = full_data["metadata"]
 
                     num_frames = full_data_meta["nframes"]
                     str_width = full_data_meta["key_str_width"]
@@ -675,6 +679,9 @@ def analyze_videos(
 
                         # add poses to the predictions
                         ctd_predictions.append(dict(bodyparts=pose))
+
+                    if isinstance(full_data, shelve.Shelf):
+                        full_data.close()
 
                     create_df_from_prediction(
                         predictions=ctd_predictions,
