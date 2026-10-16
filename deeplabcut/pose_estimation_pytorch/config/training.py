@@ -11,7 +11,6 @@
 """Training configuration classes for DeepLabCut pose estimation models."""
 
 from deeplabcut.core.config import DLCBaseConfig
-from deeplabcut.core.config.validation import StrictPositiveInt
 from deeplabcut.core.weight_init import WeightInitialization
 
 
@@ -22,12 +21,6 @@ class TrainSettingsConfig(DLCBaseConfig):
         batch_size: Training batch size
         dataloader_workers: Number of data loader workers
         dataloader_pin_memory: Whether to pin memory in data loader
-        dataloader_persistent_workers: Keep DataLoader workers alive between
-            epochs instead of respawning them (only applies with
-            ``dataloader_workers > 0``)
-        dataloader_prefetch_factor: Batches prefetched per worker (only
-            applies with ``dataloader_workers > 0``; None uses the PyTorch
-            default of 2)
         display_iters: Display interval for training progress
         epochs: Number of training epochs
         seed: Random seed for reproducibility
@@ -37,8 +30,6 @@ class TrainSettingsConfig(DLCBaseConfig):
     batch_size: int = 8
     dataloader_workers: int = 0
     dataloader_pin_memory: bool = False
-    dataloader_persistent_workers: bool = False
-    dataloader_prefetch_factor: StrictPositiveInt | None = None
     display_iters: int = 500
     epochs: int = 200
     seed: int = 42
