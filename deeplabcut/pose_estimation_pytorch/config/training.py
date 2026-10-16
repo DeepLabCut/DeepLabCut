@@ -12,10 +12,13 @@
 
 from typing import Any
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 
 from deeplabcut.core.config import DLCBaseConfig
-from deeplabcut.core.config.validation import reject_reserved_keys
+from deeplabcut.core.config.validation import (
+    reject_multiprocessing_only_kwargs,
+    reject_reserved_keys,
+)
 from deeplabcut.core.weight_init import WeightInitialization
 
 # DataLoader arguments set by DeepLabCut, mapped to the option that controls them
@@ -61,3 +64,12 @@ class TrainSettingsConfig(DLCBaseConfig):
     def validate_dataloader_kwargs(cls, v: dict[str, Any] | None) -> dict[str, Any] | None:
         reject_reserved_keys(v, _RESERVED_DATALOADER_KWARGS, name="dataloader_kwargs")
         return v
+
+    @model_validator(mode="after")
+    def validate_dataloader_kwargs_against_workers(self) -> "TrainSettingsConfig":
+        reject_multiprocessing_only_kwargs(
+            self.dataloader_kwargs,
+            self.dataloader_workers,
+            name="dataloader_kwargs",
+        )
+        return self

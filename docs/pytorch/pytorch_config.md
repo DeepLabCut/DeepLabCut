@@ -442,9 +442,10 @@ will use multi-process data loading. You should always keep
 Any other [`DataLoader`](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader)
 argument can be passed to the training data loader with `dataloader_kwargs`. For example,
 `persistent_workers: true` keeps the workers alive between epochs, and `prefetch_factor`
-sets how many batches each worker loads in advance (both require `dataloader_workers > 0`).
-Arguments that DeepLabCut sets itself (`dataset`, `batch_size`, `shuffle`, `collate_fn`,
-`num_workers` and `pin_memory`) are reserved and cannot be set in `dataloader_kwargs`.
+sets how many batches each worker loads in advance (both require `dataloader_workers > 0`,
+which is checked when the config is loaded). Arguments that DeepLabCut sets itself
+(`dataset`, `batch_size`, `shuffle`, `collate_fn`, `num_workers` and `pin_memory`) are
+reserved and cannot be set in `dataloader_kwargs`.
 
 ```yaml
 train_settings:

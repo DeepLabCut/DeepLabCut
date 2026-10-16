@@ -52,3 +52,27 @@ def test_dataloader_kwargs_rejects_options_with_a_config_field(key: str, hint: s
 def test_dataloader_kwargs_rejects_options_managed_by_deeplabcut(key: str) -> None:
     with pytest.raises(ValidationError, match=f"dataloader_kwargs cannot include reserved options: '{key}'"):
         TrainSettingsConfig.from_dict({"dataloader_kwargs": {key: False}})
+
+
+@pytest.mark.parametrize("key", ["persistent_workers", "prefetch_factor"])
+def test_dataloader_kwargs_rejects_multiprocessing_options_without_workers(key: str) -> None:
+    """Rejects at config load what DataLoader otherwise raises for only once training starts."""
+    with pytest.raises(ValidationError, match=f"cannot include '{key}' with no data loader workers"):
+        TrainSettingsConfig.from_dict({"dataloader_workers": 0, "dataloader_kwargs": {key: 4}})
+
+
+@pytest.mark.parametrize("key", ["persistent_workers", "prefetch_factor"])
+def test_dataloader_kwargs_accepts_multiprocessing_options_with_workers(key: str) -> None:
+    cfg = TrainSettingsConfig.from_dict({"dataloader_workers": 2, "dataloader_kwargs": {key: 4}})
+    assert cfg.dataloader_kwargs == {key: 4}
+
+
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [("persistent_workers", False), ("prefetch_factor", None)],
+)
+def test_dataloader_kwargs_accepts_no_op_multiprocessing_values_without_workers(key: str, value: object) -> None:
+    """These are the DataLoader defaults, so they ask for nothing and torch accepts them too."""
+    kwargs = {key: value}
+    cfg = TrainSettingsConfig.from_dict({"dataloader_workers": 0, "dataloader_kwargs": kwargs})
+    assert cfg.dataloader_kwargs == kwargs

@@ -88,6 +88,46 @@ def reject_reserved_keys(
         raise ValueError(f"{name} cannot include reserved options: {', '.join(hints)}")
 
 
+def reject_multiprocessing_only_kwargs(
+    kwargs: Mapping[str, Any] | None,
+    num_workers: int,
+    name: str,
+) -> None:
+    """Rejects pass-through kwargs that require worker processes.
+
+    ``torch.utils.data.DataLoader`` raises for these itself, but only once training
+    starts and naming neither the option nor the config field. Checking them at config
+    load keeps the failure where the user can act on it.
+
+    Args:
+        kwargs: The pass-through kwargs to check (None is treated as empty).
+        num_workers: The configured number of data loader workers.
+        name: Name of the pass-through field, used in the error message.
+
+    Raises:
+        ValueError: If ``kwargs`` sets a multiprocessing-only option while ``num_workers`` is 0.
+    """
+    if num_workers > 0:
+        return
+
+    # DataLoader only rejects an option that actually asks for something: persistent_workers
+    # defaults to False and prefetch_factor to None, so those values pass there too.
+    kwargs = kwargs or {}
+    set_options = []
+    if kwargs.get("persistent_workers"):
+        set_options.append("persistent_workers")
+    if kwargs.get("prefetch_factor") is not None:
+        set_options.append("prefetch_factor")
+    if not set_options:
+        return
+
+    options = ", ".join(f"'{key}'" for key in set_options)
+    raise ValueError(
+        f"{name} cannot include {options} with no data loader workers: "
+        f"set `dataloader_workers` above 0 to enable multiprocessing"
+    )
+
+
 def _coerce_ndarray(v):
     if isinstance(v, np.ndarray):
         return v
