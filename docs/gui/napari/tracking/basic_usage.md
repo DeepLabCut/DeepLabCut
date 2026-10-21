@@ -1,13 +1,15 @@
 ---
 deeplabcut:
-  last_metadata_updated: '2026-05-08'
-  last_verified: '2026-05-08'
-  verified_for: 3.0.0rc14
+  last_metadata_updated: '2026-09-28'
+  last_verified: '2026-09-28'
+  verified_for: 3.0.2
   ignore: false
-  last_content_updated: '2026-05-08'
+  last_content_updated: '2026-09-28'
 ---
 
-# Automated annotation with point tracking
+(file:napari-dlc-tracking-basic-usage)=
+
+# Semi-automated annotation with point tracking
 
 ```{seealso}
 For basic usage of the annotation plugin, see {ref}`file:napari-dlc-basic-usage` for the recommended workflow.

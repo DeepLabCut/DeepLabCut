@@ -1,10 +1,10 @@
 ---
 deeplabcut:
-  last_content_updated: '2026-04-09'
-  last_metadata_updated: '2026-04-09'
+  last_content_updated: '2026-09-28'
+  last_metadata_updated: '2026-09-28'
   ignore: false
-  last_verified: '2026-04-09'
-  verified_for: 3.0.0rc14
+  last_verified: '2026-09-28'
+  verified_for: 3.0.2
 ---
 
 (file:napari-dlc-basic-usage)=
@@ -13,15 +13,30 @@ deeplabcut:
 
 `napari-deeplabcut` is a napari plugin for keypoint annotation and label refinement. It can be used either as part of the DeepLabCut GUI or as a standalone annotation tool.
 
+```{tip}
+**New:** check out the new {ref}`semi-automated annotation workflow <file:napari-dlc-tracking-basic-usage>` to speed up your work in the plugin.
+```
+
+## Labeling stages
+
+- {ref}`Extracting frames from a video <sec:napari-dlc-video-workflow>`
+- {ref}`Labeling from scratch <sec:napari-dlc-labeling-from-scratch>`
+- {ref}`Resuming labeling <sec:napari-dlc-resuming-labeling>`
+- {ref}`Refining machine labels <sec:napari-dlc-refining-machine-labels>`
+
+Also see {ref}`file:napari-dlc-troubleshooting` for troubleshooting tips.
+
 ## Before you start
 
 If you installed `DeepLabCut[gui]`, `napari-deeplabcut` is already included.
 
-### In the DeepLabCut GUI
+You may use `napari-deeplabcut` in two ways, described below.
+
+### Usage in the DeepLabCut GUI
 
 When labeling frames, checking labels, or manually extracting frames from videos, the napari plugin will open automatically.
 
-### As a standalone plugin
+### Usage as a standalone plugin
 
 You can also install it as a standalone plugin:
 
@@ -50,6 +65,10 @@ The plugin reader can open the following inputs:
 
 You can load files either by:
 
+- using the main DeepLabCut GUI "Label Frames" button
+
+*OR*
+
 - dragging and dropping them onto the napari viewer, or
 - using the **File** menu
 
@@ -65,39 +84,17 @@ To familiarize yourself with napari, we recommend checking out the [official nap
 
 (sec:napari-dlc-basic-workflow)=
 
-## Recommended basic labeling workflow
-
-The simplest way to **start labeling** is:
-
-1. Open an image-only folder
-1. Open the corresponding `config.yaml` from your DeepLabCut project
-
-**OR**
-
-1. Open a folder inside a DeepLabCut project's `labeled-data` directory with a `CollectedData_<ScorerName>.h5` file already present
-
-```{note}
-In this case, you do not have to load in the `config.yaml` as the plugin will automatically read the project config from the expected location relative to the `CollectedData...` file.
-```
-
-This creates:
-
-- an **Image** layer containing the images (or video frames)
-- a **Points** layer initialized with the keypoints defined in the project config
-  - The `CollectedData_<ScorerName>.h5` contains your ground truth annotations
-  - Any `machinelabels-iter<...>.h5` files contain machine predictions that can be refined and saved into `CollectedData...`
-
-```{tip}
-When machine labels are present, you will see keypoints from ALL current layers.
-Before editing, make sure to hide other layers to avoid confusion, and select the correct layer to edit (e.g. the `machinelabels...` layer if you want to refine machine predictions).
-```
-
-You can then start annotating directly in the **Points** layer.
-To do so, make sure the correct **Points** layer is selected in the layer list (left panel of the viewer). Click on the **+** icon to start adding keypoints; the selection tool to edit existing keypoints; and the pan/zoom tool to navigate the viewer.
-
 ## Labeling
 
 Once the **Points** layer is active, you can place and edit keypoints in the viewer.
+
+Select the correct **Points** layer in the layer list. Use the **+** tool to add keypoints, the selection tool to edit existing keypoints, and the pan/zoom tool to navigate the viewer.
+
+```{caution}
+There is no built-in backup or undo functionality in current plugin versions.
+Do not iterate on the only copy of your project files.
+We recommend backing up your project files as you would any other experimental data.
+```
 
 ### Widget options
 
@@ -118,6 +115,21 @@ The dock widget also provides additional controls, including:
 - **Show trajectories**: open a trajectory plot in a separate dock widget
 - **Show color scheme**: display the active color mapping
 - **Video tools**: extract frames and store crop coordinates when a video is loaded
+
+### Useful shortcuts
+
+- napari native:
+  - `2` / `3`: switch between labeling and selection mode
+  - `4`: pan and zoom mode
+  - `Ctrl+R`: reset the viewer to the default zoom and position
+
+```{tip}
+Use the **View shortcuts** button in the dock widget for a quick reference of napari-deeplabcut shortcuts and when they are active.
+```
+
+### More quality-of-life features
+
+See the {ref}`Advanced features <file:napari-dlc-advanced-features>` for useful features such as copy-pasting annotations, quick bodypart selection, and more.
 
 ## Saving annotations
 
@@ -157,43 +169,31 @@ DeepLabCut uses the `.h5` file as the authoritative annotation file. CSVs and ma
 - Make sure the correct **Points** layer is selected before saving.
 - If several Points layers are selected at the same time, the plugin will not save them in order to avoid ambiguity.
 - If saving would overwrite existing annotations, the plugin will ask for confirmation.
-  - This confirmation can be disabled by unchecking **Warn on overwrite** in the dock widget.
+  - Removing a keypoint that exists in the file counts as a **deletion**, and is listed separately in that confirmation.
+  - This confirmation can be disabled by unchecking **Warn on overwrite** in the dock widget. **Deletions are then no longer reported either.**
+- **Removing a bodypart from `config.yaml` and then loading that config drops its annotations.** It is removed from the current layer, and its existing annotations are dropped from `CollectedData...` on the next save. This will be adjusted in the future, please use this behavior with caution. We recommend keeping legacy bodyparts and filtering on subsequent steps; DeepLabCut will **NOT** use undeclared bodyparts for training data generation.
 
 ```{note}
 Several plugin functions expect `config.yaml` to be located two folders above the saved `CollectedData...` file, matching the standard DeepLabCut project structure.<br>
 Keeping data inside the project directory is recommended for best compatibility. Fallbacks asking for the config file location are provided when this structure is not respected, but some features may be disabled or limited in that case.
 ```
 
-### Useful shortcuts
-
-- napari native:
-  - `2` / `3`: switch between labeling and selection mode
-  - `4`: pan and zoom mode
-  - `Ctrl+R`: reset the viewer to the default zoom and position
-- napari-deeplabcut specific:
-  - `M`: cycle through annotation modes
-  - `E`: toggle edge coloring
-  - `F`: toggle between individual and bodypart coloring modes
-  - `V`: toggle visibility of the selected layer
-  - `Backspace`: delete selected point(s)
-  - `Ctrl+C` / `Ctrl+V`: copy and paste selected points
-
-```{tip}
-Use the **View shortcuts** button in the dock widget for a quick reference of napari-deeplabcut shortcuts and their context (i.e. when they are active).
-```
-
-### More quality-of-life features
-
-See the {ref}`Advanced features <file:napari-dlc-advanced-features>` for useful features such as copy-pasting annotations, quick bodypart selection, and more.
-
 ## Labeling workflows
+
+(sec:napari-dlc-labeling-from-scratch)=
 
 ### Labeling from scratch
 
 Use this when the image folder does **not** yet contain a `CollectedData_<ScorerName>.h5` file.
 
+**From the DeepLabCut GUI**
+
+Click the **Label Frames** button to start labeling from scratch.
+
+**In napari directly**
+
 1. Open a folder of extracted images
-1. Open the corresponding DeepLabCut `config.yaml`
+1. Open the corresponding DeepLabCut `config.yaml`, this creates an empty **Points** layer named `CollectedData_<ScorerName>`
 1. Select the created **Points** layer
 1. Label keypoints
 1. Save with `Ctrl+S`
@@ -205,17 +205,25 @@ CollectedData_<ScorerName>.h5
 CollectedData_<ScorerName>.csv
 ```
 
+(sec:napari-dlc-resuming-labeling)=
+
 ### Resuming labeling
 
 Use this when the folder already contains a `CollectedData_<ScorerName>.h5` file.
 
-- Open (or drag and drop) the folder in napari.
+1. Open or drag and drop the folder in napari.
+1. Select the loaded **Points** layer.
+1. Continue labeling and save with `Ctrl+S`.
 
 Existing annotations and keypoint metadata will be loaded automatically from the H5 file.
-In this case, loading `config.yaml` is usually **not needed** unless:
+In this case, loading `config.yaml` manually is usually **not needed** unless:
 
-- The project's bodyparts have changed or
-- You want to refresh the configured color scheme
+- The project's bodyparts have changed
+- The color scheme in `config.yaml` has changed since you last opened the folder
+
+See {ref}`sec:napari-dlc-update-keypoints-from-config`
+
+(sec:napari-dlc-refining-machine-labels)=
 
 ### Refining machine labels
 
@@ -227,11 +235,18 @@ machinelabels-iter<...>.h5
 
 Open the folder in napari.
 
+```{tip}
+When machine labels are present, an extra layer is added and you will see keypoints from ALL current layers.
+GT labels are shown with a **disk marker**, whereas machine labels use a **cross marker**.
+**Try hiding each point layer individually to better distinguish between GT and machine labels.**
+Before editing, **make sure to select the correct layer to edit** in the viewer list (e.g. the `machinelabels...` layer if you want to refine machine predictions).
+```
+
 If both a `CollectedData...` file and a `machinelabels...` file are present:
 
-1. Edit the `machinelabels` layer
+1. Select the `machinelabels` layer
 1. Optionally press `E` to show edge coloring (red edges indicate confidence below the threshold defined in `config.yaml`)
-1. Hide other layers to avoid confusion while editing
+1. Hide other Points layers to make editing easier if needed
 1. Edit keypoints in the `machinelabels` layer to refine machine predictions
 1. Save the selected `machinelabels` layer
 
@@ -244,6 +259,8 @@ Saving a `machinelabels...` layer does **not** overwrite the machine labels file
 Refinements are written into the appropriate `CollectedData...` file.<br>
 Make sure overwrite confirmation is enabled if you want to avoid accidentally overwriting existing `CollectedData...` annotations.
 ```
+
+(sec:napari-dlc-video-workflow)=
 
 ## Video workflow (crop and frame extraction)
 
@@ -265,6 +282,9 @@ Keypoints from video-based workflows can be edited and saved in the same way as 
 ## Working with multiple folders
 
 We do not currently support working on **more than one dataset folder at a time**.
+
+When using the main DeepLabCut GUI, the recommended way to switch folders is to close napari and open the next folder from the GUI.
+
 If a new folder is opened while another one is already open, the plugin will prevent new frames from being loaded, attempt to load annotations using the current folder context, and show a warning.
 
 After finishing one folder, simply:
@@ -275,13 +295,38 @@ After finishing one folder, simply:
 
 This helps keep saving behavior unambiguous.
 
+```{warning}
+Keypoint layers do not carry over from one folder to the next. If you leave one open, it
+is **locked** and you will not be able to label with it. Save it, remove it, and start the
+new folder from scratch, see {ref}`Labeling from scratch <sec:napari-dlc-labeling-from-scratch>`.
+
+See {ref}`Troubleshooting <file:napari-dlc-troubleshooting>` if you see such a message.
+```
+
+(sec:napari-dlc-update-keypoints-from-config)=
+
+## Updating the keypoints definitions and color scheme while labeling
+
+To update in place the current keypoint list, you can drag-and-drop a new `config.yaml` with the updated keypoints into the viewer.
+
+If the config contains keypoints the current layer does not have, you will be prompted to choose how to handle the new keypoints:
+
+| Choice               | Effect                                                      |
+| -------------------- | ----------------------------------------------------------- |
+| **Apply to current** | Adds the updated keypoints to the layer you were working on |
+| **Keep both**        | Leaves your layer untouched and keeps the config layer      |
+| **Cancel**           | Discards the temporary layer                                |
+
+```{note}
+If the config adds no new keypoints, there is no prompt and it is applied directly. This is the usual case when only the color scheme changed: the colors defined in the new config are applied to the current Points layer.
+```
+
 ## Demo
 
 A short demo video is available here:
 
 [Link to video](https://youtu.be/hsA9IB5r73E)
 
-```{warning}
-This demo may be outdated, but the general annotation workflow remains the same. If you would like an updated video tutorial, please open a feature request issue on GitHub, and we will update it.
-
+```{note}
+The interface shown in this video may differ from the current version, but the general annotation workflow remains applicable.
 ```
