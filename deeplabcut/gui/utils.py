@@ -271,6 +271,11 @@ def _package_specs_for_update(packages: list[str]) -> list[str]:
     return specs
 
 
+def _requirement_name(spec: str) -> str:
+    """Return the distribution name of a package spec, dropping any extras."""
+    return spec.split("[", 1)[0].strip()
+
+
 def _build_update_commands(packages: list[str]) -> list[tuple[str, str, list[str]]]:
     """Build installer commands, ordered from preferred to fallback.
 
@@ -287,11 +292,12 @@ def _build_update_commands(packages: list[str]) -> list[tuple[str, str, list[str
 
     uv = shutil.which("uv")
     if uv:
+        upgrade_args = [arg for spec in specs for arg in ("--upgrade-package", _requirement_name(spec))]
         commands.append(
             (
                 "uv",
                 uv,
-                ["pip", "install", "--python", sys.executable, "-U", *specs],
+                ["pip", "install", "--python", sys.executable, *upgrade_args, *specs],
             )
         )
 
