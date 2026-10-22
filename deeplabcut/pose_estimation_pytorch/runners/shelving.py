@@ -112,6 +112,11 @@ class ShelfWriter(ShelfManager):
 
         self._str_width = frame_key_width(num_frames)
 
+    @property
+    def frames_written(self) -> int:
+        """The number of frames written to the shelf since it was last opened."""
+        return self._frame_index
+
     def add_prediction(
         self,
         bodyparts: np.ndarray,

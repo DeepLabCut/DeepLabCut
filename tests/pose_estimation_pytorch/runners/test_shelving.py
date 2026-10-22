@@ -50,6 +50,7 @@ def test_open_close_roundtrip(tmp_path):
     writer.open()
     writer.add_prediction(_make_bodyparts())
     writer.close()
+    assert writer.frames_written == 1
 
     reader = ShelfReader(path)
     reader.open()
@@ -66,6 +67,8 @@ def test_close_without_predictions_reports_zero_frames(tmp_path, num_frames):
     writer = ShelfWriter(POSE_CFG, path, num_frames=num_frames)
     writer.open()
     writer.close()
+
+    assert writer.frames_written == 0
 
     reader = ShelfReader(path)
     reader.open()

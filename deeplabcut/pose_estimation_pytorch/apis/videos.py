@@ -289,6 +289,9 @@ def analyze_videos(
     The index of the trained network is specified by parameters in the config file
     (in particular the variable 'snapshot_index').
 
+    Frames in which no animal is detected are kept in the outputs, with placeholder
+    values (-1). Videos from which no frame can be read are skipped with a warning.
+
     Args:
         config: full path of the config.yaml file for the project
         videos: a str (or list of strings) containing the full paths to videos for
@@ -551,6 +554,7 @@ def analyze_videos(
     # Reading video and init variables
     videos = collect_video_paths(videos, extensions=video_extensions, shuffle=in_random_order)
     h5_files_created = False  # Track if any .h5 files were created
+    skipped_videos = []  # Videos from which no frame could be read
 
     for video in videos:
         if destfolder is None:
@@ -592,8 +596,10 @@ def analyze_videos(
             )
             runtime.append(time.time())
 
-            if shelf_writer is None and len(predictions) == 0:
+            num_predicted = len(predictions) if shelf_writer is None else shelf_writer.frames_written
+            if num_predicted == 0:
                 logging.warning(f"Skipping {video}: no frames could be read, so no results are written.")
+                skipped_videos.append(video)
                 continue
 
             metadata = _generate_metadata(
@@ -730,6 +736,14 @@ def analyze_videos(
         print(
             "No .h5 files were created during video analysis. Please check your code and "
             "ensure that the video inference and output generation are correct.\n"
+        )
+
+    if skipped_videos:
+        logging.warning(
+            f"{len(skipped_videos)} of {len(videos)} video(s) could not be read; no results were written:"
+            f"{', '.join(str(v) for v in skipped_videos)}. Re-encoding these videos may "
+            "help (https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
+            "#tips-on-video-re-encoding-and-preprocessing)."
         )
 
     return dlc_scorer
