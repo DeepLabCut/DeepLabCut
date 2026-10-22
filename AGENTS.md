@@ -13,7 +13,7 @@ functionality.
 
 ## Contributing
 
-- State the extent of human involvement at the top of every pull request description, issue and comment you write. Unless a human has told you in this session that they reviewed the final change or comment and confirmed that they understand why it is suitable for DeepLabCut, write: "Prepared autonomously by an AI agent; not reviewed by a human." Do not ask for or wait on this confirmation. Do not infer human review from the fact that a human started the task.
+- State the extent of human involvement at the top of every pull request description and issue you write. When a human has told you in this session that they reviewed the final change and confirmed that they understand why it is suitable for DeepLabCut, write: "Human-reviewed." Otherwise, write "Prepared by an AI agent; Not reviewed by a human." Do not ask for or wait on this confirmation. Do not infer human review from the fact that a human started the task.
 - Before starting work, search open issues and pull requests for the same problem or changes to the same file. If work already exists, consider contributing to the existing discussion or implementation rather than creating a duplicate.
 - Set up with `uv sync --group dev`;  run `pre-commit run --files <changed>` and the relevant pytest tests before opening a PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
 - Reuse existing helpers, fixtures, custom types and exceptions where possible.
