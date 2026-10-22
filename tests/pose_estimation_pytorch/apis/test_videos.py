@@ -207,7 +207,7 @@ def test_analyze_videos_skips_unreadable_video_without_writing_outputs(tmp_path,
     assert create_df.call_args.kwargs["output_prefix"] == "readableDLC_test"
     # skipped videos are listed again at the end, so they are not lost in the logs
     assert caplog.records[-1].levelname == "WARNING"
-    assert "1 of 2 video(s) could not be read and were skipped" in caplog.records[-1].message
+    assert "1 of 2 video(s) could not be read; no results were written" in caplog.records[-1].message
     assert str(unreadable) in caplog.records[-1].message
 
 
@@ -225,4 +225,4 @@ def test_analyze_videos_skips_unreadable_video_written_to_a_shelf(tmp_path, monk
     assert not (tmp_path / "unreadableDLC_test_meta.pickle").exists()
     generate_assemblies.assert_not_called()
     assert f"Skipping {unreadable}" in caplog.text
-    assert "1 of 1 video(s) could not be read and were skipped" in caplog.records[-1].message
+    assert "1 of 1 video(s) could not be read; no results were written" in caplog.records[-1].message

@@ -740,7 +740,7 @@ def analyze_videos(
 
     if skipped_videos:
         logging.warning(
-            f"{len(skipped_videos)} of {len(videos)} video(s) could not be read; no results were written:"
+            f"{len(skipped_videos)} of {len(videos)} video(s) could not be read; no results were written: "
             f"{', '.join(str(v) for v in skipped_videos)}. Re-encoding these videos may "
             "help (https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
             "#tips-on-video-re-encoding-and-preprocessing)."
