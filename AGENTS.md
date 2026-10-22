@@ -11,6 +11,17 @@ functionality. Preserve legacy TensorFlow behavior where the current support
 policy still requires it, but do not introduce new TensorFlow-first
 functionality.
 
+## Contributing
+
+- State the extent of human involvement at the top of every pull request description and issue you write. Unless a human has told you that they reviewed the final change and confirmed that they understand why it is suitable for DeepLabCut, write "Prepared by an AI agent; Not reviewed by a human.".  Do not ask for or wait on this confirmation. Do not infer human review from the fact that a human started the task.
+- Before starting work, search open issues and pull requests for the same problem or changes to the same file. If work already exists, consider contributing to the existing discussion or implementation rather than creating a duplicate.
+- Set up with `uv sync --group dev`;  run `pre-commit run --files <changed>` and the relevant pytest tests before opening a PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
+- Reuse existing helpers, fixtures, custom types and exceptions where possible.
+- In pull requests, separate what you verified by running it from what you expect to hold. State which tests ran and their outcome, and which did not run and why.
+- Run the smallest relevant tests while iterating. Isolate optional-dependency, GUI, and GPU-dependent tests where possible, and report relevant checks that were not run.
+- Test behaviour at the smallest unit that exercises it. Mock only what is expensive or unavailable, and share setup between tests instead of copying it.
+- Keep pull request descriptions proportionate: the problem, the change, and how it was verified. Do not restate the diff.
+
 ## Guidelines
 
 - Keep patches focused; avoid unrelated refactors and formatting churn.
@@ -48,6 +59,3 @@ functionality.
   conventions; in plain Markdown, prefer inline code such as `myfunc` over
   Sphinx roles such as `:func:\`myfunc\``.
 - Add or update regression tests for bug fixes and behavior changes when practical, ensuring they fail without the corresponding fix.
-- Run the smallest relevant tests while iterating. Isolate
-  optional-dependency, GUI, and GPU-dependent tests where possible, and report
-  relevant checks that were not run.
