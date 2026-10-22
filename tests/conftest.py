@@ -239,16 +239,16 @@ class KnownDefect(Enum):
     """Known defects pinned by strict-xfail tests, one entry per topic."""
 
     LABELED_SUFFIX_PLOTS_FILTER = KnownDefectInfo(
-        Version("3.0.2"),
+        Version("3.1.0"),
         "labeled-data folders are filtered with the substring '_labeled', so a legitimately named "
         "dataset folder is invisible to DeepLabCut's own enumeration",
     )
     STEM_SUBSTRING_REMOVAL = KnownDefectInfo(
-        Version("3.0.2"),
+        Version("3.1.0"),
         "the video_sets removal loop matches stems with 'in', so dropping Sample1 also drops Sample10",
     )
     UNFILTERED_LABELED_DATA_MERGE = KnownDefectInfo(
-        Version("3.0.2"),
+        Version("3.1.0"),
         "labeled-data is enumerated with an unfiltered iterdir(), so any directory holding a "
         "CollectedData file is merged whatever its name",
     )
