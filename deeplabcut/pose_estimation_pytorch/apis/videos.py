@@ -597,6 +597,11 @@ def analyze_videos(
                 show_gpu_memory=show_gpu_memory,
             )
             runtime.append(time.time())
+
+            if shelf_writer is None and len(predictions) == 0:
+                logging.warning(f"Skipping {video}: no frames could be read, so no results are written.")
+                continue
+
             metadata = _generate_metadata(
                 cfg=loader.project_cfg,
                 pytorch_config=loader.model_cfg,

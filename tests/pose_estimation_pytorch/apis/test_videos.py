@@ -1,8 +1,11 @@
+from pathlib import Path
 from unittest.mock import Mock
 
+import numpy as np
 import pytest
 
 import deeplabcut.pose_estimation_pytorch.apis.videos as videos
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 POSE_CFG = {
     "all_joints": [[0], [1], [2]],
@@ -157,3 +160,46 @@ def test_video_inference_does_not_warn_when_writing_to_a_shelf(patch_video_itera
     assert predictions == []
     assert "No predictions were produced" not in caplog.text
     assert "were able to be processed" not in caplog.text
+
+
+def test_analyze_videos_skips_unreadable_video_without_writing_outputs(
+    tmp_path, monkeypatch, patch_video_iterator, caplog
+):
+    """An unreadable video must not abort the remaining videos, nor leave a
+    ``_full.pickle`` that makes reruns with ``overwrite=False`` skip it."""
+    patch_video_iterator(3)
+
+    loader = Mock()
+    loader.project_cfg = {"TrainingFraction": [0.95], "multianimalproject": False}
+    loader.model_cfg = {
+        "metadata": {
+            "bodyparts": ["snout", "leftear", "rightear"],
+            "unique_bodyparts": [],
+            "individuals": ["animal_0"],
+        }
+    }
+    loader.model_folder = tmp_path / "train"
+    loader.pose_task = Task.BOTTOM_UP
+    loader.scorer.return_value = "DLC_test"
+    monkeypatch.setattr(videos, "DLCLoader", Mock(return_value=loader))
+    monkeypatch.setattr(videos.auxiliaryfunctions, "read_plainconfig", Mock(return_value=POSE_CFG))
+    monkeypatch.setattr(videos.utils, "parse_snapshot_index_for_analysis", Mock(return_value=(0, None)))
+    monkeypatch.setattr(videos.utils, "get_model_snapshots", Mock(return_value=[Mock(path="snapshot.pt")]))
+    monkeypatch.setattr(videos.utils, "get_pose_inference_runner", Mock())
+    monkeypatch.setattr(videos, "_generate_metadata", Mock(return_value={}))
+
+    unreadable, readable = tmp_path / "unreadable.mp4", tmp_path / "readable.mp4"
+    monkeypatch.setattr(videos, "collect_video_paths", Mock(return_value=[unreadable, readable]))
+    predictions = {unreadable: [], readable: [dict(bodyparts=np.zeros((1, 3, 3)))]}
+    monkeypatch.setattr(videos, "video_inference", lambda video, **kwargs: predictions[Path(video.video_path)])
+    create_df = Mock()
+    monkeypatch.setattr(videos, "create_df_from_prediction", create_df)
+
+    with caplog.at_level("WARNING"):
+        videos.analyze_videos(tmp_path / "config.yaml", [unreadable, readable])
+
+    assert not list(tmp_path.glob("unreadable*"))
+    assert (tmp_path / "readableDLC_test_full.pickle").exists()
+    assert f"Skipping {unreadable}" in caplog.text
+    create_df.assert_called_once()
+    assert create_df.call_args.kwargs["output_prefix"] == "readableDLC_test"
