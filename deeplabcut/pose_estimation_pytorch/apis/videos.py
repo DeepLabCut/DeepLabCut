@@ -237,14 +237,8 @@ def video_inference(
             f"by re-encoding your video (tips on how to do that: {tip_url}{header})"
         )
         if len(predictions) == 0:
-            causes = (
-                "no animals were detected in any frame, or the video could not be read"
-                if detector_runner is not None
-                else "the video could not be read"
-            )
             logging.warning(
-                f"No predictions were produced for {video.video_path}: {causes}. "
-                f"Check model performance if that is unexpected. {reencoding_tip}"
+                f"No predictions were produced for {video.video_path}: the video could not be read. {reencoding_tip}"
             )
         elif len(predictions) != n_frames:
             logging.warning(

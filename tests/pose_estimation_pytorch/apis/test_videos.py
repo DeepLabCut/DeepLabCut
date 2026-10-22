@@ -88,31 +88,22 @@ def _pose_runner(predictions: list) -> Mock:
     return runner
 
 
-def test_video_inference_zero_predictions_warns_about_unreadable_video(patch_video_iterator, caplog):
-    """Without a detector, every readable frame yields a prediction, so an empty
-    result means the video could not be read - not that no animals were found."""
+@pytest.mark.parametrize("with_detector", [False, True])
+def test_video_inference_zero_predictions_warns_about_unreadable_video(patch_video_iterator, caplog, with_detector):
+    """Every readable frame yields a prediction (padded when no animal is detected),
+    so an empty result means the video could not be read - not that no animals were
+    found."""
     patch_video_iterator(3)
+    detector_runner = _pose_runner([]) if with_detector else None
 
     with caplog.at_level("WARNING"):
-        predictions = videos.video_inference("video.mp4", _pose_runner([]))
+        predictions = videos.video_inference("video.mp4", _pose_runner([]), detector_runner=detector_runner)
 
     assert predictions == []
     assert "No predictions were produced for video.mp4" in caplog.text
     assert "the video could not be read" in caplog.text
     assert "no animals were detected" not in caplog.text
     # the re-encoding tip is the actionable advice in this case
-    assert "re-encoding your video" in caplog.text
-
-
-def test_video_inference_zero_predictions_with_detector_warns_about_detections(patch_video_iterator, caplog):
-    patch_video_iterator(3)
-
-    with caplog.at_level("WARNING"):
-        predictions = videos.video_inference("video.mp4", _pose_runner([]), detector_runner=_pose_runner([]))
-
-    assert predictions == []
-    assert "no animals were detected in any frame" in caplog.text
-    assert "the video could not be read" in caplog.text
     assert "re-encoding your video" in caplog.text
 
 
