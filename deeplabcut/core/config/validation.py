@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from typing import Annotated, Any, TypeAlias, TypeVar
 
 import numpy as np
@@ -52,6 +52,40 @@ def validate_crop_bounds(
 
     less_than(x1, x2, name="x1", threshold_name="x2")
     less_than(y1, y2, name="y1", threshold_name="y2")
+
+
+def reject_reserved_keys(
+    kwargs: Mapping[str, Any] | None,
+    reserved: Mapping[str, str | None],
+    name: str,
+) -> None:
+    """Rejects reserved keys in a pass-through kwargs mapping.
+
+    Example:
+        ```python
+        class ExampleDataLoaderConfig(DLCBaseConfig):
+            batch_size: int = 8
+            dataloader_kwargs: dict[str, Any] | None = None
+
+            @field_validator("dataloader_kwargs")
+            @classmethod
+            def validate_dataloader_kwargs(cls, v: dict[str, Any] | None) -> dict[str, Any] | None:
+                reject_reserved_keys(v, {"batch_size": "batch_size"}, name="dataloader_kwargs")
+                return v
+        ```
+
+    Args:
+        kwargs: The pass-through kwargs to check (None is treated as empty).
+        reserved: The reserved keys that are forbidden in the pass-through kwargs.
+        name: Name of the pass-through field, used in the error message.
+
+    Raises:
+        ValueError: If ``kwargs`` contains any reserved key.
+    """
+    clashes = sorted(set(kwargs or {}) & set(reserved))
+    if clashes:
+        hints = [f"'{key}' (set via `{reserved[key]}`)" if reserved[key] else f"'{key}'" for key in clashes]
+        raise ValueError(f"{name} cannot include reserved options: {', '.join(hints)}")
 
 
 def _coerce_ndarray(v):

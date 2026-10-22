@@ -20,8 +20,9 @@ RUN apt-get update -yy && \
       ffmpeg \
       build-essential \
       git \
-    && pip install --upgrade pip \
-    && pip install "deeplabcut[modelzoo,wandb]==${DEEPLABCUT_VERSION}" \
+      ca-certificates \
+    && pip install --upgrade "pip>=26.2.2" \
+    && pip install "deeplabcut[modelzoo,wandb]==${DEEPLABCUT_VERSION}" "certifi>=2026.10.19" \
     && apt-get purge -yy --auto-remove build-essential git \
     && rm -rf /var/lib/apt/lists/*
 

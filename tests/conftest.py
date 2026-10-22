@@ -157,3 +157,38 @@ def evaluation_data_and_metadata_montblanc():
     with open(metadata_file, "rb") as file:
         metadata = pickle.load(file)
     return data, metadata
+
+
+class FakeVideoReader:
+    """Synthetic stand-in for ``VideoReader`` whose frames are filled with their own frame index.
+
+    Every frame that is read is recorded in ``read_indices``.
+    """
+
+    def __init__(self, nframes, fps=10, width=40, height=30):
+        self._nframes = nframes
+        self.fps = fps
+        self.dimensions = width, height
+        self._pos = 0
+        self.read_indices = []
+
+    def __len__(self):
+        return self._nframes
+
+    def set_to_frame(self, ind):
+        self._pos = ind
+
+    def read_frame(self, crop=False):
+        if self._pos >= self._nframes:
+            return None
+        width, height = self.dimensions
+        frame = np.full((height, width, 3), self._pos, dtype=np.uint8)
+        self.read_indices.append(self._pos)
+        self._pos += 1
+        return frame
+
+
+@pytest.fixture(scope="function")
+def fake_video_reader():
+    """Factory for synthetic videos: ``fake_video_reader(nframes, fps=..., width=..., height=...)``."""
+    return FakeVideoReader
