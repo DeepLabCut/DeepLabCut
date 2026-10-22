@@ -669,11 +669,9 @@ def analyze_videos(
                         # add poses to the predictions
                         ctd_predictions.append(dict(bodyparts=pose))
 
-                    # ``ctd_predictions`` holds one entry per frame in the full
-                    # pickle, so it is empty only when that file reports 0 frames
-                    # (a shelf that wrote nothing, or ``save_as_df=False``). Warn
-                    # and skip rather than raise like the export above does:
-                    # inference success cannot be determined here
+                    # ``ctd_predictions`` holds one entry per frame in the full data
+                    # file. Videos without readable frames are skipped above, so it
+                    # can only be empty when a shelf reports 0 frames: warn and skip
                     if ctd_predictions:
                         create_df_from_prediction(
                             predictions=ctd_predictions,
