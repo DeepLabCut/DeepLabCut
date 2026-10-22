@@ -191,6 +191,25 @@ def test_async_inference_emits_images_without_detections(detections_per_image):
     assert [len(p) for p in async_predictions] == [len(p) for p in sequential_predictions]
 
 
+def test_async_inference_does_not_emit_results_when_the_producer_fails():
+    """The final drain must not post-process or write pending images to the shelf
+    when the producer failed, as the producer's exception is raised instead."""
+
+    def images():
+        yield from _top_down_images([0], h=8, w=8)  # pending image, never queued
+        raise RuntimeError("cannot read frame")
+
+    postprocessor = Mock(return_value=({"bodyparts": np.zeros((0, 1, 3))}, {}))
+    runner = MockInferenceRunner(batch_size=2, postprocessor=postprocessor)
+    shelf_writer = Mock()
+
+    with pytest.raises(RuntimeError, match="cannot read frame"):
+        runner.inference(images(), shelf_writer=shelf_writer)
+
+    postprocessor.assert_not_called()
+    shelf_writer.add_prediction.assert_not_called()
+
+
 def test_dynamic_pose_inference_calls_dynamic():
     pose_batch = torch.zeros((1, 1, 1, 3))
     pose_batch_updated = torch.ones((1, 1, 1, 3))
