@@ -40,7 +40,7 @@ def test_dataloader_kwargs_accepts_extra_options() -> None:
         ("num_workers", "dataloader_workers"),
         ("pin_memory", "dataloader_pin_memory"),
         ("batch_size", "batch_size"),
-        ("collate_fn", "data.collate"),
+        ("collate_fn", "data.train.collate"),
     ],
 )
 def test_dataloader_kwargs_rejects_options_with_a_config_field(key: str, hint: str) -> None:

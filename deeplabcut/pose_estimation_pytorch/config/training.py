@@ -23,7 +23,7 @@ _RESERVED_DATALOADER_KWARGS = {
     "dataset": None,
     "batch_size": "batch_size",
     "shuffle": None,
-    "collate_fn": "data.collate",
+    "collate_fn": "data.train.collate",
     "num_workers": "dataloader_workers",
     "pin_memory": "dataloader_pin_memory",
 }
