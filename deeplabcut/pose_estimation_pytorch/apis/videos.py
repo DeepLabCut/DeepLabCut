@@ -675,26 +675,16 @@ def analyze_videos(
                         # add poses to the predictions
                         ctd_predictions.append(dict(bodyparts=pose))
 
-                    # ``ctd_predictions`` holds one entry per frame in the full data
-                    # file. Videos without readable frames are skipped above, so it
-                    # can only be empty when a shelf reports 0 frames: warn and skip
-                    if ctd_predictions:
-                        create_df_from_prediction(
-                            predictions=ctd_predictions,
-                            multi_animal=multi_animal,
-                            model_cfg=loader.model_cfg,
-                            dlc_scorer=dlc_scorer,
-                            output_path=output_path,
-                            output_prefix=output_prefix + "_ctd",
-                            save_as_csv=save_as_csv,
-                        )
-                        h5_files_created = True  # .h5 file was created for CTD tracking
-                    else:
-                        logging.warning(
-                            f"Skipping CTD dataframe export for {video}: {output_pkl} "
-                            "contains no frames, so no results .h5 file will be "
-                            "written."
-                        )
+                    create_df_from_prediction(
+                        predictions=ctd_predictions,
+                        multi_animal=multi_animal,
+                        model_cfg=loader.model_cfg,
+                        dlc_scorer=dlc_scorer,
+                        output_path=output_path,
+                        output_prefix=output_prefix + "_ctd",
+                        save_as_csv=save_as_csv,
+                    )
+                    h5_files_created = True  # .h5 file was created for CTD tracking
 
                 elif auto_track:
                     convert_detections2tracklets(
