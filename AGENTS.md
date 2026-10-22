@@ -18,6 +18,7 @@ functionality.
 - Set up with `uv sync --group dev`;  run `pre-commit run --files <changed>` and the relevant pytest tests before opening a PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
 - Reuse existing helpers, fixtures, custom types and exceptions where possible.
 - In pull requests, separate what you verified by running it from what you expect to hold. State which tests ran and their outcome, and which did not run and why.
+- Run the smallest relevant tests while iterating. Isolate optional-dependency, GUI, and GPU-dependent tests where possible, and report relevant checks that were not run.
 - Test behaviour at the smallest unit that exercises it. Mock only what is expensive or unavailable, and share setup between tests instead of copying it.
 - Keep pull request descriptions proportionate: the problem, the change, and how it was verified. Do not restate the diff.
 
