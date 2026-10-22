@@ -113,7 +113,7 @@ def test_iter_all_dataset_no_transform(batch_size):
     [
         pytest.param(1, 512, 512, 1, id="no-augmentation"),
         pytest.param(20, 50, 600, 50, id="max-batch-min-width"),
-        pytest.param(1, 600, 50, 99, id="max-augmentation-min-height"),
+        pytest.param(12, 600, 50, 99, id="max-augmentation-min-height"),
     ],
 )
 def test_iter_all_augmented_dataset(batch_size, x_size, y_size, exaggeration):
