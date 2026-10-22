@@ -58,6 +58,22 @@ def test_open_close_roundtrip(tmp_path):
     reader.close()
 
 
+@pytest.mark.parametrize("num_frames", [None, 0, 10])
+def test_close_without_predictions_reports_zero_frames(tmp_path, num_frames):
+    """Readers iterate over ``nframes``: it must not report frames that were never
+    written, e.g. for a video from which no frame could be read."""
+    path = tmp_path / "shelf"
+    writer = ShelfWriter(POSE_CFG, path, num_frames=num_frames)
+    writer.open()
+    writer.close()
+
+    reader = ShelfReader(path)
+    reader.open()
+    assert reader["metadata"]["nframes"] == 0
+    assert reader.keys() == ["metadata"]
+    reader.close()
+
+
 # -- key formatting -----------------------------------------------------------
 
 
