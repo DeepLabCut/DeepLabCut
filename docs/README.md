@@ -3,6 +3,7 @@ deeplabcut:
   last_content_updated: '2022-08-30'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: orphaned
 ---
 
 <!-- We currently use the root README.md for the main documentation -->

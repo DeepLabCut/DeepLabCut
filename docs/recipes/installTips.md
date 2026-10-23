@@ -3,7 +3,7 @@ deeplabcut:
   last_content_updated: '2025-02-28'
   last_metadata_updated: '2026-04-27'
   ignore: false
-  visibility: online
+  visibility: archived
   status: outdated
   recommendation: archive
   notes: Should be removed in favor of the main installation guide.
