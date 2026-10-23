@@ -867,7 +867,7 @@ def _generate_metadata(
         "stop": runtime[1],
         "run_duration": runtime[1] - runtime[0],
         "Scorer": dlc_scorer,
-        "pytorch-config": pytorch_config.to_dict(),
+        "pytorch-config": pytorch_config.to_dict(normalize=True),
         "fps": video.fps,
         "batch_size": batch_size,
         "frame_dimensions": (w, h),
