@@ -76,7 +76,6 @@ pip install napari-deeplabcut[tracking]
 ```{figure} ../../../images/napari/tracking/controls.png
 ---
 name: tracking-controls
-caption: Tracking Controls widget with annotated keypoints and tracking results.
 ---
 Tracking Controls widget with annotated keypoints and tracking results.
 ```

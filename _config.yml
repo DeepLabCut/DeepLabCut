@@ -7,6 +7,8 @@ sphinx:
   config:
     autodoc_mock_imports: ["wx", "matplotlib", "qtpy", "PySide6", "napari", "shiboken6"]
     mermaid_output_format: raw
+    # Resolve in-page `[text](#heading-slug)` links; the deepest targets are H3.
+    myst_heading_anchors: 3
     html_static_path: ["docs/_static"]
     html_css_files: ["custom.css"]
     exclude_patterns:
