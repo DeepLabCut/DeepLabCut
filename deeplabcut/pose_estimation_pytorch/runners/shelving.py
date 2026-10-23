@@ -73,6 +73,23 @@ class ShelfReader(ShelfManager):
         return self._db[item]
 
 
+def frame_key_width(num_frames: int | None, default: int = 5) -> int:
+    """Returns the zero-fill width for frame keys in a full-data dict.
+
+    Args:
+        num_frames: The number of frames in the video, if known.
+        default: The width to use when the number of frames is unknown.
+
+    Returns:
+        The number of leading zeros to pad frame indices with.
+    """
+    if num_frames is None:
+        return default
+    if num_frames <= 1:
+        return 1
+    return int(np.ceil(np.log10(num_frames)))
+
+
 class ShelfWriter(ShelfManager):
     """Writes data to a shelf on-the-fly during video analysis.
 
@@ -93,9 +110,12 @@ class ShelfWriter(ShelfManager):
         self._num_frames = num_frames
         self._frame_index = 0
 
-        self._str_width = 5
-        if num_frames is not None:
-            self._str_width = int(np.ceil(np.log10(num_frames)))
+        self._str_width = frame_key_width(num_frames)
+
+    @property
+    def frames_written(self) -> int:
+        """The number of frames written to the shelf since it was last opened."""
+        return self._frame_index
 
     def add_prediction(
         self,
@@ -146,8 +166,9 @@ class ShelfWriter(ShelfManager):
 
     def close(self) -> None:
         """Closes the shelf and writes the updated metadata."""
-        if self._open and self._frame_index > 0:
-            # Write updated metadata to shelf (top-level indexing required for shelve)
+        if self._open:
+            # Write updated metadata to shelf (top-level indexing required for shelve),
+            # also when no frame was written so readers don't look for missing frames
             metadata = self._db["metadata"]
             metadata["nframes"] = self._frame_index
             self._db["metadata"] = metadata

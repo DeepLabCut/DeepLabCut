@@ -42,6 +42,7 @@ from deeplabcut.pose_estimation_pytorch.runners import (
     TopDownDynamicCropper,
 )
 from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
+from deeplabcut.pose_estimation_pytorch.runners.shelving import frame_key_width
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import VideoReader, auxiliaryfunctions
@@ -228,15 +229,23 @@ def video_inference(
     if shelf_writer is not None:
         shelf_writer.close()
 
-    if shelf_writer is None and len(predictions) != n_frames:
+    if shelf_writer is None:
         tip_url = "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
         header = "#tips-on-video-re-encoding-and-preprocessing"
-        logging.warning(
-            f"The video metadata indicates that there {n_frames} in the video, but "
-            f"only {len(predictions)} were able to be processed. This can happen if "
-            "the video is corrupted. You can try to fix the issue by re-encoding your "
-            f"video (tips on how to do that: {tip_url}{header})"
+        reencoding_tip = (
+            "This can happen if the video is corrupted. You can try to fix the issue "
+            f"by re-encoding your video (tips on how to do that: {tip_url}{header})"
         )
+        if len(predictions) == 0:
+            logging.warning(
+                f"No predictions were produced for {video.video_path}: the video could not be read. {reencoding_tip}"
+            )
+        elif len(predictions) != n_frames:
+            logging.warning(
+                f"The video metadata indicates that there are {n_frames} frames in "
+                f"the video, but only {len(predictions)} were able to be processed. "
+                f"{reencoding_tip}"
+            )
 
     return predictions
 
@@ -279,6 +288,9 @@ def analyze_videos(
 
     The index of the trained network is specified by parameters in the config file
     (in particular the variable 'snapshot_index').
+
+    Frames in which no animal is detected are kept in the outputs, with placeholder
+    values (-1). Videos from which no frame can be read are skipped with a warning.
 
     Args:
         config: full path of the config.yaml file for the project
@@ -542,6 +554,7 @@ def analyze_videos(
     # Reading video and init variables
     videos = collect_video_paths(videos, extensions=video_extensions, shuffle=in_random_order)
     h5_files_created = False  # Track if any .h5 files were created
+    skipped_videos = []  # Videos from which no frame could be read
 
     for video in videos:
         if destfolder is None:
@@ -582,6 +595,13 @@ def analyze_videos(
                 show_gpu_memory=show_gpu_memory,
             )
             runtime.append(time.time())
+
+            num_predicted = len(predictions) if shelf_writer is None else shelf_writer.frames_written
+            if num_predicted == 0:
+                logging.warning(f"Skipping {video}: no frames could be read, so no results are written.")
+                skipped_videos.append(video)
+                continue
+
             metadata = _generate_metadata(
                 cfg=loader.project_cfg,
                 pytorch_config=loader.model_cfg,
@@ -656,7 +676,7 @@ def analyze_videos(
                         ctd_predictions.append(dict(bodyparts=pose))
 
                     create_df_from_prediction(
-                        predictions=predictions,
+                        predictions=ctd_predictions,
                         multi_animal=multi_animal,
                         model_cfg=loader.model_cfg,
                         dlc_scorer=dlc_scorer,
@@ -708,6 +728,14 @@ def analyze_videos(
             "ensure that the video inference and output generation are correct.\n"
         )
 
+    if skipped_videos:
+        logging.warning(
+            f"{len(skipped_videos)} of {len(videos)} video(s) could not be read; no results were written: "
+            f"{', '.join(str(v) for v in skipped_videos)}. Re-encoding these videos may "
+            "help (https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
+            "#tips-on-video-re-encoding-and-preprocessing)."
+        )
+
     return dlc_scorer
 
 
@@ -720,10 +748,8 @@ def create_df_from_prediction(
     output_prefix: str | Path,
     save_as_csv: bool = False,
 ) -> pd.DataFrame:
-    pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
-    pred_unique_bodyparts = None
-    if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
-        pred_unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
+    if not predictions:
+        raise ValueError("Cannot create a results DataFrame from an empty predictions list.")
 
     output_h5 = Path(output_path) / f"{output_prefix}.h5"
     output_pkl = Path(output_path) / f"{output_prefix}_full.pickle"
@@ -732,6 +758,11 @@ def create_df_from_prediction(
     unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
     individuals = model_cfg["metadata"]["individuals"]
     n_individuals = len(individuals)
+
+    pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
+    pred_unique_bodyparts = None
+    if "unique_bodyparts" in predictions[0]:
+        pred_unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
 
     print(f"Saving results in {output_h5} and {output_pkl}")
     coords = ["x", "y", "likelihood"]
@@ -743,6 +774,7 @@ def create_df_from_prediction(
         cols_names.insert(1, "individuals")
 
     results_df_index = pd.MultiIndex.from_product(cols, names=cols_names)
+
     pred_bodyparts = pred_bodyparts[:, :n_individuals]
     df = pd.DataFrame(
         pred_bodyparts.reshape((len(pred_bodyparts), -1)),
@@ -887,7 +919,7 @@ def _generate_output_data(
     pose_config: dict,
     predictions: list[dict[str, np.ndarray]],
 ) -> dict:
-    str_width = int(np.ceil(np.log10(len(predictions))))
+    str_width = frame_key_width(len(predictions))
     output = {
         "metadata": {
             "nms radius": pose_config.get("nmsradius"),
