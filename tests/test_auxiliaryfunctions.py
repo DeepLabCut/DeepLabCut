@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from pathlib import Path
+import os
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from unittest.mock import patch
 
 import pytest
@@ -349,3 +350,25 @@ class TestReadConfigProjectPath:
 
         expected = project_dir.absolute()
         assert cfg["project_path"] == expected
+
+
+def _write_path_pickle(path: Path, module: str, cls_name: str) -> Path:
+    # Protocol 0 pickle of ``{"project_path": <module>.<cls_name>("a", "b")}``; written by hand
+    # because a concrete path of the other OS cannot be created to pickle it
+    path.write_bytes(f"(dVproject_path\nc{module}\n{cls_name}\n(Va\nVb\ntRs.".encode())
+    return path
+
+
+@pytest.mark.parametrize("module", ["pathlib", "pathlib._local"])
+def test_read_pickle_loads_foreign_paths_as_pure(tmp_path, module):
+    """Paths pickled on another OS load as pure paths instead of raising (#3562)."""
+    foreign_name, pure_type = ("PosixPath", PurePosixPath) if os.name == "nt" else ("WindowsPath", PureWindowsPath)
+    data = auxiliaryfunctions.read_pickle(_write_path_pickle(tmp_path / "meta.pickle", module, foreign_name))
+    assert type(data["project_path"]) is pure_type
+    assert data["project_path"].parts == ("a", "b")
+
+
+def test_read_pickle_keeps_native_paths(tmp_path):
+    native_type = type(Path())
+    data = auxiliaryfunctions.read_pickle(_write_path_pickle(tmp_path / "meta.pickle", "pathlib", native_type.__name__))
+    assert type(data["project_path"]) is native_type
