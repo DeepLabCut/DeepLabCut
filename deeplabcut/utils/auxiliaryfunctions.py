@@ -166,6 +166,9 @@ def read_pickle(filename):
         return _PortableUnpickler(handle).load()
 
 
+_DBM_SUFFIXES = (".db", ".pag", ".dir", ".dat", ".bak")
+
+
 @contextmanager
 def open_full_data(path: str | Path) -> Generator[Mapping]:
     """Opens a full data file (``*_full.pickle``), whether it is a pickle or a shelf.
@@ -180,7 +183,7 @@ def open_full_data(path: str | Path) -> Generator[Mapping]:
         FileNotFoundError: If there is no file at the given path.
     """
     path = Path(path)
-    kind = dbm.whichdb(str(path))
+    kind = full_data_format(path)
     if kind is None:
         raise FileNotFoundError(f"No full data found at {path}")
 
@@ -191,16 +194,29 @@ def open_full_data(path: str | Path) -> Generator[Mapping]:
             yield db
 
 
-def full_data_exists(path: str | Path) -> bool:
-    """Checks if a full data file (``*_full.pickle``) exists, whether pickle or shelf.
+def full_data_format(path: str | Path) -> str | None:
+    """Gets the format of a full data file (``*_full.pickle``).
 
     Args:
         path: The path to the ``*_full.pickle`` file.
 
     Returns:
-        True if there is a pickle or a shelf at the given path.
+        None        if there is no file at the given path
+        ""          if it is not a dbm database
+        dbm module  else
     """
-    return dbm.whichdb(str(path)) is not None
+    return dbm.whichdb(str(path))
+
+
+def remove_full_data(path: str | Path) -> None:
+    """Removes a full data file (``*_full.pickle``), including all files of a shelf.
+
+    Args:
+        path: The path to the ``*_full.pickle`` file.
+    """
+    path = Path(path)
+    for file in (path, *(path.with_name(path.name + suffix) for suffix in _DBM_SUFFIXES)):
+        file.unlink(missing_ok=True)
 
 
 def load_full_data(path: str | Path) -> dict:
@@ -670,9 +686,6 @@ def check_if_not_evaluated(folder, DLCscorer, DLCscorerlegacy, snapshot):
             return False, dn, DLCscorerlegacy
         else:
             return True, dataname, DLCscorer
-
-
-_DBM_SUFFIXES = (".db", ".pag", ".dir", ".dat", ".bak")
 
 
 def find_video_full_data(folder, videoname, scorer):

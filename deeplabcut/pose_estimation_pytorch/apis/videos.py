@@ -582,9 +582,15 @@ def analyze_videos(
                 num_frames=video_iterator.get_n_frames(robust=robust_nframes),
             )
 
-        if not overwrite and auxiliaryfunctions.full_data_exists(output_pkl):
+        existing_format = auxiliaryfunctions.full_data_format(output_pkl)
+
+        if not overwrite and existing_format is not None:
             print(f"Video {video} already analyzed at {output_pkl}!")
         else:
+            if existing_format is not None and bool(existing_format) != bool(use_shelve):
+                print(f"Replacing the existing full data at {output_pkl}.")
+                auxiliaryfunctions.remove_full_data(output_pkl)
+
             runtime = [time.time()]
             predictions = video_inference(
                 video=video_iterator,
