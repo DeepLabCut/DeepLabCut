@@ -6,7 +6,7 @@ on:
       python-version:
         description: Python version used to build the dev docs.
         required: false
-        default: "3.10"
+        default: "3.12"
         type: string
 
       config-file:

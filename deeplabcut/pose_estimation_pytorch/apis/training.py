@@ -153,6 +153,7 @@ def train(
     batch_size = run_config["train_settings"]["batch_size"]
     num_workers = run_config["train_settings"]["dataloader_workers"]
     pin_memory = run_config["train_settings"]["dataloader_pin_memory"]
+    dataloader_kwargs = run_config["train_settings"].get("dataloader_kwargs") or {}
     train_dataloader = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -160,6 +161,7 @@ def train(
         collate_fn=collate_fn,
         num_workers=num_workers,
         pin_memory=pin_memory,
+        **dataloader_kwargs,
     )
     valid_dataloader = DataLoader(valid_dataset, batch_size=1, shuffle=False)
 
