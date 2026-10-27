@@ -580,6 +580,7 @@ def analyze_videos(
                 pose_cfg=pose_cfg,
                 filepath=output_pkl,
                 num_frames=video_iterator.get_n_frames(robust=robust_nframes),
+                flag="n" if overwrite else "c",
             )
 
         existing_format = auxiliaryfunctions.full_data_format(output_pkl)
