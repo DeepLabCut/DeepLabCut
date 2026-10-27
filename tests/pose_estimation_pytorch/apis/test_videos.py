@@ -1,3 +1,5 @@
+import pickle
+import shelve
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -226,3 +228,72 @@ def test_analyze_videos_skips_unreadable_video_written_to_a_shelf(tmp_path, monk
     generate_assemblies.assert_not_called()
     assert f"Skipping {unreadable}" in caplog.text
     assert "1 of 1 video(s) could not be read; no results were written" in caplog.records[-1].message
+
+
+def _write_existing_full_data(path: Path, use_shelve: bool) -> None:
+    """Writes minimal valid full data as a shelf or as a plain pickle."""
+    data = {
+        "metadata": {"nframes": 1, "key_str_width": 4},
+        "frame0000": {"coordinates": [[np.zeros((1, 2))]], "confidence": [np.ones((1, 1))]},
+    }
+    if use_shelve:
+        with shelve.open(str(path), flag="c") as db:
+            db.update(data)
+    else:
+        with open(path, "wb") as f:
+            pickle.dump(data, f)
+
+
+@pytest.mark.parametrize("use_shelve", [False, True])
+def test_generate_assemblies_file_loads_full_data(tmp_path, use_shelve):
+    """Full data should be loadable from a shelf and from a pickle, see #3558."""
+    full_data_path = tmp_path / "video_full.pickle"
+    _write_existing_full_data(full_data_path, use_shelve=use_shelve)
+
+    output_path = tmp_path / "video_assemblies.pickle"
+    videos._generate_assemblies_file(full_data_path, output_path, num_bodyparts=1, num_unique_bodyparts=0)
+
+    assert output_path.exists()
+
+
+def test_analyze_videos_skips_existing_full_data(tmp_path, monkeypatch, mock_analysis):
+    video = tmp_path / "video.mp4"
+    mock_analysis({video: [dict(bodyparts=np.zeros((1, 3, 3)))]})
+    video_inference = Mock()
+    monkeypatch.setattr(videos, "video_inference", video_inference)
+    full_data_path = tmp_path / "videoDLC_test_full.pickle"
+    _write_existing_full_data(full_data_path, use_shelve=False)
+    content = full_data_path.read_bytes()
+
+    videos.analyze_videos(tmp_path / "config.yaml", [video], overwrite=False)
+
+    video_inference.assert_not_called()
+    assert full_data_path.read_bytes() == content
+
+
+@pytest.mark.parametrize("existing_shelf", [False, True])
+@pytest.mark.parametrize("use_shelve", [False, True])
+def test_analyze_videos_overwrite_replaces_existing_full_data(
+    tmp_path, monkeypatch, mock_analysis, existing_shelf, use_shelve
+):
+    """Existing full data of another format (pickle vs shelf) is removed before running
+    with overwrite=True. Same format data is kept."""
+    video = tmp_path / "video.mp4"
+    mock_analysis({video: []}, multi_animal=True)  # single animal projects ignore use_shelve
+    full_data_path = tmp_path / "videoDLC_test_full.pickle"
+    _write_existing_full_data(full_data_path, use_shelve=existing_shelf)
+    formats_at_inference = []
+
+    def video_inference(video, **kwargs):
+        formats_at_inference.append(videos.auxiliaryfunctions.full_data_format(full_data_path))
+        return []
+
+    monkeypatch.setattr(videos, "video_inference", video_inference)
+
+    videos.analyze_videos(tmp_path / "config.yaml", [video], overwrite=True, use_shelve=use_shelve)
+
+    (format_at_inference,) = formats_at_inference
+    if existing_shelf == use_shelve:
+        assert format_at_inference is not None
+    else:
+        assert format_at_inference is None
