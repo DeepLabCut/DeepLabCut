@@ -33,7 +33,7 @@ dependencies = [
   "dlclibrary>=0.0.12",
   "einops",
   "filelock>=3.12,<3.16",
-  "filterpy>=1.4.4",
+  "filterpy>=1.4.4,<2",
   "h5py>=3.15.1; platform_system=='Darwin'",
   "huggingface-hub>=0.23",
   "imageio-ffmpeg",
