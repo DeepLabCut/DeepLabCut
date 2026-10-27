@@ -20,10 +20,13 @@ Licensed under GNU Lesser General Public License v3.0
 
 from __future__ import annotations
 
+import dbm
 import logging
 import os
 import pickle
-from collections.abc import Sequence
+import shelve
+from collections.abc import Generator, Mapping, Sequence
+from contextlib import contextmanager
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
 import pandas as pd
@@ -161,6 +164,59 @@ def read_pickle(filename):
     """
     with Path(filename).open("rb") as handle:
         return _PortableUnpickler(handle).load()
+
+
+@contextmanager
+def open_full_data(path: str | Path) -> Generator[Mapping]:
+    """Opens a full data file (``*_full.pickle``), whether it is a pickle or a shelf.
+
+    Args:
+        path: The path to the ``*_full.pickle`` file.
+
+    Yields:
+        The data, as a dict for pickle files and as a read-only shelf otherwise.
+
+    Raises:
+        FileNotFoundError: If there is no file at the given path.
+    """
+    path = Path(path)
+    kind = dbm.whichdb(str(path))
+    if kind is None:
+        raise FileNotFoundError(f"No full data found at {path}")
+
+    if kind == "":  # not a dbm database
+        yield read_pickle(path)
+    else:
+        with shelve.open(str(path), flag="r") as db:
+            yield db
+
+
+def full_data_exists(path: str | Path) -> bool:
+    """Checks if a full data file (``*_full.pickle``) exists, whether pickle or shelf.
+
+    Args:
+        path: The path to the ``*_full.pickle`` file.
+
+    Returns:
+        True if there is a pickle or a shelf at the given path.
+    """
+    return dbm.whichdb(str(path)) is not None
+
+
+def load_full_data(path: str | Path) -> dict:
+    """Loads a full data file (``*_full.pickle``) entirely into memory.
+
+    Args:
+        path: The path to the ``*_full.pickle`` file.
+
+    Returns:
+        A dict copy of the data, whether the file is a pickle or a shelf.
+
+    Raises:
+        FileNotFoundError: If there is no file at the given path.
+    """
+    with open_full_data(path) as full_data:
+        return dict(full_data)
 
 
 def write_pickle(filename, data):
@@ -616,17 +672,24 @@ def check_if_not_evaluated(folder, DLCscorer, DLCscorerlegacy, snapshot):
             return True, dataname, DLCscorer
 
 
+_DBM_SUFFIXES = (".db", ".pag", ".dir", ".dat", ".bak")
+
+
 def find_video_full_data(folder, videoname, scorer):
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     full_files = filter_files_by_patterns(
         folder=folder,
         start_patterns={videoname + scorer, videoname + scorer_legacy},
         contain_patterns={"full"},
-        end_patterns={"pickle"},
+        end_patterns={"pickle", *(f"pickle{suffix}" for suffix in _DBM_SUFFIXES)},
     )
     if not full_files:
         raise FileNotFoundError(f"No full data found in {folder} for video {videoname} and scorer {scorer}.")
-    return full_files[0]
+
+    full_file = full_files[0]
+    if full_file.suffix in _DBM_SUFFIXES:
+        full_file = full_file.with_name(full_file.name.removesuffix(full_file.suffix))
+    return full_file
 
 
 def find_video_metadata(folder, videoname: str, scorer: str):
@@ -648,7 +711,7 @@ def load_video_metadata(folder, videoname, scorer):
 
 
 def load_video_full_data(folder, videoname, scorer):
-    return read_pickle(find_video_full_data(folder, videoname, scorer))
+    return load_full_data(find_video_full_data(folder, videoname, scorer))
 
 
 def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, track_method=""):

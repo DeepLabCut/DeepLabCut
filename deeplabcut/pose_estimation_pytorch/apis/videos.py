@@ -11,10 +11,8 @@
 from __future__ import annotations
 
 import copy
-import dbm
 import logging
 import pickle
-import shelve
 import time
 from collections.abc import Sequence
 from pathlib import Path
@@ -584,7 +582,7 @@ def analyze_videos(
                 num_frames=video_iterator.get_n_frames(robust=robust_nframes),
             )
 
-        if not overwrite and output_pkl.exists():
+        if not overwrite and auxiliaryfunctions.full_data_exists(output_pkl):
             print(f"Video {video} already analyzed at {output_pkl}!")
         else:
             runtime = [time.time()]
@@ -651,37 +649,31 @@ def analyze_videos(
                 # when running CTD tracking, don't auto-track as CTD did the tracking
                 # for us!
                 if ctd_tracking:
-                    if dbm.whichdb(str(output_pkl)) == "":
-                        full_data = auxiliaryfunctions.read_pickle(output_pkl)
-                    else:
-                        full_data = shelve.open(str(output_pkl), flag="r")
-                    full_data_meta = full_data["metadata"]
-
-                    num_frames = full_data_meta["nframes"]
-                    str_width = full_data_meta["key_str_width"]
-
                     ctd_predictions = []
-                    for i in range(num_frames):
-                        frame_data = full_data.get("frame" + str(i).zfill(str_width))
-                        if frame_data is None:
-                            pose = np.full((len(individuals), len(bodyparts), 3), np.nan)
+                    with auxiliaryfunctions.open_full_data(output_pkl) as full_data:
+                        full_data_meta = full_data["metadata"]
+
+                        num_frames = full_data_meta["nframes"]
+                        str_width = full_data_meta["key_str_width"]
+
+                        for i in range(num_frames):
+                            frame_data = full_data.get("frame" + str(i).zfill(str_width))
+                            if frame_data is None:
+                                pose = np.full((len(individuals), len(bodyparts), 3), np.nan)
+                                ctd_predictions.append(dict(bodyparts=pose))
+                                continue
+
+                            # there can't be unique bodyparts for CTD models
+                            #   -> so coords has shape (num_bodyparts, num_idv, _)
+                            coords = np.stack(frame_data["coordinates"][0], axis=0)
+                            scores = np.stack(frame_data["confidence"], axis=0)
+                            pose = np.concatenate([coords, scores], axis=-1)
+
+                            # transpose to (num_idv, num_bodyparts, _)
+                            pose = pose.transpose((1, 0, 2))
+
+                            # add poses to the predictions
                             ctd_predictions.append(dict(bodyparts=pose))
-                            continue
-
-                        # there can't be unique bodyparts for CTD models
-                        #   -> so coords has shape (num_bodyparts, num_idv, _)
-                        coords = np.stack(frame_data["coordinates"][0], axis=0)
-                        scores = np.stack(frame_data["confidence"], axis=0)
-                        pose = np.concatenate([coords, scores], axis=-1)
-
-                        # transpose to (num_idv, num_bodyparts, _)
-                        pose = pose.transpose((1, 0, 2))
-
-                        # add poses to the predictions
-                        ctd_predictions.append(dict(bodyparts=pose))
-
-                    if isinstance(full_data, shelve.Shelf):
-                        full_data.close()
 
                     create_df_from_prediction(
                         predictions=ctd_predictions,
@@ -811,62 +803,53 @@ def _generate_assemblies_file(
     num_unique_bodyparts: int,
 ) -> None:
     """Generates the assemblies file from predictions."""
-    if dbm.whichdb(str(full_data_path)) == "":
-        with full_data_path.open("rb") as f:
-            data = pickle.load(f)
-    else:
-        data = shelving.ShelfReader(full_data_path)
-        data.open()
-
-    num_frames = data["metadata"]["nframes"]
-    str_width = data["metadata"].get("key_str_width")
-    if str_width is None:
-        keys = [k for k in data.keys() if k != "metadata"]
-        str_width = len(keys[0]) - len("frame")
-
     assemblies = dict(single=dict())
-    for frame_index in range(num_frames):
-        frame_key = "frame" + str(frame_index).zfill(str_width)
-        predictions = data[frame_key]
+    with auxiliaryfunctions.open_full_data(full_data_path) as data:
+        num_frames = data["metadata"]["nframes"]
+        str_width = data["metadata"].get("key_str_width")
+        if str_width is None:
+            keys = [k for k in data.keys() if k != "metadata"]
+            str_width = len(keys[0]) - len("frame")
 
-        keypoint_preds = predictions["coordinates"][0]
-        keypoint_scores = predictions["confidence"]
+        for frame_index in range(num_frames):
+            frame_key = "frame" + str(frame_index).zfill(str_width)
+            predictions = data[frame_key]
 
-        bpts = np.stack(keypoint_preds[:num_bodyparts])
-        scores = np.stack(keypoint_scores[:num_bodyparts])
-        preds = np.concatenate([bpts, scores], axis=-1)
+            keypoint_preds = predictions["coordinates"][0]
+            keypoint_scores = predictions["confidence"]
 
-        keypoint_id_scores = predictions.get("identity")
-        if keypoint_id_scores is not None:
-            keypoint_id_scores = np.stack(keypoint_id_scores[:num_bodyparts])
-            keypoint_pred_ids = np.argmax(keypoint_id_scores, axis=2)
-            keypoint_pred_ids = np.expand_dims(keypoint_pred_ids, axis=-1)
-        else:
-            num_bpts, num_preds = preds.shape[:2]
-            keypoint_pred_ids = -np.ones((num_bpts, num_preds, 1))
+            bpts = np.stack(keypoint_preds[:num_bodyparts])
+            scores = np.stack(keypoint_scores[:num_bodyparts])
+            preds = np.concatenate([bpts, scores], axis=-1)
 
-        # reshape to (num_preds, num_bpts, 4)
-        preds = np.concatenate([preds, keypoint_pred_ids], axis=-1)
-        preds = preds.transpose((1, 0, 2))
+            keypoint_id_scores = predictions.get("identity")
+            if keypoint_id_scores is not None:
+                keypoint_id_scores = np.stack(keypoint_id_scores[:num_bodyparts])
+                keypoint_pred_ids = np.argmax(keypoint_id_scores, axis=2)
+                keypoint_pred_ids = np.expand_dims(keypoint_pred_ids, axis=-1)
+            else:
+                num_bpts, num_preds = preds.shape[:2]
+                keypoint_pred_ids = -np.ones((num_bpts, num_preds, 1))
 
-        # remove all-missing predictions
-        mask = ~np.all(preds < 0, axis=(1, 2))
-        preds = preds[mask]
+            # reshape to (num_preds, num_bpts, 4)
+            preds = np.concatenate([preds, keypoint_pred_ids], axis=-1)
+            preds = preds.transpose((1, 0, 2))
 
-        assemblies[frame_index] = preds
+            # remove all-missing predictions
+            mask = ~np.all(preds < 0, axis=(1, 2))
+            preds = preds[mask]
 
-        if num_unique_bodyparts > 0:
-            unique_bpts = np.stack(keypoint_preds[num_bodyparts:])
-            unique_scores = np.stack(keypoint_scores[num_bodyparts:])
-            unique_preds = np.concatenate([unique_bpts, unique_scores], axis=-1)
-            unique_preds = unique_preds.transpose((1, 0, 2))
-            assemblies["single"][frame_index] = unique_preds[0]  # single prediction
+            assemblies[frame_index] = preds
+
+            if num_unique_bodyparts > 0:
+                unique_bpts = np.stack(keypoint_preds[num_bodyparts:])
+                unique_scores = np.stack(keypoint_scores[num_bodyparts:])
+                unique_preds = np.concatenate([unique_bpts, unique_scores], axis=-1)
+                unique_preds = unique_preds.transpose((1, 0, 2))
+                assemblies["single"][frame_index] = unique_preds[0]  # single prediction
 
     with Path(output_path).open("wb") as file:
         pickle.dump(assemblies, file, pickle.HIGHEST_PROTOCOL)
-
-    if isinstance(data, shelving.ShelfReader):
-        data.close()
 
 
 def _validate_destfolder(destfolder: str | None) -> None:
