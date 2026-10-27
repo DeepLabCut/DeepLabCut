@@ -1,3 +1,5 @@
+import pickle
+import shelve
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -226,3 +228,25 @@ def test_analyze_videos_skips_unreadable_video_written_to_a_shelf(tmp_path, monk
     generate_assemblies.assert_not_called()
     assert f"Skipping {unreadable}" in caplog.text
     assert "1 of 1 video(s) could not be read; no results were written" in caplog.records[-1].message
+
+
+@pytest.mark.parametrize("use_shelve", [False, True])
+def test_generate_assemblies_file_loads_full_data(tmp_path, use_shelve):
+    """Full data should be loadable from a shelf and from a pickle, see #3558."""
+    full_data = {
+        "metadata": {"nframes": 1, "key_str_width": 4},
+        "frame0000": {"coordinates": [[np.zeros((1, 2))]], "confidence": [np.ones((1, 1))]},
+    }
+
+    full_data_path = tmp_path / "video_full.pickle"
+    if use_shelve:
+        with shelve.open(str(full_data_path), flag="c") as db:
+            db.update(full_data)
+    else:
+        with open(full_data_path, "wb") as f:
+            pickle.dump(full_data, f)
+
+    output_path = tmp_path / "video_assemblies.pickle"
+    videos._generate_assemblies_file(full_data_path, output_path, num_bodyparts=1, num_unique_bodyparts=0)
+
+    assert output_path.exists()
