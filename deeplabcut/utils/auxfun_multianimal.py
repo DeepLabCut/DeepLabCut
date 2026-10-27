@@ -18,11 +18,9 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import dbm
 import math
 import pickle
 import random
-import shelve
 import warnings
 from itertools import combinations
 from pathlib import Path
@@ -207,11 +205,7 @@ def LoadFullMultiAnimalData(dataname):
     dataname = Path(dataname)
     data_file = dataname.with_name(dataname.stem + "_full.pickle")
     metadata_file = dataname.with_name(dataname.stem + "_meta.pickle")
-    if dbm.whichdb(str(data_file)) == "":
-        with data_file.open("rb") as handle:
-            data = pickle.load(handle)
-    else:
-        data = shelve.open(str(data_file), flag="r")
+    data = auxiliaryfunctions.load_full_data(data_file)
     metadata = auxiliaryfunctions.read_pickle(metadata_file)
     return data, metadata
 
