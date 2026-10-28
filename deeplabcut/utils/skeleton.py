@@ -53,21 +53,57 @@ class SkeletonBuilder:
         self._ax = None
         self.df = None
         found = False
+        missing = np.empty(0, dtype=int)
+        n_inspected = 0  # candidate folders looked at
+        n_skipped = 0  # candidate folders that could not be used
         root = Path(self.cfg["project_path"]) / "labeled-data"
         for folder in root.iterdir():
-            if folder.is_dir() and not any(folder.name.endswith(s) for s in ("cropped", "labeled")):
-                self.df = pd.read_hdf(folder / f"CollectedData_{self.cfg['scorer']}.h5")
-                self.df = drop_likelihood_columns(self.df)
-                row, col = self.pick_labeled_frame()
-                if "individuals" in self.df.columns.names:
-                    self.df = self.df.xs(col, axis=1, level="individuals")
-                self.xy = self.df.loc[row].values.reshape((-1, 2))
-                missing = np.flatnonzero(np.isnan(self.xy).all(axis=1))
-                if not missing.size:
-                    found = True
-                    break
+            if not folder.is_dir() or any(folder.name.endswith(s) for s in ("cropped", "labeled")):
+                continue
+            n_inspected += 1
+            h5_file = folder / f"CollectedData_{self.cfg['scorer']}.h5"
+            if not h5_file.is_file():
+                # Frames may have been extracted but not labeled yet
+                n_skipped += 1
+                logger.warning(f"Skipping '{folder.name}': {h5_file.name} was not found.")
+                continue
+            # A single problematic folder should not abort the whole search,
+            # nor discard a usable frame already found in an earlier one
+            prev_df = self.df
+            try:
+                self.df = drop_likelihood_columns(pd.read_hdf(h5_file))
+                picked = self.pick_labeled_frame()
+                if picked is None:
+                    raise ValueError("no labeled frame was found")
+                row, col = picked
+                df = self.df
+                if "individuals" in df.columns.names:
+                    df = df.xs(col, axis=1, level="individuals")
+                xy = df.loc[row].values.reshape((-1, 2))
+                # Handle image previously annotated on a different platform
+                if isinstance(row, str):
+                    sep = "/" if "/" in row else "\\"
+                    row = row.split(sep)
+                image = io.imread(Path(self.cfg["project_path"]).joinpath(*row))
+            except (ValueError, IndexError, OSError, KeyError) as e:
+                n_skipped += 1
+                logger.warning(f"Skipping '{folder.name}': {e}")
+                self.df = prev_df
+                continue
+            self.df = df
+            self.xy = xy
+            self.image = image
+            missing = np.flatnonzero(np.isnan(self.xy).all(axis=1))
+            if not missing.size:
+                found = True
+                break
         if self.df is None:
-            raise OSError("No labeled data were found.")
+            raise OSError(
+                f"No labeled data were found. {n_inspected} folder(s) were inspected in "
+                f"'{root}', {n_skipped} of which had to be skipped (no "
+                f"CollectedData_{self.cfg['scorer']}.h5, no labeled frame in it, or a "
+                f"labeled frame missing from disk); see the warnings above for details."
+            )
 
         self.bpts = self.df.columns.get_level_values("bodyparts").unique()
         if not found:
@@ -77,11 +113,6 @@ class SkeletonBuilder:
                 stacklevel=2,
             )
         self.tree = KDTree(self.xy)
-        # Handle image previously annotated on a different platform
-        if isinstance(row, str):
-            sep = "/" if "/" in row else "\\"
-            row = row.split(sep)
-        self.image = io.imread(Path(self.cfg["project_path"]).joinpath(*row))
         self.inds = set()
         self.segs = set()
         # Draw the skeleton if already existent
@@ -136,8 +167,14 @@ class SkeletonBuilder:
                 count = count.drop(columns="single")
         else:
             count = self.df.count(axis=1).to_frame()
-        mask = count.where(count == count.to_numpy().max())
+        counts = count.to_numpy()
+        if not counts.size or not np.any(counts):
+            # Nothing was labeled in this folder
+            return None
+        mask = count.where(count == counts.max())
         kept = mask.stack().index.to_list()
+        if not kept:
+            return None
         np.random.shuffle(kept)
         picked = kept.pop()
         row = picked[:-1]

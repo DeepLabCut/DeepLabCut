@@ -8,6 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+# NOTE: @C-Achard 2026-09-04 : [CLEANUP-COLLECTEDDATA-FIXTURES] builds maDLC CollectedData columns inline and writes
+# them with key="df_with_missing", while tests/utils/test_skeleton.py uses key="df" for
+# CollectedData files; see the note there. Reuse target for the frame building: the
+# collected_data fixture in tests/utils/test_skeleton.py.
 import json
 import platform
 from pathlib import Path
