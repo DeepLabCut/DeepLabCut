@@ -26,10 +26,20 @@ from deeplabcut.utils.pandas_future_mode import (
 # ---------------------------------------------------------------------------
 
 
+@pytest.fixture(autouse=True)
+def _restore_pandas_options():
+    """Globally avoid pandas options change leak."""
+    with pd.option_context(
+        "future.infer_string",
+        pd.get_option("future.infer_string"),
+        "mode.copy_on_write",
+        pd.get_option("mode.copy_on_write"),
+    ):
+        yield
+
+
 def _configure_cow_true(monkeypatch) -> None:
     """Configure pandas CoW via the DLC future-mode machinery."""
-    monkeypatch.setattr(pd.options.future, "infer_string", pd.options.future.infer_string)
-    monkeypatch.setattr(pd.options.mode, "copy_on_write", pd.options.mode.copy_on_write)
     monkeypatch.setenv("DLC_PANDAS_FUTURE", "1")
     configure_pandas_future_if_enabled()
 
