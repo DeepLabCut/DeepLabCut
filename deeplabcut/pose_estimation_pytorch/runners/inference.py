@@ -281,6 +281,9 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             if self._exception is not None:
                 raise self._exception
 
+        # Frames with no model inputs may arrive after the last batch was extracted.
+        results.extend(self._extract_results(shelf_writer))
+
         return results
 
     def _prepare_inputs(

@@ -10,6 +10,7 @@
 #
 """Tests inference runners."""
 
+from threading import Event
 from unittest.mock import Mock, patch
 
 import numpy as np
@@ -100,6 +101,7 @@ def test_mock_bottom_up(batch_size):
         [1, 1, 1, 1, 1],
         [0, 1, 0, 1, 1],  # some frames might not have predictions
         [0, 0, 0, 5, 2],
+        [1, 0, 2, 0, 0],  # trailing empty frames with full or partial batches
         [1, 2, 3, 4],
         [3, 4, 2, 1, 4],
         [4, 23, 5, 20, 64, 100],
@@ -146,6 +148,49 @@ def test_mock_top_down(batch_size, detections_per_image):
             print(i_det.shape)
             print(p_det["mock"]["index"])
             assert i_det[0, 0, 0] == p_det["mock"]["index"]
+
+
+@pytest.mark.parametrize("use_shelf", [False, True])
+@pytest.mark.parametrize("has_detections", [False, True])
+@pytest.mark.parametrize("batch_size", [1, 4])
+def test_async_preserves_trailing_empty_frames(use_shelf, has_detections, batch_size):
+    """Empty frames must survive even when no further model batch is produced."""
+    extracted = Event()
+
+    def postprocess(predictions, context):
+        return {"bodyparts": context["frame_index"]}, context
+
+    runner = MockInferenceRunner(batch_size=batch_size, postprocessor=postprocess)
+    runner.inference_cfg.multithreading.enabled = True
+    extract_results = runner._extract_results
+
+    def extract_and_signal(shelf_writer):
+        results = extract_results(shelf_writer)
+        extracted.set()
+        return results
+
+    def images():
+        if has_detections:
+            yield np.ones((batch_size, 3, 1, 1)), {"frame_index": 0}
+            # Ensure the trailing frames arrive after the last batch extraction.
+            assert extracted.wait(timeout=10), "The first batch was not extracted"
+        for index in range(int(has_detections), 4):
+            yield np.empty((0, 3, 1, 1)), {"frame_index": index}
+
+    shelf_writer = Mock() if use_shelf else None
+    with patch.object(runner, "_extract_results", side_effect=extract_and_signal):
+        predictions = runner.inference(images(), shelf_writer=shelf_writer)
+
+    if use_shelf:
+        assert predictions == []
+        assert [call.kwargs["bodyparts"] for call in shelf_writer.add_prediction.call_args_list] == list(range(4))
+    else:
+        assert [prediction["bodyparts"] for prediction in predictions] == list(range(4))
+    assert len(runner.batch_shapes) == int(has_detections)
+    assert runner._contexts == []
+    assert runner._image_batch_sizes == []
+    assert runner._predictions == []
+    assert not runner._preprocessing_thread.is_alive()
 
 
 def test_dynamic_pose_inference_calls_dynamic():
