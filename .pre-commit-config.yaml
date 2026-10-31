@@ -125,4 +125,5 @@ repos:
           - "pydantic>=2,<3"
           - "pyyaml"
           - "nbformat>=5"
+          - "markdown-it-py>=3,<4"
         stages: [pre-commit, manual]
