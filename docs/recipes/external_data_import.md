@@ -4,6 +4,7 @@ deeplabcut:
   last_verified: '2026-05-22'
   verified_for: 3.0.0rc14
   ignore: false
+  visibility: orphaned
 ---
 
 (file:recipe-importing-data)=

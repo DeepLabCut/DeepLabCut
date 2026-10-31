@@ -3,7 +3,7 @@ deeplabcut:
   last_content_updated: '2026-02-10'
   last_metadata_updated: '2026-03-06'
   ignore: false
-  visibility: online
+  visibility: archived
   status: review_needed
   recommendation: verify
   notes: Could use a small formatting pass. Contents are 4-5y old in some places, recommend to review for accuracy.

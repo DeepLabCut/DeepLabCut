@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  visibility: orphaned
+  recommendation: archive
+---
+
 # GUIde
 
 ```{toctree}

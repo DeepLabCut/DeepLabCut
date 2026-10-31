@@ -31,6 +31,13 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
 
+      # PRs only; pushes (deploy, post-merge runs) are never gated.
+      - name: Check every docs page is in _toc.yml or marked off-TOC
+        if: github.event_name == 'pull_request'
+        run: |
+          python -m pip install pyyaml "pydantic>=2,<3" "nbformat>=5"
+          python tools/docs_and_notebooks_check.py toc
+
       - name: Install docs dependencies
         run: |
           python -m pip install --upgrade pip
