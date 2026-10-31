@@ -87,7 +87,7 @@ class: dropdown
   Please note, which CUDA you install depends on what version of PyTorch you want to use. So, please check {ref}`sec:install-gpu-support` below carefully. **Note, DeepLabCut is up to date with the latest CUDA and PyTorch!**
   ```
   ```{tab-item} Apple M-chip GPU
-  Install miniconda and use the standard `DEEPLABCUT.yaml` conda environment — PyTorch will use your Apple GPU via Metal automatically. For TensorFlow, add the `tf` extra after install (see {ref}`TensorFlow Support <sec:deeplabcut-with-tf-install>`). More tips are on the {ref}`installation tips <installation-tips>` page.
+  Install miniconda and use the standard `DEEPLABCUT.yaml` conda environment — PyTorch will use your Apple GPU via Metal automatically. For TensorFlow, add the `tf` extra after install (see {ref}`TensorFlow Support <sec:deeplabcut-with-tf-install>`).
   ```
   ````
 
@@ -398,8 +398,6 @@ Here we provide notes on how to install and check your GPU use with TensorFlow, 
   [video on running the test scripts](https://www.youtube.com/watch?v=IOWtKn3l33s).
 
 - You can test that your GPU is being properly used with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
-
-- Ubuntu users might find this [installation guide](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#installation-on-ubuntu-20-04-lts) for a fresh DLC install on Ubuntu useful as well.
 
 ## Troubleshooting
 

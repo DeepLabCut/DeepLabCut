@@ -40,10 +40,10 @@ We are primarily a package that enables deep learning-based pose estimation. We 
 - Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**.
 
   - We highly recommend carefully considering which one is best for your needs.
-  - For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. See {ref}`important-info-regd-usage`.
+  - For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. See {ref}`sec:important-info-regd-usage`.
   - Then pick a user guide:
-    1. {ref}`How to use standard DeepLabCut <file:single-animal-userguide>`
-    1. {ref}`How to use multi-animal DeepLabCut <multi-animal-userguide>`
+    1. {ref}`How to use DeepLabCut (single and multi-animal) <file:dlc-userguide>`
+    1. {ref}`Multi-animal tracking <file:multi-animal-tracking>`
 
 - To note, as of DLC3+ the single and multi-animal code bases are more integrated and we support **top-down**, **bottom-up**, and a new "hybrid" approach that is state-of-the-art, called **BUCTD** (bottom-up conditional top down)
 
@@ -182,7 +182,7 @@ There are several options to use DeepLabCut, and we recommend you pick the one t
 [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=DRT-Cq2vdWs)
 
 We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user's
-own dataset. See all the demo's [here!](../examples/README.md)
+own dataset. See all the demo's [here!](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/README.md)
 Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.
 
 (using-project-manager-gui)=
@@ -234,8 +234,8 @@ That's it! Follow the GUI for details
 
 Please decide which mode you want to use DeepLabCut with, and follow one of:
 
-- (1) {ref}`How to use standard DeepLabCut <file:single-animal-userguide>`
-- (2) {ref}`How to use multi-animal DeepLabCut <multi-animal-userguide>`
+- (1) {ref}`How to use DeepLabCut (single and multi-animal) <file:dlc-userguide>`
+- (2) {ref}`Multi-animal tracking <file:multi-animal-tracking>`
 
 ## Useful links
 

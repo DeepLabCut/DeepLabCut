@@ -1,1 +1,4 @@
 # Additional features notebooks
+
+```{tableofcontents}
+```

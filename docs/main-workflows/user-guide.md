@@ -95,7 +95,7 @@ The 5 phases of the DeepLabCut workflow. The expected outputs are indicated in t
 
 ```{admonition} Automated multi-animal tracking
 ---
-class-container: multi-animal
+class: multi-animal
 ---
   For multi-animal projects, the video-analysis step contains an automated tracking step. More information is available in the {ref}`multi-animal tracking guide <file:multi-animal-tracking>`.
 ```
@@ -481,7 +481,7 @@ bar to navigate across the video and grab a frame to extract.
 The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before
 reloading the set and then manually annotating them.
 
-````{comment}
+<!--
 ```{figure} https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w
 ---
 name: fig-manual-frame-selection
@@ -490,7 +490,7 @@ width: 70%
 align: center
 ---
 Manual frame selection using the `extract_frames` GUI.
-````
+-->
 
 ##### API Docs
 

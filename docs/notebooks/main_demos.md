@@ -1,1 +1,4 @@
 # Demo notebooks
+
+```{tableofcontents}
+```
