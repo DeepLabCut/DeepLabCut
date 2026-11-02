@@ -53,13 +53,13 @@ class AnalyzeVideos(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super().__init__(root, parent, h1_description)
 
-        self._pending_plot_timer = QTimer(self)
-        self._pending_plot_timer.setSingleShot(True)
-        self._pending_plot_timer.setInterval(0)
-        self._pending_plot_timer.timeout.connect(self._show_pending_trajectory_plots)
-        self._pending_plot_options: AnalyzeVideosOptions | None = None
-        self._pending_plot_batches: list[tuple[str, list[Path]]] | None = None
-        self._analysis_failed = False
+        self._plot_options: AnalyzeVideosOptions | None = None
+        self._plotted_batches: list[tuple[str, list[Path]]] = []
+
+        self._show_plots_timer = QTimer(self)
+        self._show_plots_timer.setSingleShot(True)
+        self._show_plots_timer.setInterval(0)
+        self._show_plots_timer.timeout.connect(self._show_plotted_batches)
 
         self._set_page()
 
@@ -67,17 +67,14 @@ class AnalyzeVideos(DefaultTab):
     def files(self):
         return self.video_selection_widget.files
 
-    @Slot(object)
-    def _handle_analysis_error(self, _error):
-        self._analysis_failed = True
+    @Slot()
+    def _show_plotted_batches(self):
+        options = self._plot_options
+        if options is None or not options.show_trajectory_plots or not self._plotted_batches:
+            return
 
-    def _show_trajectory_plots_safely(
-        self,
-        options: AnalyzeVideosOptions,
-        batches: list[tuple[str, list[Path]]],
-    ):
         try:
-            self._show_trajectory_plots(options, batches)
+            self._show_trajectory_plots(options, self._plotted_batches)
         except Exception as error:
             self.root.logger.error(
                 "Failed to display trajectory plots.",
@@ -85,41 +82,11 @@ class AnalyzeVideos(DefaultTab):
             )
             self.root.show_task_error(error)
 
-    def _clear_pending_trajectory_plots(self) -> None:
-        self._pending_plot_options = None
-        self._pending_plot_batches = None
-
-    @Slot()
-    def _show_pending_trajectory_plots(self):
-        options = self._pending_plot_options
-        batches = self._pending_plot_batches
-
-        self._clear_pending_trajectory_plots()
-
-        if options is None or batches is None:
-            return
-
-        self._show_trajectory_plots_safely(options, batches)
-
     @Slot()
     def _handle_analysis_finished(self):
-        should_show_plots = (
-            not self._analysis_failed
-            and self._pending_plot_options is not None
-            and self._pending_plot_batches is not None
-            and self._pending_plot_options.plot_trajectories
-            and self._pending_plot_options.show_trajectory_plots
-        )
-
-        self._analysis_failed = False
-
-        if should_show_plots:
-            self._pending_plot_timer.start()
-        else:
-            self._clear_pending_trajectory_plots()
-
         self.analyze_videos_btn.setEnabled(True)
         self.root._progress_bar.hide()
+        self._show_plots_timer.start()
 
     def _set_page(self):
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
@@ -454,7 +421,9 @@ class AnalyzeVideos(DefaultTab):
                 track_method=options.track_method,
             )
 
-        if options.plot_trajectories and not options.show_trajectory_plots:
+        if options.plot_trajectories:
+            # Matplotlib windows cannot open from this worker thread; they are
+            # shown from the GUI thread once analysis finishes.
             deeplabcut.plot_trajectories(
                 options.config_path,
                 videos=videos,
@@ -465,6 +434,7 @@ class AnalyzeVideos(DefaultTab):
                 showfigures=False,
                 track_method=options.track_method,
             )
+            self._plotted_batches.append((videotype, videos))
 
     def _convert_outputs_to_csv_once_per_folder(self, batches: list[tuple[str, list[Path]]]):
         folders = self._get_unique_video_parent_folders(batches)
@@ -494,7 +464,7 @@ class AnalyzeVideos(DefaultTab):
             )
 
     def analyze_videos(self):
-        self._pending_plot_timer.stop()
+        self._show_plots_timer.stop()
 
         options = self._collect_options()
         batches = self._get_video_batches()
@@ -512,22 +482,14 @@ class AnalyzeVideos(DefaultTab):
             cfg.default_track_method = options.track_method
             cfg.to_yaml(self.root.config_path, overwrite=True, log_changes=True, mark_clean=True)
 
-        self._pending_plot_options = options
-        self._pending_plot_batches = batches
-        self._analysis_failed = False
+        self._plot_options = options
+        self._plotted_batches = []
 
         func = partial(self._run_pipeline, options, batches)
 
         self.worker, self.thread = move_to_separate_thread(func)
-
-        self.worker.error.connect(self._handle_analysis_error)
         self.worker.error.connect(self.root.show_task_error)
-
-        self.worker.finished.connect(
-            self._handle_analysis_finished,
-            Qt.ConnectionType.QueuedConnection,
-        )
-
+        self.worker.finished.connect(self._handle_analysis_finished)
         self.thread.start()
         self.analyze_videos_btn.setEnabled(False)
         self.root._progress_bar.show()
