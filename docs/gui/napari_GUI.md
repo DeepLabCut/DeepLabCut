@@ -1,14 +1,12 @@
 ---
 deeplabcut:
-  last_content_updated: '2026-02-10'
-  last_metadata_updated: '2026-04-09'
+  last_content_updated: '2026-09-28'
+  last_metadata_updated: '2026-09-28'
   ignore: false
   visibility: online
-  status: outdated
-  recommendation: archive
-  notes: Being updated in a separate PR (#3280)
-  last_verified: '2026-04-09'
-  verified_for: 3.0.0rc14
+  status: viable
+  last_verified: '2026-09-28'
+  verified_for: 3.0.2
 ---
 
 (file:napari-gui-landing)=
@@ -22,3 +20,5 @@ Welcome to the documentation for napari-DLC, the napari plugin for keypoint anno
 - [Installation (on GitHub)](https://github.com/DeepLabCut/napari-deeplabcut?tab=readme-ov-file#installation)
 - {ref}`Basic usage <file:napari-dlc-basic-usage>`
 - {ref}`Advanced features <file:napari-dlc-advanced-features>`
+- {ref}`Troubleshooting <file:napari-dlc-troubleshooting>`
+- {ref}`Semi-automated annotation with point tracking <file:napari-dlc-tracking-basic-usage>`

@@ -21,6 +21,7 @@ from deeplabcut.gui.components import (
     _create_label_widget,
     _create_vertical_layout,
 )
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 class CreateVideos(DefaultTab):
@@ -272,11 +273,16 @@ class CreateVideos(DefaultTab):
             color_by=color_by,
             overwrite=self.overwrite_videos.isChecked(),
         )
-        if all(videos_created):
+        analyzed_videos = collect_video_paths(videos)
+        if not analyzed_videos:
+            self.root.writer.write("No videos found to label.")
+        elif all(videos_created):
             self.root.writer.write("Labeled videos created.")
         else:
-            failed_videos = [video for success, video in zip(videos_created, videos, strict=False) if not success]
-            failed_videos_str = ", ".join(failed_videos)
+            failed_videos = [
+                video for success, video in zip(videos_created, analyzed_videos, strict=True) if not success
+            ]
+            failed_videos_str = ", ".join(str(video) for video in failed_videos)
             self.root.writer.write(f"Failed to create videos from {failed_videos_str}.")
 
         if self.plot_trajectories.isChecked():

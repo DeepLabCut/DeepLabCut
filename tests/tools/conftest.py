@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib
-import sys
 from pathlib import Path
 from types import ModuleType
 
@@ -24,11 +23,6 @@ def load_selector_module() -> ModuleType:
 
     if not init_file.exists():
         raise FileNotFoundError(f"tools package marker not found: {init_file}")
-
-    # Ensure repo root is importable so `tools.test_selector` resolves as a package import.
-    root_str = str(root)
-    if root_str not in sys.path:
-        sys.path.insert(0, root_str)
 
     return importlib.import_module("tools.test_selector")
 

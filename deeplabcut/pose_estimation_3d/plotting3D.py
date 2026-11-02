@@ -16,7 +16,6 @@ import numpy as np
 import pandas as pd
 from matplotlib import gridspec
 from matplotlib.animation import FFMpegWriter
-from matplotlib.axes._axes import _log as matplotlib_axes_logger
 from matplotlib.collections import LineCollection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from tqdm import tqdm
@@ -27,8 +26,9 @@ from deeplabcut.utils import (
     make_labeled_video,
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
+from deeplabcut.utils.matplotlib_utils import silence_axes_logger
 
-matplotlib_axes_logger.setLevel("ERROR")
+silence_axes_logger()
 
 
 def set_up_grid(figsize, xlim, ylim, zlim, view):
@@ -235,11 +235,11 @@ def create_labeled_video_3d(
             ind_links = tuple(zip(*links, strict=False))
 
             if color_by == "bodypart":
-                color = plt.cm.get_cmap(cmap, len(bodyparts2plot))
+                color = plt.get_cmap(cmap, len(bodyparts2plot))
                 colors_ = color(range(len(bodyparts2plot)))
                 colors = np.tile(colors_, (num_animals, 1))
             elif color_by == "individual":
-                color = plt.cm.get_cmap(cmap, num_animals)
+                color = plt.get_cmap(cmap, num_animals)
                 colors_ = color(range(num_animals))
                 colors = np.repeat(colors_, len(bodyparts2plot), axis=0)
 

@@ -84,3 +84,35 @@ def test_uniform_frames_cv2(fps, nframes, n_to_pick, start, end, index):
         assert index in valid_indices, f"Invalid index: {index} not in {valid_indices}"
     # Check that all frames are unique
     assert len(set(frames)) == len(frames), "Duplicate indices found"
+
+
+@pytest.mark.parametrize("color", [False, True])
+@pytest.mark.parametrize("start, stop", [(0, 1), (0.5, 1), (0.25, 0.75)])
+def test_kmeans_cv2_reads_frames_in_requested_range(fake_video_reader, start, stop, color):
+    nframes = 100
+    cap = fake_video_reader(nframes)
+    frames = fst.KmeansbasedFrameselectioncv2(cap, 5, start, stop, resizewidth=20, color=color)
+
+    start_idx = int(math.floor(start * nframes))
+    stop_idx = int(math.ceil(stop * nframes))
+    # The frames that are clustered must be the ones in the requested range
+    assert cap.read_indices == list(range(start_idx, stop_idx))
+    assert all(start_idx <= frame < stop_idx for frame in frames)
+
+
+@pytest.mark.parametrize("color", [False, True])
+@pytest.mark.parametrize(
+    "index",
+    [
+        pytest.param(list(range(31, 60)), id="consecutive"),
+        pytest.param(list(range(10, 90, 4)), id="non-consecutive"),
+    ],
+)
+def test_kmeans_cv2_reads_preselected_frames(fake_video_reader, index, color):
+    # extract_outlier_frames passes the candidate frames as Index
+    cap = fake_video_reader(100)
+    frames = fst.KmeansbasedFrameselectioncv2(cap, 5, 0, 1, Index=index, resizewidth=20, color=color)
+
+    # The frames that are clustered must be the preselected ones
+    assert cap.read_indices == index
+    assert set(frames) <= set(index)

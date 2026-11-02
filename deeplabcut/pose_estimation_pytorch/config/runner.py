@@ -65,6 +65,8 @@ class RunnerConfig(DLCBaseConfig):
         optimizer: Optimizer configuration
         scheduler: Scheduler configuration
         snapshots: Snapshot configuration
+        load_scheduler_state_dict: Whether to load the scheduler state when
+            resuming training from a snapshot
         load_weights_only: Value for torch.load() weights_only parameter
     """
 
@@ -81,4 +83,5 @@ class RunnerConfig(DLCBaseConfig):
     scheduler: SchedulerConfig | None = None
     snapshots: SnapshotCheckpointConfig | None = None
     snapshot_prefix: str | None = None
+    load_scheduler_state_dict: bool = True
     load_weights_only: bool | None = None

@@ -15,7 +15,7 @@ import tensorflow as tf
 from scipy.ndimage import center_of_mass, label
 from skimage.feature import peak_local_max
 
-_trapz = getattr(np, "trapezoid", np.trapz)  # NumPy 2.0+ compat; drop once NumPy 1 unsupported
+_trapz = np.trapezoid if hasattr(np, "trapezoid") else np.trapz  # NumPy 2.0+ compat; drop once NumPy 1 unsupported
 
 
 def extract_cnn_output(outputs_np, cfg):

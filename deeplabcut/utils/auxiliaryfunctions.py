@@ -24,7 +24,7 @@ import logging
 import os
 import pickle
 from collections.abc import Sequence
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 import pandas as pd
 
@@ -139,10 +139,28 @@ def attempt_to_make_folder(foldername, recursive=False):
         foldername.mkdir(exist_ok=True, parents=True)
 
 
+_FOREIGN_PATH_NAME, _FOREIGN_PATH_TYPE = (
+    ("PosixPath", PurePosixPath) if os.name == "nt" else ("WindowsPath", PureWindowsPath)
+)
+
+
+class _PortableUnpickler(pickle.Unpickler):
+    """Unpickler loading paths pickled on another OS as pure paths."""
+
+    def find_class(self, module, name):
+        # Python 3.13+ pickles paths from ``pathlib._local``
+        if module in ("pathlib", "pathlib._local") and name == _FOREIGN_PATH_NAME:
+            return _FOREIGN_PATH_TYPE
+        return super().find_class(module, name)
+
+
 def read_pickle(filename):
-    """Read the pickle file."""
+    """Read the pickle file.
+
+    Paths pickled on another OS are loaded as ``PurePosixPath`` or ``PureWindowsPath``.
+    """
     with Path(filename).open("rb") as handle:
-        return pickle.load(handle)
+        return _PortableUnpickler(handle).load()
 
 
 def write_pickle(filename, data):
@@ -559,7 +577,7 @@ def check_if_post_processing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="
 
 
 def check_if_not_analyzed(destfolder, vname, DLCscorer, DLCscorerlegacy, flag="video"):
-    h5files = collect_video_paths(destfolder, extensions=".h5")
+    h5files = collect_video_paths(destfolder, extensions=".h5", warn_on_unsupported_ext=False)
     if not len(h5files):
         dataname = Path(destfolder) / (vname + DLCscorer + ".h5")
         return True, dataname, DLCscorer
@@ -640,7 +658,7 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
     tracker = TRACK_METHODS.get(track_method, "")
 
     candidates = []
-    for file in collect_video_paths(folder, extensions=".h5"):
+    for file in collect_video_paths(folder, extensions=".h5", warn_on_unsupported_ext=False):
         stem = file.stem.replace("_filtered", "")
         starts_by_scorer = file.name.startswith((videoname + scorer, videoname + scorer_legacy))
         if tracker:

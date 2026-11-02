@@ -85,6 +85,8 @@ def deprecated(
     replacement: str | None = None,
     since: str | None = None,
     removed_in: str | None = None,
+    stacklevel: int = 2,
+    name: str | None = None,
 ) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Mark a function as deprecated.
 
@@ -93,12 +95,16 @@ def deprecated(
             ``"deeplabcut.utils.auxfun_videos.list_videos_in_folder"``.
         since: Version in which the function was deprecated.
         removed_in: Version in which the function will be removed.
+        stacklevel: Stack level for the warning.  Default is 2, which points to the
+            caller of the deprecated function.  Increase this if you wrap calls in
+            an extra legacy wrapper function that you don't want to be blamed for the deprecation.
+        name: Name to report in the warning message. Defaults to ``__qualname__``.
     """
 
     def decorator(fn: Callable[P, R]) -> Callable[P, R]:
         info = DeprecationInfo(
             kind="callable",
-            target=fn.__qualname__,
+            target=name or fn.__qualname__,
             replacement=replacement,
             since=since,
             removed_in=removed_in,
@@ -107,7 +113,7 @@ def deprecated(
 
         @functools.wraps(fn)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-            warnings.warn(message, DLCDeprecationWarning, stacklevel=2)
+            warnings.warn(message, DLCDeprecationWarning, stacklevel=stacklevel)
             return fn(*args, **kwargs)
 
         wrapper.__doc__ = f"Deprecated. {message}\n\n" + (fn.__doc__ or "")
