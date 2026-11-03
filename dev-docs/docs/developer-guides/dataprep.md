@@ -79,12 +79,18 @@ import deeplabcut.pose_estimation_pytorch as dlc_torch
 
 project_root = Path("/path/to/COCOProject")
 
-# Parse dataset information
+# Parse dataset information (test.json is optional; include if you have one)
 train_dict = dlc_torch.COCOLoader.load_json(
     project_root,
     filename="train.json"
 )
-max_num_individuals, bodyparts = dlc_torch.COCOLoader.get_project_parameters(train_dict)
+test_dict = dlc_torch.COCOLoader.load_json(
+    project_root,
+    filename="test.json"
+)
+max_num_individuals, bodyparts = dlc_torch.COCOLoader.get_project_parameters(
+    train_dict, test_dict
+)
 
 # Create model configuration
 model_cfg = dlc_torch.config.make_pytorch_pose_config(

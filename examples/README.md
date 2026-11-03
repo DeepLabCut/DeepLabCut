@@ -42,7 +42,7 @@ Ready to take your pose estimation to a new dimension? As of 2.0.7+ we support 3
 
 ## Using the DLC Model Zoo:
 
-We provide a COLAB notebook to use the growing number of networks that are trained on specific animals/scenarios. Read more here: http://www.mousemotorlab.org/dlc-modelzoo. This code will also create a new project folder so you can refine, add new bodyparts or label other objects, and re-train. Launch COLAB here: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DLC_ModelZoo.ipynb)
+We provide a COLAB notebook to use the growing number of networks that are trained on specific animals/scenarios. Read more here: https://deeplabcut.github.io/DeepLabCut/docs/ModelZoo.html. This code will also create a new project folder so you can refine, add new bodyparts or label other objects, and re-train. Launch COLAB here: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DLC_ModelZoo.ipynb)
 
 ## Using Python/iPython:
 

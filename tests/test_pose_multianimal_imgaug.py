@@ -14,15 +14,16 @@ import numpy as np
 import pytest
 
 from deeplabcut.core.config import read_config_as_dict, write_config
-from deeplabcut.pose_estimation_tensorflow.datasets import (
-    Batch,
-    PoseDatasetFactory,
-    pose_multianimal_imgaug,
-)
 
 tf = pytest.importorskip(
     "tensorflow",
     reason="TensorFlow not installed (use a project extra such as .[tf])",
+)
+
+from deeplabcut.pose_estimation_tensorflow.datasets import (  # noqa: E402
+    Batch,
+    PoseDatasetFactory,
+    pose_multianimal_imgaug,
 )
 
 

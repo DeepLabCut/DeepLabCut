@@ -10,8 +10,9 @@
 #
 """Project configuration classes for DeepLabCut pose estimation models."""
 
+import logging
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, get_args
 
 from pydantic import Field, model_validator
 from typing_extensions import Self
@@ -26,6 +27,8 @@ from deeplabcut.core.config.validation import (
     less_than,
     validate_crop_bounds,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ProjectConfig(DLCVersionedConfig):
@@ -189,6 +192,19 @@ class ProjectConfig(DLCVersionedConfig):
     )
     croppedtraining: bool | None = None
 
+    # TODO @deruyter92 2026-09-01: This should be included as field in the
+    # config. It requires a version bump of the schema version.
+    # see https://github.com/DeepLabCut/DeepLabCut/pull/3470
+    @property
+    def bboxes_pcutoff(self) -> Fraction:
+        """Default confidence cutoff for plotting bounding boxes from detectors.
+
+        Note: This property is introduced in v3.1.0 as prospective config
+        field, but is intentionally not yet defined as such in the schema to
+        avoid breaking compatibility with older configs.
+        """
+        return 0.6
+
     @property
     def bodyparts_list(self) -> list[str]:
         # Animal-count agnostic; Always return a list (never "MULTI!", None, etc.)
@@ -244,6 +260,20 @@ class ProjectConfig(DLCVersionedConfig):
         for fieldname in ("skeleton", "TrainingFraction", "video_sets", "bodyparts"):
             if data.get(fieldname) == "":
                 data.pop(fieldname)
+
+        # Support for legacy config.yaml templates that use bare (null) keys as placeholders
+        # for unset fields. Only fields whose type doesn't already accept None are affected.
+        for name, value in list(data.items()):
+            if value is not None or name not in cls.model_fields:
+                continue
+            none_is_invalid = type(None) not in get_args(cls.model_fields[name].annotation)
+            if none_is_invalid:
+                logger.warning(
+                    f"Found invalid empty/null/None value for `{name}` in the project "
+                    "config. This is only supported for legacy compatibility. "
+                    f"Treating `{name}` as unset and using the field default instead."
+                )
+                data.pop(name)
 
         # NOTE @deruyter92 2026-06-15: This should be removed in v1.
         if data.get("multianimalproject") and not data.get("bodyparts"):

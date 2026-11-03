@@ -298,7 +298,7 @@ class TrainingDatasetMetadata:
                 f for f in trainset_path.iterdir() if re.match(r"Documentation_data-.+shuffle[0-9]+\.pickle", f.name)
             ]
         else:
-            trainset_path.mkdir(parents=True)
+            trainset_path.mkdir(parents=True, exist_ok=True)
             shuffle_docs = []
 
         prefix = cfg["Task"] + cfg["date"]

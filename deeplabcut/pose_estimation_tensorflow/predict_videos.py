@@ -1017,7 +1017,7 @@ def AnalyzeVideo(
         metadata = {"data": dictionary}
 
         print(f"Saving results in {destfolder}...")
-        dataname = str(Path(destfolder) / (vname + DLCscorer + ".h5"))
+        dataname = Path(destfolder) / (vname + DLCscorer + ".h5")
         auxiliaryfunctions.save_data(
             PredictedData[:nframes, :],
             metadata,
@@ -1572,7 +1572,7 @@ def convert_detections2tracklets(
                 destfolder = videofolder
             auxiliaryfunctions.attempt_to_make_folder(destfolder)
             vname = Path(video).stem
-            dataname = str(Path(destfolder) / (vname + DLCscorer + ".h5"))
+            dataname = Path(destfolder) / (vname + DLCscorer + ".h5")
             data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(dataname)
             if track_method == "ellipse":
                 method = "el"
@@ -1580,7 +1580,7 @@ def convert_detections2tracklets(
                 method = "bx"
             else:
                 method = "sk"
-            trackname = dataname.split(".h5")[0] + f"_{method}.pickle"
+            trackname = dataname.with_name(f"{dataname.stem}_{method}.pickle")
             # NOTE: If dataname line above is changed then line below is obsolete?
             # trackname = trackname.replace(videofolder, destfolder)
             if Path(trackname).is_file() and not overwrite:  # TODO: check if metadata are identical (same parameters!)
@@ -1638,7 +1638,7 @@ def convert_detections2tracklets(
                     identity_only=identity_only,
                     min_n_links=inferencecfg["minimalnumberofconnections"],
                 )
-                assemblies_filename = dataname.split(".h5")[0] + "_assemblies.pickle"
+                assemblies_filename = dataname.with_name(dataname.stem + "_assemblies.pickle")
                 if not Path(assemblies_filename).exists() or overwrite:
                     if calibrate:
                         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)

@@ -33,46 +33,57 @@ print(available_detectors())
 Several architectures are currently implemented in DeepLabCut PyTorch (more will come,
 and you can add more easily in our new model registry). Also check out the explanations of bottom-up/top-down below.
 
-**ResNets**
+### ResNets
 
 - Adapted from [He, Kaiming, et al. "Deep residual learning for image recognition." Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2016.](https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html) and [Insafutdinov, Eldar et al. "DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model". European Conference on Computer Vision (ECCV) 2016.]
 - Current bottom-up variants are `resnet_50`, `resnet_101`
 - Current top-down variants are `top_down_resnet_101`, `top_down_resnet_50`
 
-**HRNet**
+### HRNet
 
 - Adapted from [Wang, Jingdong, et al. "Deep high-resolution representation learning for visual recognition." IEEE transactions on pattern analysis and machine intelligence 43.10 (2020): 3349-3364.](https://arxiv.org/abs/1908.07919)
 - Current variants are `hrnet_w18`, `hrnet_w32`, `hrnet_w48`,
 - Current top-down variants are `top_down_hrnet_w18`, `top_down_hrnet_w32`, `top_down_hrnet_w48`
 - Slower but typically more powerful than ResNets
 
-**DEKR**
+### DEKR
 
 - Adapted from [Geng, Zigang et al. "Bottom-Up Human Pose Estimation Via Disentangled Keypoint Regression." Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2021.](https://openaccess.thecvf.com/content/CVPR2021/papers/Geng_Bottom-Up_Human_Pose_Estimation_via_Disentangled_Keypoint_Regression_CVPR_2021_paper.pdf)
 - This model is a bottom-up model using HRNet as a backbone. It learns to predict the center of each animal, and predicts the offset between each animal center and their keypoints
 - Current variants that are implemented (from smallest to largest): `dekr_w18`, `dekr_w32`, `dekr_w48`
 - Note, this is a powerful multi-animal model but very heavy (slow)
 
-**BUCTD**
+### BUCTD
 
 - Adapted from [Zhou\*, Stoffl\*, Mathis, Mathis. "Rethinking Pose Estimation in Crowds: Overcoming the Detection Information Bottleneck and Ambiguity." Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV). 2023](https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estimation_in_Crowds_Overcoming_the_Detection_Information_Bottleneck_ICCV_2023_paper.pdf)
 - [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/rethinking-pose-estimation-in-crowds/pose-estimation-on-crowdpose)](https://paperswithcode.com/sota/pose-estimation-on-crowdpose?p=rethinking-pose-estimation-in-crowds)
 - This is a top-performing multi-animal method that combines the strengths of bottom-up and top-down approaches, and delivers exceptional performance on humans too (which are also animals)
 - It can be used with a diverse set of architectures. Current variants are: `ctd_coam_w32`, `ctd_coam_w48`/`ctd_coam_w48_human`, `ctd_prenet_hrnet_w32`, `ctd_prenet_hrnet_w48`, `ctd_prenet_rtmpose_s`, `ctd_prenet_rtmpose_m`, `ctd_prenet_rtmpose_x`/`ctd_prenet_rtmpose_x_human`
 
-**DLCRNet**
+### DLCRNet
 
 - From [Lauer, Zhou, et al. "Multi-animal pose estimation, identification and tracking with DeepLabCut." Nature Methods 19.4 (2022): 496-504.](https://www.nature.com/articles/s41592-022-01443-0)
 - This model uses a multi-scale variant of a ResNet as a backbone, and part-affinity fields to assemble individuals
 - Variants: `dlcrnet_stride16_ms5`, `dlcrnet_stride32_ms5`
 
-**RTMPose**
+### CSPNeXt
+
+- From [Jiang, Tao et al. "RTMPose: Real-Time Multi-Person Pose Estimation based on MMPose"](https://arxiv.org/abs/2303.07399) and ["CSPNeXt: A new efficient token hybrid backbone"](https://www.sciencedirect.com/science/article/abs/pii/S0952197624000447)
+- CSPNeXt is a convolutional backbone designed for efficient computer vision models.
+  - It can be selected directly as a backbone
+  - It is also used as the backbone of other model architectures, including
+    RTMPose.
+  - When CSPNeXt is selected directly, it will be combined with the standard head
+    appropriate for the project type.
+- Available CSPNeXt variants include `cspnext_s`, `cspnext_m`, and `cspnext_x`.
+
+### RTMPose
 
 - From [Jiang, Tao et al. "RTMPose: Real-Time Multi-Person Pose Estimation based on MMPose"](https://arxiv.org/abs/2303.07399)
 - Top-down pose estimation model using a fast CSPNeXt backbone with a SimCC-style head
 - Variants: `rtmpose_s`, `rtmpose_m`, `rtmpose_x`
 
-**AnimalTokenPose**
+### AnimalTokenPose
 
 - Adapted from [Li, Yanjie, et al. "Tokenpose: Learning keypoint tokens for human pose estimation." Proceedings of the IEEE/CVF International conference on computer vision. 2021.](https://arxiv.org/abs/2104.03516) as in [Ye et al. "SuperAnimal pretrained pose estimation models for behavioral analysis." Nature Communications. 2024](https://arxiv.org/abs/2203.07436)
 - One variant is implemented as: `animal_tokenpose_base` for video inference only (we don't support directly training this within deeplabcut)

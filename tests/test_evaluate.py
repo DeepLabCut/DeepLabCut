@@ -12,15 +12,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import deeplabcut.pose_estimation_tensorflow as pet
-from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
-    get_available_requested_snapshots,
-    get_snapshots_by_index,
-)
-
 tf = pytest.importorskip(
     "tensorflow",
     reason="TensorFlow not installed (use a project extra such as .[tf])",
+)
+
+import deeplabcut.pose_estimation_tensorflow as pet  # noqa: E402
+from deeplabcut.pose_estimation_tensorflow.core.evaluate import (  # noqa: E402
+    get_available_requested_snapshots,
+    get_snapshots_by_index,
 )
 
 

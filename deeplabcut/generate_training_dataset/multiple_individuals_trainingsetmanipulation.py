@@ -597,8 +597,6 @@ def convert_cropped_to_standard_dataset(
 
     from deeplabcut.utils import read_plainconfig, write_config
 
-    from . import trainingsetmanipulation
-
     cfg = auxiliaryfunctions.read_config(config_path)
     videos_orig = cfg.pop("video_sets_original")
     is_cropped = cfg.pop("croppedtraining")
@@ -616,7 +614,7 @@ def convert_cropped_to_standard_dataset(
         print("Deleting crops...")
         data_path = Path(project_path) / "labeled-data"
         for video in cfg["video_sets"]:
-            _, filename, _ = trainingsetmanipulation._robust_path_split(video)
+            filename = Path(video).stem
             if "_cropped" in video:  # One can never be too safe...
                 shutil.rmtree(data_path / filename, ignore_errors=True)
 

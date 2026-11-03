@@ -23,7 +23,6 @@ from deeplabcut.gui.components import (
     _create_horizontal_layout,
     _create_label_widget,
 )
-from deeplabcut.gui.widgets import ConfigEditor
 from deeplabcut.utils.auxiliaryfunctions import GetScorerName
 
 
@@ -195,8 +194,7 @@ class RefineTracklets(DefaultTab):
         self.root.logger.info(f"Number of animals in video set to {num_animals}")
 
     def open_inferencecfg_editor(self):
-        editor = ConfigEditor(self.root.inference_cfg_path)
-        editor.show()
+        self._open_config_editor(self.root.inference_cfg_path)
 
     def create_tracks(self):
         deeplabcut.stitch_tracklets(

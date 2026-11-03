@@ -303,7 +303,7 @@ class DictViewer(QtWidgets.QWidget):
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.tree)
         layout2 = QtWidgets.QVBoxLayout()
-        layout2.addWidget(QtWidgets.QLabel(filename))
+        layout2.addWidget(QtWidgets.QLabel(os.fspath(filename)))
         layout2.addWidget(self.tree)
         self.setLayout(layout2)
 
@@ -432,7 +432,7 @@ class ConfigEditor(QtWidgets.QDialog):
         self.config_path = Path(config_path).absolute()
         config_name = self.config_path.name
         if config_name == "config.yaml":
-            self.read_func = auxiliaryfunctions.read_config
+            self.read_func = auxiliaryfunctions.read_plainconfig
             self.write_func = auxiliaryfunctions.write_config
         else:
             self.read_func = auxiliaryfunctions.read_plainconfig

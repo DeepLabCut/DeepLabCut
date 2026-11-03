@@ -31,7 +31,7 @@ from deeplabcut.gui.components import (
     _create_vertical_layout,
 )
 from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
-from deeplabcut.gui.widgets import ConfigEditor, launch_napari
+from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -120,8 +120,7 @@ class EvaluateNetwork(DefaultTab):
         layout.addWidget(self.shuffle_display)
 
     def open_inferencecfg_editor(self):
-        editor = ConfigEditor(self.root.inference_cfg_path)
-        editor.show()
+        self._open_config_editor(self.root.inference_cfg_path)
 
     def plot_maps(self):
         shuffle = self.root.shuffle_value
@@ -181,41 +180,44 @@ class EvaluateNetwork(DefaultTab):
             self.root.logger.info(f"Use selected bodyparts only: {self.bodyparts_list_widget.selected_bodyparts}")
 
     def evaluate_network(self):
-        config_path = self.root.config_path
-        shuffle = self.root.shuffle_value
-        plotting = self.plot_predictions.isChecked()
+        try:
+            config_path = self.root.config_path
+            shuffle = self.root.shuffle_value
+            plotting = self.plot_predictions.isChecked()
 
-        bodyparts_to_use = "all"
-        if (
-            len(self.root.all_bodyparts) != len(self.bodyparts_list_widget.selected_bodyparts)
-        ) and not self.use_all_bodyparts.isChecked():
-            bodyparts_to_use = self.bodyparts_list_widget.selected_bodyparts
+            bodyparts_to_use = "all"
+            if (
+                len(self.root.all_bodyparts) != len(self.bodyparts_list_widget.selected_bodyparts)
+            ) and not self.use_all_bodyparts.isChecked():
+                bodyparts_to_use = self.bodyparts_list_widget.selected_bodyparts
 
-        deeplabcut.evaluate_network(
-            config_path,
-            Shuffles=[shuffle],
-            plotting=plotting,
-            show_errors=True,
-            comparisonbodyparts=bodyparts_to_use,
-        )
-
-        if plotting:
-            project_cfg = self.root.cfg
-            eval_folder = auxiliaryfunctions.get_evaluation_folder(
-                trainFraction=project_cfg["TrainingFraction"][0],
-                shuffle=shuffle,
-                cfg=project_cfg,
-            )
-            scorer, _ = auxiliaryfunctions.get_scorer_name(
-                cfg=project_cfg,
-                shuffle=shuffle,
-                trainFraction=project_cfg["TrainingFraction"][0],
+            deeplabcut.evaluate_network(
+                config_path,
+                Shuffles=[shuffle],
+                plotting=plotting,
+                show_errors=True,
+                comparisonbodyparts=bodyparts_to_use,
             )
 
-            image_dir = Path(self.root.project_folder) / eval_folder / f"LabeledImages_{scorer}"
-            labeled_images = [str(p) for p in image_dir.rglob("*.png")]
-            if len(labeled_images) > 0:
-                _ = launch_napari(labeled_images)
+            if plotting:
+                project_cfg = self.root.cfg
+                eval_folder = auxiliaryfunctions.get_evaluation_folder(
+                    trainFraction=project_cfg["TrainingFraction"][0],
+                    shuffle=shuffle,
+                    cfg=project_cfg,
+                )
+                scorer, _ = auxiliaryfunctions.get_scorer_name(
+                    cfg=project_cfg,
+                    shuffle=shuffle,
+                    trainFraction=project_cfg["TrainingFraction"][0],
+                )
+
+                image_dir = Path(self.root.project_folder) / eval_folder / f"LabeledImages_{scorer}"
+                labeled_images = [str(p) for p in image_dir.rglob("*.png")]
+                if len(labeled_images) > 0:
+                    _ = launch_napari(labeled_images)
+        except Exception as error:
+            self.root.show_task_error(error, self.root.pose_cfg_path)
 
     @Slot(Engine)
     def _on_engine_change(self, engine: Engine) -> None:

@@ -436,15 +436,15 @@ def video_inference_superanimal(
 
             # we prepare the pseudo dataset in the same folder of the target video
             pseudo_dataset_folder = video_path.with_name(f"pseudo_{video_path.stem}")
-            pseudo_dataset_folder.mkdir(exist_ok=True)
+            pseudo_dataset_folder.mkdir(exist_ok=True, parents=True)
             model_folder = pseudo_dataset_folder / "checkpoints"
-            model_folder.mkdir(exist_ok=True)
+            model_folder.mkdir(exist_ok=True, parents=True)
 
             image_folder = pseudo_dataset_folder / "images"
             if image_folder.exists():
                 print(f"{image_folder} exists, skipping the frame extraction")
             else:
-                image_folder.mkdir()
+                image_folder.mkdir(exist_ok=True, parents=True)
                 print(f"Video frames being extracted to {image_folder} for video adaptation.")
                 video_to_frames(video_path, pseudo_dataset_folder, cropping=cropping)
 
@@ -455,7 +455,7 @@ def video_inference_superanimal(
                     f"Delete the folder if you want to re-construct pseudo annotations"
                 )
             else:
-                anno_folder.mkdir()
+                anno_folder.mkdir(exist_ok=True, parents=True)
 
                 if dest_folder is None:
                     pseudo_anno_dir = video_path.parent

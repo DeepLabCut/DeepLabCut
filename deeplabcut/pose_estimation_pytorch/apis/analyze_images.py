@@ -24,7 +24,6 @@ import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 from deeplabcut.core.engine import Engine
 from deeplabcut.modelzoo.utils import get_superanimal_colormaps
-from deeplabcut.pose_estimation_pytorch.apis.ctd import get_condition_provider
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     build_predictions_dataframe,
     get_detector_inference_runner,
@@ -35,8 +34,8 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_uid,
     parse_snapshot_index_for_analysis,
 )
+from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import ConditionsModelConfig, ConditionsShuffleConfig
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
-from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     COCO_PERSON_CATEGORY_ID,
 )
@@ -249,7 +248,7 @@ def analyze_images(
     pcutoff: float | None = None,
     bbox_pcutoff: float | None = None,
     plot_skeleton: bool = True,
-    ctd_conditions: dict | CondFromModel | None = None,
+    ctd_conditions: dict | ConditionsShuffleConfig | ConditionsModelConfig | None = None,
 ) -> dict[str, dict]:
     """Runs analysis on images using a pose model.
 
@@ -281,14 +280,11 @@ def analyze_images(
             None or in (0, 1). If None, it is read from the project configuration file.
         plot_skeleton: If a skeleton is defined in the model configuration file, whether
             to plot the skeleton connecting the predicted bodyparts on the images.
-        ctd_conditions: Only for CTD models. If None, the configuration for the
-            condition provider will be loaded from the pytorch_config file (under the
-            "inference": "conditions"). If the ctd_conditions is given as a dict, creates a
-            CondFromModel from the dict. Otherwise, a CondFromModel can be given
-            directly. Example configuration:
-                ```
-                ctd_conditions = {"shuffle": 17, "snapshot": "snapshot-best-190.pt"}
-                ```
+        ctd_conditions: Only for CTD models. Specifies the BU model used to generate
+            conditions. If None, loaded from the pytorch_config file (under
+            ``"inference": "conditions"``). Accepts a raw dict or a typed
+            ``ConditionsModelConfig`` / ``ConditionsShuffleConfig``. A BU model
+            is required for live inference; file / path conditions not valid.
 
     Returns:
         A dictionary mapping each image filename to the different types of predictions
@@ -309,6 +305,12 @@ def analyze_images(
     model_cfg = PoseConfig.from_any(model_cfg_path)
     pose_task = Task(model_cfg["method"])
 
+    if pose_task == Task.COND_TOP_DOWN:
+        ctd_conditions = model_cfg.inference.conditions if ctd_conditions is None else ctd_conditions
+        if ctd_conditions is None:
+            raise ValueError("CTD conditions are required for image analysis with cond-top-down models")
+        ctd_conditions = ConditionsModelConfig.resolve_from_conditions(ctd_conditions, config=config)
+
     # get the snapshots to analyze images with
     snapshot_index, detector_snapshot_index = parse_snapshot_index_for_analysis(
         cfg, model_cfg, snapshot_index, detector_snapshot_index
@@ -317,23 +319,6 @@ def analyze_images(
     detector_snapshot = None
     if detector_snapshot_index is not None:
         detector_snapshot = get_model_snapshots(detector_snapshot_index, train_folder, Task.DETECT)[0]
-
-    # Load the BU model for the conditions provider
-    cond_provider = None
-    if pose_task == Task.COND_TOP_DOWN:
-        if ctd_conditions is None:
-            cond_provider = get_condition_provider(
-                condition_cfg=model_cfg["inference"]["conditions"],
-                config=config,
-            )
-        # TODO @deruyter92: decide on typed / plain dict
-        elif isinstance(ctd_conditions, dict):
-            cond_provider = get_condition_provider(
-                condition_cfg=ctd_conditions,
-                config=config,
-            )
-        else:
-            cond_provider = ctd_conditions
 
     predictions = analyze_image_folder(
         model_cfg=model_cfg,
@@ -344,7 +329,7 @@ def analyze_images(
         device=device,
         max_individuals=max_individuals,
         progress_bar=progress_bar,
-        cond_provider=cond_provider,
+        cond_provider=ctd_conditions,
     )
 
     if not predictions:
@@ -431,7 +416,7 @@ def analyze_image_folder(
     max_individuals: int | None = None,
     progress_bar: bool = True,
     filtered_detector_config: dict | None = None,
-    cond_provider: CondFromModel | None = None,
+    cond_provider: ConditionsModelConfig | None = None,
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
     """Runs pose inference on a folder of images and returns the predictions.
 
@@ -451,7 +436,9 @@ def analyze_image_folder(
         progress_bar: Whether to display a progress bar when running inference.
         filtered_detector_config: If using a filtered torchvision detector instead of a saved detector snapshot,
             specify the filtered detector configuration
-        cond_provider: If using a CTD model - this parameter is needed to provide the conditions
+        cond_provider: If using a CTD model - needed to configure the BU model for generating conditions. A
+            ``ConditionsModelConfig`` is required (resolve shuffle refs first). File conditions are
+            evaluation-only and not valid here.
 
     Returns:
         A dictionary mapping each image filename to the different types of predictions
@@ -463,9 +450,16 @@ def analyze_image_folder(
     model_cfg = PoseConfig.from_any(model_cfg)
 
     pose_task = Task(model_cfg["method"])
+    if pose_task == Task.COND_TOP_DOWN:
+        if not isinstance(cond_provider, ConditionsModelConfig):
+            raise TypeError(
+                "A ``ConditionsModelConfig`` must be specified for image folder analysis with cond-top-down models. Got"
+                f" type(cond_provider)={type(cond_provider).__name__!r}. Please correctly specify ``cond_provider``."
+            )
+
     if pose_task == Task.TOP_DOWN and detector_path is None and filtered_detector_config is None:
         raise ValueError(
-            "A detector path or filtered_detector_config must be specified for image analysis using top-down models"
+            "A detector path or filtered_detector_config must be specified for image analysis using top-down models."
             " Please specify the `detector_path` parameter or the `filtered_detector_config` parameter."
         )
 
@@ -474,12 +468,6 @@ def analyze_image_folder(
 
     if device is None:
         device = resolve_device(model_cfg)
-
-    if pose_task == Task.COND_TOP_DOWN and cond_provider is None:
-        raise ValueError(
-            "A conditions provider must be specified for image analysis when using cond-top-down models"
-            " Please specify the `cond_provider` parameter."
-        )
 
     pose_runner = get_pose_inference_runner(
         model_config=model_cfg,
@@ -551,7 +539,7 @@ def plot_images_coco(
     detector_path: str | Path | None = None,
     device: str | None = None,
     max_individuals: int | None = None,
-    cond_provider: CondFromModel | None = None,
+    cond_provider: ConditionsModelConfig | None = None,
 ) -> list[dict]:
     """Runs pose inference on a folder of images from a COCO dataset, and plots all
     predicted keypoints and bounding boxes.

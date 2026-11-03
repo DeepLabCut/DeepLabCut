@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-@deprecated(replacement="pose_estimation_pytorch.config.TestConfig.build", since="3.1")
+@deprecated(replacement="pose_estimation_pytorch.config.TestConfig.build", since="3.0.1")
 def make_pytorch_test_config(
     model_config: PoseConfig | dict | str | Path,
     test_config_path: str | Path,
@@ -49,7 +49,7 @@ def make_pytorch_test_config(
     return TestConfig.build(model_config, test_config_path=test_config_path, save=save)
 
 
-@deprecated(replacement="pose_estimation_pytorch.config.PoseConfig.build", since="3.1")
+@deprecated(replacement="pose_estimation_pytorch.config.PoseConfig.build", since="3.0.1")
 def make_pytorch_pose_config(
     project_config: ProjectConfig | dict | Path | str,
     pose_config_path: str | Path,
@@ -74,7 +74,7 @@ def make_pytorch_pose_config(
     )
 
 
-@deprecated(replacement="pose_estimation_pytorch.config.PoseMetadata", since="3.1")
+@deprecated(replacement="pose_estimation_pytorch.config.PoseMetadata", since="3.0.1")
 def make_basic_project_config(
     dataset_path: Path | str,
     bodyparts: list[str],
@@ -133,8 +133,9 @@ def build_pose_config_defaults(
             It defines the conditions that will be used with the CTD model.
             It can be either:
                 * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
+                  Valid for both evaluation and live analyze.
                 * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5
-                predictions file.
+                predictions file. Evaluation-only — not valid for ``analyze_images`` / ``analyze_videos``.
                 * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which
                 respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
 
@@ -366,9 +367,11 @@ def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tupl
         ctd_conditions: Only for using conditional-top-down (CTD) models. It defines
             the conditions that will be used with the CTD model. It can be:
             * A shuffle number (ctd_conditions: int), which must correspond to a
-                bottom-up (BU) network type.
+                bottom-up (BU) network type. Valid for both evaluation and live
+                analyze (resolved to a BU model at runtime).
             * A predictions file path (ctd_conditions: string | Path), which must
-                correspond to a .json or .h5 predictions file.
+                correspond to a .json or .h5 predictions file. Evaluation-only —
+                ``analyze_images`` / ``analyze_videos`` reject file conditions.
             * A shuffle number and a particular snapshot (ctd_conditions:
                 tuple[int, str] | tuple[int, int]), which respectively correspond to a
                 bottom-up (BU) network type and a particular snapshot name or index.

@@ -140,6 +140,8 @@ class PoseConfig(DLCVersionedConfig):
             weight_init (WeightInitialization | None, optional): The weight initialization object or path.
             ctd_conditions (int | str | Path | tuple[int, str] | tuple[int, int] | None, optional):
                 The conditional top-down conditions. Only required for CTD models.
+                A predictions file path is evaluation-only; shuffle refs work for
+                both evaluation and live analyze.
             save (bool, optional): Whether to save the pose configuration.
 
         Note:

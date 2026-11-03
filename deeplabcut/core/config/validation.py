@@ -1,9 +1,10 @@
 from collections.abc import Sequence
-from typing import Annotated, Any
+from typing import Annotated, Any, TypeAlias, TypeVar
 
 import numpy as np
 from numpy.typing import NDArray
 from pydantic import AfterValidator, BeforeValidator, Field, GetPydanticSchema, InstanceOf
+from pydantic_core import PydanticUseDefault
 
 
 def _describe(value: float, name: str | None = None) -> str:
@@ -64,6 +65,19 @@ def _bodypart_pair(values: Sequence[Any]) -> list[str]:
         raise ValueError(f"Each bodypart pair must contain exactly two bodyparts, got {len(values)}")
     return list(unique_values(values))
 
+
+def _use_default_if_none(value: Any) -> Any:
+    """Fall back to the field's declared default when the input value is None."""
+    if value is None:
+        raise PydanticUseDefault
+    return value
+
+
+T = TypeVar("T")
+
+# Normalize an explicit ``null`` to the field's default,
+# e.g. ``box_score_thresh: DefaultIfNone[Fraction] = 0.01``
+DefaultIfNone: TypeAlias = Annotated[T, BeforeValidator(_use_default_if_none)]
 
 Fraction = Annotated[float, Field(ge=0.0, le=1.0)]
 UniqueStrList = Annotated[list[str], AfterValidator(unique_values)]

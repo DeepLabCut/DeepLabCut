@@ -44,11 +44,9 @@ from tensorpack.dataflow.imgaug.transform import CropTransform
 from tensorpack.dataflow.parallel import MultiProcessRunner, MultiProcessRunnerZMQ
 from tensorpack.utils.utils import get_rng
 
-from deeplabcut.utils.conversioncode import robust_split_path
-
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
-from .utils import Batch, data_to_input
+from .utils import Batch, _normalize_image_path, data_to_input
 
 
 def img_to_bgr(im_path):
@@ -115,12 +113,7 @@ class Pose(RNGDataFlow):
             item = DataItem()
             item.image_id = i
             base = str(self.cfg["project_path"])
-            im_path = sample[0][0]
-            if isinstance(im_path, str):
-                im_path = robust_split_path(im_path)
-            else:
-                im_path = [s.strip() for s in im_path]
-            item.im_path = str(Path(base).joinpath(*im_path))
+            item.im_path = str(Path(base) / _normalize_image_path(sample[0][0]))
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]

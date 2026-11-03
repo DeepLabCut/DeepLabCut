@@ -12,8 +12,10 @@
 
 import numpy as np
 import tensorflow as tf
-from scipy.ndimage import measurements
+from scipy.ndimage import center_of_mass, label
 from skimage.feature import peak_local_max
+
+_trapz = np.trapezoid if hasattr(np, "trapezoid") else np.trapz  # NumPy 2.0+ compat; drop once NumPy 1 unsupported
 
 
 def extract_cnn_output(outputs_np, cfg):
@@ -120,7 +122,7 @@ def compute_edge_costs(
         xy[..., 1],
         edge_inds.reshape((-1, 1)),
     ]
-    integ = np.trapz(y, xy[..., ::-1], axis=1)
+    integ = _trapz(y, xy[..., ::-1], axis=1)
     affinities = np.linalg.norm(integ, axis=1).astype(np.float32)
     # unit_vecs = vecs / lengths[:, np.newaxis]
     # affinities = np.squeeze(y @ np.expand_dims(unit_vecs, axis=2)).sum(axis=1)
@@ -263,8 +265,8 @@ def find_local_maxima(scmap, radius, threshold):
     peak_idx = peak_local_max(scmap, min_distance=radius, threshold_abs=threshold, exclude_border=False)
     grid = np.zeros_like(scmap, dtype=bool)
     grid[tuple(peak_idx.T)] = True
-    labels = measurements.label(grid)[0]
-    xy = measurements.center_of_mass(grid, labels, range(1, np.max(labels) + 1))
+    labels = label(grid)[0]
+    xy = center_of_mass(grid, labels, range(1, np.max(labels) + 1))
     return np.asarray(xy, dtype=int).reshape((-1, 2))
 
 

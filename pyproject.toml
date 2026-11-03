@@ -4,7 +4,7 @@ requires = [ "setuptools>=61" ]
 
 [project]
 name = "deeplabcut"
-version = "3.0.0"
+version = "3.0.2"
 description = "Markerless pose-estimation of user-defined features with deep learning"
 readme = { file = "README.md", content-type = "text/markdown" }
 keywords = [
@@ -37,11 +37,11 @@ dependencies = [
   "h5py>=3.15.1; platform_system=='Darwin'",
   "huggingface-hub>=0.23",
   "imageio-ffmpeg",
-  "imgaug>=0.4",
-  "matplotlib>=3.3,<3.9,!=3.7,!=3.7.1",
+  "matplotlib>=3.3,!=3.7,!=3.7.1",
   "networkx>=2.6",
-  "numba>=0.54",
-  "numpy>=1.18.5,<2",
+  "numba>=0.60",
+  "numpy>=1.22.4",
+  "opencv-python-headless>=4.10.0.84",
   "packaging>=26",
   # Migration to pandas 3.0 is tracked in https://github.com/DeepLabCut/DeepLabCut/issues/3362.
   "pandas[hdf5,performance]>=2.2,<3",
@@ -72,26 +72,21 @@ gui = [
   "pyside6; platform_system!='Linux' or platform_machine!='x86_64'",
   # Avoid 6.10.0 only on Linux x86_64 (fails for older glib versions)
   "pyside6<6.10; platform_system=='Linux' and platform_machine=='x86_64'",
-  "qdarkstyle==3.1",
+  "qdarkstyle==3.1; platform_system=='Linux' and platform_machine=='x86_64'",
+  "qdarkstyle>=3.1; platform_system!='Linux' or platform_machine!='x86_64'",
 ]
 openvino = [ "openvino-dev==2022.1" ]
 docs = [
   "jupyter-book==1.0.4.post1",
   "sphinxcontrib-mermaid",
 ]
-dev-docs = [
-  "black>=24",
-  "mike>=2.1",
-  "mkdocs>=1.6",
-  "mkdocs-api-autonav>=0.1",
-  "mkdocs-autorefs>=1.2",
-  "mkdocs-jupyter>=0.25",
-  "mkdocs-material[imaging]>=9.5",
-  "mkdocstrings[python]>=0.27",
-]
 fmpose3d = [ "fmpose3d>=0.0.8" ]
 # Use only one of [tf, tf-cu11, tf-cu12, tf-latest]. Do not combine extras.
+# NumPy <2 is declared where TF itself does not. TF 2.15–2.18 cap NumPy themselves.
 tf = [
+  "imgaug>=0.4",
+  # py<3.12 may resolve tensorflow 2.14.0 (no NumPy upper bound on PyPI).
+  "numpy>=1.22.4,<2; python_version<'3.12'",
   "protobuf<7",
   "tensorflow>=2.12,<2.16; python_version<'3.12'",
   "tensorflow>=2.16.1,<2.18; python_version>='3.12'",
@@ -104,6 +99,9 @@ tf = [
   "tf-slim>=1.1",
 ]
 tf-cu11 = [
+  "imgaug>=0.4",
+  # tensorflow==2.14 resolves to 2.14.0, which has no NumPy upper bound.
+  "numpy>=1.22.4,<2",
   "protobuf<7",
   "tensorflow==2.14",
   "tensorflow-io-gcs-filesystem==0.31; platform_system=='Windows'",
@@ -115,7 +113,9 @@ tf-cu11 = [
   "torchvision<0.16",
 ]
 tf-cu12 = [
+  "imgaug>=0.4",
   "protobuf<7",
+  # No numpy cap needed: tensorflow 2.18 declares `numpy<2.1.0,>=1.26.0`
   "tensorflow==2.18",
   "tensorflow-metal==1.2; platform_system=='Darwin'",
   "tensorpack==0.11",
@@ -125,6 +125,7 @@ tf-cu12 = [
   "torchvision<0.26",
 ]
 tf-latest = [
+  "imgaug>=0.4",
   "protobuf<7",
   "tensorflow>=2.18",
   "tensorflow-metal>=1.2; platform_system=='Darwin'",
@@ -134,6 +135,9 @@ tf-latest = [
 ]
 # apple_mchips is kept for older systems, prefer [tf] in new projects.
 apple_mchips = [
+  "imgaug>=0.4; platform_system=='Darwin'",
+  # Same TF 2.14.0 hole as [tf] on py<3.12.
+  "numpy>=1.22.4,<2; platform_system=='Darwin' and python_version<'3.12'",
   "protobuf<7; platform_system=='Darwin'",
   "tensorflow>=2.12,<2.15; platform_system=='Darwin' and python_version<'3.12'",
   "tensorflow>=2.15,<2.18; platform_system=='Darwin' and python_version>='3.12'",
@@ -153,6 +157,7 @@ Repository = "https://github.com/DeepLabCut/DeepLabCut"
 Documentation = "https://deeplabcut.github.io/DeepLabCut/README.html"
 
 [dependency-groups]
+# Groups, not extras:  Install with `pip install --group <name>`
 dev = [
   "coverage",
   "nbformat>5",
@@ -160,6 +165,27 @@ dev = [
   "pytest",
   "pytest-cov",
   "ruff",
+]
+dev-docs = [
+  "black>=24",
+  "mike>=2.1",
+  "mkdocs>=1.6",
+  "mkdocs-api-autonav>=0.1",
+  "mkdocs-autorefs>=1.2",
+  "mkdocs-jupyter>=0.25",
+  "mkdocs-material[imaging]>=9.5",
+  "mkdocstrings[python]>=0.27",
+]
+gui-dev = [
+  "pytest-qt",
+]
+knowledge-index = [
+  # Keep these aligned with the majors the docs toolchain resolves to:
+  # ids, anchors, signatures and symbol kinds are derived through them.
+  "docutils>=0.20,<0.22",
+  "griffelib>=2,<3",
+  "markdown-it-py>=3,<4",
+  "pyyaml",
 ]
 
 [tool.setuptools]
@@ -229,6 +255,8 @@ generate_python_version_classifiers = true
 table_format = "long"
 
 [tool.pytest.ini_options]
+# Put repo root on sys.path, so pytest can import `tools`
+pythonpath = [ "." ]
 markers = [
   "require_models: mark test as requiring models to run",
   "fmpose3d: tests for fmpose3d integration",

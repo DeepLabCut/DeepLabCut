@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 
 import deeplabcut.core.visualization as visualization
-from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.config import read_config
 from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
@@ -211,7 +211,7 @@ def train_network(
     config = Path(config)
     if engine is None:
         engine = get_shuffle_engine(
-            _load_config(config),
+            read_config(config),
             trainingsetindex=trainingsetindex,
             shuffle=shuffle,
         )
@@ -292,7 +292,7 @@ def return_train_network_path(
     config = Path(config)
     if engine is None:
         engine = get_shuffle_engine(
-            _load_config(config),
+            read_config(config),
             trainingsetindex=trainingsetindex,
             shuffle=shuffle,
             modelprefix=modelprefix,
@@ -431,7 +431,7 @@ def evaluate_network(
     """
     config = Path(config)
     if engine is None:
-        cfg = _load_config(config)
+        cfg = read_config(config)
         engines = set()
         for shuffle in shuffles:
             engines.add(
@@ -551,7 +551,7 @@ def return_evaluate_network_data(
     config = Path(config)
     if engine is None:
         engine = get_shuffle_engine(
-            _load_config(config),
+            read_config(config),
             trainingsetindex=trainingsetindex,
             shuffle=shuffle,
             modelprefix=modelprefix,
@@ -603,6 +603,7 @@ def analyze_videos(
     identity_only: bool = False,
     use_openvino: str | None = None,
     engine: Engine | None = None,
+    overwrite: bool = False,
     **torch_kwargs,
 ):
     """Makes prediction based on a trained network.
@@ -682,6 +683,8 @@ def analyze_videos(
             ``stitch_tracklets`` afterwards, in order to obtain the h5 file. Defaults to True.
         identity_only (bool, optional): If ``True`` and animal identity was learned by the model, assembly and tracking
             rely exclusively on identity prediction. Defaults to False.
+        overwrite (bool, optional): Only for the PyTorch engine. Re-analyze videos for which predictions already exist.
+            By default, a video whose output file is already present is skipped. Defaults to False.
         calibrate (bool, optional): If ``True``, use training data to calibrate the animal assembly procedure. This
             improves its robustness to wrong body part links, but requires very little
             missing data. Defaults to False.
@@ -779,7 +782,7 @@ def analyze_videos(
     destfolder = _coerce_optional_path(destfolder)
     if engine is None:
         engine = get_shuffle_engine(
-            _load_config(config),
+            read_config(config),
             trainingsetindex=trainingsetindex,
             shuffle=shuffle,
             modelprefix=modelprefix,
@@ -850,7 +853,7 @@ def analyze_videos(
             animal_names=animal_names,
             calibrate=calibrate,
             identity_only=identity_only,
-            overwrite=False,
+            overwrite=overwrite,
             cropping=cropping,
             **torch_kwargs,
         )
@@ -924,7 +927,7 @@ def create_tracking_dataset(
     destfolder = _coerce_optional_path(destfolder)
     if engine is None:
         engine = get_shuffle_engine(
-            _load_config(config),
+            read_config(config),
             trainingsetindex=trainingsetindex,
             shuffle=shuffle,
             modelprefix=modelprefix,
@@ -1074,7 +1077,7 @@ def analyze_images(
             )
     """
     engine = get_shuffle_engine(
-        _load_config(config),
+        read_config(config),
         trainingsetindex=trainingsetindex,
         shuffle=shuffle,
         modelprefix=modelprefix,
@@ -1168,7 +1171,7 @@ def analyze_time_lapse_frames(
     directory = Path(directory)
     if engine is None:
         engine = get_shuffle_engine(
-            _load_config(config),
+            read_config(config),
             trainingsetindex=trainingsetindex,
             shuffle=shuffle,
             modelprefix=modelprefix,
@@ -1286,7 +1289,7 @@ def convert_detections2tracklets(
     destfolder = _coerce_optional_path(destfolder)
     if engine is None:
         engine = get_shuffle_engine(
-            _load_config(config),
+            read_config(config),
             trainingsetindex=trainingsetindex,
             shuffle=shuffle,
             modelprefix=modelprefix,
@@ -1385,7 +1388,7 @@ def extract_maps(
     config = Path(config)
     if engine is None:
         engine = get_shuffle_engine(
-            _load_config(config),
+            read_config(config),
             trainingsetindex=trainingsetindex,
             shuffle=shuffle,
             modelprefix=modelprefix,
@@ -1538,7 +1541,7 @@ def extract_save_all_maps(
     dest_folder = _coerce_optional_path(dest_folder)
     if engine is None:
         engine = get_shuffle_engine(
-            _load_config(config),
+            read_config(config),
             trainingsetindex=trainingsetindex,
             shuffle=shuffle,
             modelprefix=modelprefix,
@@ -1631,7 +1634,7 @@ def export_model(
     cfg_path = Path(cfg_path)
     if engine is None:
         engine = get_shuffle_engine(
-            _load_config(cfg_path),
+            read_config(cfg_path),
             trainingsetindex=trainingsetindex,
             shuffle=shuffle,
             modelprefix=modelprefix,
@@ -1685,7 +1688,3 @@ def _gpu_to_use_to_device(gpu_to_use: int | None, device: str | None) -> str | N
             device = gpu_to_use
 
     return device
-
-
-def _load_config(config: str) -> dict:
-    return read_config_as_dict(config)

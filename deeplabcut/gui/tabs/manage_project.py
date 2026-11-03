@@ -22,12 +22,12 @@ from PySide6.QtWidgets import (
 from deeplabcut.create_project import add_new_videos
 from deeplabcut.gui.components import DefaultTab, _create_horizontal_layout
 from deeplabcut.gui.dlc_params import DLCParams
-from deeplabcut.gui.widgets import ConfigEditor
 
 
 class ManageProject(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super().__init__(root, parent, h1_description)
+
         self._set_page()
         self._videos = []
 
@@ -53,17 +53,13 @@ class ManageProject(DefaultTab):
 
         self.edit_btn = QPushButton("Edit config.yaml")
         self.edit_btn.setMinimumWidth(150)
-        self.edit_btn.clicked.connect(self.open_config_editor)
+        self.edit_btn.clicked.connect(self.open_project_config_editor)
 
         self.add_videos_btn = QPushButton("Add new videos")
         self.add_videos_btn.clicked.connect(self.add_new_videos)
 
         self.main_layout.addWidget(self.edit_btn, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.add_videos_btn, alignment=Qt.AlignRight)
-
-    def open_config_editor(self):
-        editor = ConfigEditor(self.root.config_path)
-        editor.show()
 
     def add_new_videos(self):
         cwd = os.fspath(Path.cwd())

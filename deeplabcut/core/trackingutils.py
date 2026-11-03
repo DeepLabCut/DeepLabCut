@@ -197,7 +197,9 @@ class EllipseFitter:
         M[0] = temp[2] * 0.5
         M[1] = -temp[1]
         M[2] = temp[0] * 0.5
-        E, V = np.linalg.eig(M)
+        _, V = np.linalg.eig(M)
+        # numba types eig's eigenvectors as complex; the fit needs the real part
+        V = V.real
         cond = 4 * V[0] * V[2] - V[1] ** 2
         a1 = V[:, cond > 0][:, 0]
         a2 = T @ a1
@@ -428,7 +430,7 @@ class SORTEllipse(SORTBase):
             if el is not None:
                 ellipses.append(el)
                 if identities is not None:
-                    pred_ids.append(mode(identities[i])[0][0])
+                    pred_ids.append(mode(identities[i], keepdims=False)[0])
         if not len(trackers):
             matches = np.empty((0, 2), dtype=int)
             unmatched_detections = np.arange(len(ellipses))
@@ -480,7 +482,7 @@ class SORTEllipse(SORTBase):
         for i in unmatched_detections:
             trk = EllipseTracker(ellipses[i].parameters)
             if identities is not None:
-                trk.id_ = mode(identities[i])[0][0]
+                trk.id_ = mode(identities[i], keepdims=False)[0]
             self.trackers.append(trk)
             animalindex.append(i)
 
@@ -539,7 +541,7 @@ class SORTSkeleton(SORTBase):
         xx = x[mask]
         yy = y[mask]
         dist = np.linalg.norm(xx - yy, axis=1)
-        scale = np.sqrt(np.product(np.ptp(yy, axis=0)))  # square root of bounding box area
+        scale = np.sqrt(np.prod(np.ptp(yy, axis=0)))  # square root of bounding box area
         oks = np.exp(-0.5 * (dist / (0.05 * scale)) ** 2)
         return np.mean(oks)
 
@@ -611,7 +613,7 @@ class SORTSkeleton(SORTBase):
         for tracker in reversed(self.trackers):
             i -= 1
             if tracker.time_since_update > self.max_age:
-                self.trackers.pop()
+                self.trackers.pop(i)
                 continue
             state = tracker.predict()
             states.append(np.r_[state, [tracker.id, int(animalindex[i])]])

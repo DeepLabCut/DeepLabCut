@@ -28,7 +28,6 @@ from deeplabcut.gui.components import (
     _create_vertical_layout,
 )
 from deeplabcut.gui.utils import move_to_separate_thread
-from deeplabcut.gui.widgets import ConfigEditor
 
 
 @dataclass(frozen=True)
@@ -96,7 +95,7 @@ class AnalyzeVideos(DefaultTab):
         self.analyze_videos_btn.clicked.connect(self.analyze_videos)
 
         self.edit_config_file_btn = QtWidgets.QPushButton("Edit config.yaml")
-        self.edit_config_file_btn.clicked.connect(self.edit_config_file)
+        self.edit_config_file_btn.clicked.connect(self.open_project_config_editor)
 
         self.main_layout.addWidget(self.analyze_videos_btn, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.edit_config_file_btn, alignment=Qt.AlignRight)
@@ -261,12 +260,6 @@ class AnalyzeVideos(DefaultTab):
             self.show_trajectory_plots.setEnabled(False)
             self.show_trajectory_plots.setCheckState(Qt.Unchecked)
             self.root.logger.info("Plot trajectories DISABLED.")
-
-    def edit_config_file(self):
-        if not self.root.config_path:
-            return
-        editor = ConfigEditor(self.root.config_path)
-        editor.show()
 
     def _collect_options(self) -> AnalyzeVideosOptions:
         config_path = self.root.config_path
@@ -441,6 +434,7 @@ class AnalyzeVideos(DefaultTab):
         func = partial(self._run_pipeline, options, batches)
 
         self.worker, self.thread = move_to_separate_thread(func)
+        self.worker.error.connect(self.root.show_task_error)
         self.worker.finished.connect(lambda: self.analyze_videos_btn.setEnabled(True))
         self.worker.finished.connect(lambda: self.root._progress_bar.hide())
         self.thread.start()

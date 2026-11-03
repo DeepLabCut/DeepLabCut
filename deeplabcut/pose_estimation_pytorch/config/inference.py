@@ -12,9 +12,15 @@
 
 from typing import Any, Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from deeplabcut.core.config import DLCBaseConfig
+from deeplabcut.pose_estimation_pytorch.config.ctd_conditions import (
+    ConditionsConfig,
+    ConditionsFileConfig,
+    ConditionsModelConfig,
+    ConditionsShuffleConfig,
+)
 
 
 class MultithreadingConfig(DLCBaseConfig):
@@ -84,7 +90,8 @@ class InferenceConfig(DLCBaseConfig):
         multithreading: Multithreading configuration
         compile: Compilation configuration
         autocast: Autocast configuration
-        conditions: Conditions for conditional models (CTD)
+        conditions: Conditions for conditional models (CTD). File configs are
+            evaluation-only; Shuffle/Model are used for live analyze.
         snapshot: Snapshot(s) to use for inference
         eval: Evaluation configuration
     """
@@ -92,7 +99,12 @@ class InferenceConfig(DLCBaseConfig):
     multithreading: MultithreadingConfig = Field(default_factory=MultithreadingConfig)
     compile: CompileConfig = Field(default_factory=CompileConfig)
     autocast: AutocastConfig = Field(default_factory=AutocastConfig)
-    conditions: dict[str, Any] | None = None
+    conditions: ConditionsModelConfig | ConditionsFileConfig | ConditionsShuffleConfig | None = None
     snapshot: int | str | list[int] | None = None
     eval: EvaluationConfig = Field(default_factory=EvaluationConfig)
     output_dir: str | None = None
+
+    @field_validator("conditions", mode="before")
+    @classmethod
+    def _normalize_conditions(cls, v: Any) -> Any:
+        return ConditionsConfig.build(v)

@@ -462,6 +462,7 @@ def evaluate_snapshot(
     per_keypoint_evaluation: bool = False,
     detector_snapshot: Snapshot | None = None,
     pcutoff: float | list[float] | dict[str, float] | None = None,
+    bboxes_pcutoff: float | None = None,
 ) -> pd.DataFrame:
     """Evaluates a snapshot. The evaluation results are stored in the .h5 and .csv file
     under the subdirectory 'evaluation_results'.
@@ -490,7 +491,12 @@ def evaluate_snapshot(
             (if there are any). If a dict is provided, the keys should be bodyparts
             mapping to pcutoff values for each bodypart. Bodyparts that are not defined
             in the dict will have pcutoff set to 0.6.
+        bboxes_pcutoff: The cutoff to use for plotting bounding boxes from detectors.
+            When `None`, the cutoff will be loaded from the project config.
     """
+    if bboxes_pcutoff is None:
+        bboxes_pcutoff = cfg.bboxes_pcutoff
+
     head_type = loader.model_cfg["model"]["heads"]["bodypart"]["type"]
     if head_type == "DLCRNetHead":
         prune_paf_graph.benchmark_paf_graphs(
@@ -622,8 +628,6 @@ def evaluate_snapshot(
 
         df_ground_truth = ensure_multianimal_df_format(loader.df)
 
-        bboxes_cutoff = loader.model_cfg.select("detector.model.box_score_thresh") or 0.6
-
         for mode in ["train", "test"]:
             df_combined = predictions[mode].merge(df_ground_truth, left_index=True, right_index=True)
             bboxes_split = bounding_boxes[mode]
@@ -642,7 +646,7 @@ def evaluate_snapshot(
                 alpha_value=cfg["alphavalue"],
                 p_cutoff=cfg["pcutoff"],
                 bounding_boxes=bboxes_split,
-                bboxes_cutoff=bboxes_cutoff,
+                bboxes_cutoff=bboxes_pcutoff,
             )
 
     return df_predictions

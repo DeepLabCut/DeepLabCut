@@ -13,7 +13,7 @@
 from pydantic import Field
 
 from deeplabcut.core.config import DLCBaseConfig
-from deeplabcut.core.config.validation import Fraction
+from deeplabcut.core.config.validation import DefaultIfNone, Fraction
 
 
 class ModelConfig(DLCBaseConfig):
@@ -42,10 +42,15 @@ class DetectorModelConfig(DLCBaseConfig):
         freeze_bn_stats: Whether to freeze batch normalization statistics
         freeze_bn_weights: Whether to freeze batch normalization weights
         variant: Specific variant of the detector model
+        box_score_thresh: The score below which the detector discards proposals
+            internally. ``null`` is normalized to the default. The value is
+            deliberately permissive, as raising this value silently drops
+            detections. Note the distinction with ``bboxes_pcutoff`` in the
+            project config, which is the cutoff used to *plot* bounding boxes.
     """
 
     type: str = ""
     freeze_bn_stats: bool = False
     freeze_bn_weights: bool = False
     variant: str | None = None
-    box_score_thresh: Fraction | None = None
+    box_score_thresh: DefaultIfNone[Fraction] = 0.01
