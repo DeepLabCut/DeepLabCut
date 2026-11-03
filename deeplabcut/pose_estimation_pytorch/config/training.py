@@ -12,7 +12,7 @@
 
 from typing import Any
 
-from pydantic import field_validator
+from pydantic import SerializerFunctionWrapHandler, field_validator, model_serializer
 
 from deeplabcut.core.config import DLCBaseConfig
 from deeplabcut.core.config.validation import reject_reserved_keys
@@ -38,7 +38,8 @@ class TrainSettingsConfig(DLCBaseConfig):
         dataloader_pin_memory: Whether to pin memory in data loader
         dataloader_kwargs: Additional keyword arguments for the training
             ``torch.utils.data.DataLoader`` (e.g. ``persistent_workers``). Arguments
-            that DeepLabCut sets itself are reserved and cannot be given here.
+            that DeepLabCut sets itself are reserved and cannot be given here. Omitted
+            from the serialized config when empty.
         display_iters: Display interval for training progress
         epochs: Number of training epochs
         seed: Random seed for reproducibility
@@ -61,3 +62,11 @@ class TrainSettingsConfig(DLCBaseConfig):
     def validate_dataloader_kwargs(cls, v: dict[str, Any] | None) -> dict[str, Any] | None:
         reject_reserved_keys(v, _RESERVED_DATALOADER_KWARGS, name="dataloader_kwargs")
         return v
+
+    @model_serializer(mode="wrap")
+    def _omit_empty_dataloader_kwargs(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        # Keep configs without dataloader_kwargs loadable by older DeepLabCut versions
+        data = handler(self)
+        if not data.get("dataloader_kwargs"):
+            data.pop("dataloader_kwargs", None)
+        return data
