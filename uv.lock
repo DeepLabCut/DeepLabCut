@@ -1498,7 +1498,7 @@ requires-dist = [
     { name = "protobuf", marker = "extra == 'tf-cu12'", specifier = "<7" },
     { name = "protobuf", marker = "extra == 'tf-latest'", specifier = "<7" },
     { name = "pycocotools" },
-    { name = "pydantic", specifier = ">=2,<3" },
+    { name = "pydantic", specifier = ">=2.11,<3" },
     { name = "pyside6", marker = "platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'gui'", specifier = "<6.10" },
     { name = "pyside6", marker = "(platform_machine != 'x86_64' and extra == 'gui') or (sys_platform != 'linux' and extra == 'gui')" },
     { name = "pyyaml" },
