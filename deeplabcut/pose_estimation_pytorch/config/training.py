@@ -12,7 +12,7 @@
 
 from typing import Any
 
-from pydantic import SerializerFunctionWrapHandler, field_validator, model_serializer
+from pydantic import Field, field_validator
 
 from deeplabcut.core.config import DLCBaseConfig
 from deeplabcut.core.config.validation import reject_reserved_keys
@@ -49,7 +49,8 @@ class TrainSettingsConfig(DLCBaseConfig):
     batch_size: int = 8
     dataloader_workers: int = 0
     dataloader_pin_memory: bool = False
-    dataloader_kwargs: dict[str, Any] | None = None
+    # Omitted when empty to keep saved configs loadable by older DeepLabCut versions
+    dataloader_kwargs: dict[str, Any] | None = Field(default=None, exclude_if=lambda v: not v)
     display_iters: int = 500
     epochs: int = 200
     seed: int = 42
@@ -62,11 +63,3 @@ class TrainSettingsConfig(DLCBaseConfig):
     def validate_dataloader_kwargs(cls, v: dict[str, Any] | None) -> dict[str, Any] | None:
         reject_reserved_keys(v, _RESERVED_DATALOADER_KWARGS, name="dataloader_kwargs")
         return v
-
-    @model_serializer(mode="wrap")
-    def _omit_empty_dataloader_kwargs(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
-        # Keep configs without dataloader_kwargs loadable by older DeepLabCut versions
-        data = handler(self)
-        if not data.get("dataloader_kwargs"):
-            data.pop("dataloader_kwargs", None)
-        return data
