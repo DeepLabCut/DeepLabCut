@@ -856,7 +856,10 @@ def save_evaluation_results(df_scores: pd.DataFrame, scores_path: Path, print_re
     combined_scores_path = scores_path.parent.parent / "CombinedEvaluation-results.csv"
     if combined_scores_path.exists():
         df_existing_results = pd.read_csv(combined_scores_path, index_col=[0, 1, 2, 3, 4])
-        df_scores = df_scores.combine_first(df_existing_results)
+        # The rows for the model that was just evaluated must be replaced
+        # to avoid backfilling NaN cells with values from the previous evaluation
+        df_existing_results = df_existing_results.drop(index=df_scores.index, errors="ignore")
+        df_scores = pd.concat([df_scores, df_existing_results])
 
     df_scores = df_scores.sort_index()
     df_scores.to_csv(combined_scores_path)
