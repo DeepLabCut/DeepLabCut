@@ -7,9 +7,11 @@
 #
 """Tests for annotated types in deeplabcut.core.config.validation."""
 
+from typing import Any
+
 import numpy as np
 import pytest
-from pydantic import ValidationError
+from pydantic import ValidationError, field_validator
 
 from deeplabcut.core.config import DLCBaseConfig
 from deeplabcut.core.config.validation import (
@@ -20,6 +22,7 @@ from deeplabcut.core.config.validation import (
     UniqueStrList,
     greater_than,
     less_than,
+    reject_reserved_keys,
     unique_values,
     validate_crop_bounds,
 )
@@ -38,6 +41,19 @@ class ListConfig(DLCBaseConfig):
     bodyparts: UniqueStrList = []
     skeleton: list[BodypartPair] = []
     indices: NDArrayInt = None
+
+
+class KwargsConfig(DLCBaseConfig):
+    """Config exercising a pass-through kwargs field with reserved keys."""
+
+    name: str = "run"
+    call_kwargs: dict[str, Any] | None = None
+
+    @field_validator("call_kwargs")
+    @classmethod
+    def validate_call_kwargs(cls, v: dict[str, Any] | None) -> dict[str, Any] | None:
+        reject_reserved_keys(v, {"name": "name", "dataset": None}, name="call_kwargs")
+        return v
 
 
 # ------------------------------------------------------------------
@@ -215,3 +231,42 @@ class TestNDArrayInt:
         indices = ListConfig(indices=array).indices
         assert indices is array
         assert indices.dtype == np.float64
+
+
+# ------------------------------------------------------------------
+# reject_reserved_keys
+# ------------------------------------------------------------------
+
+
+class TestValidateNoReservedKeys:
+    @pytest.mark.parametrize("value", [None, {}, {"mode": "offline", "tags": ["a"]}], ids=["none", "empty", "free"])
+    def test_accepts_unreserved_kwargs(self, value):
+        assert KwargsConfig(call_kwargs=value).call_kwargs == value
+
+    def test_rejects_reserved_key_with_field_hint(self):
+        with pytest.raises(
+            ValidationError, match=r"call_kwargs cannot include reserved options: 'name' \(set via `name`\)"
+        ):
+            KwargsConfig(call_kwargs={"name": "other"})
+
+    def test_rejects_reserved_key_even_when_value_matches_field(self):
+        with pytest.raises(ValidationError, match="reserved options"):
+            KwargsConfig(name="run", call_kwargs={"name": "run"})
+
+    def test_rejects_reserved_key_without_config_field(self):
+        with pytest.raises(ValidationError, match="reserved options: 'dataset'") as excinfo:
+            KwargsConfig(call_kwargs={"dataset": "x"})
+        assert "set via" not in str(excinfo.value)
+
+    def test_rejects_reserved_key_on_assignment(self):
+        cfg = KwargsConfig()
+        with pytest.raises(ValidationError, match="reserved options"):
+            cfg.call_kwargs = {"dataset": "x"}
+
+    @pytest.mark.parametrize("kwargs", [None, {}, {"mode": "offline"}], ids=["none", "empty", "free"])
+    def test_function_accepts_unreserved_kwargs(self, kwargs):
+        reject_reserved_keys(kwargs, {"dataset": None}, name="kw")
+
+    def test_function_lists_all_clashes_sorted(self):
+        with pytest.raises(ValueError, match=r"kw cannot include reserved options: 'a' \(set via `x`\), 'b'$"):
+            reject_reserved_keys({"b": 1, "a": 2, "c": 3}, {"a": "x", "b": None}, name="kw")
