@@ -108,7 +108,6 @@ parts:
           - file: docs/recipes/io
           - file: docs/recipes/nn
           - file: docs/recipes/post
-          - file: docs/recipes/fish_swimming_kinematics
           - file: docs/recipes/BatchProcessing
           - file: docs/recipes/DLCMethods
           - file: docs/recipes/ClusteringNapari
@@ -119,6 +118,7 @@ parts:
       - file: docs/dlc-utils/index
         sections:
           - file: docs/dlc-utils/XROMM/usage
+          - file: docs/dlc-utils/fish_kinematics/usage
 
   - caption: Project & Community
     chapters:

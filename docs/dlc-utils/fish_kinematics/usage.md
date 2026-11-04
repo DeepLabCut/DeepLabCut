@@ -5,7 +5,11 @@ deeplabcut:
   ignore: false
 ---
 
+(file:fish-swimming-kinematics)=
+
 # Deriving fish swimming kinematics and choosing a reliable observation duration
+
+> Contributed by [@Denny-Hwang](https://github.com/Denny-Hwang)
 
 This recipe shows how to turn DeepLabCut pose tracks of a swimming fish into
 common **swimming-kinematics metrics** — tail-beat frequency, swimming speed,
@@ -205,4 +209,4 @@ environment), but the workflow that produces them is general.
 Method adapted from Hwang et al. (2026), *Ecological Informatics* 95, 103760
 ([DOI](https://doi.org/10.1016/j.ecoinf.2026.103760),
 [reference code](https://github.com/Denny-Hwang/FishML_Observation_to_Replication)).
-Please also [cite DeepLabCut](../citation.md).
+Please also [cite DeepLabCut](../../citation.md).
