@@ -424,11 +424,13 @@ class SORTEllipse(SORTBase):
             self.trackers.pop(ind)
 
         ellipses = []
+        pose_inds = []
         pred_ids = []
         for i, pose in enumerate(poses):
             el = self.fitter.fit(pose)
             if el is not None:
                 ellipses.append(el)
+                pose_inds.append(i)
                 if identities is not None:
                     pred_ids.append(mode(identities[i], keepdims=False)[0])
         if not len(trackers):
@@ -474,7 +476,7 @@ class SORTEllipse(SORTBase):
         for t, tracker in enumerate(self.trackers):
             if t not in unmatched_trackers:
                 ind = matches[matches[:, 1] == t, 0][0]
-                animalindex.append(ind)
+                animalindex.append(pose_inds[ind])
                 tracker.update(ellipses[ind].parameters)
             else:
                 animalindex.append(-1)
@@ -482,9 +484,9 @@ class SORTEllipse(SORTBase):
         for i in unmatched_detections:
             trk = EllipseTracker(ellipses[i].parameters)
             if identities is not None:
-                trk.id_ = mode(identities[i], keepdims=False)[0]
+                trk.id_ = pred_ids[i]
             self.trackers.append(trk)
-            animalindex.append(i)
+            animalindex.append(pose_inds[i])
 
         i = len(self.trackers)
         ret = []

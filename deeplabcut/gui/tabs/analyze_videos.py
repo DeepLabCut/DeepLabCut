@@ -13,7 +13,7 @@ from functools import partial
 from pathlib import Path
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer, Slot
 
 import deeplabcut
 from deeplabcut.core.config import ProjectConfig
@@ -53,11 +53,40 @@ class AnalyzeVideos(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super().__init__(root, parent, h1_description)
 
+        self._plot_options: AnalyzeVideosOptions | None = None
+        self._plotted_batches: list[tuple[str, list[Path]]] = []
+
+        self._show_plots_timer = QTimer(self)
+        self._show_plots_timer.setSingleShot(True)
+        self._show_plots_timer.setInterval(0)
+        self._show_plots_timer.timeout.connect(self._show_plotted_batches)
+
         self._set_page()
 
     @property
     def files(self):
         return self.video_selection_widget.files
+
+    @Slot()
+    def _show_plotted_batches(self):
+        options = self._plot_options
+        if options is None or not options.show_trajectory_plots or not self._plotted_batches:
+            return
+
+        try:
+            self._show_trajectory_plots(options, self._plotted_batches)
+        except Exception as error:
+            self.root.logger.error(
+                "Failed to display trajectory plots.",
+                exc_info=True,
+            )
+            self.root.show_task_error(error)
+
+    @Slot()
+    def _handle_analysis_finished(self):
+        self.analyze_videos_btn.setEnabled(True)
+        self.root._progress_bar.hide()
+        self._show_plots_timer.start()
 
     def _set_page(self):
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
@@ -393,6 +422,8 @@ class AnalyzeVideos(DefaultTab):
             )
 
         if options.plot_trajectories:
+            # Matplotlib windows cannot open from this worker thread; they are
+            # shown from the GUI thread once analysis finishes.
             deeplabcut.plot_trajectories(
                 options.config_path,
                 videos=videos,
@@ -400,9 +431,10 @@ class AnalyzeVideos(DefaultTab):
                 video_extensions=videotype,
                 shuffle=options.shuffle,
                 filtered=options.filter_data,
-                showfigures=options.show_trajectory_plots,
+                showfigures=False,
                 track_method=options.track_method,
             )
+            self._plotted_batches.append((videotype, videos))
 
     def _convert_outputs_to_csv_once_per_folder(self, batches: list[tuple[str, list[Path]]]):
         folders = self._get_unique_video_parent_folders(batches)
@@ -414,7 +446,26 @@ class AnalyzeVideos(DefaultTab):
                 listofvideos=False,
             )
 
+    def _show_trajectory_plots(
+        self,
+        options: AnalyzeVideosOptions,
+        batches: list[tuple[str, list[Path]]],
+    ):
+        for videotype, videos in batches:
+            deeplabcut.plot_trajectories(
+                options.config_path,
+                videos=videos,
+                displayedbodyparts=options.displayed_bodyparts,
+                video_extensions=videotype,
+                shuffle=options.shuffle,
+                filtered=options.filter_data,
+                showfigures=True,
+                track_method=options.track_method,
+            )
+
     def analyze_videos(self):
+        self._show_plots_timer.stop()
+
         options = self._collect_options()
         batches = self._get_video_batches()
 
@@ -431,12 +482,14 @@ class AnalyzeVideos(DefaultTab):
             cfg.default_track_method = options.track_method
             cfg.to_yaml(self.root.config_path, overwrite=True, log_changes=True, mark_clean=True)
 
+        self._plot_options = options
+        self._plotted_batches = []
+
         func = partial(self._run_pipeline, options, batches)
 
         self.worker, self.thread = move_to_separate_thread(func)
         self.worker.error.connect(self.root.show_task_error)
-        self.worker.finished.connect(lambda: self.analyze_videos_btn.setEnabled(True))
-        self.worker.finished.connect(lambda: self.root._progress_bar.hide())
+        self.worker.finished.connect(self._handle_analysis_finished)
         self.thread.start()
         self.analyze_videos_btn.setEnabled(False)
         self.root._progress_bar.show()
