@@ -114,6 +114,8 @@ class DLCBaseConfig(BaseModel):
         dumped = self.to_dict(normalize=True)
         data = CommentedMap()
         for name, info in type(self).model_fields.items():
+            if name not in dumped:  # excluded by a custom serializer
+                continue
             extra = info.json_schema_extra
             if isinstance(extra, dict) and (comment := extra.get("comment")):
                 data.yaml_set_comment_before_after_key(name, before=comment)

@@ -52,3 +52,13 @@ def test_dataloader_kwargs_rejects_options_with_a_config_field(key: str, hint: s
 def test_dataloader_kwargs_rejects_options_managed_by_deeplabcut(key: str) -> None:
     with pytest.raises(ValidationError, match=f"dataloader_kwargs cannot include reserved options: '{key}'"):
         TrainSettingsConfig.from_dict({"dataloader_kwargs": {key: False}})
+
+
+@pytest.mark.parametrize("value", [None, {}])
+def test_empty_dataloader_kwargs_is_omitted_when_saving(tmp_path, value) -> None:
+    cfg = TrainSettingsConfig(dataloader_kwargs=value)
+    assert "dataloader_kwargs" not in cfg.to_dict()
+    assert "dataloader_kwargs" not in cfg.to_commented_map()
+    cfg.to_yaml(tmp_path / "cfg.yaml")
+    assert "dataloader_kwargs" not in (tmp_path / "cfg.yaml").read_text()
+    assert TrainSettingsConfig.from_yaml(tmp_path / "cfg.yaml").dataloader_kwargs is None

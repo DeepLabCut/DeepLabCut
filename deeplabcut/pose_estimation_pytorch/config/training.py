@@ -12,7 +12,7 @@
 
 from typing import Any
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 
 from deeplabcut.core.config import DLCBaseConfig
 from deeplabcut.core.config.validation import reject_reserved_keys
@@ -38,7 +38,8 @@ class TrainSettingsConfig(DLCBaseConfig):
         dataloader_pin_memory: Whether to pin memory in data loader
         dataloader_kwargs: Additional keyword arguments for the training
             ``torch.utils.data.DataLoader`` (e.g. ``persistent_workers``). Arguments
-            that DeepLabCut sets itself are reserved and cannot be given here.
+            that DeepLabCut sets itself are reserved and cannot be given here. Omitted
+            from the serialized config when empty.
         display_iters: Display interval for training progress
         epochs: Number of training epochs
         seed: Random seed for reproducibility
@@ -48,7 +49,8 @@ class TrainSettingsConfig(DLCBaseConfig):
     batch_size: int = 8
     dataloader_workers: int = 0
     dataloader_pin_memory: bool = False
-    dataloader_kwargs: dict[str, Any] | None = None
+    # Omitted when empty to keep saved configs loadable by older DeepLabCut versions
+    dataloader_kwargs: dict[str, Any] | None = Field(default=None, exclude_if=lambda v: not v)
     display_iters: int = 500
     epochs: int = 200
     seed: int = 42
