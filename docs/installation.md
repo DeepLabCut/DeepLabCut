@@ -40,9 +40,10 @@ If you have an NVIDIA GPU, install PyTorch according to [their instructions](htt
 conda create -n DEEPLABCUT python=3.12
 conda activate DEEPLABCUT
 
-# Install PyTorch with your desired CUDA version (or CPU only)
-# Example: install GPU-enabled pytorch for CUDA 12.6
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+# Install PyTorch with the CUDA build for your GPU (or CPU only)
+# Example for CUDA 13.0 (RTX 20xx-50xx); GTX 10xx needs cu126
+# See "Before you start" > Hardware information for the full table
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
 
 # install the latest version of DeepLabCut
 pip install deeplabcut # add --pre for pre-release versions!
@@ -85,6 +86,16 @@ class: dropdown
   ```{tab-item} NVIDIA GPU
   If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed.
   Please note, which CUDA you install depends on what version of PyTorch you want to use. So, please check {ref}`sec:install-gpu-support` below carefully. **Note, DeepLabCut is up to date with the latest CUDA and PyTorch!**
+
+  Pick the PyTorch CUDA build (`--index-url https://download.pytorch.org/whl/<build>`) that supports your GPU; see NVIDIA's [compute capability list](https://developer.nvidia.com/cuda-gpus) for your exact model:
+
+  | GPU generation | Architecture | PyTorch CUDA build |
+  |---|---|---|
+  | GTX 10xx | Pascal | `cu126` (PyTorch <=2.14) |
+  | RTX 20xx, 30xx, 40xx | Turing, Ampere, Ada | `cu126`, `cu128` or `cu130` |
+  | RTX 50xx | Blackwell | `cu128` or `cu130` |
+
+  The "CUDA Version" shown by `nvidia-smi` is the newest build your driver supports; update the driver if it is lower than the build you need.
   ```
   ```{tab-item} Apple M-chip GPU
   Install miniconda and use the standard `DEEPLABCUT.yaml` conda environment — PyTorch will use your Apple GPU via Metal automatically. For TensorFlow, add the `tf` extra after install (see {ref}`TensorFlow Support <sec:deeplabcut-with-tf-install>`). More tips are on the {ref}`installation tips <installation-tips>` page.
