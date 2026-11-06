@@ -11,7 +11,6 @@
 
 
 import argparse
-import pickle
 import re
 from collections.abc import Sequence
 from pathlib import Path
@@ -74,12 +73,12 @@ def find_outliers_in_raw_data(
     if not pickle_name.startswith(video_name):
         raise ValueError("Video and pickle files do not match.")
 
-    with Path(pickle_file).open("rb") as file:
-        data = pickle.load(file)
-    if pickle_file.endswith("_full.pickle"):
+    if str(pickle_file).endswith("_full.pickle"):
+        data = auxiliaryfunctions.load_full_data(pickle_file)
         inds, data = find_outliers_in_raw_detections(data, threshold=pcutoff)
         with_annotations = False
-    elif pickle_file.endswith("_assemblies.pickle"):
+    elif str(pickle_file).endswith("_assemblies.pickle"):
+        data = auxiliaryfunctions.read_pickle(pickle_file)
         assemblies = dict()
         for k, lst in data.items():
             if k == "single":

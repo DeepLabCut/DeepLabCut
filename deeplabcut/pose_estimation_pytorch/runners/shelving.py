@@ -99,13 +99,14 @@ class ShelfWriter(ShelfManager):
         num_frames: The number of frames in the video. Used to set the number of
             leading 0s in the keys of the dictionary. Default is 5 if the number of
             frames is not given.
+        flag: The shelve.open flag.
 
     Attributes:
         filepath: The path to the shelf.
     """
 
-    def __init__(self, pose_cfg: dict, filepath: str | Path, num_frames: int | None = None):
-        super().__init__(filepath, flag="c")
+    def __init__(self, pose_cfg: dict, filepath: str | Path, num_frames: int | None = None, flag: str = "c"):
+        super().__init__(filepath, flag=flag)
         self._pose_cfg = pose_cfg
         self._num_frames = num_frames
         self._frame_index = 0
