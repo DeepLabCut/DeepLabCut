@@ -12,11 +12,16 @@
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 
 import deeplabcut.core.metrics.matching as matching
 from deeplabcut.core.crossvalutils import find_closest_neighbors
-from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity
+from deeplabcut.core.inferenceutils import (
+    calc_object_keypoint_similarity,
+    calc_oks_scale_squared,
+)
 
 
 def compute_oks_matrix(
@@ -95,6 +100,11 @@ def compute_oks(
         gt = gt[np.sum(np.all(~np.isnan(gt), axis=-1), axis=-1) > 1]
         pred = pred[np.sum(np.all(~np.isnan(pred), axis=-1), axis=-1) > 1]
 
+        # OKS normalizes distances by the spatial extent of the ground truth pose, so
+        # poses without any extent (e.g. collinear "1D" keypoints) can never be scored.
+        # Drop them like the individuals filtered above.
+        gt = gt[[not np.isnan(calc_oks_scale_squared(pose[:, :2], oks_bbox_margin)) for pose in gt],]
+
         oks_matrix = compute_oks_matrix(
             gt[:, :, :2],
             pred[:, :, :2],
@@ -104,6 +114,21 @@ def compute_oks(
 
         total_gt += len(gt)
         pose_data.append((gt, pred, oks_matrix))
+
+    if total_gt == 0:
+        # No GT contains at least 2 valid keypoints, so mAP/mAR are undefined
+        warnings.warn(
+            "Could not compute mAP/mAR: OKS requires at least 2 visible keypoints per individual"
+            ", and no GT individual in this dataset meets this requirement.\n"
+            "This can happen for:\n"
+            "- Projects with a single bodypart\n"
+            "- When a single bodypart is visible in the ground truth\n"
+            "mAP and mAR will be reported as NaN rather than 0. "
+            "If `test.mAP` is the key metric used to select the "
+            "best snapshot, none will be saved (regular snapshots are unaffected).",
+            stacklevel=2,
+        )
+        return {"mAP": float("nan"), "mAR": float("nan")}
 
     precisions, recalls = [], []
     for oks_threshold in oks_thresholds:

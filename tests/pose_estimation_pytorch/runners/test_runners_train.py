@@ -154,6 +154,32 @@ def test_mocked_load_head_weights(tmp_path_factory, load_head_weights):
 
 
 @patch("deeplabcut.pose_estimation_pytorch.runners.train.CSVLogger", Mock())
+@pytest.mark.parametrize("single_animal", [True, False])
+def test_epoch_metrics_use_the_single_animal_flag(single_animal: bool):
+    """See https://github.com/DeepLabCut/DeepLabCut/issues/3518.
+
+    The flag used to be hardcoded to False during training, so single-animal metrics
+    were scored through the multi-animal code path and disagreed with the ones reported
+    by ``evaluate_network`` for the same snapshot.
+    """
+    runner = train_runners.PoseTrainingRunner(
+        model=Mock(),
+        optimizer=Mock(),
+        snapshot_manager=Mock(),
+        device="cpu",
+        single_animal=single_animal,
+    )
+    gt = np.array([[[0.0, 0.0, 2.0]]])
+    runner._epoch_ground_truth = {"bodyparts": {"sample0": gt}}
+    runner._epoch_predictions = {"bodyparts": {"sample0": gt.copy()}}
+    with patch("deeplabcut.pose_estimation_pytorch.runners.train.metrics.compute_metrics") as compute_metrics:
+        compute_metrics.return_value = {}
+        runner._compute_epoch_metrics()
+
+    assert compute_metrics.call_args.kwargs["single_animal"] is single_animal
+
+
+@patch("deeplabcut.pose_estimation_pytorch.runners.train.CSVLogger", Mock())
 @pytest.mark.parametrize(
     "runner_cls",
     [
