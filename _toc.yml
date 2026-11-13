@@ -118,6 +118,7 @@ parts:
       - file: docs/dlc-utils/index
         sections:
           - file: docs/dlc-utils/XROMM/usage
+          - file: docs/dlc-utils/fish_kinematics/usage
 
   - caption: Project & Community
     chapters:

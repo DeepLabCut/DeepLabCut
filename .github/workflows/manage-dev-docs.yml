@@ -44,7 +44,6 @@ jobs:
       git_tag: ${{ inputs.git_tag }}
       aliases: ${{ inputs.mark_latest_release && 'latest-release' || '' }}
       default_label: ${{ inputs.mark_latest_release && 'latest-release' || '' }}
-      python-version: "3.10"
       config-file: dev-docs/mkdocs.yml
       deploy-prefix: dev
     secrets: inherit
@@ -55,7 +54,6 @@ jobs:
     with:
       action: delete
       version_label: ${{ inputs.version_label }}
-      python-version: "3.10"
       config-file: dev-docs/mkdocs.yml
       deploy-prefix: dev
     secrets: inherit
