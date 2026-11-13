@@ -41,7 +41,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     """
     from datetime import datetime as dt
 
-    from deeplabcut.utils import auxiliaryfunctions
+    from deeplabcut.core.config import CameraConfig3D, ProjectConfig3D
 
     date = dt.today()
     month = date.strftime("%B")
@@ -77,46 +77,23 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
         print(f'Created "{p}"')
 
     # Create config file
-    cfg_file_3d, ruamelFile_3d = auxiliaryfunctions.create_config_template_3d()
-    cfg_file_3d["Task"] = project
-    cfg_file_3d["scorer"] = experimenter
-    cfg_file_3d["date"] = d
-    cfg_file_3d["project_path"] = str(project_path)
-    #    cfg_file_3d['config_files']= [
-    #        str('Enter the path of the config file ') + str(i) + ' to include'
-    #        for i in range(1, 3)
-    #    ]
-    #    cfg_file_3d['config_files']= ['Enter the path of the config file 1']
-    cfg_file_3d["colormap"] = "jet"
-    cfg_file_3d["dotsize"] = 15
-    cfg_file_3d["alphaValue"] = 0.8
-    cfg_file_3d["markerType"] = "*"
-    cfg_file_3d["markerColor"] = "r"
-    cfg_file_3d["pcutoff"] = 0.4
-    cfg_file_3d["num_cameras"] = num_cameras
-    cfg_file_3d["camera_names"] = [str("camera-" + str(i)) for i in range(1, num_cameras + 1)]
-    cfg_file_3d["scorername_3d"] = "DLC_3D"
-
-    cfg_file_3d["skeleton"] = [
-        ["bodypart1", "bodypart2"],
-        ["bodypart2", "bodypart3"],
-        ["bodypart3", "bodypart4"],
-        ["bodypart4", "bodypart5"],
-    ]
-    cfg_file_3d["skeleton_color"] = "black"
-
-    for i in range(num_cameras):
-        path = str(
-            "/home/mackenzie/DEEPLABCUT/DeepLabCut/2DprojectCam" + str(i + 1) + "-Mackenzie-2019-06-05/config.yaml"
-        )
-        cfg_file_3d.insert(len(cfg_file_3d), str("config_file_camera-" + str(i + 1)), path)
-
-    for i in range(num_cameras):
-        cfg_file_3d.insert(len(cfg_file_3d), str("shuffle_camera-" + str(i + 1)), 1)
-        cfg_file_3d.insert(len(cfg_file_3d), str("trainingsetindex_camera-" + str(i + 1)), 0)
-
+    cfg_3d = ProjectConfig3D(
+        Task=project,
+        scorer=experimenter,
+        date=d,
+        project_path=project_path,
+        skeleton=[
+            ["bodypart1", "bodypart2"],
+            ["bodypart2", "bodypart3"],
+            ["bodypart3", "bodypart4"],
+            ["bodypart4", "bodypart5"],
+        ],
+        num_cameras=num_cameras,
+        # The 2D project of each camera (config_file, shuffle, trainingsetindex) is filled in by the user
+        cameras={f"camera-{i}": CameraConfig3D() for i in range(1, num_cameras + 1)},
+    )
     projconfigfile = project_path / "config.yaml"
-    auxiliaryfunctions.write_config_3d(projconfigfile, cfg_file_3d)
+    cfg_3d.to_yaml(projconfigfile)
 
     print('Generated "{}"'.format(project_path / "config.yaml"))
     print(

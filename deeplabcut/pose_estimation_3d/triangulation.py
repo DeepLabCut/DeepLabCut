@@ -16,7 +16,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.config import ProjectConfig3D
 from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, auxiliaryfunctions_3d
 
@@ -96,16 +96,16 @@ def triangulate(
     from deeplabcut.compat import analyze_videos
     from deeplabcut.post_processing import filtering
 
-    cfg_3d = read_config_as_dict(config, repair_project_path=True)
+    cfg_3d = ProjectConfig3D.from_yaml(config)
     cam_names = cfg_3d["camera_names"]
     pcutoff = cfg_3d["pcutoff"]
     scorer_3d = cfg_3d["scorername_3d"]
 
     snapshots = {}
     for cam in cam_names:
-        snapshots[cam] = cfg_3d[str("config_file_" + cam)]
+        snapshots[cam] = cfg_3d.cameras[cam].config_file
         # Check if the config file exists
-        if not Path(snapshots[cam]).exists():
+        if snapshots[cam] is None or not Path(snapshots[cam]).exists():
             raise Exception(
                 str("It seems the file specified in the variable config_file_" + str(cam))
                 + " does not exist. Please edit the config file with correct file path and retry."
@@ -153,8 +153,8 @@ def triangulate(
                 # Get track method suffix
                 tr_method_suffix = TRACK_METHODS.get(track_method, "")
 
-                shuffle = cfg_3d[str("shuffle_" + cam_names[j])]
-                trainingsetindex = cfg_3d[str("trainingsetindex_" + cam_names[j])]
+                shuffle = cfg_3d.cameras[cam_names[j]].shuffle
+                trainingsetindex = cfg_3d.cameras[cam_names[j]].trainingsetindex
                 trainFraction = cfg["TrainingFraction"][trainingsetindex]
                 if flag:
                     video = str(Path(video_path) / video_list[i][j])
@@ -501,7 +501,7 @@ def _undistort_views(df_view_pairs, stereo_params):
 
 
 def undistort_points(config, dataframe, camera_pair):
-    cfg_3d = read_config_as_dict(config, repair_project_path=True)
+    cfg_3d = ProjectConfig3D.from_yaml(config)
     path_camera_matrix = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)[2]
     """path_undistort = destfolder filename_cam1 = Path(dataframe[0]).stem filename_cam2
     = Path(dataframe[1]).stem.
