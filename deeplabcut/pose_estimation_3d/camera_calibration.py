@@ -17,7 +17,7 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 
-from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.config import ProjectConfig3D
 from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
 from deeplabcut.utils.matplotlib_utils import silence_axes_logger
 
@@ -79,7 +79,7 @@ def calibrate_cameras(
     objp[:, :2] = np.mgrid[0:cbcol, 0:cbrow].T.reshape(-1, 2)
 
     # Read the config file
-    cfg_3d = read_config_as_dict(config, repair_project_path=True)
+    cfg_3d = ProjectConfig3D.from_yaml(config)
     (
         img_path,
         path_corners,
@@ -91,18 +91,9 @@ def calibrate_cameras(
     images = [str(p) for p in Path(img_path).glob("*.jpg")]
     cam_names = cfg_3d["camera_names"]
 
-    # update the variable snapshot* in config file according to the name of the cameras
-    try:
-        for i in range(len(cam_names)):
-            cfg_3d[str("config_file_" + cam_names[i])] = cfg_3d.pop(str("config_file_camera-" + str(i + 1)))
-        for i in range(len(cam_names)):
-            cfg_3d[str("shuffle_" + cam_names[i])] = cfg_3d.pop(str("shuffle_camera-" + str(i + 1)))
-    except Exception:
-        pass
-
-    project_path = cfg_3d["project_path"]
-    projconfigfile = str(Path(project_path) / "config.yaml")
-    auxiliaryfunctions.write_config_3d(projconfigfile, cfg_3d)
+    # Write the config back, as before: this persists the repaired project_path and the
+    # per-camera keys under the current camera names.
+    cfg_3d.to_yaml(config)
 
     # Initialize the dictionary
     img_shape = {}
@@ -282,7 +273,7 @@ def check_undistortion(config: str | Path, cbrow=8, cbcol=6, plot=True):
     """
     # Read the config file
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-    cfg_3d = read_config_as_dict(config, repair_project_path=True)
+    cfg_3d = ProjectConfig3D.from_yaml(config)
     (
         img_path,
         path_corners,
