@@ -133,3 +133,12 @@ class TestFilterConfigVideos:
     def test_filter_config_videos_raises_for_empty_selection(self):
         with pytest.raises(ValueError, match="None of the selected videos matched"):
             _filter_config_videos(["video-a.mp4"], [])
+
+
+def test_extract_frames_match_reads_3d_config(valid_project, tmp_path):
+    """Regression test for #3585: mode="match" must read the 3D config without 2D validation."""
+    from deeplabcut.create_project.new_3d import create_new_project_3d
+
+    config_3d = create_new_project_3d("trial", "tester", num_cameras=2, working_directory=str(tmp_path / "3d"))
+
+    extract_frames(str(valid_project / "config.yaml"), mode="match", config3d=config_3d, userfeedback=False)

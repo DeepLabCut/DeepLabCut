@@ -297,6 +297,7 @@ def extract_frames(
     from skimage import io
     from skimage.util import img_as_ubyte
 
+    from deeplabcut.core.config import read_config_as_dict
     from deeplabcut.utils import auxiliaryfunctions, frameselectiontools
 
     videos_list = None if videos_list is None else [Path(video) for video in videos_list]
@@ -506,7 +507,7 @@ def extract_frames(
         project_path = Path(config).parents[0]
         labels_path = project_path / "labeled-data"
         try:
-            cfg_3d = auxiliaryfunctions.read_config(config3d)
+            cfg_3d = read_config_as_dict(config3d, repair_project_path=True)
         except Exception as e:
             raise Exception(
                 "You must create a 3D project and edit the 3D config file before extracting matched frames. \n"

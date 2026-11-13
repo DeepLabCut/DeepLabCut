@@ -16,6 +16,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, auxiliaryfunctions_3d
 
@@ -95,7 +96,7 @@ def triangulate(
     from deeplabcut.compat import analyze_videos
     from deeplabcut.post_processing import filtering
 
-    cfg_3d = auxiliaryfunctions.read_config(config)
+    cfg_3d = read_config_as_dict(config, repair_project_path=True)
     cam_names = cfg_3d["camera_names"]
     pcutoff = cfg_3d["pcutoff"]
     scorer_3d = cfg_3d["scorername_3d"]
@@ -500,7 +501,7 @@ def _undistort_views(df_view_pairs, stereo_params):
 
 
 def undistort_points(config, dataframe, camera_pair):
-    cfg_3d = auxiliaryfunctions.read_config(config)
+    cfg_3d = read_config_as_dict(config, repair_project_path=True)
     path_camera_matrix = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)[2]
     """path_undistort = destfolder filename_cam1 = Path(dataframe[0]).stem filename_cam2
     = Path(dataframe[1]).stem.

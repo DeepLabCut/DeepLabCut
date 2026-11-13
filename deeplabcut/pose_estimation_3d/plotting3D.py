@@ -20,8 +20,8 @@ from matplotlib.collections import LineCollection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from tqdm import tqdm
 
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.utils import (
-    auxiliaryfunctions,
     auxiliaryfunctions_3d,
     make_labeled_video,
 )
@@ -124,7 +124,7 @@ def create_labeled_video_3d(
             )
     """
     # Read the config file and related variables
-    cfg_3d = auxiliaryfunctions.read_config(config)
+    cfg_3d = read_config_as_dict(config, repair_project_path=True)
     cam_names = cfg_3d["camera_names"]
     pcutoff = cfg_3d["pcutoff"]
     markerSize = cfg_3d["dotsize"]
