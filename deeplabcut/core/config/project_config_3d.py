@@ -129,7 +129,14 @@ class ProjectConfig3D(DLCVersionedConfig):
     @model_validator(mode="before")
     @classmethod
     def group_flat_camera_keys(cls, data: Any) -> Any:
-        if not isinstance(data, dict) or "camera_names" not in data:
+        if not isinstance(data, dict):
+            return data
+        if "camera_names" not in data:
+            if "cameras" not in data and {"video_sets", "bodyparts", "TrainingFraction"} & data.keys():
+                raise ValueError(
+                    "Got the config.yaml of a 2D project where the config.yaml of a 3D project is expected "
+                    "(created with create_new_project_3d)."
+                )
             return data  # already grouped (constructor kwargs, assignment)
         if ignored := sorted(_LEGACY_2D_KEYS & data.keys()):
             logger.info(f"Ignoring 2D project keys in the 3D project config: {ignored}")
