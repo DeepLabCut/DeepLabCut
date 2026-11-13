@@ -506,7 +506,7 @@ def extract_frames(
         project_path = Path(config).parents[0]
         labels_path = project_path / "labeled-data"
         try:
-            cfg_3d = auxiliaryfunctions.read_config(config3d)
+            cfg_3d = auxiliaryfunctions.read_plainconfig(config3d)
         except Exception as e:
             raise Exception(
                 "You must create a 3D project and edit the 3D config file before extracting matched frames. \n"
