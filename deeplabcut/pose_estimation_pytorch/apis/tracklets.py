@@ -146,7 +146,9 @@ def convert_detections2tracklets(
         data_prefix = video_name + dlc_scorer
         data_filename = output_path / (data_prefix + ".h5")
         print(f"Loading From {data_filename}")
-        data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(str(data_filename))
+        with auxiliaryfunctions.open_full_data(data_filename.with_name(data_prefix + "_full.pickle")) as full_data:
+            header = full_data["metadata"]
+        metadata = auxiliaryfunctions.read_pickle(data_filename.with_name(data_prefix + "_meta.pickle"))
         if track_method == "ellipse":
             method = "el"
         elif track_method == "box":
@@ -174,9 +176,9 @@ def convert_detections2tracklets(
                 assemblies_data=assemblies_data,
                 track_method=track_method,
                 inference_cfg=inference_cfg,
-                joints=data["metadata"]["all_joints_names"],
+                joints=header["all_joints_names"],
                 scorer=metadata["data"]["Scorer"],
-                num_frames=data["metadata"]["nframes"],
+                num_frames=header["nframes"],
                 ignore_bodyparts=ignore_bodyparts,
                 unique_bodyparts=cfg["uniquebodyparts"],
                 identity_only=identity_only,

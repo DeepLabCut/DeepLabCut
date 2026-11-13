@@ -21,7 +21,6 @@ Licensed under GNU Lesser General Public License v3.0
 import math
 import pickle
 import random
-import shelve
 import warnings
 from itertools import combinations
 from pathlib import Path
@@ -206,11 +205,7 @@ def LoadFullMultiAnimalData(dataname):
     dataname = Path(dataname)
     data_file = dataname.with_name(dataname.stem + "_full.pickle")
     metadata_file = dataname.with_name(dataname.stem + "_meta.pickle")
-    try:
-        with data_file.open("rb") as handle:
-            data = pickle.load(handle)
-    except (pickle.UnpicklingError, FileNotFoundError):
-        data = shelve.open(data_file, flag="r")
+    data = auxiliaryfunctions.load_full_data(data_file)
     metadata = auxiliaryfunctions.read_pickle(metadata_file)
     return data, metadata
 
