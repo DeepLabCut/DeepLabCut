@@ -155,6 +155,14 @@ class TestPostYamlLoadUpdates:
         assert "project_path" in cfg.dirty_fields
         assert any("project_path updated" in n for n in cfg.change_notes)
 
+    def test_project_path_stored_absolute_when_read_via_relative_path(self, tmp_path, monkeypatch):
+        """A moved project's config.yaml read via a relative path must get an absolute project_path."""
+        (tmp_path / "config.yaml").write_text("project_path: /completely/wrong/path\nengine: pytorch\n")
+        monkeypatch.chdir(tmp_path)
+        cfg = ProjectConfig.from_yaml("config.yaml")
+        assert cfg.project_path.is_absolute()
+        assert cfg.project_path == tmp_path.absolute()
+
     def test_project_path_not_updated_when_already_correct(self, tmp_path):
         """When the stored project_path already matches the YAML directory,
         nothing is changed and the config stays clean."""
