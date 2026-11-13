@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from deeplabcut.core.config import CameraConfig3D, ProjectConfig3D, read_config_as_dict, write_config
+from deeplabcut.core.config import CameraConfig3D, ProjectConfig, ProjectConfig3D, read_config_as_dict, write_config
 
 
 @pytest.fixture
@@ -99,6 +99,12 @@ def test_ignores_keys_of_the_2d_project_template(flat_config):
     dumped = ProjectConfig3D.from_dict(flat_config).to_dict()
 
     assert not {"engine", "bodyparts", "TrainingFraction", "alphavalue"} & dumped.keys()
+
+
+def test_explains_2d_project_config():
+    """A 2D config passed to a 3D function must say so, not list every 2D key as an extra input."""
+    with pytest.raises(ValidationError, match="config.yaml of a 2D project where .* 3D project is expected"):
+        ProjectConfig3D.from_dict(ProjectConfig().to_dict())
 
 
 @pytest.mark.parametrize(

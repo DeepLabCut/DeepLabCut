@@ -262,6 +262,17 @@ class ProjectConfig(DLCVersionedConfig):
 
     @model_validator(mode="before")
     @classmethod
+    def reject_3d_project_config(cls, data: Any) -> Any:
+        if isinstance(data, dict) and {"num_cameras", "camera_names", "scorername_3d"} & data.keys():
+            raise ValueError(
+                "Got the config.yaml of a 3D project where the config.yaml of a 2D project is expected. "
+                "3D configs are only used by the 3D functions (calibrate_cameras, triangulate, "
+                "create_labeled_video_3d, ...) and are loaded with deeplabcut.core.config.ProjectConfig3D."
+            )
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
     def normalize_legacy_empty_values(cls, data: Any) -> Any:
         if not isinstance(data, dict):
             return data
