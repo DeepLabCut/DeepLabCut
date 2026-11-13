@@ -124,7 +124,7 @@ def create_labeled_video_3d(
             )
     """
     # Read the config file and related variables
-    cfg_3d = auxiliaryfunctions.read_config(config)
+    cfg_3d = auxiliaryfunctions.read_plainconfig(config)
     cam_names = cfg_3d["camera_names"]
     pcutoff = cfg_3d["pcutoff"]
     markerSize = cfg_3d["dotsize"]
