@@ -12,7 +12,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Literal, get_args
+from typing import TYPE_CHECKING, Any, Literal, get_args
 
 from pydantic import Field, model_validator
 from typing_extensions import Self
@@ -28,7 +28,25 @@ from deeplabcut.core.config.validation import (
     validate_crop_bounds,
 )
 
+if TYPE_CHECKING:
+    from deeplabcut.core.config.project_config_3d import ProjectConfig3D
+
 logger = logging.getLogger(__name__)
+
+
+def repair_project_path(config: "ProjectConfig | ProjectConfig3D", *, yaml_path: Path) -> None:
+    """Set ``config.project_path`` to the folder containing its config.yaml, if it differs.
+
+    The change is recorded on the config (dirty field and change note), not written to disk.
+    """
+    project_path = yaml_path.parent.absolute()
+    if project_path != config.project_path.absolute():
+        old = config.project_path
+        config.project_path = project_path
+        config.record_change_note(
+            "project_path",
+            f"project_path updated: {old} -> {project_path} (resolved from YAML location when reading config.yaml)",
+        )
 
 
 class ProjectConfig(DLCVersionedConfig):
@@ -240,14 +258,7 @@ class ProjectConfig(DLCVersionedConfig):
         Override method for post-yaml load updates. Called automatically by from_yaml().
         These are logged but not written to disk -- call to_yaml() explicitly if needed.
         """
-        project_path = yaml_path.parent.absolute()
-        if project_path != self.project_path.absolute():
-            old = self.project_path
-            self.project_path = project_path
-            self.record_change_note(
-                "project_path",
-                f"project_path updated: {old} -> {project_path} (resolved from YAML location when reading config.yaml)",
-            )
+        repair_project_path(self, yaml_path=yaml_path)
 
     @model_validator(mode="before")
     @classmethod

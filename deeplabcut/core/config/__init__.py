@@ -1,5 +1,6 @@
 from deeplabcut.core.config.base_config import DLCBaseConfig, DLCVersionedConfig
 from deeplabcut.core.config.project_config import ProjectConfig
+from deeplabcut.core.config.project_config_3d import CameraConfig3D, ProjectConfig3D
 from deeplabcut.core.config.utils import (
     create_config_template,
     create_config_template_3d,
@@ -23,6 +24,8 @@ __all__ = [
     "DLCBaseConfig",
     "DLCVersionedConfig",
     "ProjectConfig",
+    "ProjectConfig3D",
+    "CameraConfig3D",
     "create_config_template",
     "create_config_template_3d",
     "edit_config",
