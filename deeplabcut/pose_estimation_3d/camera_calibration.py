@@ -78,7 +78,7 @@ def calibrate_cameras(
     objp[:, :2] = np.mgrid[0:cbcol, 0:cbrow].T.reshape(-1, 2)
 
     # Read the config file
-    cfg_3d = auxiliaryfunctions.read_config(config)
+    cfg_3d = auxiliaryfunctions.read_plainconfig(config)
     (
         img_path,
         path_corners,
@@ -281,7 +281,7 @@ def check_undistortion(config: str | Path, cbrow=8, cbcol=6, plot=True):
     """
     # Read the config file
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-    cfg_3d = auxiliaryfunctions.read_config(config)
+    cfg_3d = auxiliaryfunctions.read_plainconfig(config)
     (
         img_path,
         path_corners,
