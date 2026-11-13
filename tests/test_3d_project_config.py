@@ -15,8 +15,12 @@ freshly created 3D project; it must get past reading the config and fail later, 
 the data that a fresh project does not have yet.
 """
 
+import shutil
+from pathlib import Path
+
 import pytest
 
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.create_project.new_3d import create_new_project_3d
 from deeplabcut.pose_estimation_3d import camera_calibration, plotting3D, triangulation
 from deeplabcut.utils import auxiliaryfunctions
@@ -70,3 +74,35 @@ def test_calibrate_cameras_keeps_3d_config_keys(config_3d):
         camera_calibration.calibrate_cameras(config_3d, cbrow=8, cbcol=6)
 
     assert auxiliaryfunctions.read_plainconfig(config_3d) == before
+
+
+@pytest.fixture
+def moved_config_3d(config_3d, tmp_path):
+    """Config of a moved 3D project; its project_path still points at the old location."""
+    return Path(shutil.move(Path(config_3d).parent, tmp_path / "moved")) / "config.yaml"
+
+
+def test_read_config_as_dict_repairs_project_path(moved_config_3d):
+    cfg = read_config_as_dict(moved_config_3d, repair_project_path=True)
+    assert Path(cfg["project_path"]) == moved_config_3d.parent
+
+
+@pytest.mark.parametrize(
+    "run, error, match",
+    [
+        (
+            lambda cfg: camera_calibration.calibrate_cameras(cfg, cbrow=8, cbcol=6),
+            Exception,
+            "No calibration images",
+        ),
+        (
+            lambda cfg: camera_calibration.check_undistortion(cfg, cbrow=8, cbcol=6),
+            FileNotFoundError,
+            r"moved\W+camera_matrix",
+        ),
+    ],
+    ids=["calibrate_cameras", "check_undistortion"],
+)
+def test_3d_entry_points_use_moved_project_folder(moved_config_3d, run, error, match):
+    with pytest.raises(error, match=match):
+        run(moved_config_3d)

@@ -29,6 +29,7 @@ import zipfile
 from pathlib import Path
 
 import deeplabcut
+from deeplabcut.core.config import read_config_as_dict
 
 if __name__ == "__main__":
     print("Imported DLC!")
@@ -113,7 +114,7 @@ if __name__ == "__main__":
     path_config_file = deeplabcut.create_new_project_3d(task, scorer, num_cameras)
 
     try:
-        cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(path_config_file)
+        cfg = read_config_as_dict(path_config_file, repair_project_path=True)
         cfg["config_file_camera-1"] = config
         cfg["shuffle_camera-1"] = 1
 
