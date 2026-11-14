@@ -267,6 +267,11 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 # propagate any exception from the producer immediately
                 if self._exception is not None:
                     raise self._exception
+            # emit images with an available prediction,
+            # even if no detections were made (which does not produce a queue item)
+            # unless the producer failed, as its exception is raised below
+            if self._exception is None:
+                results.extend(self._extract_results(shelf_writer))
 
         except BaseException as e:  # catches KeyboardInterrupt, SystemExit, etc.
             # tell producer to quit

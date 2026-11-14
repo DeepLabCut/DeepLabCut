@@ -54,6 +54,16 @@ In that local layout, `XROMM_DLCTools` uses the optional `dlc` dependency group 
 
 See {ref}`file:xamalab-dlc-integration` for the local integration notes and exact commands.
 
+## Fish swimming kinematics and reliable observation duration
+
+> Contributed by [@Denny-Hwang](https://github.com/Denny-Hwang)
+
+Derive swimming-kinematics metrics (tail-beat frequency, swimming speed, body curvature, and a day/night index) from single-animal DeepLabCut pose tracks of fish, and use the Spearman–Brown reliability formula to estimate how long you need to record before each metric is stable. Adapted from Hwang et al. (2026), *Ecological Informatics* 95, 103760.
+
+- [Reference code: `FishML_Observation_to_Replication`](https://github.com/Denny-Hwang/FishML_Observation_to_Replication)
+
+See {ref}`file:fish-swimming-kinematics` for the full recipe.
+
 ## Using your DLC outputs, loading, simple ROI analysis, visualization examples
 
 ### Time spent of a body part in a particular region of interest (ROI)

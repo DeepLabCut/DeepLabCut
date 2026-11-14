@@ -13,10 +13,13 @@ import os
 import pickle
 import urllib.request
 import zipfile
+from enum import Enum, unique
 from io import BytesIO
+from typing import NamedTuple
 
 import numpy as np
 import pytest
+from packaging.version import Version
 from PIL import Image
 from tqdm import tqdm
 
@@ -26,6 +29,10 @@ from deeplabcut.utils.pandas_future_mode import configure_pandas_future_if_enabl
 configure_pandas_future_if_enabled()
 
 from deeplabcut.core import inferenceutils  # noqa: E402
+from deeplabcut.version import __version__ as _dlc_version  # noqa: E402
+
+# Project-on-disk fixtures (``valid_project``) live in
+# tests/generate_training_dataset/conftest.py; promote them here when needed elsewhere.
 
 TESTS_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_DATA_DIR = os.path.join(TESTS_DIR, "data")
@@ -157,3 +164,127 @@ def evaluation_data_and_metadata_montblanc():
     with open(metadata_file, "rb") as file:
         metadata = pickle.load(file)
     return data, metadata
+
+
+class FakeVideoReader:
+    """Synthetic stand-in for ``VideoReader`` whose frames are filled with their own frame index.
+
+    Every frame that is read is recorded in ``read_indices``.
+    """
+
+    def __init__(self, nframes, fps=10, width=40, height=30):
+        self._nframes = nframes
+        self.fps = fps
+        self.dimensions = width, height
+        self._pos = 0
+        self.read_indices = []
+
+    def __len__(self):
+        return self._nframes
+
+    def set_to_frame(self, ind):
+        self._pos = ind
+
+    def read_frame(self, crop=False):
+        if self._pos >= self._nframes:
+            return None
+        width, height = self.dimensions
+        frame = np.full((height, width, 3), self._pos, dtype=np.uint8)
+        self.read_indices.append(self._pos)
+        self._pos += 1
+        return frame
+
+
+@pytest.fixture(scope="function")
+def fake_video_reader():
+    """Factory for synthetic videos: ``fake_video_reader(nframes, fps=..., width=..., height=...)``."""
+    return FakeVideoReader
+
+
+# -----------------------------------------------------------------------------
+# Known defects
+#
+# Mark a test that captures a known defect with
+# ``@pytest.mark.known_defect("NAME")``.
+#
+# Through the defect's ``affects_through`` version, the test is treated as a
+# strict xfail. Only an AssertionError is considered an expected failure;
+# setup, import, and other errors still fail the test.
+#
+# After ``affects_through``, the xfail is disabled and the test result is
+# determined by its assertions. Each marked test also emits a PytestWarning
+# indicating that the marker should be removed or assigned a later version.
+#
+# If the defect is fixed before or during the affected version range, the test
+# produces XPASS(strict). Remove the registry entry and all markers that
+# reference it once the defect is fixed.
+# -----------------------------------------------------------------------------
+
+
+class KnownDefectInfo(NamedTuple):
+    """A known defect and the last DeepLabCut version it is known to affect.
+
+    Attributes:
+        affects_through: Last DeepLabCut version known to carry the defect. The
+            ``known_defect`` xfail applies while the running version is at most this.
+        reason: Human-readable description of the defect, used as the xfail reason.
+    """
+
+    affects_through: Version
+    reason: str
+
+
+@unique
+class KnownDefect(Enum):
+    """Known defects pinned by strict-xfail tests, one entry per topic."""
+
+    LABELED_SUFFIX_PLOTS_FILTER = KnownDefectInfo(
+        Version("3.1.0"),
+        "labeled-data folders are filtered with the substring '_labeled', so a legitimately named "
+        "dataset folder is invisible to DeepLabCut's own enumeration",
+    )
+    STEM_SUBSTRING_REMOVAL = KnownDefectInfo(
+        Version("3.1.0"),
+        "the video_sets removal loop matches stems with 'in', so dropping Sample1 also drops Sample10",
+    )
+    UNFILTERED_LABELED_DATA_MERGE = KnownDefectInfo(
+        Version("3.1.0"),
+        "labeled-data is enumerated with an unfiltered iterdir(), so any directory holding a "
+        "CollectedData file is merged whatever its name",
+    )
+
+
+_DLC_VERSION = Version(_dlc_version)
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    config.addinivalue_line(
+        "markers",
+        "known_defect(name): strict xfail for the KnownDefect entry `name`, see tests/conftest.py",
+    )
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    for item in items:
+        for marker in item.iter_markers("known_defect"):
+            (name,) = marker.args
+            try:
+                defect = KnownDefect[name].value
+            except KeyError:
+                raise pytest.UsageError(f"{item.nodeid}: unknown KnownDefect {name!r}") from None
+            if _DLC_VERSION > defect.affects_through:
+                item.warn(
+                    pytest.PytestWarning(
+                        f"KnownDefect.{name} is past {defect.affects_through}, so known_defect no longer applies. "
+                        "If this test passes, delete the marker and the entry; "
+                        "if it fails, fix the defect or move affects_through forward."
+                    )
+                )
+            item.add_marker(
+                pytest.mark.xfail(
+                    _DLC_VERSION <= defect.affects_through,
+                    reason=f"{name} (known through {defect.affects_through}): {defect.reason}",
+                    raises=AssertionError,
+                    strict=True,
+                )
+            )

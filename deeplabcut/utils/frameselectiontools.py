@@ -294,6 +294,8 @@ def KmeansbasedFrameselectioncv2(
                         DATA[counter, :, :] = np.mean(image, 2)
         else:
             print("Extracting and downsampling...", nframes, " frames from the video.")
+            # Consecutive indices are read sequentially, so seek to the first one once.
+            cap.set_to_frame(Index[0])
             if color:
                 for counter, index in tqdm(enumerate(Index)):
                     frame = cap.read_frame(crop=True)

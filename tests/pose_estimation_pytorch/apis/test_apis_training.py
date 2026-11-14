@@ -55,3 +55,34 @@ def test_train_uses_resume_training_from_config(
     train(loader=loader, run_config=run_config, task=Task.BOTTOM_UP, device="cpu", snapshot_path=None)
 
     assert mock_build_runner.call_args.kwargs["snapshot_path"] == "/train/snapshot-010.pt"
+
+
+@patch("deeplabcut.pose_estimation_pytorch.apis.training.DataLoader")
+@patch("deeplabcut.pose_estimation_pytorch.apis.training.build_transforms", return_value=Mock())
+@patch("deeplabcut.pose_estimation_pytorch.apis.training.PoseModel.build", return_value=Mock())
+@patch("deeplabcut.pose_estimation_pytorch.apis.training.build_training_runner", return_value=Mock())
+def test_train_passes_dataloader_kwargs_to_train_dataloader(
+    mock_build_runner: Mock,
+    mock_build_model: Mock,
+    mock_build_transforms: Mock,
+    mock_dataloader: Mock,
+    tmp_path: Path,
+) -> None:
+    run_config = _minimal_run_config(tmp_path)
+    run_config.train_settings.dataloader_workers = 2
+    run_config.train_settings.dataloader_kwargs = {"persistent_workers": True, "prefetch_factor": 4}
+
+    loader = Mock()
+    loader.model_folder = tmp_path
+    loader.model_cfg = run_config
+    train_dataset = Mock(__len__=Mock(return_value=1))
+    valid_dataset = Mock(__len__=Mock(return_value=1))
+    loader.create_dataset = Mock(side_effect=[train_dataset, valid_dataset])
+
+    train(loader=loader, run_config=run_config, task=Task.BOTTOM_UP, device="cpu", snapshot_path=None)
+
+    train_call, valid_call = mock_dataloader.call_args_list
+    assert train_call.kwargs["num_workers"] == 2
+    assert train_call.kwargs["persistent_workers"] is True
+    assert train_call.kwargs["prefetch_factor"] == 4
+    assert "persistent_workers" not in valid_call.kwargs
