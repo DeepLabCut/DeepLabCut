@@ -308,6 +308,7 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../dlc-utils/index.html">DeepLabCut-Utils - Community contributions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../dlc-utils/XROMM/usage.html">XROMM + DeepLabCut local integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dlc-utils/fish_kinematics/usage.html">Deriving fish swimming kinematics and choosing a reliable observation duration</a></li>
 </ul>
 </details></li>
 </ul>
@@ -930,10 +931,17 @@ and <a class="reference external" href="https://pytorch.org/docs/stable/data.htm
 <code class="docutils literal notranslate"><span class="pre">dataloader_workers:</span> <span class="pre">0</span></code> uses single-process data loading, while setting it to 1 or more
 will use multi-process data loading. You should always keep
 <code class="docutils literal notranslate"><span class="pre">dataloader_pin_memory:</span> <span class="pre">true</span></code> when training on an NVIDIA GPU.</p>
+<p>Any other <a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader"><code class="docutils literal notranslate"><span class="pre">DataLoader</span></code></a>
+argument can be passed to the training data loader with <code class="docutils literal notranslate"><span class="pre">dataloader_kwargs</span></code>. For example,
+<code class="docutils literal notranslate"><span class="pre">persistent_workers:</span> <span class="pre">true</span></code> keeps the workers alive between epochs, and <code class="docutils literal notranslate"><span class="pre">prefetch_factor</span></code>
+sets how many batches each worker loads in advance (both require <code class="docutils literal notranslate"><span class="pre">dataloader_workers</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>).
+Arguments that DeepLabCut sets itself (<code class="docutils literal notranslate"><span class="pre">dataset</span></code>, <code class="docutils literal notranslate"><span class="pre">batch_size</span></code>, <code class="docutils literal notranslate"><span class="pre">shuffle</span></code>, <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code>,
+<code class="docutils literal notranslate"><span class="pre">num_workers</span></code> and <code class="docutils literal notranslate"><span class="pre">pin_memory</span></code>) are reserved and cannot be set in <code class="docutils literal notranslate"><span class="pre">dataloader_kwargs</span></code>.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">train_settings</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># the batch size used for training</span>
 <span class="w">  </span><span class="nt">dataloader_workers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">  </span><span class="c1"># the number of workers for the PyTorch Dataloader</span>
 <span class="w">  </span><span class="nt">dataloader_pin_memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># pin DataLoader memory</span>
+<span class="w">  </span><span class="nt">dataloader_kwargs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># extra DataLoader arguments, e.g. {persistent_workers: true}</span>
 <span class="w">  </span><span class="nt">display_iters</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">500</span><span class="w">  </span><span class="c1"># the number of iterations (steps) between each log print</span>
 <span class="w">  </span><span class="nt">epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">200</span><span class="w">  </span><span class="c1"># the maximum number of epochs for which to train the model</span>
 <span class="w">  </span><span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">42</span><span class="w">  </span><span class="c1"># the random seed to set for reproducibility</span>

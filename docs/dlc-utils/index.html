@@ -308,6 +308,7 @@
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">DeepLabCut-Utils - Community contributions</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="XROMM/usage.html">XROMM + DeepLabCut local integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fish_kinematics/usage.html">Deriving fish swimming kinematics and choosing a reliable observation duration</a></li>
 </ul>
 </details></li>
 </ul>
@@ -515,6 +516,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-scripts-for-scaling-up-your-dlc-analysis-training">Example scripts for scaling up your DLC analysis &amp; training</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-dlc-xromm-dlctools-xmalab">Using DLC + XROMM_DLCTools + xmalab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fish-swimming-kinematics-and-reliable-observation-duration">Fish swimming kinematics and reliable observation duration</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-your-dlc-outputs-loading-simple-roi-analysis-visualization-examples">Using your DLC outputs, loading, simple ROI analysis, visualization examples</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#time-spent-of-a-body-part-in-a-particular-region-of-interest-roi">Time spent of a body part in a particular region of interest (ROI)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-display-gui">DeepLabCut-Display GUI</a></li>
@@ -592,6 +594,17 @@ The DeepLabCut team is not responsible for the maintenance of these packages, an
 </ul>
 <p>In that local layout, <code class="docutils literal notranslate"><span class="pre">XROMM_DLCTools</span></code> uses the optional <code class="docutils literal notranslate"><span class="pre">dlc</span></code> dependency group to import this checkout directly, and its baseline harness runs both a DeepLabCut smoke scenario and a broader end-to-end local workflow integration scenario.</p>
 <p>See <a class="reference internal" href="XROMM/usage.html#file-xamalab-dlc-integration"><span class="std std-ref">XROMM + DeepLabCut local integration</span></a> for the local integration notes and exact commands.</p>
+</section>
+<section id="fish-swimming-kinematics-and-reliable-observation-duration">
+<h2>Fish swimming kinematics and reliable observation duration<a class="headerlink" href="#fish-swimming-kinematics-and-reliable-observation-duration" title="Link to this heading">#</a></h2>
+<blockquote>
+<div><p>Contributed by <a class="reference external" href="https://github.com/Denny-Hwang">&#64;Denny-Hwang</a></p>
+</div></blockquote>
+<p>Derive swimming-kinematics metrics (tail-beat frequency, swimming speed, body curvature, and a day/night index) from single-animal DeepLabCut pose tracks of fish, and use the Spearman–Brown reliability formula to estimate how long you need to record before each metric is stable. Adapted from Hwang et al. (2026), <em>Ecological Informatics</em> 95, 103760.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/Denny-Hwang/FishML_Observation_to_Replication">Reference code: <code class="docutils literal notranslate"><span class="pre">FishML_Observation_to_Replication</span></code></a></p></li>
+</ul>
+<p>See <a class="reference internal" href="fish_kinematics/usage.html#file-fish-swimming-kinematics"><span class="std std-ref">Deriving fish swimming kinematics and choosing a reliable observation duration</span></a> for the full recipe.</p>
 </section>
 <section id="using-your-dlc-outputs-loading-simple-roi-analysis-visualization-examples">
 <h2>Using your DLC outputs, loading, simple ROI analysis, visualization examples<a class="headerlink" href="#using-your-dlc-outputs-loading-simple-roi-analysis-visualization-examples" title="Link to this heading">#</a></h2>
@@ -811,6 +824,7 @@ The DeepLabCut team is not responsible for the maintenance of these packages, an
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-scripts-for-scaling-up-your-dlc-analysis-training">Example scripts for scaling up your DLC analysis &amp; training</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-dlc-xromm-dlctools-xmalab">Using DLC + XROMM_DLCTools + xmalab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fish-swimming-kinematics-and-reliable-observation-duration">Fish swimming kinematics and reliable observation duration</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-your-dlc-outputs-loading-simple-roi-analysis-visualization-examples">Using your DLC outputs, loading, simple ROI analysis, visualization examples</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#time-spent-of-a-body-part-in-a-particular-region-of-interest-roi">Time spent of a body part in a particular region of interest (ROI)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deeplabcut-display-gui">DeepLabCut-Display GUI</a></li>

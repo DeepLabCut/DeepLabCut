@@ -1,0 +1,880 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Deriving fish swimming kinematics and choosing a reliable observation duration &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=9e359f71" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js?v=b8b12719"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/dlc-utils/fish_kinematics/usage';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Mission and Values of DeepLabCut" href="../../MISSION_AND_VALUES.html" />
+    <link rel="prev" title="XROMM + DeepLabCut local integration" href="../XROMM/usage.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
+    <script>document.write(`<img src="../../../_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../installation.html">Installing DeepLabCut</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../docker.html">DeepLabCut in Docker</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main workflows overview</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../main-workflows/user-guide.html">DeepLabCut User Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../quick-start/single_animal_quick_guide.html">Single-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../quick-start/tutorial_maDLC.html">Multi-animal at a glance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../main-workflows/multi-animal-tracking.html">Multi-animal tracking</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Overviewof3D.html">3D DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">GUI workflow</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../gui/PROJECT_GUI.html">Project Manager GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../beginner-guides/beginners-guide.html">Setting up a new project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../beginner-guides/manage-project.html">Editing and working with the configuration file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../beginner-guides/Training-Evaluation.html">Neural network training and evaluation in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../beginner-guides/video-analysis.html">Video analysis in the GUI</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../gui/napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../gui/napari/basic_usage.html">Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../gui/napari/advanced_usage.html">Advanced features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../gui/napari/troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../gui/napari/tracking/basic_usage.html">Semi-automated annotation with point tracking</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Notebooks &amp; Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../notebooks/your_data.html">Notebooks for your data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../notebooks/main_demos.html">Demo notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../notebooks/extra.html">Additional features notebooks</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut 3.0 - PyTorch guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../pytorch/index.html">PyTorch backend guides</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../pytorch/user_guide.html">What is new in DeepLabCut 3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pytorch/pytorch_config.html">Configuration file reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pytorch/architectures.html">Model architectures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pytorch/Benchmarking_shuffle_guide.html">Benchmarking user guide</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advanced, Performance &amp; Live</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../ModelZoo.html">The DeepLabCut Model Zoo!</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dlc-live/deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../dlc-live/dlc-live-gui/index.html">DeepLabCut-live-GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../dlc-live/dlc-live-gui/quickstart/install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/overview.html">GUI overview</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support.html">Camera support</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/opencv_backend.html">OpenCV backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/basler_backend.html">Basler backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend.html">Aravis backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/camera_config.html">Camera configuration</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmark.html">DeepLabCut benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/TechHardware.html">Technical &amp; hardware considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/dev/">Developer Documentation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Additional guides (Recipes)</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../recipes/index.html">The DeepLabCut Cookbook</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">DeepLabCut-Utils - Community contributions</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../XROMM/usage.html">XROMM + DeepLabCut local integration</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Deriving fish swimming kinematics and choosing a reliable observation duration</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Project &amp; Community</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Governance.html">Governance Model of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../CONTRIBUTING.html">Contributing to DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citation.html">How to Cite DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/dlc-utils/fish_kinematics/usage.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../_sources/docs/dlc-utils/fish_kinematics/usage.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Deriving fish swimming kinematics and choosing a reliable observation duration</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-midline-landmark-scheme-for-fish">1. A midline landmark scheme for fish</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-predictions">2. Loading the predictions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#swimming-speed-absolute-and-body-length-normalized">3. Swimming speed (absolute and body-length-normalized)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tail-beat-frequency-tbf">4. Tail-beat frequency (TBF)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#body-curvature">5. Body curvature</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diel-day-night-index">6. Diel (day/night) index</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-long-must-you-record-spearmanbrown-reliability">7. How long must you record? — Spearman–Brown reliability</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source">Source</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="deriving-fish-swimming-kinematics-and-choosing-a-reliable-observation-duration">
+<span id="file-fish-swimming-kinematics"></span><h1>Deriving fish swimming kinematics and choosing a reliable observation duration<a class="headerlink" href="#deriving-fish-swimming-kinematics-and-choosing-a-reliable-observation-duration" title="Link to this heading">#</a></h1>
+<blockquote>
+<div><p>Contributed by <a class="reference external" href="https://github.com/Denny-Hwang">&#64;Denny-Hwang</a></p>
+</div></blockquote>
+<p>This recipe shows how to turn DeepLabCut pose tracks of a swimming fish into
+common <strong>swimming-kinematics metrics</strong> — tail-beat frequency, swimming speed,
+body curvature, and a day/night (diel) index — and how to decide <strong>how long you
+need to record</strong> before those metrics are stable, using the Spearman–Brown
+reliability index.</p>
+<p>The methods below are generic with respect to species and metric: they operate on
+any single-animal DeepLabCut output where landmarks are placed along the body
+midline.</p>
+<section id="a-midline-landmark-scheme-for-fish">
+<h2>1. A midline landmark scheme for fish<a class="headerlink" href="#a-midline-landmark-scheme-for-fish" title="Link to this heading">#</a></h2>
+<p>Placing landmarks along the body midline (plus the tail and, optionally, fins)
+makes the geometry below straightforward. A scheme that works well for an
+elongated fish is:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Group</p></th>
+<th class="head"><p>Landmarks</p></th>
+<th class="head"><p>Used for</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Head</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Head1</span></code>, <code class="docutils literal notranslate"><span class="pre">Head2</span></code></p></td>
+<td><p>Heading reference line (for tail-beat detection)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Body</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Body1</span></code> … <code class="docutils literal notranslate"><span class="pre">Body5</span></code></p></td>
+<td><p>Body curvature (circle fit), displacement/speed</p></td>
+</tr>
+<tr class="row-even"><td><p>Tail</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Tail1</span></code> … <code class="docutils literal notranslate"><span class="pre">Tail4</span></code></p></td>
+<td><p>Tail-beat frequency</p></td>
+</tr>
+<tr class="row-odd"><td><p>Fins</p></td>
+<td><p>e.g. <code class="docutils literal notranslate"><span class="pre">PectoralL</span></code>, <code class="docutils literal notranslate"><span class="pre">PectoralR</span></code>, <code class="docutils literal notranslate"><span class="pre">Dorsal</span></code></p></td>
+<td><p>optional context</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Label and train as usual (see the
+<a class="reference internal" href="#../standardDeepLabCut_UserGuide.md"><span class="xref myst">standard DeepLabCut user guide</span></a>), then run
+<code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code> to produce the per-frame predictions used below.</p>
+</section>
+<section id="loading-the-predictions">
+<h2>2. Loading the predictions<a class="headerlink" href="#loading-the-predictions" title="Link to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="c1"># The .h5 written by deeplabcut.analyze_videos (single-animal project)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="s2">"my_videoDLC_resnet50_FishJul14shuffle1_1000000.h5"</span><span class="p">)</span>
+
+<span class="c1"># Drop the top "scorer" column level so columns are (bodypart, coord)</span>
+<span class="n">scorer</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">"scorer"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">scorer</span><span class="p">]</span>
+
+<span class="n">FPS</span> <span class="o">=</span> <span class="mf">30.0</span>            <span class="c1"># video frame rate</span>
+<span class="n">MM_PER_PX</span> <span class="o">=</span> <span class="mf">2.0</span>       <span class="c1"># spatial calibration (mm per pixel), from a known reference</span>
+<span class="n">BODY_LENGTH_MM</span> <span class="o">=</span> <span class="mi">490</span>  <span class="c1"># mean body length of the target fish</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">xy</span><span class="p">(</span><span class="n">bodypart</span><span class="p">,</span> <span class="n">p_cutoff</span><span class="o">=</span><span class="mf">0.6</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""(N, 2) array of x, y for a bodypart; low-confidence points -&gt; NaN."""</span>
+    <span class="n">sub</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">bodypart</span><span class="p">]</span>
+    <span class="n">pts</span> <span class="o">=</span> <span class="n">sub</span><span class="p">[[</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">pts</span><span class="p">[</span><span class="n">sub</span><span class="p">[</span><span class="s2">"likelihood"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">p_cutoff</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">return</span> <span class="n">pts</span>
+</pre></div>
+</div>
+<p>Always condition on <code class="docutils literal notranslate"><span class="pre">likelihood</span></code> (the <code class="docutils literal notranslate"><span class="pre">p_cutoff</span></code>) before computing kinematics, so
+that uncertain detections don’t leak into the metrics.</p>
+</section>
+<section id="swimming-speed-absolute-and-body-length-normalized">
+<h2>3. Swimming speed (absolute and body-length-normalized)<a class="headerlink" href="#swimming-speed-absolute-and-body-length-normalized" title="Link to this heading">#</a></h2>
+<p>Sum the frame-to-frame Euclidean displacement of a body landmark over a time
+window, convert pixels to millimetres, and divide by the window duration:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">swimming_speed</span><span class="p">(</span><span class="n">bodypart</span><span class="p">,</span> <span class="n">mm_per_px</span><span class="o">=</span><span class="n">MM_PER_PX</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">FPS</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Returns (absolute speed mm/s, body-length-normalized speed BL/s)."""</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">xy</span><span class="p">(</span><span class="n">bodypart</span><span class="p">)</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># px per frame</span>
+    <span class="n">path_mm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span> <span class="o">*</span> <span class="n">mm_per_px</span>               <span class="c1"># total path length (mm)</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">fps</span>                               <span class="c1"># window duration (s)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">path_mm</span> <span class="o">/</span> <span class="n">dt</span>
+    <span class="k">return</span> <span class="n">v</span><span class="p">,</span> <span class="n">v</span> <span class="o">/</span> <span class="n">BODY_LENGTH_MM</span>
+</pre></div>
+</div>
+<p>Absolute speed (mm/s) is right for movement in physical space; the
+body-length-normalized speed (BL/s) lets you compare individuals or species of
+different sizes.</p>
+</section>
+<section id="tail-beat-frequency-tbf">
+<h2>4. Tail-beat frequency (TBF)<a class="headerlink" href="#tail-beat-frequency-tbf" title="Link to this heading">#</a></h2>
+<p>Define a heading reference line from <code class="docutils literal notranslate"><span class="pre">Head1</span></code> to <code class="docutils literal notranslate"><span class="pre">Head2</span></code>. Every time a tail
+landmark crosses that line, one half-cycle has occurred. Count the crossings <code class="docutils literal notranslate"><span class="pre">N</span></code>
+over a window and divide by two to convert crossings to full beats:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_side_of_line</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Signed side (+/-1) of points p relative to the a-&gt;b line."""</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">((</span><span class="n">b</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">p</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+                   <span class="o">-</span> <span class="p">(</span><span class="n">b</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">p</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">tail_beat_frequency</span><span class="p">(</span><span class="n">tail</span><span class="o">=</span><span class="s2">"Tail1"</span><span class="p">,</span> <span class="n">fps</span><span class="o">=</span><span class="n">FPS</span><span class="p">):</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">xy</span><span class="p">(</span><span class="s2">"Head1"</span><span class="p">),</span> <span class="n">xy</span><span class="p">(</span><span class="s2">"Head2"</span><span class="p">),</span> <span class="n">xy</span><span class="p">(</span><span class="n">tail</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">_side_of_line</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">s</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)]</span>          <span class="c1"># drop NaNs / on-line points</span>
+    <span class="n">n_crossings</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">fps</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">n_crossings</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">dt</span>              <span class="c1"># Hz</span>
+</pre></div>
+</div>
+<p>Typical analysis windows range from 1 minute (to catch transient burst swimming)
+to 1 hour (for sustained averages).</p>
+</section>
+<section id="body-curvature">
+<h2>5. Body curvature<a class="headerlink" href="#body-curvature" title="Link to this heading">#</a></h2>
+<p>Fit a circle to the <code class="docutils literal notranslate"><span class="pre">Body1</span></code>…<code class="docutils literal notranslate"><span class="pre">Body5</span></code> landmarks in a frame; the curvature is the
+inverse of the fitted radius, <code class="docutils literal notranslate"><span class="pre">κ</span> <span class="pre">=</span> <span class="pre">1/R</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">fit_circle_radius</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Algebraic (Kåsa) circle fit -&gt; radius. points: (n, 2)."""</span>
+    <span class="n">pts</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">pts</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">pts</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))]</span>
+    <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">c</span> <span class="o">+</span> <span class="n">cx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">cy</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">body_curvature</span><span class="p">(</span><span class="n">frame_index</span><span class="p">,</span> <span class="n">mm_per_px</span><span class="o">=</span><span class="n">MM_PER_PX</span><span class="p">):</span>
+    <span class="n">pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">xy</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Body</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)[</span><span class="n">frame_index</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">)])</span>
+    <span class="n">R_px</span> <span class="o">=</span> <span class="n">fit_circle_radius</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">R_px</span><span class="p">)</span> <span class="k">else</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_px</span> <span class="o">*</span> <span class="n">mm_per_px</span><span class="p">)</span>  <span class="c1"># mm^-1</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p><strong>Note:</strong> the reference study uses the <strong>HyperLS</strong> algebraic circle fit
+(Kanatani et al., 2011), which reduces the bias of the plain algebraic fit shown
+here. Swap <code class="docutils literal notranslate"><span class="pre">fit_circle_radius</span></code> for a HyperLS implementation when you need the
+lower-bias estimate; the exact code is in the reference repository.</p>
+</div></blockquote>
+</section>
+<section id="diel-day-night-index">
+<h2>6. Diel (day/night) index<a class="headerlink" href="#diel-day-night-index" title="Link to this heading">#</a></h2>
+<p>Split each metric by a day/night boundary and take the ratio of the nighttime to
+daytime mean. A diel index <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">1</span></code> means the metric is larger at night:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">diel_index</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">timestamps</span><span class="p">,</span> <span class="n">day_start</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">day_end</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""values and timestamps (datetime64) are aligned 1-D arrays."""</span>
+    <span class="n">hour</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">timestamps</span><span class="p">)</span><span class="o">.</span><span class="n">hour</span>
+    <span class="n">is_day</span> <span class="o">=</span> <span class="p">(</span><span class="n">hour</span> <span class="o">&gt;=</span> <span class="n">day_start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">hour</span> <span class="o">&lt;</span> <span class="n">day_end</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="o">~</span><span class="n">is_day</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">is_day</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="how-long-must-you-record-spearmanbrown-reliability">
+<h2>7. How long must you record? — Spearman–Brown reliability<a class="headerlink" href="#how-long-must-you-record-spearmanbrown-reliability" title="Link to this heading">#</a></h2>
+<p>Long-term metrics vary day to day, so a short clip may not represent the animal.
+Model reliability as a function of the number of averaged days <code class="docutils literal notranslate"><span class="pre">k</span></code> with the
+<strong>Spearman–Brown</strong> formula, using the day-to-day <strong>intraclass correlation
+coefficient (ICC)</strong> as the single-day reliability <code class="docutils literal notranslate"><span class="pre">ρ</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">icc_one_way</span><span class="p">(</span><span class="n">daily_values</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    One-way random-effects ICC(1,1) from Shrout &amp; Fleiss (1979).</span>
+<span class="sd">    daily_values: list of 1-D arrays, one per day (e.g. hourly metric values).</span>
+<span class="sd">    """</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">daily_values</span><span class="p">]</span>
+    <span class="n">all_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span>
+    <span class="n">grand</span> <span class="o">=</span> <span class="n">all_vals</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">g</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_vals</span><span class="p">)</span>
+    <span class="n">n_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">])</span>
+    <span class="n">day_means</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">])</span>
+
+    <span class="n">ssb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">n_i</span> <span class="o">*</span> <span class="p">(</span><span class="n">day_means</span> <span class="o">-</span> <span class="n">grand</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">ssw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">d</span> <span class="o">-</span> <span class="n">d</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">])</span>
+    <span class="n">ms_between</span> <span class="o">=</span> <span class="n">ssb</span> <span class="o">/</span> <span class="p">(</span><span class="n">g</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ms_within</span> <span class="o">=</span> <span class="n">ssw</span> <span class="o">/</span> <span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">g</span><span class="p">)</span>
+    <span class="n">k_bar</span> <span class="o">=</span> <span class="n">n_i</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">ms_between</span> <span class="o">-</span> <span class="n">ms_within</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">ms_between</span> <span class="o">+</span> <span class="p">(</span><span class="n">k_bar</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">ms_within</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">spearman_brown</span><span class="p">(</span><span class="n">icc</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="n">icc</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">icc</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">min_days_for_reliability</span><span class="p">(</span><span class="n">icc</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">max_days</span><span class="o">=</span><span class="mi">365</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Smallest number of averaged days whose reliability reaches `target`."""</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_days</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">spearman_brown</span><span class="p">(</span><span class="n">icc</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">target</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">k</span>
+    <span class="k">return</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p>Use it on pilot data (e.g. hourly values grouped by day) to get an evidence-based
+recording length per metric:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">icc</span> <span class="o">=</span> <span class="n">icc_one_way</span><span class="p">(</span><span class="n">daily_hourly_values</span><span class="p">)</span>     <span class="c1"># from your pilot recording</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"single-day ICC:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">icc</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"days to reach reliability 0.8:"</span><span class="p">,</span> <span class="n">min_days_for_reliability</span><span class="p">(</span><span class="n">icc</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mf">0.8</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>A common convention treats reliability <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">0.8</span></code> as “very good” (Ursachi et al.,
+2015). The required duration typically differs markedly across metrics — highly
+variable or slowly fluctuating metrics need longer records to stabilize — which is
+exactly why it is worth estimating rather than assuming. The thresholds you obtain
+are context-specific (they depend on species, individual, life stage, and
+environment), but the workflow that produces them is general.</p>
+</section>
+<section id="source">
+<h2>Source<a class="headerlink" href="#source" title="Link to this heading">#</a></h2>
+<p>Method adapted from Hwang et al. (2026), <em>Ecological Informatics</em> 95, 103760
+(<a class="reference external" href="https://doi.org/10.1016/j.ecoinf.2026.103760">DOI</a>,
+<a class="reference external" href="https://github.com/Denny-Hwang/FishML_Observation_to_Replication">reference code</a>).
+Please also <a class="reference internal" href="../../citation.html"><span class="std std-doc">cite DeepLabCut</span></a>.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./docs/dlc-utils/fish_kinematics"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../XROMM/usage.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">XROMM + DeepLabCut local integration</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../../MISSION_AND_VALUES.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Mission and Values of DeepLabCut</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-midline-landmark-scheme-for-fish">1. A midline landmark scheme for fish</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-predictions">2. Loading the predictions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#swimming-speed-absolute-and-body-length-normalized">3. Swimming speed (absolute and body-length-normalized)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tail-beat-frequency-tbf">4. Tail-beat frequency (TBF)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#body-curvature">5. Body curvature</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diel-day-night-index">6. Diel (day/night) index</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-long-must-you-record-spearmanbrown-reliability">7. How long must you record? — Spearman–Brown reliability</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source">Source</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
