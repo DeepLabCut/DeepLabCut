@@ -399,37 +399,38 @@ class AnalyzeVideos(DefaultTab):
 
     def _run_pipeline(self, options: AnalyzeVideosOptions, batches: list[tuple[str, list[Path]]]):
         plot_figures = {}
-        for videotype, videos in batches:
-            try:
-                self.root.logger.info(f"Analyzing {len(videos)} video(s) with extension {videotype}")
+        try:
+            for videotype, videos in batches:
+                try:
+                    self.root.logger.info(f"Analyzing {len(videos)} video(s) with extension {videotype}")
 
-                deeplabcut.analyze_videos(
-                    options.config_path,
-                    videos=videos,
-                    video_extensions=videotype,
-                    shuffle=options.shuffle,
-                    save_as_csv=options.save_as_csv,
-                    cropping=options.cropping,
-                    dynamic=options.dynamic_cropping_params,
-                    auto_track=options.auto_track,
-                    n_tracks=options.num_animals_in_videos,
-                    calibrate=options.calibrate_assembly,
-                    identity_only=options.assemble_with_ID_only,
-                )
+                    deeplabcut.analyze_videos(
+                        options.config_path,
+                        videos=videos,
+                        video_extensions=videotype,
+                        shuffle=options.shuffle,
+                        save_as_csv=options.save_as_csv,
+                        cropping=options.cropping,
+                        dynamic=options.dynamic_cropping_params,
+                        auto_track=options.auto_track,
+                        n_tracks=options.num_animals_in_videos,
+                        calibrate=options.calibrate_assembly,
+                        identity_only=options.assemble_with_ID_only,
+                    )
 
-                plot_figures |= self._run_postprocessing_for_group(options, videotype, videos)
-            except Exception as e:
-                exc = f"Error analyzing videos {videos} with extension {videotype}: {e}"
-                self.root.logger.error(exc, exc_info=True)
-                raise RuntimeError(exc) from e
+                    plot_figures |= self._run_postprocessing_for_group(options, videotype, videos)
+                except Exception as e:
+                    exc = f"Error analyzing videos {videos} with extension {videotype}: {e}"
+                    self.root.logger.error(exc, exc_info=True)
+                    raise RuntimeError(exc) from e
 
-        # Run CSV conversion once per unique folder, after all batches
-        if options.auto_track and options.save_as_csv:
-            self._convert_outputs_to_csv_once_per_folder(batches)
-
-        if plot_figures:
-            # Queues the signal to show trajectory plots in the GUI thread.
-            self.trajectory_plots_saved.emit(plot_figures)
+            # Run CSV conversion once per unique folder, after all batches
+            if options.auto_track and options.save_as_csv:
+                self._convert_outputs_to_csv_once_per_folder(batches)
+        finally:
+            if plot_figures:
+                # Queues the signal to show successful trajectory plots in the GUI thread.
+                self.trajectory_plots_saved.emit(plot_figures)
 
     def _run_postprocessing_for_group(
         self,

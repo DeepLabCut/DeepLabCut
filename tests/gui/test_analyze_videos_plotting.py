@@ -144,14 +144,16 @@ def test_plots_are_not_shown_when_display_is_off(run_analysis, fake_api, shown_d
     assert shown_dialogs == []
 
 
-def test_plots_are_not_shown_when_analysis_fails(run_analysis, fake_api, shown_dialogs):
+def test_plots_of_successful_batches_are_shown_when_a_later_batch_fails(run_analysis, fake_api, shown_dialogs):
     fake_api.failing_extension = ".mp4"
 
     tab = run_analysis()
 
     assert len(tab.root.task_errors) == 1
     assert fake_api.plot_calls == [(".avi", False, True)]
-    assert shown_dialogs == []
+    [(plot_figures, is_gui_thread)] = shown_dialogs
+    assert list(plot_figures) == [Path("plot-poses/a/trajectory.png")]
+    assert is_gui_thread
 
 
 def test_display_error_is_reported_to_the_user(run_analysis, fake_api, monkeypatch):
@@ -194,7 +196,7 @@ def test_new_plots_replace_the_previous_plot_window(run_analysis, first_plot_win
     "show_trajectory_plots, api_changes",
     [
         pytest.param(False, {}, id="display-off"),
-        pytest.param(True, {"failing_extension": ".mp4"}, id="analysis-fails"),
+        pytest.param(True, {"failing_extension": ".avi"}, id="analysis-fails"),
         pytest.param(True, {"nothing_to_plot": True}, id="nothing-to-plot"),
     ],
 )
