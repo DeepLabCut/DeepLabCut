@@ -31,6 +31,7 @@ from deeplabcut.gui.components import (
     _create_vertical_layout,
 )
 from deeplabcut.gui.utils import move_to_separate_thread
+from deeplabcut.utils.plotting import PLOT_NAMES
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,14 @@ class AnalyzeVideosOptions:
     track_method: str | None
 
 
+def _individual_name(path: Path) -> str:
+    """
+    File names are ``<plot name>[_filtered]<individual><image type>.png``.
+    """
+    plot_name = max((name for name in PLOT_NAMES if path.stem.startswith(name)), key=len, default="")
+    return path.stem.removeprefix(plot_name).removeprefix("_filtered")
+
+
 class TrajectoryPlotsDialog(QtWidgets.QDialog):
     """Displays trajectory plots with a navigation toolbar, with one tab per video."""
 
@@ -64,13 +73,18 @@ class TrajectoryPlotsDialog(QtWidgets.QDialog):
 
         figures_per_video = {}
         for path, figure in plot_figures.items():
-            figures_per_video.setdefault(Path(path).parent, []).append(figure)
+            path = Path(path)
+            figures_per_video.setdefault(path.parent, []).append((_individual_name(path), figure))
 
         tabs = QtWidgets.QTabWidget(self)
         for folder, figures in figures_per_video.items():
             content = QtWidgets.QWidget()
             content_layout = QtWidgets.QVBoxLayout(content)
-            for figure in figures:
+            for individual, figure in figures:
+                if individual:
+                    header = _create_label_widget(individual, "font:bold", margins=(0, 10, 0, 10))
+                    header.setAlignment(Qt.AlignCenter)
+                    content_layout.addWidget(header)
                 figure.set_layout_engine("tight")
                 canvas = FigureCanvas(figure)
                 canvas.setMinimumHeight(int(figure.get_figheight() * figure.dpi))
@@ -473,7 +487,6 @@ class AnalyzeVideos(DefaultTab):
 
     @Slot(object)
     def _show_trajectory_plots(self, plot_figures: dict[Path, Figure]):
-        # Close previous plots.
         for dialog in self.findChildren(TrajectoryPlotsDialog):
             dialog.close()
 

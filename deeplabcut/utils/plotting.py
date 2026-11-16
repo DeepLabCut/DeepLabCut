@@ -49,6 +49,9 @@ def Histogram(vector, color, bins, ax=None, linewidth=1.0):
     ax.hist(dvector, color=color, histtype="step", bins=bins, linewidth=linewidth)
 
 
+PLOT_NAMES = ("trajectory", "plot", "plot-likelihood", "hist")
+
+
 def PlottingResults(
     tmpfolder,
     Dataframe,
@@ -152,7 +155,7 @@ def PlottingResults(
         cbar = ax.figure.colorbar(sm, ax=ax, ticks=range(len(bodyparts2plot)))
         cbar.set_ticklabels(bodyparts2plot)
 
-    figures = {"trajectory": fig1, "plot": fig2, "plot-likelihood": fig3, "hist": fig4}
+    figures = dict(zip(PLOT_NAMES, (fig1, fig2, fig3, fig4), strict=True))
     saved_figures = {}
     for name, fig in figures.items():
         path = Path(tmpfolder) / (name + suffix)
@@ -359,11 +362,12 @@ def _plot_trajectories(
     df = pd.read_hdf(h5file)
     if bodyparts is None:
         bodyparts = list(df.columns.get_level_values("bodyparts").unique())
+    try:
+        animals = list(df.columns.get_level_values("individuals").unique())
+    except KeyError:
+        animals = [""]
     if individuals is None:
-        try:
-            individuals = set(df.columns.get_level_values("individuals"))
-        except KeyError:
-            individuals = [""]
+        individuals = animals
     if dest_folder is None:
         vname = Path(h5file).name.split("DLC")[0]
         vid_folder = Path(h5file).parent
@@ -371,19 +375,14 @@ def _plot_trajectories(
     auxiliaryfunctions.attempt_to_make_folder(dest_folder, recursive=True)
     # Keep only the individuals and bodyparts that were labeled
     labeled_bpts = [bp for bp in df.columns.get_level_values("bodyparts").unique() if bp in bodyparts]
-    # Either display the animals defined in the config if they are found
-    # in the dataframe, or all the trajectories regardless of their names
-    try:
-        animals = set(df.columns.get_level_values("individuals"))
-    except KeyError:
-        animals = {""}
     cfg = {
         "colormap": colormap,
         "alphavalue": alpha,
         "pcutoff": pcutoff,
     }
     saved_figures = {}
-    for animal in animals.intersection(individuals) or animals:
+    # Follow the order of individuals from project config or animals in the file.
+    for animal in [individual for individual in individuals if individual in animals] or animals:
         saved_figures |= PlottingResults(
             dest_folder,
             df,

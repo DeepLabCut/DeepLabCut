@@ -25,6 +25,7 @@ from PySide6 import QtCore, QtWidgets
 
 import deeplabcut.gui.tabs.analyze_videos as analyze_videos_tab
 from deeplabcut.gui.tabs.analyze_videos import AnalyzeVideos, AnalyzeVideosOptions, TrajectoryPlotsDialog
+from deeplabcut.utils.plotting import PLOT_NAMES
 
 BATCHES = [(".avi", [Path("a.avi")]), (".mp4", [Path("b.mp4")])]
 
@@ -218,6 +219,12 @@ def _figure_with_colorbar():
     return fig
 
 
+def _headers(tab_content):
+    # Direct children only: each toolbar has its own label for the cursor coordinates
+    labels = tab_content.findChildren(QtWidgets.QLabel, options=QtCore.Qt.FindDirectChildrenOnly)
+    return [label.text() for label in labels]
+
+
 def test_dialog_shows_one_tab_per_video_with_a_toolbar_per_figure(qtbot):
     plot_figures = {
         Path("plot-poses") / video / name: _figure_with_colorbar()
@@ -234,6 +241,21 @@ def test_dialog_shows_one_tab_per_video_with_a_toolbar_per_figure(qtbot):
     first_tab_figures = [canvas.figure for canvas in first_tab.findChildren(FigureCanvas)]
     assert first_tab_figures == list(plot_figures.values())[:2]
     assert len(first_tab.findChildren(NavigationToolbar2QT)) == 2
+    assert _headers(first_tab) == []
+
+
+def test_dialog_shows_the_animal_name_above_each_figure(qtbot):
+    plot_figures = {
+        Path("plot-poses/a") / f"{plot_name}_filtered{individual}.png": Figure()
+        for individual in ("animal_0", "plot2")
+        for plot_name in PLOT_NAMES
+    }
+
+    dialog = TrajectoryPlotsDialog(plot_figures)
+    qtbot.addWidget(dialog)
+
+    tab_content = dialog.findChild(QtWidgets.QTabWidget).widget(0).widget()
+    assert _headers(tab_content) == ["animal_0"] * len(PLOT_NAMES) + ["plot2"] * len(PLOT_NAMES)
 
 
 def test_dialog_draws_figures_with_visible_labels(qtbot):
