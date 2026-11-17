@@ -193,7 +193,12 @@ def build_pose_config_defaults(
     aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
 
-    model_cfg = _update_config(model_cfg, aug_cfg)
+    if task == Task.TOP_DOWN:
+        # Use generic augmentations as defaults; model-specific crop sizes must
+        # match the pose head's input size.
+        model_cfg = _update_config(aug_cfg, model_cfg)
+    else:
+        model_cfg = _update_config(model_cfg, aug_cfg)
     model_cfg = _update_config(base_cfg, model_cfg)
 
     # add a unique bodypart head if needed

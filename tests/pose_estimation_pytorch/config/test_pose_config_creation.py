@@ -132,6 +132,29 @@ POSE_CONFIG_CASES = [
 ]
 
 
+@pytest.mark.parametrize(
+    ("net_type", "crop_size"),
+    [("rtmpose_s", 256), ("rtmpose_m", 256), ("rtmpose_x", 384)],
+)
+def test_rtmpose_top_down_crop_matches_head(net_type: str, crop_size: int, tmp_path: Path) -> None:
+    cfg = _as_dict(
+        build_pose_config(
+            SINGLE_ANIMAL_PROJECT,
+            tmp_path / "pytorch_config.yaml",
+            net_type=net_type,
+            top_down=True,
+            save=False,
+        )
+    )
+
+    head = cfg["model"]["heads"]["bodypart"]
+    assert tuple(head["input_size"]) == (crop_size, crop_size)
+    assert tuple(head["target_generator"]["input_size"]) == (crop_size, crop_size)
+    for stage in ("train", "inference"):
+        crop = cfg["data"][stage]["top_down_crop"]
+        assert (crop["width"], crop["height"]) == tuple(head["input_size"])
+
+
 @pytest.mark.parametrize("case", POSE_CONFIG_CASES, ids=lambda c: c.id)
 def test_pose_config_creation(case: PoseConfigCase, tmp_path: Path) -> None:
     build_kwargs = dict(case.build_kwargs)
@@ -168,7 +191,9 @@ def test_pose_config_creation(case: PoseConfigCase, tmp_path: Path) -> None:
         assert detector["model"]["type"] == case.detector_type
         assert detector["device"] == "auto"
         assert detector["model"]["box_score_thresh"] == 0.01
-        assert cfg["data"]["train"].get("top_down_crop") is not None
+        for stage in ("train", "inference"):
+            crop = cfg["data"][stage]["top_down_crop"]
+            assert (crop["width"], crop["height"]) == (256, 256)
     else:
         assert cfg.get("detector") is None
 
