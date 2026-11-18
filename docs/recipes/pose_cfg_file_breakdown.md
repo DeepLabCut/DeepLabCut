@@ -101,12 +101,12 @@ The default value is `17`. It's the size of a window within which detections are
 
 ### 2.1.E `pafwidth`
 
-The default value is `20`. PAF stands for part affinity fields. It is a method of learning associations between pairs of bodyparts by preserving the location and orientation of the limb (the connection between two keypoints). This learned part affinity helps in proper animal assembly, making the model less prone to associating bodyparts of one individual with those of another. [1](#references)
+The default value is `20`. PAF stands for part affinity fields. It is a method of learning associations between pairs of bodyparts by preserving the location and orientation of the limb (the connection between two keypoints). This learned part affinity helps in proper animal assembly, making the model less prone to associating bodyparts of one individual with those of another.[^cao2017]
 <a id="data_aug"></a>
 
 ## 2.2 Data augmentation parameters
 
-In the simplest form, we can think of data augmentation as something similar to imagination or dreaming. Humans imagine different scenarios based on experience, ultimately allowing us to better understand our world. [2, 3, 4](#references)
+In the simplest form, we can think of data augmentation as something similar to imagination or dreaming. Humans imagine different scenarios based on experience, ultimately allowing us to better understand our world.[^mathis2020][^ghiasi2020][^shorten2019]
 
 Similarly, we train our models to different types of "imagined" scenarios, which we limit to the foreseeable ones, so we ultimately get a robust model that can more likely handle new data and scenes.
 
@@ -137,7 +137,7 @@ Classes of data augmentations, characterized by their nature, are given by:
 
 *Scale jittering* resizes an image within a given resize range. This allows the model to learn from different sizes of objects in the scene, therefore increasing its robustness to generalize, especially on newer scenes or object sizes.
 
-The image below, retrieved from [3](#references), illustrates the difference between two scale jittering methods.
+The image below, retrieved from Ghiasi et al. (2020)[^ghiasi2020], illustrates the difference between two scale jittering methods.
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471482096-VLLQJU4H6AH6ESMZGNQW/scale_jittering.png?format=1000w">
 
@@ -165,7 +165,7 @@ During training, each image is randomly scaled within the range `[scale_jitter_l
 
 *Rotation augmentations* are done by rotating the image right or left on an axis between $1^{\circ}$ and $359^{\circ}$. The safety of rotation augmentations is heavily determined by the rotation degree parameter. Slight rotations such as between $+1^{\circ}$ and $+20^{\circ}$ or $-1^{\circ}$ to $-20^{\circ}$ is generally an acceptable range. Keep in mind that as the rotation degree increases, the precision of the label placement can decrease
 
-The image below, retrieved from [2](#references), illustrates the difference between the different rotation degrees.
+The image below, retrieved from Mathis et al. (2020)[^mathis2020], illustrates the difference between the different rotation degrees.
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471478493-Z4JEWJG0I7MB9AYCB322/augset_rot.png?format=750w">
 
@@ -235,7 +235,7 @@ Also, the number of frames to be cropped is defined by the variable `cropratio`,
 The crop shift between each cropped image is defined by `max_shift` variable, which explains the max relative shift to the position of the crop centre. By default is set to `0.4`, which means it will be displaced 40% max from the center to not apply identical cropping each time the same image is encountered during training - this is especially important for `density` and `hybrid` cropping methods.
 
 The image below is modified from
-[2](#references).
+Mathis et al. (2020)[^mathis2020].
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471479692-R078RFZXIQ8K552OIOFP/cropping.png?format=750w">
 
@@ -264,7 +264,7 @@ Kernel filters are very popular in image processing to sharpen and blur images. 
 In DeepLabCut *pose_config.yaml* file, by default, `sharpening` is set to `False`, but if we want to use this type of data augmentation, we can set it `True` and specify a value for `sharpenratio`, which by default is set to `0.3`. Blurring is not defined in the *pose_config.yaml*, but if the user finds it convenient, it can be added to the data augmentation pipeline.
 
 The image below is modified from
-[2](#references).
+Mathis et al. (2020)[^mathis2020].
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471480991-HBZAYJP1FY0K8H2KB8DB/kernelfilter.png?format=1500w">
 
@@ -276,9 +276,12 @@ Concerning sharpness, we have an additional parameter, `edge` enhancement, which
 
 # References
 
-<ol id="references">
-     <li id="ref1">Cao, Z., Simon, T., Wei, S. E., & Sheikh, Y. (2017). Realtime multi-person 2d pose estimation using part affinity fields. In Proceedings of the IEEE conference on Computer Vision and Pattern Recognition (pp. 7291-7299).<a href="https://openaccess.thecvf.com/content_cvpr_2017/html/Cao_Realtime_Multi-Person_2D_CVPR_2017_paper.html">https://openaccess.thecvf.com/content_cvpr_2017/html/Cao_Realtime_Multi-Person_2D_CVPR_2017_paper.html</a></li>
-     <li id="ref2">Mathis, A., Schneider, S., Lauer, J., & Mathis, M. W. (2020). A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives. In Neuron (Vol. 108, Issue 1, pp. 44-65). <a href="https://doi.org/10.1016/j.neuron.2020.09.017">https://doi.org/10.1016/j.neuron.2020.09.017</a></li>
-     <li id="ref3">Ghiasi, G., Cui, Y., Srinivas, A., Qian, R., Lin, T.-Y., Cubuk, E. D., Le, Q. V., & Zoph, B. (2020). Simple Copy-Paste is a Strong Data Augmentation Method for Instance Segmentation (Version 2). arXiv. <a href="https://doi.org/10.48550/ARXIV.2012.07177">https://doi.org/10.48550/ARXIV.2012.07177</a></li>
-     <li id="ref4">Shorten, C., & Khoshgoftaar, T. M. (2019). A survey on Image Data Augmentation for Deep Learning. In Journal of Big Data (Vol. 6, Issue 1). <a href="https://doi.org/10.1186/s40537-019-0197-0">https://doi.org/10.1186/s40537-019-0197-0</a> </li>
- </ol>
+Works cited on this page:
+
+[^cao2017]: Cao, Z., Simon, T., Wei, S. E., & Sheikh, Y. (2017). Realtime multi-person 2d pose estimation using part affinity fields. In Proceedings of the IEEE conference on Computer Vision and Pattern Recognition (pp. 7291-7299). <https://openaccess.thecvf.com/content_cvpr_2017/html/Cao_Realtime_Multi-Person_2D_CVPR_2017_paper.html>
+
+[^mathis2020]: Mathis, A., Schneider, S., Lauer, J., & Mathis, M. W. (2020). A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives. In Neuron (Vol. 108, Issue 1, pp. 44-65). <https://doi.org/10.1016/j.neuron.2020.09.017>
+
+[^ghiasi2020]: Ghiasi, G., Cui, Y., Srinivas, A., Qian, R., Lin, T.-Y., Cubuk, E. D., Le, Q. V., & Zoph, B. (2020). Simple Copy-Paste is a Strong Data Augmentation Method for Instance Segmentation (Version 2). arXiv. <https://doi.org/10.48550/ARXIV.2012.07177>
+
+[^shorten2019]: Shorten, C., & Khoshgoftaar, T. M. (2019). A survey on Image Data Augmentation for Deep Learning. In Journal of Big Data (Vol. 6, Issue 1). <https://doi.org/10.1186/s40537-019-0197-0>
