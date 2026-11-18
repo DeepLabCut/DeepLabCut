@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2026-03-30'
+  last_metadata_updated: '2026-10-06'
+  ignore: false
+---
 # Developer tools useful for maintaining the repository
 
 This document summarizes the developer tooling and workflows used in this repo.

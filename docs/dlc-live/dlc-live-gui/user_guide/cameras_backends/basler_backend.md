@@ -1,7 +1,8 @@
 ---
 deeplabcut:
-  last_metadata_updated: '2026-03-17'
+  last_metadata_updated: '2026-10-06'
   ignore: false
+  last_content_updated: '2026-03-09'
 ---
 
 (file:dlclivegui-basler-backend)=

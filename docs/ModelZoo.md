@@ -1,7 +1,7 @@
 ---
 deeplabcut:
-  last_content_updated: '2025-07-06'
-  last_metadata_updated: '2026-03-06'
+  last_content_updated: '2026-03-20'
+  last_metadata_updated: '2026-10-06'
   ignore: false
 ---
 

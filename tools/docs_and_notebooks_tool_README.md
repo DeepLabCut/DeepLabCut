@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2026-10-06'
+  last_metadata_updated: '2026-10-06'
+  ignore: false
+---
 # Docs & Notebooks Checks Tool
 
 This tool scans DeepLabCut documentation pages and notebooks and produces **two independent signals**:
