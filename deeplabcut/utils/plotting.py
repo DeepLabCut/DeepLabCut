@@ -58,7 +58,7 @@ def PlottingResults(
     cfg,
     bodyparts2plot,
     individuals2plot,
-    showfigures=False,
+    use_pyplot=True,
     suffix=".png",
     resolution=100,
     linewidth=1.0,
@@ -66,7 +66,7 @@ def PlottingResults(
     """Plots poses vs time; pose x vs pose y; histogram of differences and
     likelihoods.
 
-    Figures are directly shown with pyplot when ``showfigures`` is ``True``.
+    Figures are either created with pyplot (``use_pyplot=True``) or as plain ``Figure`` objects (``use_pyplot=False``).
 
     Returns:
         dict[Path, Figure]: The figures, keyed by the path they were saved to.
@@ -77,7 +77,7 @@ def PlottingResults(
     if individuals2plot:
         Dataframe = Dataframe.loc(axis=1)[:, individuals2plot]
     animal_bpts = Dataframe.columns.get_level_values("bodyparts")
-    new_figure = plt.figure if showfigures else Figure
+    new_figure = plt.figure if use_pyplot else Figure
 
     # Pose X vs pose Y
     fig1 = new_figure(figsize=(8, 6))
@@ -162,9 +162,6 @@ def PlottingResults(
         fig.savefig(path, bbox_inches="tight", dpi=resolution)
         saved_figures[path] = fig
 
-    if showfigures:
-        plt.show()
-
     return saved_figures
 
 
@@ -219,7 +216,8 @@ def plot_trajectories(
             or a list of strings that are a subset of the full list.
             E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml
             to select only these two body parts. Defaults to "all".
-        showfigures (bool, optional): If ``True`` then plots are also displayed. Defaults to False.
+        showfigures (bool, optional): If ``True`` then plots of all videos are also displayed
+            with pyplot. Defaults to False.
         destfolder (string or None, optional): Destination folder for analysis data. If
             ``None``, the path of the video is used. Defaults to None.
         modelprefix (str, optional): Directory containing the deeplabcut models to use when evaluating the network.
@@ -235,8 +233,9 @@ def plot_trajectories(
             be taken from the config.yaml file if none is given. Defaults to "".
         pcutoff (float | None, optional): Overrides project pcutoff for plotting trajectories. Defaults to None.
         return_figures (bool, optional): If ``True``, return the figures keyed by the
-            path they were saved to. The figures are then kept in memory for all videos.
-            Defaults to False.
+            path they were saved to. The figures are then kept in memory for all videos,
+            and are plain ``Figure`` objects not tracked by pyplot unless ``showfigures``
+            is ``True``. Defaults to False.
         kwargs (dict, optional): Additional arguments.
             For torch-based shuffles, can be used to specify:
                 - snapshot_index
@@ -299,15 +298,15 @@ def plot_trajectories(
                 filepath,
                 bodyparts,
                 individuals,
-                showfigures,
-                resolution,
-                linewidth,
-                cfg["colormap"],
-                cfg["alphavalue"],
-                pcutoff,
-                suffix,
-                imagetype,
-                tmpfolder,
+                resolution=resolution,
+                linewidth=linewidth,
+                colormap=cfg["colormap"],
+                alpha=cfg["alphavalue"],
+                pcutoff=pcutoff,
+                suffix=suffix,
+                image_type=imagetype,
+                dest_folder=tmpfolder,
+                use_pyplot=showfigures or not return_figures,
             )
             if return_figures:
                 saved_figures |= video_figures
@@ -342,6 +341,9 @@ def plot_trajectories(
     else:
         print('Plots created! Please check the directory "plot-poses" within the video directory')
 
+    if showfigures:
+        plt.show()
+
     return saved_figures if return_figures else None
 
 
@@ -349,7 +351,6 @@ def _plot_trajectories(
     h5file,
     bodyparts=None,
     individuals=None,
-    show=False,
     resolution=100,
     linewidth=1.0,
     colormap="viridis",
@@ -358,6 +359,7 @@ def _plot_trajectories(
     suffix="",
     image_type=".png",
     dest_folder=None,
+    use_pyplot=True,
 ):
     df = pd.read_hdf(h5file)
     if bodyparts is None:
@@ -389,7 +391,7 @@ def _plot_trajectories(
             cfg,
             labeled_bpts,
             animal,
-            show,
+            use_pyplot,
             suffix + animal + image_type,
             resolution=resolution,
             linewidth=linewidth,

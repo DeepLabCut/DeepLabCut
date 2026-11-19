@@ -30,14 +30,14 @@ def open_plt_figure():
     plt.close(fig)
 
 
-def test_plotting_results_without_showing_leaves_pyplot_untouched(tmp_path, open_plt_figure):
+def test_plotting_results_without_pyplot_leaves_pyplot_untouched(tmp_path, open_plt_figure):
     # Synthetic predictions: 10 frames of zeros
     columns = pd.MultiIndex.from_product([BODYPARTS, ["x", "y", "likelihood"]], names=["bodyparts", "coords"])
     predictions = pd.DataFrame(0.0, index=range(10), columns=columns)
     cfg = {"pcutoff": 0.1, "colormap": "viridis", "alphavalue": 0.7}
     figures_before = plt.get_fignums()  # prevent left overs by other tests
 
-    figures = PlottingResults(tmp_path, predictions, cfg, BODYPARTS, "", showfigures=False)
+    figures = PlottingResults(tmp_path, predictions, cfg, BODYPARTS, "", use_pyplot=False)
 
     assert [p.name for p in figures] == ["trajectory.png", "plot.png", "plot-likelihood.png", "hist.png"]
     assert all(p.is_file() for p in figures)
@@ -60,7 +60,7 @@ def test_plot_trajectories_keeps_the_order_of_individuals(tmp_path, individuals,
     h5file = tmp_path / "videoDLC_scorer.h5"
     pd.DataFrame(0.0, index=range(10), columns=columns).to_hdf(h5file, key="df_with_missing")
 
-    figures = _plot_trajectories(h5file, BODYPARTS, individuals, dest_folder=str(tmp_path))
+    figures = _plot_trajectories(h5file, BODYPARTS, individuals, dest_folder=str(tmp_path), use_pyplot=False)
 
     first_figure_per_individual = list(figures)[:: len(PLOT_NAMES)]
     assert [path.name for path in first_figure_per_individual] == [f"trajectory{i}.png" for i in expected_order]

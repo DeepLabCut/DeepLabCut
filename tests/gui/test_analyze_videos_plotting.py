@@ -140,7 +140,7 @@ def test_plots_are_drawn_once_on_worker_and_shown_on_gui_thread(run_analysis, fa
 def test_plots_are_not_shown_when_display_is_off(run_analysis, fake_api, shown_dialogs):
     run_analysis(show_trajectory_plots=False)
 
-    assert fake_api.plot_calls == [(".avi", False, False), (".mp4", False, False)]
+    assert fake_api.plot_calls == [(".avi", False, True), (".mp4", False, True)]
     assert shown_dialogs == []
 
 

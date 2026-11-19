@@ -428,7 +428,7 @@ class AnalyzeVideos(DefaultTab):
             if options.auto_track and options.save_as_csv:
                 self._convert_outputs_to_csv_once_per_folder(batches)
         finally:
-            if plot_figures:
+            if plot_figures and options.show_trajectory_plots:
                 # Queues the signal to show successful trajectory plots in the GUI thread.
                 self.trajectory_plots_saved.emit(plot_figures)
 
@@ -459,8 +459,8 @@ class AnalyzeVideos(DefaultTab):
             )
 
         if options.plot_trajectories:
-            # Matplotlib windows cannot open from this worker thread; they are
-            # shown from the GUI thread once analysis finishes.
+            # Returned figures are plain Figures, which keeps pyplot off this worker thread;
+            # they are shown from the GUI thread once analysis finishes.
             plot_figures = deeplabcut.plot_trajectories(
                 options.config_path,
                 videos=videos,
@@ -470,7 +470,7 @@ class AnalyzeVideos(DefaultTab):
                 filtered=options.filter_data,
                 showfigures=False,
                 track_method=options.track_method,
-                return_figures=options.show_trajectory_plots,
+                return_figures=True,
             )
             return plot_figures or {}
         else:
