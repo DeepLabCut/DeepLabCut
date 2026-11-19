@@ -17,6 +17,7 @@ import pytest
 
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.weight_init import WeightInitialization
+from deeplabcut.pose_estimation_pytorch.config.utils import get_config_folder_path
 
 try:
     from deeplabcut.pose_estimation_pytorch.config import PoseConfig
@@ -153,6 +154,53 @@ def test_rtmpose_top_down_crop_matches_head(net_type: str, crop_size: int, tmp_p
     for stage in ("train", "inference"):
         crop = cfg["data"][stage]["top_down_crop"]
         assert (crop["width"], crop["height"]) == tuple(head["input_size"])
+
+
+MODEL_YAMLS_WITH_DATA = sorted(
+    path
+    for path in get_config_folder_path().glob("*/*.yaml")
+    if path.parent.name not in ("base", "backbones", "detectors") and read_config_as_dict(path).get("data")
+)
+
+
+def _leaves(cfg: dict, prefix: tuple[str, ...] = ()) -> list[tuple[tuple[str, ...], Any]]:
+    leaves = []
+    for key, value in cfg.items():
+        if isinstance(value, dict):
+            leaves.extend(_leaves(value, (*prefix, key)))
+        else:
+            leaves.append(((*prefix, key), value))
+    return leaves
+
+
+def _as_lists(value: Any) -> Any:
+    """Typed configs may store YAML lists as tuples; compare them as lists."""
+    if isinstance(value, (list, tuple)):
+        return [_as_lists(v) for v in value]
+    return value
+
+
+@pytest.mark.parametrize("model_yaml", MODEL_YAMLS_WITH_DATA, ids=lambda p: p.stem)
+def test_model_yaml_data_takes_precedence_over_augmentation_defaults(model_yaml: Path, tmp_path: Path) -> None:
+    """Values in a model YAML's `data` section must not be overwritten by the defaults."""
+    model_cfg = read_config_as_dict(model_yaml)
+    ctd = str(model_cfg.get("method", "bu")).lower() == "ctd"
+    cfg = _as_dict(
+        build_pose_config(
+            MULTIANIMAL_TD_PROJECT,
+            tmp_path / "pytorch_config.yaml",
+            net_type=model_yaml.stem,
+            top_down=False,
+            save=False,
+            ctd_conditions=1 if ctd else None,
+        )
+    )
+
+    for path, expected in _leaves(model_cfg["data"]):
+        value = cfg["data"]
+        for key in path:
+            value = value[key]
+        assert _as_lists(value) == _as_lists(expected), f"data.{'.'.join(path)}"
 
 
 @pytest.mark.parametrize("case", POSE_CONFIG_CASES, ids=lambda c: c.id)

@@ -189,17 +189,10 @@ def build_pose_config_defaults(
             raise ValueError("detector_config is required for top-down pose configs.")
         model_cfg["detector"] = detector_config.to_dict()
 
-    # add the default augmentations to the config
+    # merge the defaults: base config < task augmentations < model config
     aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
-
-    if task == Task.TOP_DOWN:
-        # Use generic augmentations as defaults; model-specific crop sizes must
-        # match the pose head's input size.
-        model_cfg = _update_config(aug_cfg, model_cfg)
-    else:
-        model_cfg = _update_config(model_cfg, aug_cfg)
-    model_cfg = _update_config(base_cfg, model_cfg)
+    model_cfg = _update_config(_update_config(base_cfg, aug_cfg), model_cfg)
 
     # add a unique bodypart head if needed
     if metadata.unique_bodyparts:
