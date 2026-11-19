@@ -242,9 +242,8 @@ def plot_trajectories(
                 - detector_snapshot_index
 
     Returns:
-        dict[Path, Figure] | None: If ``return_figures`` is ``True``, the plotted figures of
-        all videos, keyed by the path they were saved to.
-        Otherwise None.
+        dict[Path, Figure]: If ``return_figures`` is ``True``, the plotted figures of
+        all videos, keyed by the path they were saved to. Otherwise empty.
 
     Examples:
         To label the frames
@@ -277,7 +276,7 @@ def plot_trajectories(
     Videos = collect_video_paths(videos, extensions=video_extensions)
     if not len(Videos):
         print("No videos found. Make sure you passed a list of videos and that the video_extensions filter is right.")
-        return
+        return {}
 
     failures, multianimal_errors = [], []
     saved_figures = {}
@@ -344,7 +343,7 @@ def plot_trajectories(
     if showfigures:
         plt.show()
 
-    return saved_figures if return_figures else None
+    return saved_figures
 
 
 def _plot_trajectories(

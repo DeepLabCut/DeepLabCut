@@ -472,7 +472,7 @@ class AnalyzeVideos(DefaultTab):
                 track_method=options.track_method,
                 return_figures=True,
             )
-            return plot_figures or {}
+            return plot_figures
         else:
             return {}
 
