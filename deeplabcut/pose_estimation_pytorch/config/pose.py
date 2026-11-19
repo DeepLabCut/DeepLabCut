@@ -139,8 +139,11 @@ class PoseConfig(DLCVersionedConfig):
                 crop_size = (crop.get("width"), crop.get("height"))
                 if crop_size != input_size:
                     logger.warning(
-                        f"Setting `data.{stage}.top_down_crop` from {crop_size} to {input_size} "
-                        f"to match the input size of the '{head_name}' head."
+                        f"`data.{stage}.top_down_crop` is {crop_size[0]}x{crop_size[1]}, but the "
+                        f"'{head_name}' head expects {input_size[0]}x{input_size[1]} inputs; using "
+                        f"{input_size[0]}x{input_size[1]} in the loaded config only. To fix the "
+                        f"saved config, set `data.{stage}.top_down_crop` to width: {input_size[0]} "
+                        f"and height: {input_size[1]} in this shuffle's `pytorch_config.yaml`."
                     )
                     crop.update(width=input_size[0], height=input_size[1])
         return self

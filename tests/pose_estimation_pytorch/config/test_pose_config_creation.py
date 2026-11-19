@@ -154,6 +154,8 @@ def test_pose_config_repairs_top_down_crop_not_matching_head(
     crop = getattr(repaired.data, stage).top_down_crop
     assert (crop["width"], crop["height"]) == (384, 384)
     assert f"data.{stage}.top_down_crop" in caplog.text
+    assert "loaded config only" in caplog.text
+    assert "pytorch_config.yaml" in caplog.text
 
 
 MODEL_YAMLS_WITH_DATA = sorted(
@@ -181,20 +183,33 @@ def _as_lists(value: Any) -> Any:
 
 
 @pytest.mark.parametrize("model_yaml", MODEL_YAMLS_WITH_DATA, ids=lambda p: p.stem)
-def test_model_yaml_data_takes_precedence_over_augmentation_defaults(model_yaml: Path, tmp_path: Path) -> None:
-    """Values in a model YAML's `data` section must not be overwritten by the defaults."""
+def test_model_yaml_data_takes_precedence_over_augmentation_defaults(
+    model_yaml: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Check merge precedence before validation can repair overwritten crop sizes."""
+    from deeplabcut.pose_estimation_pytorch.config import pose as pose_module
+
+    merged_defaults = []
+    build_defaults = pose_module.build_pose_config_defaults
+
+    def capture_defaults(*args, **kwargs) -> dict:
+        defaults = build_defaults(*args, **kwargs)
+        merged_defaults.append(copy.deepcopy(defaults))
+        return defaults
+
+    monkeypatch.setattr(pose_module, "build_pose_config_defaults", capture_defaults)
     model_cfg = read_config_as_dict(model_yaml)
     ctd = str(model_cfg.get("method", "bu")).lower() == "ctd"
-    cfg = _as_dict(
-        build_pose_config(
-            MULTIANIMAL_TD_PROJECT,
-            tmp_path / "pytorch_config.yaml",
-            net_type=model_yaml.stem,
-            top_down=False,
-            save=False,
-            ctd_conditions=1 if ctd else None,
-        )
+    build_pose_config(
+        MULTIANIMAL_TD_PROJECT,
+        tmp_path / "pytorch_config.yaml",
+        net_type=model_yaml.stem,
+        top_down=False,
+        save=False,
+        ctd_conditions=1 if ctd else None,
     )
+    assert len(merged_defaults) == 1
+    cfg = merged_defaults[0]
 
     for path, expected in _leaves(model_cfg["data"]):
         value = cfg["data"]
