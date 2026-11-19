@@ -1,0 +1,49 @@
+name: Build and check release
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Commit, tag or branch to build"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build and check dist
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          activate-environment: true
+
+      - name: Build
+        run: uv build
+
+      - name: Check wheel and metadata
+        run: |
+          uvx twine check --strict dist/*
+          uvx check-wheel-contents dist/*.whl
+
+      - name: Install the wheel and import it outside the source tree
+        working-directory: ${{ runner.temp }}
+        run: |
+          uv pip install --torch-backend cpu "$GITHUB_WORKSPACE"/dist/*.whl
+          python -c "import deeplabcut; print(deeplabcut.__version__, deeplabcut.__file__)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
