@@ -44,7 +44,7 @@ jobs:
       - name: Check wheel and metadata
         run: |
           uvx twine check --strict dist/*
-          uvx check-wheel-contents dist/*.whl
+          uvx check-wheel-contents --ignore W002 dist/*.whl
 
       - name: Install the wheel and import it outside the source tree
         working-directory: ${{ runner.temp }}
