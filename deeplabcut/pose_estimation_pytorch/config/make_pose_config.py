@@ -190,6 +190,7 @@ def build_pose_config_defaults(
         model_cfg["detector"] = detector_config.to_dict()
 
     # merge the defaults: base config < task augmentations < model config
+    # (see https://github.com/DeepLabCut/DeepLabCut/issues/3592)
     aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
     model_cfg = _update_config(_update_config(base_cfg, aug_cfg), model_cfg)

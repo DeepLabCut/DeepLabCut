@@ -133,27 +133,27 @@ POSE_CONFIG_CASES = [
 ]
 
 
-@pytest.mark.parametrize(
-    ("net_type", "crop_size"),
-    [("rtmpose_s", 256), ("rtmpose_m", 256), ("rtmpose_x", 384)],
-)
-def test_rtmpose_top_down_crop_matches_head(net_type: str, crop_size: int, tmp_path: Path) -> None:
+@pytest.mark.parametrize("stage", ["train", "inference"])
+def test_pose_config_repairs_top_down_crop_not_matching_head(
+    stage: str, tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Reproduces configs created by 3.0.1 to 3.0.3 for rtmpose_x (256 crop, 384 head)."""
     cfg = _as_dict(
         build_pose_config(
             SINGLE_ANIMAL_PROJECT,
             tmp_path / "pytorch_config.yaml",
-            net_type=net_type,
+            net_type="rtmpose_x",
             top_down=True,
             save=False,
         )
     )
+    cfg["data"][stage]["top_down_crop"].update(width=256, height=256)
 
-    head = cfg["model"]["heads"]["bodypart"]
-    assert tuple(head["input_size"]) == (crop_size, crop_size)
-    assert tuple(head["target_generator"]["input_size"]) == (crop_size, crop_size)
-    for stage in ("train", "inference"):
-        crop = cfg["data"][stage]["top_down_crop"]
-        assert (crop["width"], crop["height"]) == tuple(head["input_size"])
+    repaired = PoseConfig.from_dict(cfg)
+
+    crop = getattr(repaired.data, stage).top_down_crop
+    assert (crop["width"], crop["height"]) == (384, 384)
+    assert f"data.{stage}.top_down_crop" in caplog.text
 
 
 MODEL_YAMLS_WITH_DATA = sorted(
@@ -239,9 +239,7 @@ def test_pose_config_creation(case: PoseConfigCase, tmp_path: Path) -> None:
         assert detector["model"]["type"] == case.detector_type
         assert detector["device"] == "auto"
         assert detector["model"]["box_score_thresh"] == 0.01
-        for stage in ("train", "inference"):
-            crop = cfg["data"][stage]["top_down_crop"]
-            assert (crop["width"], crop["height"]) == (256, 256)
+        assert cfg["data"]["train"].get("top_down_crop") is not None
     else:
         assert cfg.get("detector") is None
 

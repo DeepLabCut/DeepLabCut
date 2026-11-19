@@ -12,13 +12,14 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from deeplabcut.core.weight_init import WeightInitialization
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from typing_extensions import Self
 
 from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig, ProjectConfig
@@ -44,6 +45,8 @@ from deeplabcut.pose_estimation_pytorch.config.paf_parameters import PAFParamete
 from deeplabcut.pose_estimation_pytorch.config.runner import RunnerConfig
 from deeplabcut.pose_estimation_pytorch.config.training import TrainSettingsConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
+
+logger = logging.getLogger(__name__)
 
 
 class DetectorConfig(DLCBaseConfig):
@@ -113,6 +116,34 @@ class PoseConfig(DLCVersionedConfig):
             return v
         net_type, _ = NetType.from_alias(str(v))
         return net_type
+
+    @model_validator(mode="after")
+    def _match_top_down_crop_to_heads(self) -> Self:
+        """Sets the top-down crop to the input size of heads with a fixed input size.
+
+        Repairs configs created with DeepLabCut 3.0.1 to 3.0.3 for some RTMPose models.
+        See https://github.com/DeepLabCut/DeepLabCut/issues/3592
+        """
+        for head_name, head_cfg in self.model.heads.items():
+            input_size = head_cfg.get("input_size")
+            if input_size is None:
+                continue
+
+            input_size = tuple(input_size)
+            for stage in ("train", "inference"):
+                transforms = getattr(self.data, stage)
+                crop = transforms.top_down_crop if transforms is not None else None
+                if not crop:
+                    continue
+
+                crop_size = (crop.get("width"), crop.get("height"))
+                if crop_size != input_size:
+                    logger.warning(
+                        f"Setting `data.{stage}.top_down_crop` from {crop_size} to {input_size} "
+                        f"to match the input size of the '{head_name}' head."
+                    )
+                    crop.update(width=input_size[0], height=input_size[1])
+        return self
 
     @classmethod
     def build(
