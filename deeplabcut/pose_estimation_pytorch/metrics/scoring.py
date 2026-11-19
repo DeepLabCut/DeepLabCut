@@ -10,19 +10,15 @@
 #
 from __future__ import annotations
 
-import pickle
-from pathlib import Path
-
 import numpy as np
 from sklearn.metrics import accuracy_score
 
 from deeplabcut.core.crossvalutils import find_closest_neighbors
-from deeplabcut.utils.auxiliaryfunctions import read_config
+from deeplabcut.utils.auxiliaryfunctions import load_full_data, read_config
 
 
 def _match_identity_preds_to_gt(config_path: str, full_pickle_path: str) -> tuple[np.ndarray, list]:
-    with Path(full_pickle_path).open("rb") as f:
-        data = pickle.load(f)
+    data = load_full_data(full_pickle_path)
     metadata = data.pop("metadata")
     cfg = read_config(config_path)
     all_ids = cfg["individuals"].copy()

@@ -8,7 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import importlib
 import os
+import pickle
+import shelve
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from unittest.mock import patch
 
@@ -372,3 +375,70 @@ def test_read_pickle_keeps_native_paths(tmp_path):
     native_type = type(Path())
     data = auxiliaryfunctions.read_pickle(_write_path_pickle(tmp_path / "meta.pickle", "pathlib", native_type.__name__))
     assert type(data["project_path"]) is native_type
+
+
+@pytest.fixture(params=[None, "dbm.dumb", "dbm.gnu", "dbm.ndbm", "dbm.sqlite3"])
+def full_data_backend(request):
+    if request.param is not None:
+        pytest.importorskip(request.param)
+    return request.param
+
+
+@pytest.fixture
+def mock_full_data():
+    return {"metadata": {"nframes": 2}, "frame0000": [1, 2], "frame0001": [3, 4]}
+
+
+def _write_full_data(path, backend, data):
+    if backend is None:
+        with open(path, "wb") as f:
+            pickle.dump(data, f)
+    else:
+        with shelve.Shelf(importlib.import_module(backend).open(str(path), "c")) as db:
+            db.update(data)
+    return path
+
+
+def test_open_and_load_full_data(tmp_path, full_data_backend, mock_full_data):
+    path = _write_full_data(tmp_path / "video_full.pickle", full_data_backend, mock_full_data)
+    with auxiliaryfunctions.open_full_data(path) as opened:
+        assert opened == mock_full_data
+    assert auxiliaryfunctions.load_full_data(path) == mock_full_data
+
+
+def test_open_full_data_raise(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        with auxiliaryfunctions.open_full_data(tmp_path / "missing_full.pickle"):
+            pass
+    path = tmp_path / "video_full.pickle"
+    path.write_bytes(b"not a pickle")
+    with pytest.raises(pickle.UnpicklingError):
+        with auxiliaryfunctions.open_full_data(path):
+            pass
+
+
+def test_full_data_format(tmp_path, full_data_backend, mock_full_data):
+    path = tmp_path / "video_full.pickle"
+    assert auxiliaryfunctions.full_data_format(path) is None
+    _write_full_data(path, full_data_backend, mock_full_data)
+    expected = "" if full_data_backend is None else full_data_backend
+    assert auxiliaryfunctions.full_data_format(path) == expected
+
+
+def test_remove_full_data(tmp_path, full_data_backend, mock_full_data):
+    path = _write_full_data(tmp_path / "video_full.pickle", full_data_backend, mock_full_data)
+    auxiliaryfunctions.remove_full_data(path)
+    assert auxiliaryfunctions.full_data_format(path) is None
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_load_and_find_video_full_data(tmp_path, full_data_backend, mock_full_data):
+    path = _write_full_data(tmp_path / "videoDLC_net_full.pickle", full_data_backend, mock_full_data)
+    found = auxiliaryfunctions.find_video_full_data(tmp_path, "video", "DLC_net")
+    assert found == path
+    assert auxiliaryfunctions.load_video_full_data(tmp_path, "video", "DLC_net") == mock_full_data
+
+
+def test_find_video_full_data_raise(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        auxiliaryfunctions.find_video_full_data(tmp_path, "video", "DLC_net")
