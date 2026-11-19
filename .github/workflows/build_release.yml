@@ -9,6 +9,16 @@ on:
         required: false
         default: ""
         type: string
+  pull_request:
+    paths:
+      - "pyproject.toml"
+      - "setup.py"
+      - ".github/workflows/build_release.yml"
+      - ".github/workflows/release-pypi.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
