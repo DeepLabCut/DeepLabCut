@@ -216,8 +216,8 @@ def plot_trajectories(
             or a list of strings that are a subset of the full list.
             E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml
             to select only these two body parts. Defaults to "all".
-        showfigures (bool, optional): If ``True`` then plots of all videos are also displayed
-            with pyplot. Defaults to False.
+        showfigures (bool, optional): If ``True`` then plots are also displayed with pyplot,
+            after each video. Defaults to False.
         destfolder (string or None, optional): Destination folder for analysis data. If
             ``None``, the path of the video is used. Defaults to None.
         modelprefix (str, optional): Directory containing the deeplabcut models to use when evaluating the network.
@@ -309,6 +309,8 @@ def plot_trajectories(
             )
             if return_figures:
                 saved_figures |= video_figures
+            if showfigures:
+                plt.show()
         except FileNotFoundError as e:
             print(e)
             failures.append(video)
@@ -339,9 +341,6 @@ def plot_trajectories(
         )
     else:
         print('Plots created! Please check the directory "plot-poses" within the video directory')
-
-    if showfigures:
-        plt.show()
 
     return saved_figures
 
