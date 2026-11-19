@@ -903,6 +903,31 @@ class MatchedPrediction:
     oks: float
 
 
+def calc_oks_scale_squared(xy_true, margin=0):
+    """Computes the squared scale by which OKS normalizes distances for a GT pose.
+
+    Args:
+        xy_true: the ground truth pose, of shape (num_keypoints, 2)
+        margin: the margin to add around the keypoints when computing the area
+
+    Returns:
+        The squared scale for the pose, or NaN if OKS cannot be computed for it. This
+        is the case when fewer than 2 keypoints are visible (no scale can be derived
+        from a single point) or when the visible keypoints have no spatial extent
+        (e.g. a pose whose keypoints are all collinear), as OKS normalizes by the
+        area covered by the pose.
+    """
+    visible_gt = ~np.isnan(xy_true).all(axis=1)
+    if visible_gt.sum() < 2:  # At least 2 points needed to calculate scale
+        return np.nan
+
+    scale_squared = np.prod(np.ptp(xy_true[visible_gt], axis=0) + np.spacing(1) + margin * 2)
+    if np.isclose(scale_squared, 0):
+        return np.nan
+
+    return scale_squared
+
+
 def calc_object_keypoint_similarity(
     xy_pred,
     xy_true,
@@ -910,14 +935,12 @@ def calc_object_keypoint_similarity(
     margin=0,
     symmetric_kpts=None,
 ):
-    visible_gt = ~np.isnan(xy_true).all(axis=1)
-    if visible_gt.sum() < 2:  # At least 2 points needed to calculate scale
+    scale_squared = calc_oks_scale_squared(xy_true, margin)
+    if np.isnan(scale_squared):
         return np.nan
 
+    visible_gt = ~np.isnan(xy_true).all(axis=1)
     true = xy_true[visible_gt]
-    scale_squared = np.prod(np.ptp(true, axis=0) + np.spacing(1) + margin * 2)
-    if np.isclose(scale_squared, 0):
-        return np.nan
 
     k_squared = (2 * sigma) ** 2
     denom = 2 * scale_squared * k_squared

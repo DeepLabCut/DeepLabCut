@@ -130,6 +130,7 @@ def train(
         gpus=gpus,
         snapshot_path=snapshot_path,
         load_head_weights=load_head_weights,
+        single_animal=loader.get_dataset_parameters().max_num_animals == 1,
         logger=logger,
     )
 
