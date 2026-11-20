@@ -56,10 +56,12 @@ def get_yaml_dumper() -> YAML:
     return yaml
 
 
-def read_config_as_dict(config_path: str | Path) -> dict:
+def read_config_as_dict(config_path: str | Path, repair_project_path: bool = False) -> dict:
     """
     Args:
         config_path: the path to the configuration file to load
+        repair_project_path: if True, fix the config key ``project_path`` to match the parent
+        folder of ``config_path``. Only the return dict is updated, not persisted to disk.
 
     Returns:
         The configuration file with pure Python classes
@@ -75,6 +77,11 @@ def read_config_as_dict(config_path: str | Path) -> dict:
         raise ValueError(f"Config {config_path} is empty or null.")
     if not isinstance(cfg, dict):
         raise ValueError(f"Config {config_path} must be a YAML mapping at the top level, got {type(cfg).__name__}.")
+    if repair_project_path:
+        project_path = Path(config_path).parent.absolute()
+        if cfg.get("project_path") is None or Path(cfg["project_path"]).absolute() != project_path:
+            logger.info("project_path updated: %s -> %s", cfg.get("project_path"), project_path)
+            cfg["project_path"] = str(project_path)
     return cfg
 
 
