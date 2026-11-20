@@ -12,8 +12,11 @@ from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+from matplotlib.figure import Figure
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QTimer, Slot
+from PySide6.QtCore import Qt, Signal, Slot
 
 import deeplabcut
 from deeplabcut.core.config import ProjectConfig
@@ -28,6 +31,7 @@ from deeplabcut.gui.components import (
     _create_vertical_layout,
 )
 from deeplabcut.gui.utils import move_to_separate_thread
+from deeplabcut.utils.plotting import PLOT_NAMES
 
 
 @dataclass(frozen=True)
@@ -49,17 +53,60 @@ class AnalyzeVideosOptions:
     track_method: str | None
 
 
+def _individual_name(path: Path) -> str:
+    """
+    File names are ``<plot name>[_filtered]<individual><image type>.png``.
+    """
+    plot_name = max((name for name in PLOT_NAMES if path.stem.startswith(name)), key=len, default="")
+    return path.stem.removeprefix(plot_name).removeprefix("_filtered")
+
+
+class TrajectoryPlotsDialog(QtWidgets.QDialog):
+    """Displays trajectory plots with a navigation toolbar, with one tab per video."""
+
+    def __init__(self, plot_figures: dict[Path, Figure], parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Trajectory plots")
+        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setWindowFlags(Qt.Window)
+        self.resize(900, 700)
+
+        figures_per_video = {}
+        for path, figure in plot_figures.items():
+            path = Path(path)
+            figures_per_video.setdefault(path.parent, []).append((_individual_name(path), figure))
+
+        tabs = QtWidgets.QTabWidget(self)
+        for folder, figures in figures_per_video.items():
+            content = QtWidgets.QWidget()
+            content_layout = QtWidgets.QVBoxLayout(content)
+            for individual, figure in figures:
+                if individual:
+                    header = _create_label_widget(individual, "font:bold", margins=(0, 10, 0, 10))
+                    header.setAlignment(Qt.AlignCenter)
+                    content_layout.addWidget(header)
+                figure.set_layout_engine("tight")
+                canvas = FigureCanvas(figure)
+                canvas.setMinimumHeight(int(figure.get_figheight() * figure.dpi))
+                content_layout.addWidget(NavigationToolbar2QT(canvas, content))
+                content_layout.addWidget(canvas)
+
+            scroll = QtWidgets.QScrollArea()
+            scroll.setWidgetResizable(True)
+            scroll.setWidget(content)
+            tabs.addTab(scroll, folder.name)
+
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(tabs)
+
+
 class AnalyzeVideos(DefaultTab):
+    trajectory_plots_saved = Signal(object)
+
     def __init__(self, root, parent, h1_description):
         super().__init__(root, parent, h1_description)
 
-        self._plot_options: AnalyzeVideosOptions | None = None
-        self._plotted_batches: list[tuple[str, list[Path]]] = []
-
-        self._show_plots_timer = QTimer(self)
-        self._show_plots_timer.setSingleShot(True)
-        self._show_plots_timer.setInterval(0)
-        self._show_plots_timer.timeout.connect(self._show_plotted_batches)
+        self.trajectory_plots_saved.connect(self._show_trajectory_plots)
 
         self._set_page()
 
@@ -68,25 +115,9 @@ class AnalyzeVideos(DefaultTab):
         return self.video_selection_widget.files
 
     @Slot()
-    def _show_plotted_batches(self):
-        options = self._plot_options
-        if options is None or not options.show_trajectory_plots or not self._plotted_batches:
-            return
-
-        try:
-            self._show_trajectory_plots(options, self._plotted_batches)
-        except Exception as error:
-            self.root.logger.error(
-                "Failed to display trajectory plots.",
-                exc_info=True,
-            )
-            self.root.show_task_error(error)
-
-    @Slot()
     def _handle_analysis_finished(self):
         self.analyze_videos_btn.setEnabled(True)
         self.root._progress_bar.hide()
-        self._show_plots_timer.start()
 
     def _set_page(self):
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
@@ -367,33 +398,39 @@ class AnalyzeVideos(DefaultTab):
         return folders
 
     def _run_pipeline(self, options: AnalyzeVideosOptions, batches: list[tuple[str, list[Path]]]):
-        for videotype, videos in batches:
-            try:
-                self.root.logger.info(f"Analyzing {len(videos)} video(s) with extension {videotype}")
+        plot_figures = {}
+        try:
+            for videotype, videos in batches:
+                try:
+                    self.root.logger.info(f"Analyzing {len(videos)} video(s) with extension {videotype}")
 
-                deeplabcut.analyze_videos(
-                    options.config_path,
-                    videos=videos,
-                    video_extensions=videotype,
-                    shuffle=options.shuffle,
-                    save_as_csv=options.save_as_csv,
-                    cropping=options.cropping,
-                    dynamic=options.dynamic_cropping_params,
-                    auto_track=options.auto_track,
-                    n_tracks=options.num_animals_in_videos,
-                    calibrate=options.calibrate_assembly,
-                    identity_only=options.assemble_with_ID_only,
-                )
+                    deeplabcut.analyze_videos(
+                        options.config_path,
+                        videos=videos,
+                        video_extensions=videotype,
+                        shuffle=options.shuffle,
+                        save_as_csv=options.save_as_csv,
+                        cropping=options.cropping,
+                        dynamic=options.dynamic_cropping_params,
+                        auto_track=options.auto_track,
+                        n_tracks=options.num_animals_in_videos,
+                        calibrate=options.calibrate_assembly,
+                        identity_only=options.assemble_with_ID_only,
+                    )
 
-                self._run_postprocessing_for_group(options, videotype, videos)
-            except Exception as e:
-                exc = f"Error analyzing videos {videos} with extension {videotype}: {e}"
-                self.root.logger.error(exc, exc_info=True)
-                raise RuntimeError(exc) from e
+                    plot_figures |= self._run_postprocessing_for_group(options, videotype, videos)
+                except Exception as e:
+                    exc = f"Error analyzing videos {videos} with extension {videotype}: {e}"
+                    self.root.logger.error(exc, exc_info=True)
+                    raise RuntimeError(exc) from e
 
-        # Run CSV conversion once per unique folder, after all batches
-        if options.auto_track and options.save_as_csv:
-            self._convert_outputs_to_csv_once_per_folder(batches)
+            # Run CSV conversion once per unique folder, after all batches
+            if options.auto_track and options.save_as_csv:
+                self._convert_outputs_to_csv_once_per_folder(batches)
+        finally:
+            if plot_figures and options.show_trajectory_plots:
+                # Queues the signal to show successful trajectory plots in the GUI thread.
+                self.trajectory_plots_saved.emit(plot_figures)
 
     def _run_postprocessing_for_group(
         self,
@@ -422,9 +459,9 @@ class AnalyzeVideos(DefaultTab):
             )
 
         if options.plot_trajectories:
-            # Matplotlib windows cannot open from this worker thread; they are
-            # shown from the GUI thread once analysis finishes.
-            deeplabcut.plot_trajectories(
+            # Returned figures are plain Figures, which keeps pyplot off this worker thread;
+            # they are shown from the GUI thread once analysis finishes.
+            plot_figures = deeplabcut.plot_trajectories(
                 options.config_path,
                 videos=videos,
                 displayedbodyparts=options.displayed_bodyparts,
@@ -433,8 +470,11 @@ class AnalyzeVideos(DefaultTab):
                 filtered=options.filter_data,
                 showfigures=False,
                 track_method=options.track_method,
+                return_figures=True,
             )
-            self._plotted_batches.append((videotype, videos))
+            return plot_figures
+        else:
+            return {}
 
     def _convert_outputs_to_csv_once_per_folder(self, batches: list[tuple[str, list[Path]]]):
         folders = self._get_unique_video_parent_folders(batches)
@@ -446,26 +486,19 @@ class AnalyzeVideos(DefaultTab):
                 listofvideos=False,
             )
 
-    def _show_trajectory_plots(
-        self,
-        options: AnalyzeVideosOptions,
-        batches: list[tuple[str, list[Path]]],
-    ):
-        for videotype, videos in batches:
-            deeplabcut.plot_trajectories(
-                options.config_path,
-                videos=videos,
-                displayedbodyparts=options.displayed_bodyparts,
-                video_extensions=videotype,
-                shuffle=options.shuffle,
-                filtered=options.filter_data,
-                showfigures=True,
-                track_method=options.track_method,
-            )
+    @Slot(object)
+    def _show_trajectory_plots(self, plot_figures: dict[Path, Figure]):
+        for dialog in self.findChildren(TrajectoryPlotsDialog):
+            dialog.close()
+
+        try:
+            dialog = TrajectoryPlotsDialog(plot_figures, parent=self)
+            dialog.show()
+        except Exception as error:
+            self.root.logger.error("Failed to display trajectory plots.", exc_info=True)
+            self.root.show_task_error(error)
 
     def analyze_videos(self):
-        self._show_plots_timer.stop()
-
         options = self._collect_options()
         batches = self._get_video_batches()
 
@@ -481,9 +514,6 @@ class AnalyzeVideos(DefaultTab):
             # Update track method and write to disk
             cfg.default_track_method = options.track_method
             cfg.to_yaml(self.root.config_path, overwrite=True, log_changes=True, mark_clean=True)
-
-        self._plot_options = options
-        self._plotted_batches = []
 
         func = partial(self._run_pipeline, options, batches)
 
