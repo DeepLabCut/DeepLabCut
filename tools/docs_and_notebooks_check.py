@@ -49,6 +49,12 @@ Update verification fields for selected targets (write mode):
 Normalize notebooks deterministically (explicit churn; write mode):
     python tools/docs_and_notebooks_check.py normalize --write --targets docs/notebook.ipynb
 
+TOC coverage (read-only; exits non-zero on unlisted pages):
+    python tools/docs_and_notebooks_check.py toc
+
+    Every docs/**/*.md must be listed in _toc.yml or set deeplabcut.visibility
+    to unlisted, archived or orphaned.
+
 
 Configuration
 -------------
@@ -91,6 +97,13 @@ import nbformat
 import yaml
 from nbformat.validator import NotebookValidationError
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
+
+try:
+    from tools.docs_and_notebooks_audit import Visibility
+    from tools.knowledge_indexing.toc import TOC_FILE, read_toc
+except ImportError:  # pragma: no cover
+    from docs_and_notebooks_audit import Visibility
+    from knowledge_indexing.toc import TOC_FILE, read_toc
 
 REPORT_SCHEMA_VERSION: Literal[1, 2] = 2
 GLOB_CHARS = set("*?[")
@@ -1138,6 +1151,108 @@ def enforce(cfg: ToolConfig, records: list[FileRecord]) -> list[str]:
 
 
 # -----------------------------
+# TOC coverage
+# -----------------------------
+# Only built pages are published (`only_build_toc_files: true` in `_config.yml`),
+# so a page missing from `_toc.yml` silently disappears from the site unless it
+# is marked as intentionally off-TOC via `deeplabcut.visibility`.
+TOC_SCAN_PATTERN = "docs/**/*.md"
+
+
+class TocIssue(BaseModel):
+    path: str
+    severity: Literal["error", "warning"]
+    reason: str
+
+
+TocIssue.model_rebuild()
+
+
+def check_toc(repo_root: Path, cfg: ToolConfig) -> list[TocIssue]:
+    """Check that every docs page is listed in `_toc.yml` or marked off-TOC.
+
+    A page missing from `_toc.yml` is an error unless its `deeplabcut.visibility`
+    is `unlisted`, `archived` or `orphaned`. A listed page with such a visibility
+    is a warning.
+
+    `read_toc` skips TOC items without a `file:` key, together with their
+    `sections`; pages nested under such an item would be reported as unlisted.
+
+    Args:
+        repo_root: Repository root, containing `_toc.yml`.
+        cfg: Tool config; `scan.exclude` patterns are honoured.
+
+    Returns:
+        Issues sorted by path.
+    """
+    off_toc = {v.value for v in Visibility if v is not Visibility.ONLINE}
+    valid = {v.value for v in Visibility}
+    fix = f"add it to {TOC_FILE} or set `{DLC_NAMESPACE}.visibility` to one of {sorted(off_toc)}"
+
+    listed = {entry.file for entry in read_toc(repo_root / TOC_FILE)}
+    issues: list[TocIssue] = []
+    for path in sorted(p for p in repo_root.glob(TOC_SCAN_PATTERN) if p.is_file()):
+        rel = path.relative_to(repo_root).as_posix()
+        if is_excluded(rel, cfg.scan.exclude):
+            continue
+
+        try:
+            fm, _body, err = read_md_frontmatter(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            # One line: PyYAML messages span several, which GitHub annotations truncate.
+            fm, err = None, "frontmatter_parse_error: " + " ".join(str(exc).split())
+        ns = (fm or {}).get(DLC_NAMESPACE)
+        value = ns.get("visibility") if isinstance(ns, dict) else None
+        if value is not None and not isinstance(value, str):
+            value = repr(value)
+
+        if rel.removesuffix(".md") in listed:
+            if value in off_toc:
+                reason = f"listed in {TOC_FILE} but visibility is {value!r}"
+                issues.append(TocIssue(path=rel, severity="warning", reason=reason))
+            continue
+
+        if value in off_toc:
+            continue
+        if err:
+            cause = err
+        elif value is None:
+            cause = "no visibility set"
+        elif value not in valid:
+            cause = f"invalid visibility {value!r}"
+        else:
+            cause = f"visibility is {value!r}"
+        issues.append(TocIssue(path=rel, severity="error", reason=f"not in {TOC_FILE} ({cause}); {fix}"))
+    return issues
+
+
+def report_toc_issues(issues: list[TocIssue], step_summary: bool) -> int:
+    """Print TOC issues (as GitHub annotations under Actions) and return the exit code."""
+    errors = [i for i in issues if i.severity == "error"]
+    in_actions = bool(os.environ.get("GITHUB_ACTIONS"))
+
+    for i in issues:
+        if in_actions:
+            print(f"::{i.severity} file={i.path},line=1::{i.reason}")
+        print(f"{i.severity.upper()}: {i.path}: {i.reason}")
+
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if step_summary and summary_path and issues:
+        lines = ["## Docs TOC coverage", "", "| Severity | Page | Reason |", "| --- | --- | --- |"]
+        for i in issues:
+            reason = i.reason.replace("|", r"\|")
+            lines.append(f"| {i.severity} | `{i.path}` | {reason} |")
+        with open(summary_path, "a", encoding="utf-8") as fh:
+            fh.write("\n".join(lines) + "\n")
+
+    if errors:
+        print(f"\n{len(errors)} docs page(s) are neither in the TOC nor marked off-TOC.")
+        return 1
+    print("All docs pages are in the TOC or marked off-TOC.")
+    return 0
+
+
+# -----------------------------
 # CLI
 # -----------------------------
 
@@ -1255,12 +1370,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         help=f"Acknowledge that you will commit changes using marker: {META_COMMIT_MARKER}",
     )
 
+    sub.add_parser(
+        "toc",
+        help="Fail if a docs page is neither in _toc.yml nor marked off-TOC via deeplabcut.visibility (read-only)",
+    )
+
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     config_path = Path(args.config)
     repo_root = find_repo_root(Path.cwd())
     cfg = load_config(config_path)
     out_dir = Path(args.out_dir)
+
+    if args.cmd == "toc":
+        return report_toc_issues(check_toc(repo_root, cfg), step_summary=not args.no_step_summary)
 
     requested_targets = getattr(args, "targets", None)
 
