@@ -69,7 +69,9 @@ def move_to_separate_thread(func: Callable, capture_outputs: bool = False):
     else:
         worker = Worker(func)
 
-    worker.finished.connect(worker.deleteLater)
+    # No ``worker.finished.connect(worker.deleteLater)``: deleting the worker on its own thread
+    # takes a Qt connection lock and then the GIL, which deadlocks with the GUI thread connecting
+    # signals. Callers keep the worker in ``self.worker``, so Python frees it on the GUI thread.
     worker.moveToThread(thread)
     thread.started.connect(worker.run)
 
