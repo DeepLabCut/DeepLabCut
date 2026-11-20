@@ -12,6 +12,8 @@ import pytest
 pytest.importorskip("PySide6")
 pytest.importorskip("pytestqt")
 
+from PySide6 import QtCore
+
 from deeplabcut.gui.utils import CaptureWorker, Worker, move_to_separate_thread
 
 
@@ -73,3 +75,21 @@ def test_thread_quits_after_exception(qtbot):
     qtbot.waitUntil(thread.isFinished, timeout=3000)
     assert len(errors) == 1
     assert isinstance(errors[0], ZeroDivisionError)
+
+
+def test_worker_is_not_destroyed_on_its_own_thread(qtbot):
+    """Regression: destroying the worker on its thread could deadlock
+    with the GUI thread (GIL vs Qt lock)."""
+    worker, thread = move_to_separate_thread(lambda: None)
+    destroyed_on = []
+    worker.destroyed.connect(
+        lambda: destroyed_on.append(QtCore.QThread.currentThread() is thread),
+        QtCore.Qt.DirectConnection,
+    )
+
+    with qtbot.waitSignal(thread.finished, timeout=3000):
+        thread.start()
+    assert thread.wait(3000)
+    del worker
+
+    assert destroyed_on == [False]
