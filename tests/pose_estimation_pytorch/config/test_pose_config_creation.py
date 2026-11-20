@@ -17,6 +17,7 @@ import pytest
 
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.weight_init import WeightInitialization
+from deeplabcut.pose_estimation_pytorch.config.utils import get_config_folder_path
 
 try:
     from deeplabcut.pose_estimation_pytorch.config import PoseConfig
@@ -130,6 +131,91 @@ POSE_CONFIG_CASES = [
         head_type="HeatmapHead",
     ),
 ]
+
+
+@pytest.mark.parametrize("stage", ["train", "inference"])
+def test_pose_config_repairs_top_down_crop_not_matching_head(
+    stage: str, tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Reproduces configs created by 3.0.1 to 3.0.3 for rtmpose_x (256 crop, 384 head)."""
+    cfg = _as_dict(
+        build_pose_config(
+            SINGLE_ANIMAL_PROJECT,
+            tmp_path / "pytorch_config.yaml",
+            net_type="rtmpose_x",
+            top_down=True,
+            save=False,
+        )
+    )
+    cfg["data"][stage]["top_down_crop"].update(width=256, height=256)
+
+    repaired = PoseConfig.from_dict(cfg)
+
+    crop = getattr(repaired.data, stage).top_down_crop
+    assert (crop["width"], crop["height"]) == (384, 384)
+    assert f"data.{stage}.top_down_crop" in caplog.text
+    assert "loaded config only" in caplog.text
+    assert "pytorch_config.yaml" in caplog.text
+
+
+MODEL_YAMLS_WITH_DATA = sorted(
+    path
+    for path in get_config_folder_path().glob("*/*.yaml")
+    if path.parent.name not in ("base", "backbones", "detectors") and read_config_as_dict(path).get("data")
+)
+
+
+def _leaves(cfg: dict, prefix: tuple[str, ...] = ()) -> list[tuple[tuple[str, ...], Any]]:
+    leaves = []
+    for key, value in cfg.items():
+        if isinstance(value, dict):
+            leaves.extend(_leaves(value, (*prefix, key)))
+        else:
+            leaves.append(((*prefix, key), value))
+    return leaves
+
+
+def _as_lists(value: Any) -> Any:
+    """Typed configs may store YAML lists as tuples; compare them as lists."""
+    if isinstance(value, (list, tuple)):
+        return [_as_lists(v) for v in value]
+    return value
+
+
+@pytest.mark.parametrize("model_yaml", MODEL_YAMLS_WITH_DATA, ids=lambda p: p.stem)
+def test_model_yaml_data_takes_precedence_over_augmentation_defaults(
+    model_yaml: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Check merge precedence before validation can repair overwritten crop sizes."""
+    from deeplabcut.pose_estimation_pytorch.config import pose as pose_module
+
+    merged_defaults = []
+    build_defaults = pose_module.build_pose_config_defaults
+
+    def capture_defaults(*args, **kwargs) -> dict:
+        defaults = build_defaults(*args, **kwargs)
+        merged_defaults.append(copy.deepcopy(defaults))
+        return defaults
+
+    monkeypatch.setattr(pose_module, "build_pose_config_defaults", capture_defaults)
+    model_cfg = read_config_as_dict(model_yaml)
+    ctd = str(model_cfg.get("method", "bu")).lower() == "ctd"
+    build_pose_config(
+        MULTIANIMAL_TD_PROJECT,
+        tmp_path / "pytorch_config.yaml",
+        net_type=model_yaml.stem,
+        top_down=False,
+        save=False,
+        ctd_conditions=1 if ctd else None,
+    )
+    assert len(merged_defaults) == 1
+    cfg = merged_defaults[0]
+
+    for path, expected in _leaves(model_cfg["data"]):
+        value = cfg["data"]
+        for key in path:
+            value = value[key]
+        assert _as_lists(value) == _as_lists(expected), f"data.{'.'.join(path)}"
 
 
 @pytest.mark.parametrize("case", POSE_CONFIG_CASES, ids=lambda c: c.id)
