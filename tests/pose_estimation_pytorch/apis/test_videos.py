@@ -49,21 +49,35 @@ def _write_assemblies(tmp_path, predictions):
     )
 
 
+def _frame_predictions(bodyparts, with_identity):
+    """Frame predictions for 2 individuals; padded identity scores are -1, like
+    ``PadOutputs`` produces for identity models."""
+    frame = dict(bodyparts=bodyparts)
+    if with_identity:
+        id_scores = np.full((2, 3, 2), 0.5)  # (num_individuals, num_bodyparts, num_ids)
+        id_scores[np.all(bodyparts < 0, axis=-1)] = -1.0
+        frame["identity_scores"] = id_scores
+    return frame
+
+
+@pytest.mark.parametrize("with_identity", [False, True])
 @pytest.mark.parametrize("num_frames", [1, 3])
-def test_generate_assemblies_file_counts_no_assemblies_when_nothing_detected(tmp_path, num_frames):
+def test_generate_assemblies_file_counts_no_assemblies_when_nothing_detected(tmp_path, num_frames, with_identity):
     """A frame without detections is padded with -1 by ``PadOutputs``, and those rows
-    are filtered out when the assemblies are built - so the count is 0 even though
-    the predictions list is full length.
+    are not counted as assemblies - so the count is 0 even though the predictions list
+    is full length. With identity, the padded ids become 0 through ``argmax`` and must
+    not make the padded rows count.
     """
-    predictions = [dict(bodyparts=np.full((2, 3, 3), -1.0)) for _ in range(num_frames)]
+    predictions = [_frame_predictions(np.full((2, 3, 3), -1.0), with_identity) for _ in range(num_frames)]
 
     assert _write_assemblies(tmp_path, predictions) == 0
 
 
-def test_generate_assemblies_file_counts_real_assemblies(tmp_path):
+@pytest.mark.parametrize("with_identity", [False, True])
+def test_generate_assemblies_file_counts_real_assemblies(tmp_path, with_identity):
     detected = np.zeros((2, 3, 3))  # 2 individuals, 3 bodyparts, (x, y, score)
     undetected = np.full((2, 3, 3), -1.0)
-    predictions = [dict(bodyparts=detected), dict(bodyparts=undetected)]
+    predictions = [_frame_predictions(detected, with_identity), _frame_predictions(undetected, with_identity)]
 
     assert _write_assemblies(tmp_path, predictions) == 2
 

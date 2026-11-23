@@ -875,7 +875,9 @@ def _generate_assemblies_file(
         mask = ~np.all(preds < 0, axis=(1, 2))
         preds = preds[mask]
 
-        num_assemblies += len(preds)
+        # Padded rows of identity models survive the mask (all -1 becomes 0 through argmax).
+        # So count detections from (x, y, score) only.
+        num_assemblies += int(np.sum(~np.all(preds[..., :3] < 0, axis=(1, 2))))
         assemblies[frame_index] = preds
 
         if num_unique_bodyparts > 0:
