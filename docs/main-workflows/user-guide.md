@@ -636,6 +636,9 @@ saves file sets as both Linux and Windows for you).
 - If you move your project folder, you must only change the `project_path` (which is done automatically) in the main
   config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable.
 
+- Only use project folders, models and analysis outputs from sources you trust: some of these files
+  can run code when they are loaded. See {ref}`untrusted-project-files`.
+
 - Be aware you select your neural network backbone at this stage. As of DLC3+ we support PyTorch (and TensorFlow, but
   this will be phased out).
 ```
