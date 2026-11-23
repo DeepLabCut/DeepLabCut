@@ -217,7 +217,8 @@ def plot_trajectories(
             E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml
             to select only these two body parts. Defaults to "all".
         showfigures (bool, optional): If ``True`` then plots are also displayed with pyplot,
-            after each video. Defaults to False.
+            after each video. Otherwise, the figures are only saved and are not tracked by
+            pyplot, so they are not displayed inline in notebooks. Defaults to False.
         destfolder (string or None, optional): Destination folder for analysis data. If
             ``None``, the path of the video is used. Defaults to None.
         modelprefix (str, optional): Directory containing the deeplabcut models to use when evaluating the network.
@@ -305,7 +306,7 @@ def plot_trajectories(
                 suffix=suffix,
                 image_type=imagetype,
                 dest_folder=tmpfolder,
-                use_pyplot=showfigures or not return_figures,
+                use_pyplot=showfigures,
             )
             if return_figures:
                 saved_figures |= video_figures
