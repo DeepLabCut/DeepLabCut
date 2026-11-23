@@ -1,0 +1,59 @@
+name: Build and check release
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Commit, tag or branch to build"
+        required: false
+        default: ""
+        type: string
+  pull_request:
+    paths:
+      - "pyproject.toml"
+      - "setup.py"
+      - ".github/workflows/build_release.yml"
+      - ".github/workflows/release-pypi.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build and check dist
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          activate-environment: true
+
+      - name: Build
+        run: uv build
+
+      - name: Check wheel and metadata
+        run: |
+          uvx twine check --strict dist/*
+          uvx check-wheel-contents --ignore W002 dist/*.whl
+
+      - name: Install the wheel and import it outside the source tree
+        working-directory: ${{ runner.temp }}
+        run: |
+          uv pip install --torch-backend cpu "$GITHUB_WORKSPACE"/dist/*.whl
+          python -c "import deeplabcut; print(deeplabcut.__version__, deeplabcut.__file__)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
