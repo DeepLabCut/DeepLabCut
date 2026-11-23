@@ -27,6 +27,21 @@ Below we will first outline what you need to get started, the different ways you
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1560124235138-A9VEZB45SQPD5Z0BDEXA/ke17ZwdGBToddI8pDm48kKsvCFNoOAts8bgs5LXY20UUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZaDohTswVrVk6oKw3G03bTl18OXeDyNJsBjNlGiyPYGo9Ewyd5AI5wx6CleNeBtf/dlc_steps.jpg?format=1000w" width="80%">
 </p>
 
+(untrusted-project-files)=
+
+### Only use project files from sources you trust
+
+```{warning}
+Some files that DeepLabCut reads can run code on your computer when they are loaded. This includes
+`.pickle` files (for example in `training-datasets/` and analysis outputs), `.h5` files (for example
+`CollectedData_*.h5` and video analysis results) and, depending on your PyTorch version and settings,
+model snapshots (`.pt`). These files are loaded automatically when you create a training dataset,
+train, evaluate or analyze videos, or open the files in a GUI.
+
+Treat a DeepLabCut project, model or analysis output that you receive from someone else like a
+program: only use it if you trust its source.
+```
+
 ## {ref}`Installing DeepLabCut<file:how-to-install>`
 
 We don't cover installation in depth on this page, so click on the link above if that is what you are looking for. See below for details on getting started with DeepLabCut!
