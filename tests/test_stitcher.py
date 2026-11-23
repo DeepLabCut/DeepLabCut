@@ -8,10 +8,13 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import pickle
+
 import numpy as np
 import pandas as pd
 import pytest
 
+from deeplabcut.refine_training_dataset import stitch
 from deeplabcut.refine_training_dataset.stitch import EmptyTrackletsError, Tracklet, TrackletStitcher
 
 TRACKLET_LEN = 1000
@@ -146,6 +149,51 @@ def test_stitcher_rejects_header_only_tracklets(real_tracklets):
     """
     with pytest.raises(EmptyTrackletsError):
         _ = TrackletStitcher.from_dict_of_dict({"header": real_tracklets["header"]}, n_tracks=3)
+
+
+@pytest.fixture()
+def run_stitch_tracklets(tmp_path, monkeypatch):
+    """Runs ``stitch_tracklets`` on a tracklets pickle written to ``tmp_path``.
+
+    The project config, scorer name and video reader are stubbed so that no project
+    or video is needed.
+    """
+    video = tmp_path / "video.mp4"
+    cfg = {"individuals": ["mickey", "minnie", "bianca"], "TrainingFraction": [0.95]}
+    monkeypatch.setattr(stitch, "collect_video_paths", lambda *args, **kwargs: [video])
+    monkeypatch.setattr(stitch, "VideoWriter", lambda *args, **kwargs: range(50))
+    monkeypatch.setattr(stitch.auxiliaryfunctions, "read_config", lambda *args, **kwargs: cfg)
+    monkeypatch.setattr(stitch.auxiliaryfunctions, "get_scorer_name", lambda *args, **kwargs: ("DLC_scorer", None))
+    monkeypatch.setattr(stitch.auxfun_multianimal, "get_track_method", lambda *args, **kwargs: "ellipse")
+
+    def run(tracklets, **kwargs):
+        with open(tmp_path / "videoDLC_scorer_el.pickle", "wb") as file:
+            pickle.dump(tracklets, file)
+        written = stitch.stitch_tracklets("config.yaml", [str(video)], destfolder=str(tmp_path), **kwargs)
+        return video, written
+
+    return run
+
+
+def test_stitch_tracklets_returns_written_videos(run_stitch_tracklets, real_tracklets):
+    video, written = run_stitch_tracklets(real_tracklets)
+    assert written == [video]
+    assert (video.parent / "videoDLC_scorer_el.h5").exists()
+
+
+@pytest.mark.parametrize(
+    "header_only, min_length",
+    [
+        (True, 10),  # no animal was ever detected
+        (False, 100),  # every tracklet (50 frames) is shorter than min_length
+    ],
+)
+def test_stitch_tracklets_excludes_skipped_videos(run_stitch_tracklets, real_tracklets, header_only, min_length):
+    """``stitch_tracklets`` skips videos with empty tracklets without raising."""
+    tracklets = {"header": real_tracklets["header"]} if header_only else real_tracklets
+    video, written = run_stitch_tracklets(tracklets, min_length=min_length)
+    assert written == []
+    assert not (video.parent / "videoDLC_scorer_el.h5").exists()
 
 
 @pytest.mark.parametrize("tracklet", make_fake_tracklets())

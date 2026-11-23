@@ -712,7 +712,7 @@ def analyze_videos(
                             snapshot_index=snapshot_index,
                             detector_snapshot_index=detector_snapshot_index,
                         )
-                        stitch_tracklets(
+                        written_videos = stitch_tracklets(
                             config,
                             [str(video)],
                             video_extensions,
@@ -725,7 +725,10 @@ def analyze_videos(
                             snapshot_index=snapshot_index,
                             detector_snapshot_index=detector_snapshot_index,
                         )
-                        h5_files_created = True  # .h5 file was created by stitch_tracklets
+                        if written_videos:
+                            h5_files_created = True
+                        else:
+                            videos_without_detections.append(video)
 
     if h5_files_created:
         print(

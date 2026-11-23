@@ -1067,12 +1067,13 @@ def stitch_tracklets(
                 - detector_snapshot_index
 
     Returns:
-        TrackletStitcher: A TrackletStitcher object.
+        list: The videos for which a tracks file was written. Videos skipped because
+            their tracklets file is missing or empty are not included.
     """
     vids = collect_video_paths(videos, extensions=video_extensions)
     if not vids:
         print("No video(s) found. Please check your path!")
-        return
+        return []
 
     cfg = auxiliaryfunctions.read_config(config_path)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
@@ -1128,6 +1129,7 @@ def stitch_tracklets(
         return -dist
 
     base_weight_func = weight_func
+    written_videos = []
     for video in vids:
         print("Processing... ", video)
         nframe = len(VideoWriter(video))
@@ -1185,5 +1187,8 @@ def stitch_tracklets(
                     suffix="",
                     save_as_csv=save_as_csv,
                 )
+            written_videos.append(video)
         except (FileNotFoundError, EmptyTrackletsError) as e:
             print(e, "\nSkipping...")
+
+    return written_videos
