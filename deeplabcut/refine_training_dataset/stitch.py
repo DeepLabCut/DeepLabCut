@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import logging
 import pickle
 import re
 import shelve
@@ -36,6 +37,10 @@ from deeplabcut.core.trackingutils import (
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
+
+
+class EmptyTrackletsError(ValueError):
+    """Raised when there are no tracklets long enough to stitch."""
 
 
 class Tracklet:
@@ -452,7 +457,11 @@ class TrackletStitcher:
                     self.residuals.append(t)
 
         if not len(self.tracklets):
-            raise OSError("Tracklets are empty.")
+            if self.residuals:
+                reason = f"none are at least {min_length} frames long."
+            else:
+                reason = "there are none to stitch."
+            raise EmptyTrackletsError(f"Tracklets are empty: {reason}")
 
         if prestitch_residuals:
             self._prestitch_residuals(5)  # Hard-coded but found to work very well
@@ -1063,12 +1072,13 @@ def stitch_tracklets(
                 - detector_snapshot_index
 
     Returns:
-        TrackletStitcher: A TrackletStitcher object.
+        list: The videos for which a tracks file was written. Videos skipped because
+            their tracklets file is missing or empty are not included.
     """
     vids = collect_video_paths(videos, extensions=video_extensions)
     if not vids:
         print("No video(s) found. Please check your path!")
-        return
+        return []
 
     cfg = auxiliaryfunctions.read_config(config_path)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
@@ -1124,6 +1134,7 @@ def stitch_tracklets(
         return -dist
 
     base_weight_func = weight_func
+    written_videos = []
     for video in vids:
         print("Processing... ", video)
         nframe = len(VideoWriter(video))
@@ -1181,5 +1192,12 @@ def stitch_tracklets(
                     suffix="",
                     save_as_csv=save_as_csv,
                 )
+            written_videos.append(video)
         except FileNotFoundError as e:
-            print(e, "\nSkipping...")
+            logging.warning(
+                f"{e}\nSkipping {video}: no tracklets file found. Run `convert_detections2tracklets` first."
+            )
+        except EmptyTrackletsError as e:
+            logging.warning(f"Skipping {video}: {e}")
+
+    return written_videos

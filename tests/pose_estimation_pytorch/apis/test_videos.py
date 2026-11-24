@@ -1,3 +1,4 @@
+import pickle
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -32,6 +33,53 @@ def test_generate_output_data_handles_empty_predictions():
             "key_str_width": 1,
         }
     }
+
+
+def _write_assemblies(tmp_path, predictions):
+    """Runs predictions through the real full-pickle -> assemblies chain."""
+    full_data_path = tmp_path / "full.pickle"
+    with full_data_path.open("wb") as f:
+        pickle.dump(videos._generate_output_data(POSE_CFG, predictions), f)
+
+    return videos._generate_assemblies_file(
+        full_data_path=full_data_path,
+        output_path=tmp_path / "assemblies.pickle",
+        num_bodyparts=3,
+        num_unique_bodyparts=0,
+    )
+
+
+def _frame_predictions(bodyparts, with_identity):
+    """Frame predictions for 2 individuals; padded identity scores are -1, like
+    ``PadOutputs`` produces for identity models."""
+    frame = dict(bodyparts=bodyparts)
+    if with_identity:
+        id_scores = np.full((2, 3, 2), 0.5)  # (num_individuals, num_bodyparts, num_ids)
+        id_scores[np.all(bodyparts < 0, axis=-1)] = -1.0
+        frame["identity_scores"] = id_scores
+    return frame
+
+
+@pytest.mark.parametrize("with_identity", [False, True])
+@pytest.mark.parametrize("num_frames", [1, 3])
+def test_generate_assemblies_file_counts_no_assemblies_when_nothing_detected(tmp_path, num_frames, with_identity):
+    """A frame without detections is padded with -1 by ``PadOutputs``, and those rows
+    are not counted as assemblies - so the count is 0 even though the predictions list
+    is full length. With identity, the padded ids become 0 through ``argmax`` and must
+    not make the padded rows count.
+    """
+    predictions = [_frame_predictions(np.full((2, 3, 3), -1.0), with_identity) for _ in range(num_frames)]
+
+    assert _write_assemblies(tmp_path, predictions) == 0
+
+
+@pytest.mark.parametrize("with_identity", [False, True])
+def test_generate_assemblies_file_counts_real_assemblies(tmp_path, with_identity):
+    detected = np.zeros((2, 3, 3))  # 2 individuals, 3 bodyparts, (x, y, score)
+    undetected = np.full((2, 3, 3), -1.0)
+    predictions = [_frame_predictions(detected, with_identity), _frame_predictions(undetected, with_identity)]
+
+    assert _write_assemblies(tmp_path, predictions) == 2
 
 
 def test_create_df_from_prediction_rejects_empty_predictions(tmp_path):
@@ -207,7 +255,7 @@ def test_analyze_videos_skips_unreadable_video_without_writing_outputs(tmp_path,
     assert create_df.call_args.kwargs["output_prefix"] == "readableDLC_test"
     # skipped videos are listed again at the end, so they are not lost in the logs
     assert caplog.records[-1].levelname == "WARNING"
-    assert "1 of 2 video(s) could not be read; no results were written" in caplog.records[-1].message
+    assert "1 of 2 video(s) could not be fully processed" in caplog.records[-1].message
     assert str(unreadable) in caplog.records[-1].message
 
 
@@ -225,4 +273,4 @@ def test_analyze_videos_skips_unreadable_video_written_to_a_shelf(tmp_path, monk
     assert not (tmp_path / "unreadableDLC_test_meta.pickle").exists()
     generate_assemblies.assert_not_called()
     assert f"Skipping {unreadable}" in caplog.text
-    assert "1 of 1 video(s) could not be read; no results were written" in caplog.records[-1].message
+    assert "1 of 1 video(s) could not be fully processed" in caplog.records[-1].message

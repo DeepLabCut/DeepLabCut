@@ -554,7 +554,8 @@ def analyze_videos(
     # Reading video and init variables
     videos = collect_video_paths(videos, extensions=video_extensions, shuffle=in_random_order)
     h5_files_created = False  # Track if any .h5 files were created
-    skipped_videos = []  # Videos from which no frame could be read
+    # Videos left without a result: unreadable, no detections, or no stitched tracks
+    skipped_videos = []
 
     for video in videos:
         if destfolder is None:
@@ -639,7 +640,7 @@ def analyze_videos(
 
             if multi_animal:
                 assemblies_path = output_path / f"{output_prefix}_assemblies.pickle"
-                _generate_assemblies_file(
+                num_assemblies = _generate_assemblies_file(
                     full_data_path=output_pkl,
                     output_path=assemblies_path,
                     num_bodyparts=len(bodyparts),
@@ -687,32 +688,52 @@ def analyze_videos(
                     h5_files_created = True  # .h5 file was created for CTD tracking
 
                 elif auto_track:
-                    convert_detections2tracklets(
-                        config=config,
-                        videos=str(video),
-                        video_extensions=video_extensions,
-                        shuffle=shuffle,
-                        trainingsetindex=trainingsetindex,
-                        overwrite=overwrite,
-                        identity_only=identity_only,
-                        destfolder=str(output_path),
-                        snapshot_index=snapshot_index,
-                        detector_snapshot_index=detector_snapshot_index,
-                    )
-                    stitch_tracklets(
-                        config,
-                        [str(video)],
-                        video_extensions,
-                        shuffle,
-                        trainingsetindex,
-                        n_tracks=n_tracks,
-                        animal_names=animal_names,
-                        destfolder=str(output_path),
-                        save_as_csv=save_as_csv,
-                        snapshot_index=snapshot_index,
-                        detector_snapshot_index=detector_snapshot_index,
-                    )
-                    h5_files_created = True  # .h5 file was created by stitch_tracklets
+                    # Stitching needs at least one detected assembly to work with.
+                    # Frames without detections only hold rows padded with -1,
+                    # which are not counted, so a video in which no animal was
+                    # ever detected yields 0.
+                    if num_assemblies == 0:
+                        skipped_videos.append(video)
+                        logging.warning(
+                            f"No animals were detected in {video}, so there is "
+                            "nothing to track: skipping tracklet stitching. The pose "
+                            f"predictions are still available in {output_pkl}."
+                        )
+                    else:
+                        convert_detections2tracklets(
+                            config=config,
+                            videos=str(video),
+                            video_extensions=video_extensions,
+                            shuffle=shuffle,
+                            trainingsetindex=trainingsetindex,
+                            overwrite=overwrite,
+                            identity_only=identity_only,
+                            destfolder=str(output_path),
+                            snapshot_index=snapshot_index,
+                            detector_snapshot_index=detector_snapshot_index,
+                        )
+                        written_videos = stitch_tracklets(
+                            config,
+                            [str(video)],
+                            video_extensions,
+                            shuffle,
+                            trainingsetindex,
+                            n_tracks=n_tracks,
+                            animal_names=animal_names,
+                            destfolder=str(output_path),
+                            save_as_csv=save_as_csv,
+                            snapshot_index=snapshot_index,
+                            detector_snapshot_index=detector_snapshot_index,
+                        )
+                        if written_videos:
+                            h5_files_created = True
+                        else:
+                            skipped_videos.append(video)
+                            logging.warning(
+                                f"Tracklet stitching produced no tracks for {video}, so no "
+                                "tracking file was written; see the warning above. "
+                                f"The pose predictions are still available in {output_pkl}."
+                            )
 
     if h5_files_created:
         print(
@@ -722,7 +743,7 @@ def analyze_videos(
             "training set. You can use the function 'extract_outlier_frames' to extract a "
             "few representative outlier frames.\n"
         )
-    else:
+    elif not skipped_videos:
         print(
             "No .h5 files were created during video analysis. Please check your code and "
             "ensure that the video inference and output generation are correct.\n"
@@ -730,10 +751,14 @@ def analyze_videos(
 
     if skipped_videos:
         logging.warning(
-            f"{len(skipped_videos)} of {len(videos)} video(s) could not be read; no results were written: "
-            f"{', '.join(str(v) for v in skipped_videos)}. Re-encoding these videos may "
-            "help (https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
-            "#tips-on-video-re-encoding-and-preprocessing)."
+            f"{len(skipped_videos)} of {len(videos)} video(s) could not be fully processed: "
+            f"{', '.join(str(v) for v in skipped_videos)}. See the warning for each video "
+            "above. Possible reasons: no frames could be read (re-encoding may help, see "
+            "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
+            "#tips-on-video-re-encoding-and-preprocessing), no animal was detected, or "
+            "tracklet stitching produced no tracks (e.g. all tracklets are shorter than "
+            "``min_length``). Pose predictions, if any, are still available in the "
+            "``_full.pickle`` files."
         )
 
     return dlc_scorer
@@ -801,8 +826,15 @@ def _generate_assemblies_file(
     output_path: Path,
     num_bodyparts: int,
     num_unique_bodyparts: int,
-) -> None:
-    """Generates the assemblies file from predictions."""
+) -> int:
+    """Generates the assemblies file from predictions.
+
+    Returns:
+        The total number of detected assemblies across all frames. Rows padded with
+        -1 for frames without detections are not counted (for identity models they
+        are still written to the file), so this is 0 when no animal was detected
+        anywhere in the video.
+    """
     if full_data_path.exists():
         with full_data_path.open("rb") as f:
             data = pickle.load(f)
@@ -818,6 +850,7 @@ def _generate_assemblies_file(
         str_width = len(keys[0]) - len("frame")
 
     assemblies = dict(single=dict())
+    num_assemblies = 0
     for frame_index in range(num_frames):
         frame_key = "frame" + str(frame_index).zfill(str_width)
         predictions = data[frame_key]
@@ -846,6 +879,9 @@ def _generate_assemblies_file(
         mask = ~np.all(preds < 0, axis=(1, 2))
         preds = preds[mask]
 
+        # Padded rows of identity models survive the mask (all -1 becomes 0 through argmax).
+        # So count detections from (x, y, score) only.
+        num_assemblies += int(np.sum(~np.all(preds[..., :3] < 0, axis=(1, 2))))
         assemblies[frame_index] = preds
 
         if num_unique_bodyparts > 0:
@@ -860,6 +896,8 @@ def _generate_assemblies_file(
 
     if isinstance(data, shelving.ShelfReader):
         data.close()
+
+    return num_assemblies
 
 
 def _validate_destfolder(destfolder: str | None) -> None:
