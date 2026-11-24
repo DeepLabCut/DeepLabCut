@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import logging
 import pickle
 import re
 import shelve
@@ -456,7 +457,11 @@ class TrackletStitcher:
                     self.residuals.append(t)
 
         if not len(self.tracklets):
-            raise EmptyTrackletsError("Tracklets are empty.")
+            if self.residuals:
+                reason = f"none are at least {min_length} frames long."
+            else:
+                reason = "there are none to stitch."
+            raise EmptyTrackletsError(f"Tracklets are empty: {reason}")
 
         if prestitch_residuals:
             self._prestitch_residuals(5)  # Hard-coded but found to work very well
@@ -1188,7 +1193,11 @@ def stitch_tracklets(
                     save_as_csv=save_as_csv,
                 )
             written_videos.append(video)
-        except (FileNotFoundError, EmptyTrackletsError) as e:
-            print(e, "\nSkipping...")
+        except FileNotFoundError as e:
+            logging.warning(
+                f"{e}\nSkipping {video}: no tracklets file found. Run `convert_detections2tracklets` first."
+            )
+        except EmptyTrackletsError as e:
+            logging.warning(f"Skipping {video}: {e}")
 
     return written_videos

@@ -730,10 +730,9 @@ def analyze_videos(
                         else:
                             skipped_videos.append(video)
                             logging.warning(
-                                f"Tracklet stitching produced no tracks for {video}, so "
-                                "no tracking file was written. This happens when no "
-                                "tracklet is at least ``min_length`` frames long. The pose "
-                                f"predictions are still available in {output_pkl}."
+                                f"Tracklet stitching produced no tracks for {video}, so no "
+                                "tracking file was written; see the warning above. "
+                                f"The pose predictions are still available in {output_pkl}."
                             )
 
     if h5_files_created:
