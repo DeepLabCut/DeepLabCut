@@ -240,8 +240,8 @@ class ProjectConfig(DLCVersionedConfig):
         Override method for post-yaml load updates. Called automatically by from_yaml().
         These are logged but not written to disk -- call to_yaml() explicitly if needed.
         """
-        project_path = yaml_path.parent
-        if project_path.absolute() != self.project_path.absolute():
+        project_path = yaml_path.parent.absolute()
+        if project_path != self.project_path.absolute():
             old = self.project_path
             self.project_path = project_path
             self.record_change_note(
