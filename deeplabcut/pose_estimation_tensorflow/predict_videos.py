@@ -18,6 +18,7 @@ import argparse
 import os
 import pickle
 import re
+import shelve
 import time
 import warnings
 from collections.abc import Sequence
@@ -1573,7 +1574,6 @@ def convert_detections2tracklets(
             auxiliaryfunctions.attempt_to_make_folder(destfolder)
             vname = Path(video).stem
             dataname = Path(destfolder) / (vname + DLCscorer + ".h5")
-            data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(dataname)
             if track_method == "ellipse":
                 method = "el"
             elif track_method == "box":
@@ -1588,6 +1588,8 @@ def convert_detections2tracklets(
                 print("Set overwrite = True to overwrite.")
             else:
                 print("Analyzing", dataname)
+                data = auxiliaryfunctions._read_full_data(dataname.with_name(dataname.stem + "_full.pickle"))
+                metadata = auxiliaryfunctions.read_pickle(dataname.with_name(dataname.stem + "_meta.pickle"))
                 DLCscorer = metadata["data"]["Scorer"]
                 all_jointnames = data["metadata"]["all_joints_names"]
 
@@ -1653,10 +1655,8 @@ def convert_detections2tracklets(
                 else:
                     assembly_builder.from_pickle(assemblies_filename)
                     print(f"Loading assemblies from {assemblies_filename}")
-                try:
+                if isinstance(data, shelve.Shelf):
                     data.close()
-                except AttributeError:
-                    pass
 
                 if cfg["uniquebodyparts"]:  # Initialize storage of the 'single' individual track
                     tracklets["single"] = {}

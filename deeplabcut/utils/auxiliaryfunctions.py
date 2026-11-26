@@ -169,6 +169,27 @@ def read_pickle(filename):
 _DBM_SUFFIXES = (".db", ".pag", ".dir", ".dat", ".bak")
 
 
+def _read_full_data(path: str | Path) -> Mapping:
+    """Reads a full data file (``*_full.pickle``), whether it is a pickle or a shelf.
+
+    Args:
+        path: The path to the ``*_full.pickle`` file.
+
+    Returns:
+        A dict for pickles; shelves are opened read-only and lazily (caller closes).
+
+    Raises:
+        FileNotFoundError: If there is no file at the given path.
+    """
+    path = Path(path)
+    kind = full_data_format(path)
+    if kind is None:
+        raise FileNotFoundError(f"No full data found at {path}")
+    if kind == "":
+        return read_pickle(path)
+    return shelve.open(str(path), flag="r")
+
+
 @contextmanager
 def open_full_data(path: str | Path) -> Generator[Mapping]:
     """Opens a full data file (``*_full.pickle``), whether it is a pickle or a shelf.
@@ -182,16 +203,12 @@ def open_full_data(path: str | Path) -> Generator[Mapping]:
     Raises:
         FileNotFoundError: If there is no file at the given path.
     """
-    path = Path(path)
-    kind = full_data_format(path)
-    if kind is None:
-        raise FileNotFoundError(f"No full data found at {path}")
-
-    if kind == "":  # not a dbm database
-        yield read_pickle(path)
-    else:
-        with shelve.open(str(path), flag="r") as db:
-            yield db
+    data = _read_full_data(path)
+    try:
+        yield data
+    finally:
+        if isinstance(data, shelve.Shelf):
+            data.close()
 
 
 def full_data_format(path: str | Path) -> str | None:

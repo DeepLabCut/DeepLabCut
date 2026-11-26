@@ -406,6 +406,27 @@ def test_open_and_load_full_data(tmp_path, full_data_backend, mock_full_data):
     assert auxiliaryfunctions.load_full_data(path) == mock_full_data
 
 
+def test_read_full_data(tmp_path, full_data_backend, mock_full_data):
+    path = _write_full_data(tmp_path / "video_full.pickle", full_data_backend, mock_full_data)
+    data = auxiliaryfunctions._read_full_data(path)
+    try:
+        assert isinstance(data, dict if full_data_backend is None else shelve.Shelf)
+        assert data == mock_full_data
+    finally:
+        if isinstance(data, shelve.Shelf):
+            data.close()
+
+
+def test_open_full_data_closes_shelf(tmp_path, full_data_backend, mock_full_data):
+    if full_data_backend is None:
+        pytest.skip("only shelves need closing")
+    path = _write_full_data(tmp_path / "video_full.pickle", full_data_backend, mock_full_data)
+    with auxiliaryfunctions.open_full_data(path) as opened:
+        pass
+    with pytest.raises(ValueError):
+        opened["metadata"]
+
+
 def test_open_full_data_raise(tmp_path):
     with pytest.raises(FileNotFoundError):
         with auxiliaryfunctions.open_full_data(tmp_path / "missing_full.pickle"):
