@@ -186,6 +186,9 @@ class TrainNetwork(DefaultTab):
                     spin_box.setMinimum(attribute.min)
                     spin_box.setMaximum(attribute.max)
                     spin_box.setValue(attribute.default)
+                    if attribute.tooltip:
+                        label.setToolTip(attribute.tooltip)
+                        spin_box.setToolTip(attribute.tooltip)
                     spin_box.valueChanged.connect(
                         lambda new_val, attr=attribute: self.log_attribute_change(attr, new_val)
                     )
@@ -313,11 +316,18 @@ def get_train_attributes(engine: Engine) -> list[TrainAttributeRow]:
             TrainAttributeRow(
                 attributes=[
                     IntTrainAttribute(
-                        label="Display iterations",
+                        label="Print loss every N batches",
                         fn_key="displayiters",
-                        default=1_000,
+                        default=10,
                         min=1,
                         max=100_000,
+                        tooltip=(
+                            "Number of batches between loss prints within an epoch. The count "
+                            "restarts every epoch, so a value above the number of batches per "
+                            "epoch prints nothing mid-epoch. The train loss is printed after "
+                            "every epoch regardless. Overrides display_iters in "
+                            "pytorch_config.yaml (also for the detector)."
+                        ),
                     ),
                     IntTrainAttribute(
                         label="Number of snapshots to keep",

@@ -40,7 +40,8 @@ class TrainSettingsConfig(DLCBaseConfig):
             ``torch.utils.data.DataLoader`` (e.g. ``persistent_workers``). Arguments
             that DeepLabCut sets itself are reserved and cannot be given here. Omitted
             from the serialized config when empty.
-        display_iters: Display interval for training progress
+        display_iters: Number of iterations (batches) between loss prints, counted
+            within each epoch
         epochs: Number of training epochs
         seed: Random seed for reproducibility
         weight_init: Weight initialization configuration

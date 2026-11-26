@@ -452,7 +452,7 @@ train_settings:
   dataloader_workers: 0  # the number of workers for the PyTorch Dataloader
   dataloader_pin_memory: true  # pin DataLoader memory
   dataloader_kwargs: null  # extra DataLoader arguments, e.g. {persistent_workers: true}
-  display_iters: 500  # the number of iterations (steps) between each log print
+  display_iters: 500  # the number of iterations (steps) between each log print, counted within each epoch
   epochs: 200  # the maximum number of epochs for which to train the model
   seed: 42  # the random seed to set for reproducibility
 ```
