@@ -14,14 +14,14 @@ from unittest.mock import MagicMock
 
 import pytest
 
-pytest.importorskip("PySide6")
+pytest.importorskip("qtpy.QtWidgets")
 pytest.importorskip("pytestqt")
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from matplotlib.cm import ScalarMappable
 from matplotlib.figure import Figure
-from PySide6 import QtCore, QtWidgets
+from qtpy import QtCore, QtWidgets
 
 import deeplabcut.gui.tabs.analyze_videos as analyze_videos_tab
 from deeplabcut.gui.tabs.analyze_videos import AnalyzeVideos, AnalyzeVideosOptions, TrajectoryPlotsDialog
