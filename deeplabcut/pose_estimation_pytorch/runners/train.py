@@ -197,7 +197,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 Each batch contains image tensor and heat maps tensor input samples.
             valid_loader: Data loader used for validation of the model.
             epochs: The number of training epochs.
-            display_iters: The number of iterations between each loss print
+            display_iters: The number of iterations between each loss print, counted
+                within each epoch
 
         Example:
            runner = Runner(model, optimizer, cfg, device='cuda')

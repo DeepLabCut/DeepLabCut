@@ -37,7 +37,7 @@ With your training dataset ready, it's time to train your model.
 
 - **Navigate to Train Network:** Head over to the **`Train Network`** tab.
 - **Set Training Parameters:** Here, you'll specify:
-  - **`Display iterations/epochs`:** To specify how often the training progress will be visually updated. Note that our TensorFlow models are "iterations" while PyTorch is epochs.
+  - **`Print loss every N batches`** (PyTorch) / **`Display iterations`** (TensorFlow): To specify how often the training loss is printed, in iterations (batches). For PyTorch models, the count restarts at every epoch, so a value above the number of batches in an epoch prints nothing mid-epoch; the train loss is printed after every epoch regardless. The default of 10 prints a few times per epoch on typical projects. For TensorFlow models, iterations count across the whole training.
   - **`Maximum Iterations/epochs`:** Decide how many iterations to run. For TensorFlow models for a quick demo, 10K is great. For PyTorch models, 200 epochs is fine!
   - **`Number of Snapshots to keep`:** Choose how many snapshots of the model you want to keep, **`Save iterations`:** and at what iteration intervals they should be saved.
 - **Launch Training:** Click on **`Train Network`** to begin.
