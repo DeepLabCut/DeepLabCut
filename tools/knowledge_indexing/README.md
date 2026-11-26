@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2026-09-09'
+  last_metadata_updated: '2026-11-26'
+  ignore: false
+---
 # Knowledge indexing
 
 Generates an LLM-friendly knowledge index from the DeepLabCut source and user
