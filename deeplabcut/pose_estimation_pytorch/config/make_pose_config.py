@@ -366,7 +366,7 @@ def _update_config(config: dict, updates: dict, copy_original: bool = True) -> d
 
     for k, v in updates.items():
         if k in config and isinstance(config[k], dict) and isinstance(v, dict):
-            if k in ("optimizer", "scheduler") and config["type"] != v["type"]:
+            if k in ("optimizer", "scheduler") and config[k]["type"] != v["type"]:
                 # if changing the optimizer or scheduler type, update all values
                 config[k] = v
             else:
