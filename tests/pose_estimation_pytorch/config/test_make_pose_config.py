@@ -10,11 +10,14 @@
 #
 """Tests the pre-processors."""
 
+import copy
+
 import pytest
 
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.config import pretty_print
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
+    _override_config,
     make_basic_project_config,
     make_pytorch_pose_config,
 )
@@ -396,6 +399,29 @@ def test_update_config(data: dict):
     print("\nResult")
     pretty_print(result)
     assert result == data["expected_result"]
+
+
+def test_override_config_precedence_and_no_shared_state():
+    base = {"data": {"crop": {"width": 256, "height": 256}, "flip": True}, "lr": 0.1}
+    override = {"data": {"crop": {"width": 384}}, "runner": {"optimizer": {"type": "AdamW"}}}
+    base_before, override_before = copy.deepcopy(base), copy.deepcopy(override)
+
+    result = _override_config(base, override_with=override)
+
+    assert result == {
+        "data": {"crop": {"width": 384, "height": 256}, "flip": True},
+        "lr": 0.1,
+        "runner": {"optimizer": {"type": "AdamW"}},
+    }
+    assert base == base_before and override == override_before
+    result["data"]["crop"]["height"] = 0
+    result["runner"]["optimizer"]["type"] = "SGD"
+    assert base == base_before and override == override_before
+
+
+def test_override_config_requires_keyword():
+    with pytest.raises(TypeError):
+        _override_config({}, {})  # type: ignore[misc]
 
 
 @pytest.mark.parametrize(

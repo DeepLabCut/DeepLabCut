@@ -193,7 +193,8 @@ def build_pose_config_defaults(
     # (see https://github.com/DeepLabCut/DeepLabCut/issues/3592)
     aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
-    model_cfg = _update_config(_update_config(base_cfg, aug_cfg), model_cfg)
+    defaults = _override_config(base_cfg, override_with=aug_cfg)
+    model_cfg = _override_config(defaults, override_with=model_cfg)
 
     # add a unique bodypart head if needed
     if metadata.unique_bodyparts:
@@ -258,9 +259,9 @@ def build_detector_config_defaults(
         the model configuration with an added detector config
     """
     configs_dir = get_config_folder_path()
-    detector_config = _update_config(
+    detector_config = _override_config(
         read_config_as_dict(configs_dir / "base" / "base_detector.yaml"),
-        read_config_as_dict(configs_dir / "detectors" / f"{detector_type.value}.yaml"),
+        override_with=read_config_as_dict(configs_dir / "detectors" / f"{detector_type.value}.yaml"),
     )
     detector_config = replace_default_values(
         detector_config,
@@ -326,6 +327,23 @@ def resolve_net_type_and_task(
     return net_type, task
 
 
+def _override_config(base: dict, *, override_with: dict) -> dict:
+    """Returns a copy of ``base`` with values from ``override_with`` taking precedence.
+
+    Nested dicts are merged recursively; any other value in ``override_with``
+    replaces the value in ``base``. Neither input is modified, and the result
+    shares no nested objects with them.
+
+    Args:
+        base: the configuration dict providing the default values
+        override_with: the configuration dict whose values take precedence
+
+    Returns:
+        the merged configuration dict
+    """
+    return _update_config(base, copy.deepcopy(override_with), copy_original=True)
+
+
 # NOTE @deruyter92 2026-06-19: Moved this from public API to internal use only.
 # Only used for construction of default config dictionaries. Can likely be refactored.
 def _update_config(config: dict, updates: dict, copy_original: bool = True) -> dict:
@@ -348,7 +366,7 @@ def _update_config(config: dict, updates: dict, copy_original: bool = True) -> d
 
     for k, v in updates.items():
         if k in config and isinstance(config[k], dict) and isinstance(v, dict):
-            if k in ("optimizer", "scheduler") and config["type"] != v["type"]:
+            if k in ("optimizer", "scheduler") and config[k]["type"] != v["type"]:
                 # if changing the optimizer or scheduler type, update all values
                 config[k] = v
             else:
