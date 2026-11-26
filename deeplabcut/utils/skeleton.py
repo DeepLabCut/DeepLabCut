@@ -57,7 +57,7 @@ class SkeletonBuilder:
         n_inspected = 0  # candidate folders looked at
         n_skipped = 0  # candidate folders that could not be used
         root = Path(self.cfg["project_path"]) / "labeled-data"
-        for folder in root.iterdir():
+        for folder in sorted(root.iterdir()):
             if not folder.is_dir() or any(folder.name.endswith(s) for s in ("cropped", "labeled")):
                 continue
             n_inspected += 1
@@ -79,18 +79,19 @@ class SkeletonBuilder:
                 df = self.df
                 if "individuals" in df.columns.names:
                     df = df.xs(col, axis=1, level="individuals")
+                bpts = df.columns.get_level_values("bodyparts").unique()
                 xy = df.loc[row].values.reshape((-1, 2))
-                # Handle image previously annotated on a different platform
-                if isinstance(row, str):
-                    sep = "/" if "/" in row else "\\"
-                    row = row.split(sep)
-                image = io.imread(Path(self.cfg["project_path"]).joinpath(*row))
+                # Index entries may use either separator, depending on the
+                # platform the frames were annotated on
+                parts = [p for c in row for p in str(c).replace("\\", "/").split("/")]
+                image = io.imread(Path(self.cfg["project_path"]).joinpath(*parts))
             except (ValueError, IndexError, OSError, KeyError) as e:
                 n_skipped += 1
                 logger.warning(f"Skipping '{folder.name}': {e}")
                 self.df = prev_df
                 continue
             self.df = df
+            self.bpts = bpts
             self.xy = xy
             self.image = image
             missing = np.flatnonzero(np.isnan(self.xy).all(axis=1))
@@ -101,11 +102,11 @@ class SkeletonBuilder:
             raise OSError(
                 f"No labeled data were found. {n_inspected} folder(s) were inspected in "
                 f"'{root}', {n_skipped} of which had to be skipped (no "
-                f"CollectedData_{self.cfg['scorer']}.h5, no labeled frame in it, or a "
-                f"labeled frame missing from disk); see the warnings above for details."
+                f"CollectedData_{self.cfg['scorer']}.h5, an unreadable or malformed one, no "
+                f"labeled frame in it, or a labeled frame missing from disk); see the warnings "
+                f"above for details."
             )
 
-        self.bpts = self.df.columns.get_level_values("bodyparts").unique()
         if not found:
             warnings.warn(
                 f"A fully labeled animal could not be found. "

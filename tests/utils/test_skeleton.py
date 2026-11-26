@@ -549,7 +549,10 @@ def test_init_skips_a_folder_whose_image_is_missing(monkeypatch, project, collec
         collected_data("zzz_complete", [0.0, 0.0, 10.0, 0.0]),
     )
 
+    imread_calls = []
+
     def fake_imread(path):
+        imread_calls.append(path)
         if "aaa_image_gone" in str(path):
             raise FileNotFoundError(path)
         return np.zeros((5, 5, 3), dtype=np.uint8)
@@ -562,6 +565,47 @@ def test_init_skips_a_folder_whose_image_is_missing(monkeypatch, project, collec
     builder = SkeletonBuilder(str(cfg_path))
 
     assert builder.xy.tolist() == [[0.0, 0.0], [10.0, 0.0]]
+    # Folders are visited in sorted order, so the missing image was attempted first
+    assert [p.parent.name for p in imread_calls] == ["aaa_image_gone", "zzz_complete"]
+
+
+def test_init_skips_a_folder_without_a_bodyparts_level(
+    monkeypatch, caplog, project, collected_data, write_collected_data
+):
+    """A malformed CollectedData file must not stop a later valid folder from being used."""
+    project_path, cfg_path = project()
+    labeled_data = project_path / "labeled-data"
+    malformed = collected_data("aaa_malformed", [1.0, 2.0, 3.0, 4.0])
+    malformed.columns = ["a", "b", "c", "d"]
+    write_collected_data(labeled_data / "aaa_malformed", malformed)
+    write_collected_data(
+        labeled_data / "zzz_complete",
+        collected_data("zzz_complete", [0.0, 0.0, 10.0, 0.0]),
+    )
+    patch_builder_ui(monkeypatch)
+
+    with caplog.at_level("WARNING"):
+        builder = SkeletonBuilder(str(cfg_path))
+
+    assert list(builder.bpts) == ["nose", "tail"]
+    assert builder.xy.tolist() == [[0.0, 0.0], [10.0, 0.0]]
+    assert "aaa_malformed" in caplog.text
+
+
+@pytest.mark.parametrize("sep", ["/", "\\"])
+def test_init_loads_the_image_of_a_legacy_string_index(monkeypatch, project, collected_data, write_collected_data, sep):
+    """Single-level string indices are split on either separator."""
+    project_path, cfg_path = project()
+    df = collected_data("session1", [0.0, 0.0, 10.0, 0.0])
+    df.index = [sep.join(("labeled-data", "session1", "img001.png"))]
+    write_collected_data(project_path / "labeled-data" / "session1", df)
+    imread_calls = []
+    patch_builder_ui(monkeypatch, imread_calls=imread_calls)
+
+    SkeletonBuilder(str(cfg_path))
+
+    expected = project_path / "labeled-data" / "session1" / "img001.png"
+    assert [p.parts for p in imread_calls] == [expected.parts]
 
 
 def test_init_error_reports_inspected_and_skipped_folders(monkeypatch, project, collected_data, write_collected_data):
