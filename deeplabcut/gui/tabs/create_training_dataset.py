@@ -15,8 +15,8 @@ from importlib import import_module
 from pathlib import Path
 
 import dlclibrary
-from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, Slot
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt, Slot
 
 import deeplabcut
 import deeplabcut.compat as compat

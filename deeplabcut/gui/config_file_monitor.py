@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from PySide6 import QtCore, QtWidgets
+from qtpy import QtCore, QtWidgets
 
 
 class ConfigFileMonitor(QtCore.QObject):

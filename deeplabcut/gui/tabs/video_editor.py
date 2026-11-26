@@ -10,8 +10,8 @@
 #
 import time
 
-from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt
 
 from deeplabcut.gui.components import (
     DefaultTab,

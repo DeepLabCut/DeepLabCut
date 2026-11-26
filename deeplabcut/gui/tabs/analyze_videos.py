@@ -12,11 +12,11 @@ from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from matplotlib.figure import Figure
-from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, Signal, Slot
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt, Signal, Slot
 
 import deeplabcut
 from deeplabcut.core.config import ProjectConfig

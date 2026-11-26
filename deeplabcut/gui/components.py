@@ -12,8 +12,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QTimer, Slot
+from qtpy import QtWidgets
+from qtpy.QtCore import Qt, QTimer, Slot
 
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.gui.dlc_params import DLCParams
