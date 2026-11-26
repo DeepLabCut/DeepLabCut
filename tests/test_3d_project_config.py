@@ -76,6 +76,26 @@ def test_calibrate_cameras_keeps_3d_config_keys(config_3d):
     assert auxiliaryfunctions.read_plainconfig(config_3d) == before
 
 
+def test_read_config_explains_3d_project_config(config_3d):
+    """#3585: reading a 3D config as a 2D project config must say so, not list every 3D key."""
+    with pytest.raises(ValueError, match="config.yaml of a 3D project where .* 2D project is expected"):
+        auxiliaryfunctions.read_config(config_3d)
+
+
+def test_calibrate_cameras_renames_all_camera_keys(config_3d):
+    """After renaming the cameras, all template camera-<i> keys follow (incl. trainingsetindex_)."""
+    cfg = auxiliaryfunctions.read_plainconfig(config_3d)
+    cfg["camera_names"] = ["left", "right"]
+    auxiliaryfunctions.write_config_3d(config_3d, cfg)
+
+    with pytest.raises(Exception, match="No calibration images found"):
+        camera_calibration.calibrate_cameras(config_3d, cbrow=8, cbcol=6)
+
+    on_disk = auxiliaryfunctions.read_plainconfig(config_3d)
+    assert {"config_file_left", "shuffle_left", "trainingsetindex_left"} <= on_disk.keys()
+    assert not any(key.endswith("camera-1") for key in on_disk)
+
+
 @pytest.fixture
 def moved_config_3d(config_3d, tmp_path):
     """Config of a moved 3D project; its project_path still points at the old location."""

@@ -29,7 +29,7 @@ import zipfile
 from pathlib import Path
 
 import deeplabcut
-from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.config import ProjectConfig3D
 
 if __name__ == "__main__":
     print("Imported DLC!")
@@ -114,15 +114,11 @@ if __name__ == "__main__":
     path_config_file = deeplabcut.create_new_project_3d(task, scorer, num_cameras)
 
     try:
-        cfg = read_config_as_dict(path_config_file, repair_project_path=True)
-        cfg["config_file_camera-1"] = config
-        cfg["shuffle_camera-1"] = 1
-
-        cfg["config_file_camera-2"] = config
-        cfg["shuffle_camera-2"] = 2
-
-        cfg["skeleton"] = [["bodypart1", "bodypart2"], ["objectA", "bodypart3"]]
-        deeplabcut.auxiliaryfunctions.write_config_3d(path_config_file, cfg)
+        cfg = ProjectConfig3D.from_yaml(path_config_file)
+        cfg.cameras["camera-1"].update(config_file=config, shuffle=1)
+        cfg.cameras["camera-2"].update(config_file=config, shuffle=2)
+        cfg.skeleton = [["bodypart1", "bodypart2"], ["objectA", "bodypart3"]]
+        cfg.to_yaml(path_config_file)
     except Exception as e:
         raise RuntimeError("Please delete the project and re-try.") from e  # otherwise the cfg is an empty array!
 
