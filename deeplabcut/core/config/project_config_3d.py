@@ -142,17 +142,20 @@ class ProjectConfig3D(DLCVersionedConfig):
             logger.info(f"Ignoring 2D project keys in the 3D project config: {ignored}")
         data = {key: value for key, value in data.items() if key not in _LEGACY_2D_KEYS}
 
-        cameras = {}
-        for i, name in enumerate(data.pop("camera_names"), start=1):
-            settings = {}
+        # Keys named after a camera are collected for every camera first: with default names
+        # listed out of order (e.g. [camera-2, camera-1]), `<setting>_camera-<i>` belongs to
+        # another camera and must not be consumed as camera i's template key.
+        cameras = {name: {} for name in data.pop("camera_names")}
+        for name, settings in cameras.items():
             for setting in CameraConfig3D.model_fields:
-                # Keys renamed to the camera name take precedence over the template's camera-<i> keys
-                # (calibrate_cameras used to rename only some of them).
-                template_value = data.pop(f"{setting}_camera-{i}", None)
-                value = data.pop(f"{setting}_{name}", template_value)
-                if value is not None:
+                if (value := data.pop(f"{setting}_{name}", None)) is not None:
                     settings[setting] = value
-            cameras[name] = settings
+        # The template's camera-<i> keys fill the remaining settings
+        # (calibrate_cameras used to rename only some of them to the camera names).
+        for i, settings in enumerate(cameras.values(), start=1):
+            for setting in CameraConfig3D.model_fields:
+                if (value := data.pop(f"{setting}_camera-{i}", None)) is not None:
+                    settings.setdefault(setting, value)
         data["cameras"] = cameras
         return data  # keys of unknown cameras are left for pydantic to reject
 

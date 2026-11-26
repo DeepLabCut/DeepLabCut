@@ -92,6 +92,18 @@ def test_renamed_keys_take_precedence_over_template_keys(flat_config):
     assert cfg.cameras["right"].trainingsetindex == 1
 
 
+def test_default_camera_names_out_of_order_keep_their_own_keys(flat_config):
+    """`shuffle_camera-1` belongs to camera-1 wherever it is listed, not to the first camera."""
+    flat_config["camera_names"] = ["camera-2", "camera-1"]
+
+    cfg = ProjectConfig3D.from_dict(flat_config)
+
+    assert cfg.cameras["camera-1"].config_file == Path("/2d/cam1/config.yaml")
+    assert (cfg.cameras["camera-1"].shuffle, cfg.cameras["camera-1"].trainingsetindex) == (1, 0)
+    assert cfg.cameras["camera-2"].config_file == Path("/2d/cam2/config.yaml")
+    assert (cfg.cameras["camera-2"].shuffle, cfg.cameras["camera-2"].trainingsetindex) == (2, 1)
+
+
 def test_ignores_keys_of_the_2d_project_template(flat_config):
     """DeepLabCut <= 3.0.0 could write 3D configs back with the 2D project template keys."""
     flat_config.update(engine="pytorch", bodyparts=["a", "b"], TrainingFraction=[0.95], alphavalue=0.7)
