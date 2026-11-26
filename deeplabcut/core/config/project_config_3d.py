@@ -11,6 +11,7 @@
 """Project configuration of a 3D (multi-camera) DeepLabCut project."""
 
 import logging
+import re
 from pathlib import Path
 from typing import Any
 
@@ -19,7 +20,7 @@ from ruamel.yaml.comments import CommentedMap
 
 from deeplabcut.core.config.base_config import DLCBaseConfig, DLCVersionedConfig
 from deeplabcut.core.config.project_config import repair_project_path
-from deeplabcut.core.config.validation import BodypartPair, Fraction, NonNegativeInt, StrictPositiveInt
+from deeplabcut.core.config.validation import BodypartPair, Fraction, NonNegativeInt
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,24 @@ class CameraConfig3D(DLCBaseConfig):
     trainingsetindex: NonNegativeInt = 0
 
 
+# Per-camera key of the config.yaml template, e.g. `shuffle_camera-3`
+_TEMPLATE_CAMERA_KEY = re.compile(rf"(?:{'|'.join(CameraConfig3D.model_fields)})_camera-\d+")
+
+_CAMERAS_COMMENT = (
+    "\nNumber of cameras, camera names, path of the config files, shuffle index and "
+    "trainingsetindex used to analyze videos:"
+)
+
+
+def _warn_on_num_cameras_mismatch(num_cameras: Any, cameras: Any) -> None:
+    if num_cameras is not None and isinstance(cameras, dict) and num_cameras != len(cameras):
+        logger.warning(
+            f"num_cameras is {num_cameras}, but {len(cameras)} cameras are listed in camera_names "
+            f"({list(cameras)}); using the listed cameras. num_cameras is corrected the next time "
+            "config.yaml is written."
+        )
+
+
 class ProjectConfig3D(DLCVersionedConfig):
     """Complete configuration of a 3D project (the 3D project's config.yaml).
 
@@ -72,8 +91,8 @@ class ProjectConfig3D(DLCVersionedConfig):
         alphaValue: Alpha value for visualization.
         markerType: Marker type for visualization.
         markerColor: Marker color for visualization.
-        num_cameras: Number of cameras.
-        cameras: Settings per camera, keyed by camera name (in camera order).
+        cameras: Settings per camera, keyed by camera name (in camera order). ``num_cameras``
+            and ``camera_names`` are derived from it.
         scorername_3d: Scorer name for the 3D output.
     """
 
@@ -102,15 +121,6 @@ class ProjectConfig3D(DLCVersionedConfig):
     markerColor: str = "r"
 
     # Cameras
-    num_cameras: StrictPositiveInt = Field(
-        default=2,
-        json_schema_extra={
-            "comment": (
-                "\nNumber of cameras, camera names, path of the config files, shuffle index and "
-                "trainingsetindex used to analyze videos:"
-            )
-        },
-    )
     cameras: dict[str, CameraConfig3D] = Field(min_length=1)
     scorername_3d: str = "DLC_3D"
 
@@ -118,6 +128,11 @@ class ProjectConfig3D(DLCVersionedConfig):
     def camera_names(self) -> list[str]:
         """Names of the cameras, used to match videos and calibration images."""
         return list(self.cameras)
+
+    @property
+    def num_cameras(self) -> int:
+        """Number of cameras. Written to config.yaml, but always derived from `cameras`."""
+        return len(self.cameras)
 
     def _post_yaml_load_updates(self, *, yaml_path: Path) -> None:
         repair_project_path(self, yaml_path=yaml_path)
@@ -131,12 +146,16 @@ class ProjectConfig3D(DLCVersionedConfig):
     def group_flat_camera_keys(cls, data: Any) -> Any:
         if not isinstance(data, dict):
             return data
+        # num_cameras is derived from the cameras; a stored value only gets checked
+        num_cameras = data.get("num_cameras")
+        data = {key: value for key, value in data.items() if key != "num_cameras"}
         if "camera_names" not in data:
             if "cameras" not in data and {"video_sets", "bodyparts", "TrainingFraction"} & data.keys():
                 raise ValueError(
                     "Got the config.yaml of a 2D project where the config.yaml of a 3D project is expected "
                     "(created with create_new_project_3d)."
                 )
+            _warn_on_num_cameras_mismatch(num_cameras, data.get("cameras"))
             return data  # already grouped (constructor kwargs, assignment)
         if ignored := sorted(_LEGACY_2D_KEYS & data.keys()):
             logger.info(f"Ignoring 2D project keys in the 3D project config: {ignored}")
@@ -156,14 +175,23 @@ class ProjectConfig3D(DLCVersionedConfig):
             for setting in CameraConfig3D.model_fields:
                 if (value := data.pop(f"{setting}_camera-{i}", None)) is not None:
                     settings.setdefault(setting, value)
+        # Template keys left over from cameras removed from camera_names
+        if leftover := sorted(key for key in data if _TEMPLATE_CAMERA_KEY.fullmatch(key)):
+            logger.warning(
+                f"Ignoring settings of cameras not listed in camera_names: {leftover}. "
+                "They are removed from config.yaml the next time it is written."
+            )
+            data = {key: value for key, value in data.items() if key not in leftover}
         data["cameras"] = cameras
-        return data  # keys of unknown cameras are left for pydantic to reject
+        _warn_on_num_cameras_mismatch(num_cameras, cameras)
+        return data  # other keys of unknown cameras are left for pydantic to reject
 
     @model_serializer(mode="wrap")
     def flatten_camera_keys(self, handler) -> dict[str, Any]:
         data = handler(self)
         if (cameras := data.pop("cameras", None)) is None:
             return data  # excluded from the dump
+        data["num_cameras"] = len(cameras)
         data["camera_names"] = list(cameras)
         for setting in CameraConfig3D.model_fields:
             for name, settings in cameras.items():
@@ -172,6 +200,13 @@ class ProjectConfig3D(DLCVersionedConfig):
 
     def to_commented_map(self) -> CommentedMap:
         data = super().to_commented_map()  # declared fields only; `cameras` is flattened by the serializer
-        for key, value in self.to_dict(normalize=True).items():
+        # Template order: num_cameras, camera_names, scorername_3d, then the per-camera keys
+        scorername_3d = data.pop("scorername_3d")
+        dumped = self.to_dict(normalize=True)
+        data["num_cameras"] = dumped["num_cameras"]
+        data.yaml_set_comment_before_after_key("num_cameras", before=_CAMERAS_COMMENT)
+        data["camera_names"] = dumped["camera_names"]
+        data["scorername_3d"] = scorername_3d
+        for key, value in dumped.items():
             data.setdefault(key, value)
         return data

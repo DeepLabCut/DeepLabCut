@@ -88,7 +88,6 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
             ["bodypart3", "bodypart4"],
             ["bodypart4", "bodypart5"],
         ],
-        num_cameras=num_cameras,
         # The 2D project of each camera (config_file, shuffle, trainingsetindex) is filled in by the user
         cameras={f"camera-{i}": CameraConfig3D() for i in range(1, num_cameras + 1)},
     )

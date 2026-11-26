@@ -74,7 +74,34 @@ def test_rename_and_add_cameras(flat_config):
 
     dumped = cfg.to_dict()
     assert dumped["camera_names"] == ["left", "right", "top"]
+    assert dumped["num_cameras"] == cfg.num_cameras == 3
     assert (dumped["shuffle_right"], dumped["shuffle_top"]) == (2, 3)
+
+
+def test_num_cameras_follows_camera_names(flat_config, caplog):
+    """A stale num_cameras is reported and corrected, not trusted."""
+    flat_config["num_cameras"] = 3
+
+    with caplog.at_level("WARNING"):
+        cfg = ProjectConfig3D.from_dict(flat_config)
+
+    assert cfg.num_cameras == cfg["num_cameras"] == 2
+    assert cfg.to_dict()["num_cameras"] == 2
+    assert "num_cameras is 3" in caplog.text
+
+
+def test_yaml_keeps_the_template_key_order(flat_config, tmp_path):
+    path = tmp_path / "config.yaml"
+    ProjectConfig3D.from_dict(flat_config).to_yaml(path)
+
+    keys = list(read_config_as_dict(path))
+    start = keys.index("num_cameras")
+    assert keys[start : start + 3] == ["num_cameras", "camera_names", "scorername_3d"]
+    assert keys[start + 3 :] == [
+        f"{setting}_{camera}"
+        for setting in ("config_file", "shuffle", "trainingsetindex")
+        for camera in ("camera-1", "camera-2")
+    ]
 
 
 def test_renamed_keys_take_precedence_over_template_keys(flat_config):
@@ -104,6 +131,18 @@ def test_default_camera_names_out_of_order_keep_their_own_keys(flat_config):
     assert (cfg.cameras["camera-2"].shuffle, cfg.cameras["camera-2"].trainingsetindex) == (2, 1)
 
 
+def test_ignores_template_keys_of_removed_cameras(flat_config, caplog):
+    """A camera removed from camera_names leaves its template keys behind."""
+    flat_config.update({"config_file_camera-3": "/2d/cam3/config.yaml", "shuffle_camera-3": 3})
+
+    with caplog.at_level("WARNING"):
+        dumped = ProjectConfig3D.from_dict(flat_config).to_dict()
+
+    assert dumped["camera_names"] == ["camera-1", "camera-2"]
+    assert not {"config_file_camera-3", "shuffle_camera-3"} & dumped.keys()
+    assert "shuffle_camera-3" in caplog.text
+
+
 def test_ignores_keys_of_the_2d_project_template(flat_config):
     """DeepLabCut <= 3.0.0 could write 3D configs back with the 2D project template keys."""
     flat_config.update(engine="pytorch", bodyparts=["a", "b"], TrainingFraction=[0.95], alphavalue=0.7)
@@ -122,8 +161,8 @@ def test_explains_2d_project_config():
 @pytest.mark.parametrize(
     "extra, match",
     [
-        ({"unknown_key": 1}, "unknown_key.*Extra inputs are not permitted"),
-        ({"shuffle_camera-3": 1}, "shuffle_camera-3.*Extra inputs are not permitted"),
+        ({"unknown_key": 1}, "(?s)unknown_key.*Extra inputs are not permitted"),
+        ({"shuffle_top": 1}, "(?s)shuffle_top.*Extra inputs are not permitted"),
         ({"shuffle_camera-1": -1}, "greater than or equal to 0"),
     ],
     ids=["unknown_key", "unknown_camera", "invalid_shuffle"],
