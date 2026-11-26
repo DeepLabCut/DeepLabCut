@@ -16,15 +16,12 @@ import warnings
 from collections.abc import Callable
 from typing import Literal, ParamSpec, TypeVar
 
+from dlccore.deprecation import DLCDeprecationWarning
 from packaging.version import InvalidVersion, Version
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 P = ParamSpec("P")
 R = TypeVar("R")
-
-
-class DLCDeprecationWarning(DeprecationWarning):
-    """Project-specific deprecation warning. Helps with filtering."""
 
 
 class DeprecationInfo(BaseModel):

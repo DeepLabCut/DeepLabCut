@@ -30,6 +30,8 @@ classifiers = [
 ]
 dependencies = [
   "albumentations<=1.4.3",
+  # Until dlccore is on PyPI: DeepLabCut/dlccore#9.
+  "dlccore @ git+https://github.com/DeepLabCut/dlccore@714910778a785fd529128faad337c6fe56992653",
   "dlclibrary>=0.0.12",
   "einops",
   "filelock>=3.12,<4.2",

@@ -24,6 +24,7 @@ from typing_extensions import Self
 
 from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig, ProjectConfig
 from deeplabcut.core.config.validation import Fraction, NonNegativeInt, UniqueStrList
+from deeplabcut.core.config.versioning import register_migration
 from deeplabcut.pose_estimation_pytorch.config.data import DataConfig, DetectorDataConfig
 from deeplabcut.pose_estimation_pytorch.config.enums import DatasetType, DetectorType, MethodType, NetType
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
@@ -362,3 +363,17 @@ class TestConfig(DLCBaseConfig):
             test_config.to_yaml(test_config_path, overwrite=True)
 
         return test_config
+
+
+@register_migration(0, 1, config_type="PoseConfig")
+def migrate_pose_v0_to_v1(config: dict) -> dict:
+    """Migrate PoseConfig from v0 to v1."""
+    # Migration logic goes here, when migrating to v1.
+    return config
+
+
+@register_migration(1, 0, config_type="PoseConfig")
+def migrate_pose_v1_to_v0(config: dict) -> dict:
+    """Migrate PoseConfig from v1 back to v0."""
+    # Migration logic goes here, when migrating to v1.
+    return config
